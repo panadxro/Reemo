@@ -106,6 +106,21 @@ html {
       "Helvetica Neue",
       sans-serif;
   }
+  ::-webkit-scrollbar {
+    width: 16px;
+    margin: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #a7ebef;
+    border-radius: 16px;
+    box-shadow: inset 0 0 0 3px #f1f1f1;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4fd8df;
+  }
   .no-scroll {
     overflow: hidden;
   }

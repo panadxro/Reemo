@@ -192,7 +192,7 @@ export async function fetchRentalRequests(userId){
         // verificamos si existe el usuario en el documento
         if(userSnap.exists()){
           const userData = userSnap.data();
-          console.log('datos del usuario que alquila', userData)
+          console.log('datos del usuario que alquila', userData)   
           return{
             ...request,
             photoURL: userData.photoURL || null,
@@ -213,3 +213,32 @@ export async function fetchRentalRequests(userId){
   }
 }
     
+
+
+
+
+
+
+    // onSnapshot(doc(db, 'users', request.user_id), (snapshot) => {
+    //   try {
+    //     const rentalRequests = await Promise.all(
+    //       snapshot.docs.map(async (docSnap) => {
+    //         const request = { id: docSnap.id, ...docSnap.data() };
+
+
+    //         // const userRef = doc(db, 'users', request.user_id);
+    //         // const userSnap = await getDoc(userRef);
+
+    //         if (userSnap.exists()) {
+    //           const userData = userSnap.data();
+    //           return {
+    //             ...request,
+    //             photoURL: userData.photoURL || null,
+    //             name: userData.name || null,
+    //           };
+    //         } else {
+    //           console.error(`El usuario con ID ${request.user_id} no fue encontrado`);
+    //           return request;
+    //         }
+    //       })
+    //     );
