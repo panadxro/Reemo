@@ -11,7 +11,7 @@ async function uploadImage(file, userId, carId) {
   return downloadURL;
 }
 
-export async function saveCars({ user_id, email, marca, modelo, año, chasis, motor, combustible, kilometraje, patente, transmision, puertas, asientos, description, direccion, precio, accessories }, images) {
+export async function saveCars({ user_id, email, marca, modelo, año, chasis, motor, combustible, kilometraje, patente, transmision, puertas, asientos, description, direccion, coordenadas, precio, accessories }, images) {
   const carsRef = collection(db, 'cars');
 
   // Cree esto que es como un id temporal parapasarlo como tercer parámetro y que funcione el storage y las fotos de un mismo auto se guarden en la misma carpeta
@@ -42,6 +42,7 @@ export async function saveCars({ user_id, email, marca, modelo, año, chasis, mo
       asientos,
       description,
       direccion,
+      coordenadas,
       precio,
       accessories: accessories || [],
       // isValidated:false,

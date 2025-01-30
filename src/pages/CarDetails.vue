@@ -14,7 +14,9 @@ import Accelerometer from "../icons/Accelerometer.vue";
 import Check from "../icons/Check.vue";
 import Cross from "../icons/Cross.vue";
 import defaultCarImage from '../assets/Car-Img.png';
-// import * as icons from '@icons'
+
+import { Loader } from "@googlemaps/js-api-loader";
+
 
 export default {
   props: ["id"],
@@ -53,6 +55,14 @@ export default {
       this.car = await getCarById(carId);
       this.currentImage = this.car.images && this.car.images.length > 0 ? this.car.images[0] : defaultCarImage;
       this.rented = await checkIfCarIsRented(this.car.id);
+      // this.initMap(this.car.coordenadas);
+
+      // Una vez que los datos están listos, inicializa el mapa
+      if (this.car.coordenadas) {
+        await this.loadGoogleMaps();
+            this.initMap(this.car.coordenadas);
+          }
+
     } catch (error) {
       this.errorMsg = "Hubo un error al obtener los detalles del auto. Volvé a intentar";
       console.error("Error al obtener los detalles del auto:", error);
@@ -69,10 +79,83 @@ export default {
     setDefaultImage(event) {
       event.target.src = defaultCarImage;
     },
+
+    async loadGoogleMaps() {
+      const loader = new Loader({
+        apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+        libraries: ["places"], // Solo cargamos la librería necesaria
+      });
+
+      try {
+        await loader.load(); // Esperamos a que la API se cargue completamente
+      } catch (error) {
+        console.error("Error al cargar Google Maps:", error);
+      }
+    },
+
+    async initMap(coordenadas){
+
+      try {
+
+        const position = { lat: coordenadas.lat, lng: coordenadas.lng };
+        const { Map } = await google.maps.importLibrary("maps");
+        // const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+        
+
+        const map = new Map(document.getElementById('map'),{
+          center: {
+            lat: coordenadas.lat,
+            lng: coordenadas.lng,
+          },
+          zoom: 14,
+          mapId: "4808da25693c56c8",
+          streetViewControl: false, // Desactiva el ícono de Street View
+          mapTypeControl: false, // Oculta el botón de "Mapa / Satélite"
+          disableDefaultUI: true, // Si lo pones en true desactiva todos los controles (zoom, fullscreen, etc.)
+        });
+        map.setOptions({
+          styles: [
+            {
+              featureType: "poi", // Oculta todos los puntos de interés (restaurantes, tiendas, etc.)
+              elementType: "labels",
+              stylers: [{ visibility: "off" }],
+            },
+            {
+              featureType: "transit", // Oculta paradas de transporte público
+              elementType: "labels",
+              stylers: [{ visibility: "off" }],
+            },
+          ],
+        });
+
+        // Agregando un marcador
+        // const marker = new AdvancedMarkerElement({
+        //   map: map,
+        //   position: position,
+        //   title: this.car.direccion,
+        // });
+
+        new google.maps.Circle({
+          strokeColor: "#5DADE2",
+          strokeOpacity: 0.8, 
+          strokeWeight: 2, 
+          fillColor: "#A9D6F5", 
+          fillOpacity: 0.35, 
+          map: map,
+          center: position,
+          radius: 1000, 
+        })
+
+      } catch (error) {
+        console.error("Error al cargar Google Maps: ", error) 
+      }
+
+    }
+
   },
   mounted() {
     subscribeToAuthState((newUserData) => {
-      this.loggedUser = newUserData;
+      this.loggedUser = newUserData;  
     });
   },
 };
@@ -195,6 +278,11 @@ export default {
                 </p>
               </li>
             </ul>
+
+            <!-- iniciamos el mapa de Google Maps -->
+            <p><strong>Direccion:</strong> {{ car.direccion }}</p>
+            <div v-if="car.coordenadas" id="map" style="width: 100%; height: 400px; margin-top: 20px;"></div>
+            <p v-else>Cargando mapa...</p>
 
             <hr class="my-3 md:my-4 border-gray-200" />
             <Heading :type="2">Accesorios</Heading>

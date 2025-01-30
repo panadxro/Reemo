@@ -1,17 +1,17 @@
 <script>
 import Heading from "../components/atoms/Heading.vue";
 // import PublishPhotos from '../components/my-cars/PublishPhotos.vue';
+import AddressInput from "@/components/google-maps/AddressInput.vue";
 
 import { subscribeToAuthState } from '../services/auth.js';
 import { saveCars, subscribeToNewPublication } from '../services/publication.js'
 import { validateStep1, validateStep2, validateStep3, validateStep4 } from '../services/validation-service.js'
 
-
 let unsubscribeAuth = () => { };
 
 export default {
   name: "Publish",
-  components: { Heading },
+  components: { Heading, AddressInput},
   data() {
     return {
       loading: false,
@@ -38,7 +38,6 @@ export default {
         { id: 'blindSpot', name: 'Control de punto ciego' },
         { id: 'tractionCtrl', name: 'Control de tracción' }
       ],
-
       newCar: {
         marca: "",
         modelo: "",
@@ -47,6 +46,7 @@ export default {
         description: "",
         combustible: "",
         direccion: "",
+        coordenadas: "",
         kilometraje: "",
         precio: "",
         chasis: "",
@@ -124,6 +124,7 @@ export default {
       return (this.step / 4) * 100;
     },
 
+    // Manejo de imagenes de los vehiculos
     handleFileSelection(index, event) {
       const file = event.target.files[0];
       if (file) {
@@ -131,6 +132,28 @@ export default {
         this.photoPreview.splice(index, 1, URL.createObjectURL(file));
       }
     },
+
+    // Manejo del input de la direccion
+    handleAddressSelected(selectedPlace){
+      // Guardamos la direccion y las coordenadas en newCar
+      this.newCar.direccion = selectedPlace.address;
+      this.newCar.coordenadas = selectedPlace.location; 
+      console.log("Direccion seleccionada: ", selectedPlace);
+    },
+    
+    // async geocodeAddress(address){
+    //   const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=API_KEY`)
+      
+    //   const data = await response.json();
+
+    //   console.log("resultados del data :", data.results )
+      
+    //   if (data.status === "OK" && data.results.length > 0){
+    //     return data.results[0].geometry.location; // lat y lng
+    //   }
+      
+    //   throw new Error("No se pudo geocodificar la direccion")
+    // },
 
     async handleSubmit() {
       // PAra que nos aseguremos de la validación de todos los datos antes de enviar el formulario
@@ -145,11 +168,15 @@ export default {
         // Generar un ID único para la publicación
         const carId = `${this.loggedUser.id}-${Date.now()}`;
 
-        // Llamar a la función saveCars para guardar los datos del coche y las imágenes seleccionadas
+        // Llamar a la función saveCars para guardar los datos del coche,las imágenes seleccionadas y la geolocalizacion
         await saveCars({
           user_id: this.loggedUser.id,
           email: this.loggedUser.email,
-          ...this.newCar
+          coordenadas: {
+            latitude: this.newCar.coordenadas.lat,
+            longitude: this.newCar.coordenadas.lng,
+          },
+          ...this.newCar,
         }, this.selectedFiles, carId);
 
         // Reiniciar el formulario después de guardar
@@ -160,6 +187,8 @@ export default {
           patente: "",
           description: "",
           combustible: "",
+          direccion: "",
+          coordenadas: "",
           direccion: "",
           kilometraje: "",
           precio: "",
@@ -184,6 +213,7 @@ export default {
     },
 
   },
+
   async mounted() {
     subscribeToNewPublication((newCar) => (this.cars = newCar));
     unsubscribeAuth = subscribeToAuthState(
@@ -274,9 +304,19 @@ export default {
       </div>
 
       <div class="relative w-full  group mb-10">
-        <input type="text" name="direccion" id="direccion" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 focus:border-[3px] peer',
+
+        <!-- <AddressInput v-model="newCar.direccion" :userId="loggedUser.id"/> -->
+        <AddressInput 
+          v-model="newCar.direccion"
+          @addressSelected="handleAddressSelected"
+          :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 focus:border-[3px] peer',
           errors.direccion ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"
-          placeholder=" " v-model="newCar.direccion" />
+        />
+        <p v-if="newCar.direccion">Dirección seleccionada: {{ newCar.direccion }}</p>
+
+        <!-- <input type="text" name="direccion" id="direccion" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 focus:border-[3px] peer',
+          errors.direccion ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"
+          placeholder=" " v-model="newCar.direccion" /> -->
 
         <!-- Parrafo para mostrar el mensaje de error -->
         <p v-if="errors.direccion" class="text-red-500 text-xs italic mt-2">{{ errors.direccion }}</p>
@@ -468,6 +508,7 @@ export default {
       </div>
     </section>
   </form>
+
 </template>
 
 <style scoped>
