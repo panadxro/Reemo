@@ -1,7 +1,6 @@
 import { collection,getDocs, query, where, doc, getDoc, addDoc, updateDoc, onSnapshot } from "firebase/firestore";
 import { db } from "../services/firebase.js";
 import {addAlert} from './alerts.js'
-import { data } from "autoprefixer";
 
 export async function fetchRentedCars(userId) {
     try {

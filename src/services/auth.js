@@ -17,6 +17,7 @@ let userData = {
   name: null,
   lastName: null,
   photoURL: null,
+  role: null, // Agregado para almacenar el rol del usuario.
 };
 
 // Sí existe usuario en localStorage, lo cargamos en userData. Hasta que Firebase complete la verificación.
@@ -43,6 +44,7 @@ onAuthStateChanged(auth, (user) => {
         name: profile.name,
         lastName: profile.lastName,
         userName: profile.userName,
+        role: profile.role || "user", // Actualizamos con el rol del perfil, por defecto "user".
       });
     });
   } else {
@@ -52,6 +54,7 @@ onAuthStateChanged(auth, (user) => {
       userName: null,
       name: null,
       lastName: null,
+      role: null,
     });
     localStorage.removeItem("user");
   }
@@ -74,7 +77,11 @@ export async function register({ email, password }) {
       password,
     );
 
-    await createUserProfile(credentials.user.uid, { email });
+    // Creamos el perfil del usuario con el rol "user" por defecto.
+    await createUserProfile(credentials.user.uid, { 
+      email, 
+      role: "user" // Valor por defecto para el nuevo usuario.
+    });
   } catch (error) {
     console.error("[auth.js register] Error al registrar el usuario: ", error);
     throw error;
@@ -89,21 +96,18 @@ export async function register({ email, password }) {
 export async function editMyProfile({ userName, name, lastName }) {
   try {
     // Actualizamos el perfil en Authentication.
-    // auth.currentUser => Retorna el objeto User de Firebase Auth con el usuario autenticado.
     const promiseAuth = updateProfile(auth.currentUser, { userName });
 
     // Actualizamos el perfil del usuario en Firestore.
     const promiseProfile = editUserProfile(userData.id, {
       userName,
       name,
-      lastName
+      lastName,
     });
 
-    // Esperamos a que ambas promesas se completen.
     await Promise.all([promiseAuth, promiseProfile]);
 
-    // Para que los camnames se vean reflejados, actualizamos la info de userData con los
-    // nuevos datos, y notificamos a los observers.
+    // Actualizamos los datos del usuario autenticado.
     updateUserData({
       userName,
       name,
@@ -125,11 +129,9 @@ export async function editMyProfilePhoto(photo) {
       // Subimos el archivo a Storage.
       await uploadFile(filepath, photo);
 
-      // Obtenemos la URL pública desde donde podemos descargar la imagen para poder
-      // grabarla en Authentication y Firestore.
+      // Obtenemos la URL pública para grabarla en Authentication y Firestore.
       const photoURL = await getFileURL(filepath);
 
-      // Grabamos.
       const promiseAuth = updateProfile(auth.currentUser, { photoURL });
       const promiseFirestore = editUserProfile(userData.id, { photoURL });
 
@@ -150,8 +152,6 @@ export async function logout() {
 
 export function subscribeToAuthState(callback) {
   observers.push(callback);
-
-  // console.log('Observer agregado. El stack actual es: ', observers);
 
   // Notificamos inmediatamente al callback del estado actual.
   notify(callback);
