@@ -44,7 +44,7 @@ export async function saveCars({ user_id, email, marca, modelo, año, chasis, mo
       direccion,
       precio,
       accessories: accessories || [],
-      // isValidated:false,
+      isValidated:false,
       isAvailable: true,
       images: photoURLs,
       created_at: serverTimestamp(),
