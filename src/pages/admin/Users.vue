@@ -58,7 +58,9 @@ export default {
           <td class="py-3 px-4">
             <img :src="user.photoURL" alt="Imagen del usuario" class="w-16 h-16 object-cover rounded" />
           </td>
-          <td class="py-3 px-4">{{ user.name }}</td>
+          <td class="py-3 px-4"><router-link :to="`/ProfileOwner/${user.id}`" class="flex items-center gap-2 hover:cursor-pointer">
+            <p class="hover:underline">{{ user.name }}</p>
+          </router-link></td>
           <td class="py-3 px-4">{{ user.email }}</td>
           <td class="py-3 px-4">
             <select v-model="user.role" @change="updateRole(user)" class="hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-md hover:cursor-pointer py-1 px-2">

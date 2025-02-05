@@ -62,12 +62,3 @@ export default {
       </div>
     </div>
   </template>
-  
-  <style scoped>
-  .post {
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-  }
-  </style>

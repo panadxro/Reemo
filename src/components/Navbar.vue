@@ -38,6 +38,9 @@ export default {
 
       <!-- Botones de inicio/cierre de sesión -->
       <div class="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
+
+        <AlertRented v-if="user && user.id"/>
+
         <template v-if="!user.id">
           <router-link
             to="/Login"
@@ -99,7 +102,7 @@ export default {
   </nav>
 
     <!-- ESTE ES EL DE LOS ADMINS -->
-  <nav v-else-if="user.role === 'admin'" class="fixed top-0 z-10 left-0 right-0 shadow-lg bg-gray-300 border-gray-200">
+  <nav v-else-if="user.role === 'admin'" class="fixed top-0 z-10 left-0 right-0 shadow-lg bg-secondary-300 border-gray-200">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <router-link to="/" class="flex items-center space-x-3 rtl:space-x-reverse">
         <span class="self-center text-white text-2xl font-semibold whitespace-nowrap"><Reemo /></span>
@@ -129,6 +132,16 @@ export default {
               active-class="!text-secondary-900 bg-red-700"
             >
               Inicio
+            </router-link>
+          </li>
+          <li>
+            <router-link
+              to="/Publications"
+              class="block py-2 px-3 md:p-0 rounded md:bg-transparent md:text-gray-500 hover:gray-700"
+              aria-current="page"
+              active-class="!text-secondary-900 bg-blue-700"
+            >
+              Vehículos Publicados
             </router-link>
           </li>
           <li>
