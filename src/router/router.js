@@ -9,11 +9,10 @@ import Register from "../pages/Register.vue";
 import Publications from "../pages/Publications.vue";
 import Publish from "../pages/CarPublish.vue";
 import CarDetails from "../pages/CarDetails.vue";
-// import ProfileOwner from "../pages/ProfileOwner.vue";
+import ProfileOwner from "../pages/ProfileOwner.vue";
 import Admin from "../pages/admin/CarsValidation.vue";
-// import CarDetailsAdmin from "../pages/admin/CarDetailsAdmin.vue";
 import Users from "../pages/admin/Users.vue";
-// import PrivateChat from "../pages/PrivateChat.vue";
+import PrivateChat from "../pages/PrivateChat.vue";
 
 const routes = [
   { path: "/", component: Home },
@@ -24,8 +23,8 @@ const routes = [
   { path: "/Publish", component: Publish, meta: { needsAuth: true } },
   { path: "/Profile/Edit", component: ProfileEdit, meta: { needsAuth: true }},
   { path: "/CarDetails/:id", name: "CarDetails", component: CarDetails, props: true, meta: { needsAuth: true } },
-  // { path: "/ProfileOwner/:id", name: "ProfileOwner", component: ProfileOwner, props: true, meta: { needsAuth: true } },
-  // { path: "/ProfileOwner/:id/chat", name: "PrivateChat", component: PrivateChat, props: true, meta: { needsAuth: true } },
+  { path: "/ProfileOwner/:id", name: "ProfileOwner", component: ProfileOwner, props: true, meta: { needsAuth: true } },
+  { path: "/ProfileOwner/:id/chat", name: "PrivateChat", component: PrivateChat, props: true, meta: { needsAuth: true } },
   { path: "/admin/CarsValidation", name: "CarsValidation", component: Admin, meta: { needsAuth: true, role: "admin" } },
   { path: "/admin/Users", name: "Users", component: Users, meta: { needsAuth: true, role: "admin" } },
 ];
