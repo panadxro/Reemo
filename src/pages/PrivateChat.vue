@@ -3,6 +3,7 @@ import { getUserProfileById } from '../services/user-profile';
 import { subscribeToAuthState } from '../services/auth';
 import { savePrivateChatMessage, subscribeToPrivateChatMessages } from '../services/private-chat';
 import { formatDateHour } from '../libraries/date';
+// import { addAlert } from "@/services/alerts";
 
 import Heading from '../components/atoms/Heading.vue';
 import Loading from '@icons/Loading.vue';
@@ -42,6 +43,7 @@ export default {
     },
     methods:{   
         async handleSubmit(){
+            console.log("Hola:", this.ownerUser)
             try {
                 savePrivateChatMessage(
                     this.loggedUser.id,
@@ -50,13 +52,19 @@ export default {
                 )
                 this.newMessage.text = "";
             } catch (error) {
-                
+                console.error("Error al enviar el mensaje:", error);
             }
         },
+        // noSubmit(e) {
+        //     if(this.newMessage.text === ""){
+        //         addAlert("No puedes enviar mensajes vacios", "error");
+        //         e.preventDefault();
+        //     }
+        // },
         formatDateHour(timestamp) {
-      if (!timestamp) return "Fecha no disponible";
-      return formatDateHour(timestamp);
-    }
+            if (!timestamp) return "Enviando...";
+            return formatDateHour(timestamp);
+        }
     },  
     async mounted() {
         unsubscribeAuth = subscribeToAuthState((newUserData) => {
@@ -94,8 +102,8 @@ export default {
     </div>
 
     <div class="flex justify-center items-center gap-4 py-4">
-        <!-- <img :src="ownerUser.photoURL"
-        :alt="`Foto de perfil de ${ownerUser.userName}`" class="w-16 h-16 rounded-full" /> -->
+        <img :src="ownerUser.photoURL"
+        :alt="`Foto de perfil de ${ownerUser.userName}`" class="w-16 h-16 rounded-full" />
     <Heading :type="2" class="mb-4 text-center">{{ownerUser.name}} {{ownerUser.lastName}}</Heading>
     </div>
     
@@ -132,9 +140,15 @@ export default {
                 v-model="newMessage.text"
             ></textarea>
             <button 
-                type="submit"
+                type="submit" 
                 class="transition-all py-2 px-4 rounded bg-blue-700 text-white focus:bg-blue-500 hover:bg-blue-500 active:bg-blue-900"
-            >Enviar</button>
+                :class="{
+                    'opacity-50 cursor-not-allowed': newMessage.text.trim().length === 0
+                }"
+                :disabled="newMessage.text.trim().length === 0"
+                >
+                Enviar
+            </button>
         </form>
 
 </template>

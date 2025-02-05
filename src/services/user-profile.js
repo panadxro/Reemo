@@ -18,6 +18,7 @@ export async function getUserProfileById(id) {
     name: data.name,
     lastName: data.lastName,
     role: data.role, 
+    photoURL: data.photoURL,
   };
 }
 
