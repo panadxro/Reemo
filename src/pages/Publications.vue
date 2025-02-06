@@ -69,7 +69,7 @@ export default {
     <div
       class="max-w-md mx-auto md:max-w-screen-xl m-4 grid justify-items-center gap-4 md:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-4">
       <div v-for="(car, index) in cars" :key="index"
-        class="rounded-2xl shadow-md relative flex relative flex-col shadow-sm w-full overflow-hidden hover:bg-primary-300">
+        class="rounded-2xl flex relative flex-col shadow-sm w-full overflow-hidden hover:bg-primary-300">
         <CardCar :car="car" />
       </div>
     </div>
