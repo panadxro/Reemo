@@ -43,7 +43,6 @@ export default {
     },
     methods:{   
         async handleSubmit(){
-            console.log("Hola:", this.ownerUser)
             try {
                 savePrivateChatMessage(
                     this.loggedUser.id,
@@ -55,12 +54,6 @@ export default {
                 console.error("Error al enviar el mensaje:", error);
             }
         },
-        // noSubmit(e) {
-        //     if(this.newMessage.text === ""){
-        //         addAlert("No puedes enviar mensajes vacios", "error");
-        //         e.preventDefault();
-        //     }
-        // },
         formatDateHour(timestamp) {
             if (!timestamp) return "Enviando...";
             return formatDateHour(timestamp);
@@ -108,47 +101,49 @@ export default {
     </div>
     
     
-    <div class="min-h-[400px] p-4 mb-4 border rounded">
-        <ul class="flex flex-col items-start gap-4">
+    <div class="min-h-[400px] p-4 mb-4 border rounded-lg bg-white shadow-sm">
+        <ul class="flex flex-col items-start gap-4 overflow-y-auto max-h-[400px]">
             <li
                 v-for="message in messages"
                 :key="message.id"
                 :class="{
-                    'bg-gray-200': message.user_id !== loggedUser.id,
-                    'bg-green-200': message.user_id === loggedUser.id,
+                    'bg-gray-100': message.user_id !== loggedUser.id,
+                    'bg-green-100': message.user_id === loggedUser.id,
                     'self-end': message.user_id === loggedUser.id,
                 }"
-                class="p-4 rounded"
+                class="p-4 rounded-lg max-w-[80%] w-auto"
             >
-                <div>{{ message.text }}</div>
-                <div class="text-md text-gray-600">{{ formatDateHour(message.created_at) || 'Enviando...' }}</div>
+                <div class="text-sm text-gray-800">{{ message.text }}</div>
+                <div class="text-xs text-gray-500 mt-1">{{ formatDateHour(message.created_at) || 'Enviando...' }}</div>
             </li>
         </ul>
     </div>
+    
     <form 
-            action="#"
-            class="flex gap-4 items-stretch"
-            @submit.prevent="handleSubmit"
+        action="#"
+        class="flex gap-4 items-stretch mt-4"
+        @submit.prevent="handleSubmit"
+    >
+        <label 
+            for="text"
+            class="sr-only"
+        >Mensaje</label>
+        <textarea
+            id="text"
+            class="w-full min-h-[40px] p-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            v-model="newMessage.text"
+            placeholder="Escribe un mensaje..."
+        ></textarea>
+        <button 
+            type="submit" 
+            class="transition-all py-2 px-6 rounded-lg bg-blue-600 text-white focus:bg-blue-500 hover:bg-blue-500 active:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            :class="{
+                'opacity-50 cursor-not-allowed': newMessage.text.trim().length === 0
+            }"
+            :disabled="newMessage.text.trim().length === 0"
         >
-            <label 
-                for="text"
-                class="sr-only"
-            >Mensaje</label>
-            <textarea
-                id="text"
-                class="w-full min-h-8 p-2 border rounded"
-                v-model="newMessage.text"
-            ></textarea>
-            <button 
-                type="submit" 
-                class="transition-all py-2 px-4 rounded bg-blue-700 text-white focus:bg-blue-500 hover:bg-blue-500 active:bg-blue-900"
-                :class="{
-                    'opacity-50 cursor-not-allowed': newMessage.text.trim().length === 0
-                }"
-                :disabled="newMessage.text.trim().length === 0"
-                >
-                Enviar
-            </button>
-        </form>
+            Enviar
+        </button>
+    </form>
 
 </template>

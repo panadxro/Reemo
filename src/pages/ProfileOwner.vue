@@ -1,5 +1,6 @@
 <script>
-import { getUserById, getPostsByUserId } from "../services/users"; // Importa la función para obtener el usuario
+import { getUserById, getPostsByUserId } from "../services/users"; 
+import { subscribeToAuthState } from "../services/auth.js";
 
 import Loading from "@icons/Loading.vue";
 import CardCar from "../components/my-cars/CardCar.vue";
@@ -13,6 +14,7 @@ export default {
       user: {}, 
       posts: [], 
       loading: true,
+      loggedUser: null,
     };
   },
   async created() {
@@ -23,6 +25,10 @@ export default {
       }
 
       this.posts = await getPostsByUserId(this.id);
+
+      subscribeToAuthState((user) => {
+        this.loggedUser = user;
+      });
     } catch (error) {
       this.errorMsg = error.message; 
       console.error("Error al cargar el perfil:", error);
@@ -45,7 +51,7 @@ export default {
           <img :src="user.photoURL" alt="Foto de perfil" class="w-24 h-24 rounded-full" />
           <p>Email: {{ user.email }}</p>
           <p class="mb-4">Nombre de usuario: {{ user.userName }}</p>
-          <router-link :to="`/ProfileOwner/${user.id}/chat`" class="py-1 px-2 bg-primary-900 text-white rounded-lg ">Enviar Mensaje</router-link>
+          <router-link :to="`/ProfileOwner/${user.id}/chat`" class="py-1 px-2 bg-primary-900 text-white rounded-lg" v-if="loggedUser && loggedUser.id !== user.id">Enviar Mensaje</router-link>
         </div>
   
         <div v-if="posts.length > 0">
