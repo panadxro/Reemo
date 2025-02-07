@@ -57,28 +57,30 @@ export async function isCarAlreadyRented(carId) {
 }
 
 //cambia el estado de la solicitud de alquiler
-export async function updateRentalStatus(reqId, newStatus){
+export async function updateRentalStatus(reqId, newStatus) {
   try {
-    
     const requestRef = doc(db, 'rental_requests', reqId);
-    // await updateDoc(requestRef, {status :newStatus });
-    // console.log(`Se actualizo el status a ${newStatus}`)
-    const updateData = {status: newStatus};
+    const updateData = { status: newStatus };
 
-    // si el nuevo estado es aceptado, actualizamos tambien el campo rented
-    if(newStatus === 'aceptado'){
-      updateData.rented = true;
-    }else{
+    // Si el nuevo estado es "finalizado", marcar el auto como disponible
+    if (newStatus === 'finalizado') {
       updateData.rented = false;
+
+      // Obtener el ID del auto asociado a la solicitud
+      const requestSnap = await getDoc(requestRef);
+      const carId = requestSnap.data().car_id;
+
+      // Actualizar el estado del auto en la colección "cars"
+      const carRef = doc(db, 'cars', carId);
+      await updateDoc(carRef, { rented: false });
     }
 
     await updateDoc(requestRef, updateData);
     console.log(`Se actualizó el estado a ${newStatus} y rented a ${updateData.rented || false}`);
-
   } catch (error) {
-    console.error("Error al actualizar el estado de la solicitud",  error)
-    throw error
-  };
+    console.error("Error al actualizar el estado de la solicitud", error);
+    throw error;
+  }
 }
 
 // envia una solicitud de alquiler
@@ -102,113 +104,94 @@ export async function submitRentalRequest(rentalRequest) {
     }
 }
 
-export function notifyOwner(owner_id, rentalRequest){
+export async function notifyOwner(owner_id, rentalRequest) {
+  try {
+    const userRef = doc(db, 'users', rentalRequest.user_id);
+    const userSnap = await getDoc(userRef);
 
-// agregar la lógica de notificación, por ejemplo, enviando una alerta o mensaje
-  console.log(`Notificación enviada al propietario con ID ${owner_id} sobre la solicitud de alquiler esta en: ${rentalRequest}`);
-  addAlert("¡Solicitud enviada con éxito!", "success");
-  // agregar una llamada a la función `addAlert` o el sistema de noti que tenemos
-
+    if (userSnap.exists()) {
+      const userData = userSnap.data();
+      const message = `Nueva solicitud de alquiler de ${userData.name} para las fechas ${rentalRequest.rented_from} a ${rentalRequest.rented_until}.`;
+      console.log(message);
+      addAlert(message, "success");
+    } else {
+      const message = `El usuario con ID ${rentalRequest.user_id} no fue encontrado`;
+      addAlert(message, "info");
+    }
+  } catch (error) {
+    const message = "Error al notificar al propietario:";
+    addAlert(message, "error");
+  }
 }
 
-
-// export async function fetchRentalRequests(userId, callback) {
-//   try {
-//     if (!userId) {
-//       console.warn("El userId es inválido o no está definido");
-//       return;
-//     }
-
-//     const rentalRequestCollection = collection(db, 'rental_requests');
-//     const q = query(
-//       rentalRequestCollection,
-//       where("owner_id", "==", userId),
-//       where("status", "==", "pendiente")
-//     );
-
-//     onSnapshot(q, async (snapshot) => {
-//       try {
-//         const rentalRequests = await Promise.all(
-//           snapshot.docs.map(async (docSnap) => {
-//             const request = { id: docSnap.id, ...docSnap.data() };
-
-
-//             const userRef = doc(db, 'users', request.user_id);
-//             const userSnap = await getDoc(userRef);
-
-//             if (userSnap.exists()) {
-//               const userData = userSnap.data();
-//               return {
-//                 ...request,
-//                 photoURL: userData.photoURL || null,
-//                 name: userData.name || null,
-//               };
-//             } else {
-//               console.error(`El usuario con ID ${request.user_id} no fue encontrado`);
-//               return request;
-//             }
-//           })
-//         );
-
-//         callback(rentalRequests);
-//       } catch (error) {
-//         console.error("Error procesando las solicitudes de alquiler:", error);
-//       }
-//     });
-//   } catch (error) {
-//     console.error("Error al obtener las solicitudes de alquiler:", error);
-//   }
-// }
-
-
-
-
-export async function fetchRentalRequests(userId){
+export async function fetchRentalRequests(userId, callback) {
   try {
-
-    if (!userId){
-      console.warn("El userId es invalido o no esta definido");
-      return [];
+    if (!userId) {
+      console.warn("El userId es inválido o no está definido");
+      return;
     }
 
     const rentalRequestCollection = collection(db, 'rental_requests');
-    const q =  query(
+    const q = query(
       rentalRequestCollection,
       where("owner_id", "==", userId),
-      where("status", "==", "pendiente")
+      where("status", "in", ["pendiente", "aceptado"]) // Solo cargar solicitudes pendientes o aceptadas
     );
 
-    const rentalRequestSnapshot = await getDocs(q);
-    const rentalRequests = rentalRequestSnapshot.docs
-    .map(doc => ({ id: doc.id, ...doc.data() }))
-    // .filter(request => request.status === "pendiente");
+    // Escuchar cambios en tiempo real
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      try {
+        const rentalRequests = await Promise.all(
+          snapshot.docs.map(async (docSnap) => {
+            const request = { id: docSnap.id, ...docSnap.data() };
 
-    const requestWithOwner = await Promise.all(
-      rentalRequests.map( async request =>{
-        const userRef = doc(db, 'users', request.user_id);
-        const userSnap = await getDoc(userRef);
+            // Verificar si la fecha de devolución ha pasado
+            const rentedUntil = new Date(request.rented_until);
+            const currentDate = new Date();
 
-        // verificamos si existe el usuario en el documento
-        if(userSnap.exists()){
-          const userData = userSnap.data();
-          console.log('datos del usuario que alquila', userData)
-          return{
-            ...request,
-            photoURL: userData.photoURL || null,
-            name: userData.name || null
-          }
-        }else{
-          console.error(`el Usuario con Id ${request.user_id} no fue encontrado`)
-          return request;
-        }
+            if (rentedUntil < currentDate && request.status !== "finalizado") {
+              // Actualizar el estado a "finalizado"
+              await updateRentalStatus(request.id, "finalizado");
+              request.status = "finalizado"; // Actualizar el estado localmente
+            }
 
-      } )
-    );
+            // Obtener datos del usuario que solicita el alquiler
+            const userRef = doc(db, 'users', request.user_id);
+            const userSnap = await getDoc(userRef);
 
-    return requestWithOwner;
+            // Obtener datos del auto que se quiere alquilar
+            const carRef = doc(db, 'cars', request.car_id);
+            const carSnap = await getDoc(carRef);
 
+            if (userSnap.exists() && carSnap.exists()) {
+              const userData = userSnap.data();
+              const carData = carSnap.data();
+              return {
+                ...request,
+                photoURL: userData.photoURL || null,
+                name: userData.name || null,
+                carMarca: carData.marca || "Marca desconocida",
+                carModelo: carData.modelo || "Modelo desconocida",
+                carId: carSnap.id,
+              };
+            } else {
+              console.error(`El usuario o el auto no fueron encontrados`);
+              return request;
+            }
+          })
+        );
+
+        // Llamar al callback con las solicitudes actualizadas
+        callback(rentalRequests);
+      } catch (error) {
+        console.error("Error procesando las solicitudes de alquiler:", error);
+      }
+    });
+
+    // Retornar la función para desuscribirse
+    return unsubscribe;
   } catch (error) {
-    console.error("Error al obtener las solicitudes de alquiler:", error)
+    console.error("Error al obtener las solicitudes de alquiler:", error);
   }
 }
     
