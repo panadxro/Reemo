@@ -9,7 +9,6 @@ import { getUserById } from '../../services/users.js';
 
 import Heading from "@components/atoms/Heading.vue";
 import Loading from "@icons/Loading.vue";
-import Arrow from "@icons/Arrow.vue";
 import Status from "../../components/molecules/Status.vue";
 
 export default {

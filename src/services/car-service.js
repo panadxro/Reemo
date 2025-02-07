@@ -52,21 +52,30 @@ import { collection, doc, getDoc, addDoc, serverTimestamp, query, where, getDocs
     const carsCollection = collection(db, "cars");
     const rentedCollection = collection(db, "rental_requests");
   
-    const carsSnapshot = await getDocs(carsCollection);
-    const rentedSnapshot = await getDocs(rentedCollection);
+    // Consulta para obtener autos disponibles y validados
+    const carsQuery = query(
+      carsCollection,
+      where("isAvailable", "==", true),
+      where("isValidated", "==", true)
+    );
+    const carsSnapshot = await getDocs(carsQuery);
   
-    const rentedCars = rentedSnapshot.docs
-      .filter((doc) => doc.data().rented === true)
-      .map((doc) => doc.data().car_id);
+    // Consulta para obtener solicitudes de alquiler con estado "aceptado"
+    const rentedQuery = query(
+      rentedCollection,
+      where("status", "==", "aceptado")
+    );
+    const rentedSnapshot = await getDocs(rentedQuery);
+  
+    // Obtener los IDs de los autos con solicitudes "aceptado"
+    const rentedCars = rentedSnapshot.docs.map((doc) => doc.data().car_id);
   
     return carsSnapshot.docs
       .map((doc) => ({ id: doc.id, ...doc.data() }))
       .filter(
         (car) =>
           car.user_id !== loggedUserId && // El auto no pertenece al usuario actual
-          !rentedCars.includes(car.id) && // El auto no está rentado
-          car.isAvailable === true && // El auto está disponible
-          car.isValidated === true // El auto está validado por nosotros
+          !rentedCars.includes(car.id) // El auto no tiene una solicitud "aceptado"
       );
   }
   
