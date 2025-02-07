@@ -137,7 +137,7 @@ export async function fetchRentalRequests(userId, callback) {
       where("owner_id", "==", userId),
       where("status", "in", ["pendiente", "aceptado"]) // Solo cargar solicitudes pendientes o aceptadas
     );
-
+    
     // Escuchar cambios en tiempo real
     const unsubscribe = onSnapshot(q, async (snapshot) => {
       try {
@@ -195,3 +195,32 @@ export async function fetchRentalRequests(userId, callback) {
   }
 }
     
+
+
+
+
+
+
+    // onSnapshot(doc(db, 'users', request.user_id), (snapshot) => {
+    //   try {
+    //     const rentalRequests = await Promise.all(
+    //       snapshot.docs.map(async (docSnap) => {
+    //         const request = { id: docSnap.id, ...docSnap.data() };
+
+
+    //         // const userRef = doc(db, 'users', request.user_id);
+    //         // const userSnap = await getDoc(userRef);
+
+    //         if (userSnap.exists()) {
+    //           const userData = userSnap.data();
+    //           return {
+    //             ...request,
+    //             photoURL: userData.photoURL || null,
+    //             name: userData.name || null,
+    //           };
+    //         } else {
+    //           console.error(`El usuario con ID ${request.user_id} no fue encontrado`);
+    //           return request;
+    //         }
+    //       })
+    //     );
