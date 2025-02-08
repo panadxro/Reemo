@@ -244,6 +244,7 @@ export default {
               </li>
             </ul>
 
+            
             <!-- iniciamos el mapa de Google Maps -->
             <p><strong>Direccion:</strong> {{ car.direccion }}</p>
             <div v-if="car.coordenadas" id="map" style="width: 100%; height: 400px; margin-top: 20px;"></div>
