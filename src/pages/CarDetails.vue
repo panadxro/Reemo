@@ -59,7 +59,7 @@ export default {
 
       // Una vez que los datos están listos, inicializa el mapa
       if (this.car.coordenadas) {
-        await this.loadGoogleMaps();
+            await this.loadGoogleMaps();
             this.initMap(this.car.coordenadas);
           }
 
@@ -83,7 +83,7 @@ export default {
     async loadGoogleMaps() {
       const loader = new Loader({
         apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-        libraries: ["places"], // Solo cargamos la librería necesaria
+        libraries: ["places", "geometry"], // 
       });
 
       try {
@@ -113,27 +113,6 @@ export default {
           mapTypeControl: false, // Oculta el botón de "Mapa / Satélite"
           disableDefaultUI: true, // Si lo pones en true desactiva todos los controles (zoom, fullscreen, etc.)
         });
-        map.setOptions({
-          styles: [
-            {
-              featureType: "poi", // Oculta todos los puntos de interés (restaurantes, tiendas, etc.)
-              elementType: "labels",
-              stylers: [{ visibility: "off" }],
-            },
-            {
-              featureType: "transit", // Oculta paradas de transporte público
-              elementType: "labels",
-              stylers: [{ visibility: "off" }],
-            },
-          ],
-        });
-
-        // Agregando un marcador
-        // const marker = new AdvancedMarkerElement({
-        //   map: map,
-        //   position: position,
-        //   title: this.car.direccion,
-        // });
 
         new google.maps.Circle({
           strokeColor: "#5DADE2",
@@ -209,36 +188,22 @@ export default {
                     d="M1 5h12m0 0L9 1m4 4L9 9" />
                 </svg>
               </button>
-              <!-- 
-              <router-link to="/Login" v-if="car.isAvailable && !rented && loggedUser == null">
-              <button
-                type="button"
-                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm mb-3 px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                @click="openModal"
-              >
-                <span>Alquilar 2</span>
-                <svg
-                  class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 14 10"
-                >
-                  <path
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M1 5h12m0 0L9 1m4 4L9 9"
-                  />
-                </svg>
-              </button>
-
-              </router-link> -->
 
               <span
                 class="bg-yellow-100 text-yellow-800 text-base font-medium me-2 px-2.5 py-0.5 rounded border border-yellow-400"
                 v-if="!car.isAvailable">El auto fue deshabilitado temporalmente</span>
+            </div>
+
+            <!-- Perfil del usuario -->
+            <div v-if="car.user_id !== loggedUser?.id" class="flex items-center gap-2">
+              <router-link :to="`/ProfileOwner/${car.user_id}`" class="flex items-center gap-2 hover:cursor-pointer">
+                <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
+                <p class="py-6 hover:underline">{{ car.user.name }} {{ car.user.lastName }}</p>
+              </router-link>
+            </div>
+            <div v-else class="flex items-center gap-2">
+              <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
+              <p class="py-6">{{ car.user.name }} {{ car.user.lastName }}</p>
             </div>
 
             <p class="mb-3 text-gray-500 break-words">
