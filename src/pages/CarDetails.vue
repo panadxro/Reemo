@@ -245,14 +245,15 @@ export default {
             </ul>
 
             
+
             <!-- iniciamos el mapa de Google Maps -->
             <p><strong>Direccion:</strong> {{ car.direccion }}</p>
             <div v-if="car.coordenadas" id="map" style="width: 100%; height: 400px; margin-top: 20px;"></div>
-            <p v-else>Cargando mapa...</p>
+            <p v-else>Cargando mapa..</p>
 
             <hr class="my-3 md:my-4 border-gray-200" />
             <Heading :type="2">Accesorios</Heading>
-            <div class="flex flex-wrap gap-2 text-gray-800">
+            <div class="flex flex-wrap gap-2 text-gray-700">
               <div v-for="(accessory, index) in car.accessories" :key="index">
                 <Pill :accessory="accessory.id" :name="accessory.name" />
               </div>
