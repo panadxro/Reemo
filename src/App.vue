@@ -4,6 +4,7 @@ import { logout, subscribeToAuthState } from "./services/auth";
 import Navbar from "./components/Navbar.vue";
 import FooterLayout from "./components/Footer.vue";
 import Alert from "./components/atoms/Alert.vue";
+import Sidebar from "./components/Sidebar.vue";
 
 export default {
   name: "App",
@@ -11,6 +12,7 @@ export default {
     Navbar,
     FooterLayout,
     Alert,
+    Sidebar,
   },
   data() {
     return {
@@ -41,9 +43,14 @@ export default {
 </script>
 
 <template>
-  <Navbar :user="loggedUser" @logout="handleLogout" />
+  <!-- <Navbar :user="loggedUser" @logout="handleLogout" /> -->
 
-  <main class="flex flex-col min-h-screen mt-20 mx-auto">
+  <main v-if="$route.path === '/'" class="flex flex-col min-h-screen mt-20 mx-auto">
+    <router-view />
+  </main>
+
+  <main v-else class="flex flex-row min-h-screen max-h-screen p-2.5">
+    <Sidebar :user="loggedUser" />
     <router-view />
   </main>
   <Alert />
@@ -76,7 +83,6 @@ html {
 
   ul {
     list-style: none;
-    margin: 0;
     padding: 0;
   }
 

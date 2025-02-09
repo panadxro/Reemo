@@ -56,8 +56,8 @@ export default {
   
         <div v-if="posts.length > 0">
           <h2>Publicaciones</h2>
-          <div class="max-w-md mx-auto md:max-w-screen-xl m-4 grid justify-items-center gap-4 md:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-4">
-            <div v-for="post in posts" :key="post.id" class="post rounded-2xl flex relative flex-col shadow-sm w-full overflow-hidden hover:bg-primary-300">
+          <div class="max-w-md mx-auto md:max-w-(--breakpoint-xl) m-4 grid justify-items-center gap-4 md:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-4">
+            <div v-for="post in posts" :key="post.id" class="post rounded-2xl flex relative flex-col shadow-xs w-full overflow-hidden hover:bg-primary-300">
                 <CardCar :car="post" />
               </div>
           </div>

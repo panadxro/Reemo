@@ -43,7 +43,7 @@ export default {
 <template>
     <Heading :type="2" class="m-6 text-center">Usuarios</Heading>
 
-    <div class="max-w-md mx-auto md:max-w-screen-xl m-4">
+    <div class="max-w-md mx-auto md:max-w-(--breakpoint-xl) m-4">
     <table class="min-w-full bg-white">
       <thead>
         <tr>
@@ -56,14 +56,14 @@ export default {
       <tbody>
         <tr v-for="user in users" :key="user.id">
           <td class="py-3 px-4">
-            <img :src="user.photoURL" alt="Imagen del usuario" class="w-16 h-16 object-cover rounded" />
+            <img :src="user.photoURL" alt="Imagen del usuario" class="w-16 h-16 object-cover rounded-sm" />
           </td>
           <td class="py-3 px-4"><router-link :to="`/ProfileOwner/${user.id}`" class="flex items-center gap-2 hover:cursor-pointer">
             <p class="hover:underline">{{ user.name }}</p>
           </router-link></td>
           <td class="py-3 px-4">{{ user.email }}</td>
           <td class="py-3 px-4">
-            <select v-model="user.role" @change="updateRole(user)" class="hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-md hover:cursor-pointer py-1 px-2">
+            <select v-model="user.role" @change="updateRole(user)" class="hover:bg-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-md hover:cursor-pointer py-1 px-2">
               <option value="admin" class="hover:cursor-pointer">Admin</option>
               <option value="user" class="hover:cursor-pointer">User</option>
             </select>

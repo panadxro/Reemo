@@ -88,7 +88,7 @@ export default {
   </div>
   <div v-if="car">
     <section class="py-8 bg-white md:py-16 antialiased">
-      <div class="max-w-screen-xl px-4 mx-auto 2xl:px-0">
+      <div class="max-w-(--breakpoint-xl) px-4 mx-auto 2xl:px-0">
         <div class="lg:grid lg:grid-cols-2 lg:gap-8 xl:gap-16">
           <div class="car-details">
             <!-- Imagen principal del carrusel -->
@@ -108,7 +108,7 @@ export default {
             <div class="mt-4 sm:items-center sm:gap-4 sm:flex">
               <Heading :type="2">${{ car.precio }} /día</Heading>
               <button type="button"
-              class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm mb-3 px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+              class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-lg text-sm mb-3 px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
               v-if="!rented && car.user_id !== loggedUser?.id && car.isAvailable && loggedUser.role == 'user'" @click="openModal">
               <span>Alquilar</span>
               <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
@@ -120,7 +120,7 @@ export default {
           
           
           <span
-          class="bg-yellow-100 text-yellow-800 text-base font-medium me-2 px-2.5 py-0.5 rounded border border-yellow-400"
+          class="bg-yellow-100 text-yellow-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-yellow-400"
           v-if="!car.isAvailable">El auto fue deshabilitado temporalmente</span>
         </div>
                 
@@ -188,10 +188,10 @@ export default {
             <ModalRent ref="ModalRent" :car="car" :loggedUser="loggedUser" :rented="car.rented" />
 
             <span v-if="rented && car.user_id !== loggedUser?.id"
-              class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded border border-red-400">Este
+              class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">Este
               auto ya esta alquilado</span>
             <span v-if="rented && car.user_id == loggedUser?.id"
-              class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded border border-red-400">Tu
+              class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">Tu
               auto ya esta alquilado</span>
           </div>
         </div>
