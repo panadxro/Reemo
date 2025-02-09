@@ -9,9 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fawmi/vue-google-maps": "^0.9.79",
+    "@googlemaps/js-api-loader": "^1.16.8",
     "firebase": "^10.14.0",
     "vue": "^3.4.37",
-    "vue-router": "^4.4.5"
+    "vue-router": "^4.4.5",
+    "vue2-google-maps": "^0.10.7"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.2",
