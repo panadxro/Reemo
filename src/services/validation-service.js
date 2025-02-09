@@ -71,7 +71,7 @@ export function validateStep1(newCar, errors) {
       errors.direccion = "La dirección debe tener al menos 6 caracteres";
     } else if (newCar.direccion.length > 200) {
       errors.direccion = "La dirección no puede tener más de 200 caracteres";
-    } else if (!/^[\w\s.,#-]+$/.test(newCar.direccion)) {
+    } else if (!/^[\w\s.,#-áéíóúñÁÉÍÓÚÑ]+$/.test(newCar.direccion)) {
       errors.direccion = "La dirección contiene caracteres no permitidos";
     } else if (!/\d/.test(newCar.direccion)) {
       errors.direccion = "La dirección debe contener al menos un número";
