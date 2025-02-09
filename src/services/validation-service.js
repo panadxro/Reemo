@@ -1,23 +1,26 @@
 export function validateStep1(newCar, errors) {
     // Validación para "marca" con los respectivos mensajes de cada erorr
+    // if (!newCar.marca) {
+    //   // Si no hay ningún valor en marca, entra en este if y asigna un mensaje de error a errors.marca - Que después lo llamamos debajo del input en rojo
+    //   errors.marca = "El campo marca no puede estar vacío";
+    // } else if (newCar.marca.length < 3) {
+    //   // Si marca tiene valor pero tiene menos de tres letras, entra en este if y asigna un mensaje de error a errors.marca. Que después lo llamamos debajo del input en rojo
+    //   errors.marca = "La marca debe tener al menos 3 letras";
+    // } else {
+    //   // Como no hay ningún error, se asigna null a errors.marca, lo que significa que no hay ningún error para este campo.
+    //   errors.marca = null;
+    // }
+
     if (!newCar.marca) {
-      // Si no hay ningún valor en marca, entra en este if y asigna un mensaje de error a errors.marca - Que después lo llamamos debajo del input en rojo
-      errors.marca = "El campo marca no puede estar vacío";
-    } else if (newCar.marca.length < 3) {
-      // Si marca tiene valor pero tiene menos de tres letras, entra en este if y asigna un mensaje de error a errors.marca. Que después lo llamamos debajo del input en rojo
-      errors.marca = "La marca debe tener al menos 3 letras";
+      errors.marca = "Debe seleccionar una marca";
     } else {
-      // Como no hay ningún error, se asigna null a errors.marca, lo que significa que no hay ningún error para este campo.
       errors.marca = null;
     }
 
     // SE REPITEN VALIDACIONES DE MARCA ⬇️⬇️⬇️⬇️⬇️⬇️
 
-    // Validación para "modelo" con los respectivos mensajes de cada erorr
     if (!newCar.modelo) {
-      errors.modelo = "El campo modelo no puede estar vacío";
-    } else if (newCar.modelo.length < 2) {
-      errors.modelo = "El modelo debe tener al menos 2 letras";
+      errors.modelo = "Debe seleccionar un modelo";
     } else {
       errors.modelo = null;
     }

@@ -19,6 +19,22 @@ export default {
       selectedFiles: [null, null, null, null],
       photoPreview: ["", "", "", ""],
       cars: [],
+      marcas: {
+        Toyota: ["Corolla", "Camry", "RAV4", "Hilux", "Yaris", "Tacoma", "Land Cruiser", "Prius", "Fortuner"],
+        Ford: ["Mustang", "Fiesta", "Focus", "Ranger", "Explorer", "Escape", "Bronco", "Edge", "F-150"],
+        Chevrolet: ["Cruze", "Spark", "Onix", "Tracker", "Silverado", "Equinox", "Suburban", "Traverse", "Camaro"],
+        Volkswagen: ["Gol", "Vento", "Tiguan", "Amarok", "Passat", "Polo", "Golf", "T-Cross", "Taos"],
+        Renault: ["Kwid", "Logan", "Sandero", "Duster", "Koleos", "Megane", "Captur", "Alaskan"],
+        Nissan: ["Versa", "Sentra", "Altima", "Frontier", "Kicks", "Murano", "Pathfinder", "X-Trail", "370Z"],
+        Peugeot: ["208", "2008", "3008", "5008", "308", "408", "Rifter", "Traveller"],
+        Fiat: ["Mobi", "Argo", "Cronos", "Toro", "Punto", "Uno", "Fiorino", "Ducato"],
+        "Mercedes-Benz": ["A-Class", "C-Class", "E-Class", "GLA", "GLC", "GLE", "GLS", "S-Class", "Sprinter"],
+        Honda: ["Civic", "Accord", "CR-V", "HR-V", "Fit", "Pilot", "City", "Odyssey"],
+        Hyundai: ["Accent", "Elantra", "Santa Fe", "Tucson", "Palisade", "Creta", "Kona", "Venue", "Sonata"]
+      },
+      sortedMarcas: {},
+      selectedMarca: "",
+      selectedModelo: "",
       accessories: [
         { id: 'bt', name: 'Bluetooth' },
         { id: 'gps', name: 'GPS' },
@@ -109,6 +125,15 @@ export default {
       return validateStep4(this.selectedFiles, this.errors);
     },
 
+    sortMarcasAndModelos() {
+      const sorted = {};
+      const sortedKeys = Object.keys(this.marcas).sort();
+      sortedKeys.forEach((key) => {
+        sorted[key] = [...this.marcas[key]].sort();
+      });
+      this.sortedMarcas = sorted;
+    },
+
     nextStep() {
       // Hacemos la validación antes de pasar al siguiente paso
       if (this.step === 1 && !this.validateStep1()) return;
@@ -190,6 +215,17 @@ export default {
       (newUserData) => (this.loggedUser = newUserData)
     );
   },
+  watch: {
+  selectedMarca(newMarca) {
+    this.newCar.marca = newMarca;
+  },
+  selectedModelo(newModelo) {
+    this.newCar.modelo = newModelo;
+  },
+},
+created() {
+    this.sortMarcasAndModelos();
+  },
   unmounted() {
     unsubscribeAuth();
   },
@@ -209,29 +245,48 @@ export default {
 
     <section v-if="step === 1">
       <div class="relative w-full group mb-10">
-        <input type="text" name="marca" id="marca" v-model="newCar.marca" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 peer',
-          errors.marca ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"
-          placeholder=" " />
-
-        <!-- Párrafo para mostrar el mensaje de error -->
+        <select
+          v-model="selectedMarca"
+          @change="selectedModelo = ''"
+          :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 peer', errors.marca ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"
+        >
+          <option value="" disabled>Seleccione una marca</option>
+          <option v-for="(marca, index) in Object.keys(sortedMarcas)" :key="index" :value="marca">
+            {{ marca }}
+          </option>
+        </select>
         <p v-if="errors.marca" class="text-red-500 text-xs italic mt-2">{{ errors.marca }}</p>
-
-        <label for="marca"
-          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">
+        <label
+          for="marca"
+          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white"
+        >
           Marca
         </label>
       </div>
+    
+      <!-- Campo de modelo -->
+      <div class="relative w-full group mb-10">
+        <select
+          v-model="selectedModelo" :disabled="!selectedMarca" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 peer',
+            errors.modelo ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600',
+            !selectedMarca ? 'bg-gray-100 cursor-not-allowed' : ''
+          ]"
+        >
+  <option value="" disabled>Seleccione un modelo</option>
+  <option v-for="(modelo, index) in sortedMarcas[selectedMarca]" :key="index" :value="modelo">
+    {{ modelo }}
+  </option>
+</select>
 
-      <div class="relative w-full  group mb-10">
-        <input type="text" name="modelo" id="modelo" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 focus:border-[3px] peer',
-          errors.modelo ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"
-          placeholder=" " v-model="newCar.modelo" />
-
-        <!-- Parrafo para mostrar el mensaje de error -->
         <p v-if="errors.modelo" class="text-red-500 text-xs italic mt-2">{{ errors.modelo }}</p>
-        <label for="modelo"
-          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Modelo</label>
+        <label
+          for="modelo"
+          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white"
+        >
+          Modelo
+        </label>
       </div>
+      
       <div class="relative w-full  group mb-10">
         <input type="number" name="motor" id="año" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 focus:border-[3px] peer',
           errors.año ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']" placeholder=" "
