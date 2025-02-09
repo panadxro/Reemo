@@ -116,7 +116,7 @@ export default {
           <LongArrow/>
         </a>
       </article>
-      <article class="bg-gradient-to-r to-secondary-300 from-secondary-100 pl-9 py-11 flex flex-col gap-16 rounded-[40px] w-full group relative">
+      <article class="bg-linear-to-r to-secondary-300 from-secondary-100 pl-9 py-11 flex flex-col gap-16 rounded-[40px] w-full group relative">
         <div class="flex flex-col gap-4 w-96">
           <Heading :type="3">Alquilá un auto</Heading>
           <p class="text-lg font-regular leading-tight text-slate-600">Conseguí un vehículo que se adapte a vos y comenzá a disfrutarlo.</p>
@@ -257,7 +257,7 @@ export default {
     </a>
   </section>
   <section>
-    <article class="bg-gradient-to-r to-primary-900 from-secondary-900 px-9 py-11 w-full rounded-[40px] shadow-custom flex flex-col items-center text-white overflow-hidden gap-4">
+    <article class="bg-linear-to-r to-primary-900 from-secondary-900 px-9 py-11 w-full rounded-[40px] shadow-custom flex flex-col items-center text-white overflow-hidden gap-4">
       <Experience class="-mt-20"/>
       <Heading :type="3" class="text-white">¿Qué esperás para vivir la experiencia Reemo?</Heading>
       <p>Descargá la app y empezá a alquilar o rentar autos en minutos.</p>

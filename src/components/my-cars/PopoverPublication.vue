@@ -33,14 +33,14 @@ export default {
 </script>
 
 <template>
-  <div v-if="isOwner" class="absolute right-4 top-4 flex items-end flex-col z-5">
-    <button @click="togglePopover" type="button" class="flex w-fit justify-end bg-primary-400/50 rounded-full p-2">
+  <div v-if="isOwner" class="flex items-end flex-col z-5 relative">
+    <button @click="togglePopover" type="button" class="flex w-fit justify-end rounded-full p-2">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256"><path fill="currentColor" d="M112 60a16 16 0 1 1 16 16a16 16 0 0 1-16-16m16 52a16 16 0 1 0 16 16a16 16 0 0 0-16-16m0 68a16 16 0 1 0 16 16a16 16 0 0 0-16-16"/></svg>
     </button>
     <div
       v-if="isVisible"
       ref="popover"
-      class="z-50 w-64 mt-2 text-sm text-gray-500 bg-white border border-gray-200 rounded-lg shadow-lg dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800"
+      class="absolute z-50 t-100 w-64 mt-2 text-sm text-gray-500 bg-white border border-gray-200 rounded-lg shadow-lg dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800"
     >
       <div class="px-3 py-2 bg-gray-100 border-b border-gray-200 rounded-t-lg dark:border-gray-600 dark:bg-gray-700">
         <h3 class="font-semibold text-gray-900 dark:text-white">Acciones</h3>

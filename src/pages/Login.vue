@@ -72,13 +72,13 @@ export default {
         type="email"
         id="email"
         placeholder=" "
-        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-hidden focus:ring-0 focus:border-blue-600 peer"
         v-model="user.email"
         name="email"
       />
       <label
         for="email"
-        class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+        class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:rtl:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
         >Email</label
       >
     </div>
@@ -87,26 +87,26 @@ export default {
         type="password"
         id="password"
         placeholder=" "
-        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+        class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-hidden focus:ring-0 focus:border-blue-600 peer"
         v-model="user.password"
         name="password"
       />
       <label
         for="password"
-        class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+        class="peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:rtl:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
         >Contraseña</label
       >
     </div>
     <button
       type="submit"
-      class="transition-all py-2 px-4 rounded bg-blue-700 text-white focus:bg-blue-500 hover:bg-blue-500 active:bg-blue-900"
+      class="transition-all py-2 px-4 rounded-sm bg-blue-700 text-white focus:bg-blue-500 hover:bg-blue-500 active:bg-blue-900"
     >
       Ingresar
     </button>
     <p class="mt-8 mb-3">¿No tenés cuenta?</p>
     <router-link
       to="/Register"
-      class="transition-all py-2 px-4 rounded bg-yellow-700 text-white focus:bg-blue-500 hover:bg-blue-500 active:bg-blue-900"
+      class="transition-all py-2 px-4 rounded-sm bg-yellow-700 text-white focus:bg-blue-500 hover:bg-blue-500 active:bg-blue-900"
       >Crear Cuenta</router-link
     >
   </form> -->

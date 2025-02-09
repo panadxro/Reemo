@@ -101,7 +101,7 @@ export default {
     </div>
     
     
-    <div class="min-h-[400px] p-4 mb-4 border rounded-lg bg-white shadow-sm">
+    <div class="min-h-[400px] p-4 mb-4 border rounded-lg bg-white shadow-xs">
         <ul class="flex flex-col items-start gap-4 overflow-y-auto max-h-[400px]">
             <li
                 v-for="message in messages"
@@ -130,7 +130,7 @@ export default {
         >Mensaje</label>
         <textarea
             id="text"
-            class="w-full min-h-[40px] p-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full min-h-[40px] p-2 border rounded-lg resize-none focus:outline-hidden focus:ring-2 focus:ring-blue-500"
             v-model="newMessage.text"
             placeholder="Escribe un mensaje..."
         ></textarea>

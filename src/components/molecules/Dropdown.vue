@@ -40,7 +40,7 @@ export default {
   <component :is="tag" class="dropdown">
     <button
       type="button"
-      class="flex items-center justify-between w-full text-left font-bold outline-none"
+      class="flex items-center justify-between w-full text-left font-bold outline-hidden"
       @click="toggleDropdown"
     >
       <slot name="title"></slot>
@@ -51,7 +51,7 @@ export default {
       :style="{
         maxHeight: isOpen ? contentHeight + 'px' : '0px',
         opacity: isOpen ? 1 : 0,
-        overflow: 'hidden',
+        overflow: 'none',
       }"
       class="dropdown-content"
     >

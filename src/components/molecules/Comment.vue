@@ -125,7 +125,7 @@ export default {
             v-model="newComment.text"
             id="message"
             rows="6"
-            class="px-0 w-full text-sm text-gray-900 border-0 resize-none focus:ring-0 focus:outline-none"
+            class="px-0 w-full text-sm text-gray-900 border-0 resize-none focus:ring-0 focus:outline-hidden"
             placeholder="Escribir un comentario..."
             required
           ></textarea>

@@ -78,9 +78,9 @@ export default {
             <AddImg />
             <span class="sr-only">Seleccionar foto</span>
           </label>
-          <input type="file" id="photoURL" class="bg-green-500 text-white px-4 py-2 rounded hidden"
+          <input type="file" id="photoURL" class="bg-green-500 text-white px-4 py-2 rounded-sm hidden"
             @change="handleFileSelection">
-          <!--             <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded"
+          <!--             <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-sm"
             >
               {{ !editing ? 'Actualizar Foto' : 'Actualizando...' }}
             </button> -->

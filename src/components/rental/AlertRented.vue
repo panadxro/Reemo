@@ -80,7 +80,7 @@ export default {
   </button>
 
   <!-- Dropdown de notificaciones -->
-  <div class="hidden z-50 my-4 max-w-sm max-h-80 text-base list-none bg-white rounded divide-y divide-gray-100 shadow-lg" id="notification-dropdown">
+  <div class="hidden z-50 my-4 max-w-sm max-h-80 text-base list-none bg-white rounded-sm divide-y divide-gray-100 shadow-lg" id="notification-dropdown">
     <div class="block py-2 px-4 text-base font-medium text-center text-gray-700 bg-gray-50">
       Notificaciones
     </div>
@@ -88,7 +88,7 @@ export default {
     <!-- Lista de solicitudes pendientes -->
     <div v-if="pendingRequests.length >= 1 && isVisible" class="overflow-y-scroll max-h-60">
       <div v-for="request in pendingRequests" :key="request.id" class="border p-4 mb-4">
-        <div class="inline-flex items-center justify-center flex-shrink-0 w-12 h-12 rounded-lg">
+        <div class="inline-flex items-center justify-center shrink-0 w-12 h-12 rounded-lg">
           <img class="w-12 h-12 rounded-full" :src="request.photoURL" alt="Avatar del usuario">
         </div>
         <div class="ms-3 text-sm font-normal">
@@ -103,11 +103,11 @@ export default {
           <div class="grid grid-cols-2 gap-2">
             <div>
               <a @click="acceptRequest(request.id)"
-                class="cursor-pointer inline-flex justify-center w-full px-2 py-1.5 text-xs font-medium text-center text-white bg-secondary-900 rounded-lg hover:bg-secondary-500 focus:ring-4 focus:outline-none focus:ring-secondary-300">Aceptar</a>
+                class="cursor-pointer inline-flex justify-center w-full px-2 py-1.5 text-xs font-medium text-center text-white bg-secondary-900 rounded-lg hover:bg-secondary-500 focus:ring-4 focus:outline-hidden focus:ring-secondary-300">Aceptar</a>
             </div>
             <div>
               <a @click="rejectRequest(request.id)"
-                class="cursor-pointer inline-flex justify-center w-full px-2 py-1.5 text-xs font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200">Rechazar</a>
+                class="cursor-pointer inline-flex justify-center w-full px-2 py-1.5 text-xs font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-hidden focus:ring-gray-200">Rechazar</a>
             </div>
           </div>
         </div>

@@ -118,7 +118,7 @@ export default {
     </button>
   </div>
 
-  <div class="max-w-md mx-auto md:max-w-screen-xl m-4">
+  <div class="max-w-md mx-auto md:max-w-(--breakpoint-xl) m-4">
     <table class="min-w-full bg-white">
       <thead>
         <tr>
@@ -135,7 +135,7 @@ export default {
         <tr v-for="(car, index) in carsFiltrados" :key="index" class="text-center">
           <td class="py-3 px-4 flex gap-4">
             <div>
-              <img :src="car.images[0]" alt="Imagen del auto" class="w-16 h-16 object-cover rounded" />
+              <img :src="car.images[0]" alt="Imagen del auto" class="w-16 h-16 object-cover rounded-sm" />
             </div>
             <div>
               <p class="text-lg font-semibold">{{ car.marca }}</p>
