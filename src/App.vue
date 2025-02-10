@@ -43,7 +43,7 @@ export default {
 </script>
 
 <template>
-  <!-- <Navbar :user="loggedUser" @logout="handleLogout" /> -->
+  <Navbar :user="loggedUser" @logout="handleLogout" />
 
   <main v-if="$route.path === '/'" class="flex flex-col min-h-screen mt-20 mx-auto">
     <router-view />
@@ -116,13 +116,13 @@ html {
     width: 16px;
     margin: 8px;
   }
-  ::-webkit-scrollbar-track {
+/*   ::-webkit-scrollbar-track {
     background: #f1f1f1;
-  }
+  } */
   ::-webkit-scrollbar-thumb {
     background: #a7ebef;
     border-radius: 16px;
-    box-shadow: inset 0 0 0 3px #f1f1f1;
+    box-shadow: inset 0 0 0 3px #ffffff;
   }
   ::-webkit-scrollbar-thumb:hover {
     background: #4fd8df;

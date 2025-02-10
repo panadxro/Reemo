@@ -39,7 +39,7 @@ export default {
       <!-- Botones de inicio/cierre de sesión -->
       <div class="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
 
-        <AlertRented v-if="user && user.id"/>
+        <!-- <AlertRented v-if="user && user.id"/> -->
 
         <template v-if="!user.id">
           <router-link

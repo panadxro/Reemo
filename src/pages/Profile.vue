@@ -8,12 +8,13 @@ import CardCar from "@components/my-cars/CardCar.vue";
 import User from "@components/user/User.vue";
 import RentedCar from "@components/rental/RentedCar.vue";
 import Loading from "@icons/Loading.vue";
+import MyCars from "@components/my-cars/MyCars.vue";
 
 let unsubscribeAuth = () => { };
 
 export default {
   name: "MyProfile",
-  components: { Heading, CardCar, User, RentedCar, Loading },
+  components: { Heading, CardCar, User, RentedCar, Loading, MyCars },
   data() {
     return {
       cars: [],
@@ -82,7 +83,7 @@ export default {
 
 <template class="p-2.5 flex flex-col items-center">
   <User :user="loggedUser" />
-  <section class="parent m-2.5 max-h-vh">
+  <section class="parent m-2.5 w-full max-h-vh">
     <div class="flex profile flex-col">
       <Heading :type="1">Mi perfil</Heading>
       <article class="bg-secondary-100">
@@ -105,7 +106,7 @@ export default {
         
         class="flex flex-col gap-5"
         >
-        <CardCar v-for="car in cars" 
+        <MyCars v-for="car in cars" 
         :key="car.id" :car="car" />
       </div>
     </div>

@@ -58,17 +58,17 @@ export default {
 </script>
 
 <template class="p-2.5 flex flex-col items-center">
-  <div class="bg-secondary-100 m-2.5 min-w-96">
+  <div class="bg-secondary-100 m-2.5 min-w-[368px] py-10 px-5">
     <Heading :type="1" class="m-6 text-center">Filtros</Heading>
 
   </div>
-  <section class="m-2.5 flex flex-col">
-    <div class="flex">
-      <Heading :type="1" class="m-6 text-center">Autos disponibles</Heading>
-
-      <template v-if="loggedUser.id == null">
-        <router-link to="/Login"
-          class="gap-4 md:flex z-50 items-center justify-center bottom-0 right-0 m-8 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
+  <section class="m-2.5 flex flex-col w-full overflow-hidden">
+    <div class="flex justify-between items-center">
+    <Heading :type="1" class="m-6 text-center">Autos disponibles</Heading>
+    
+    <template v-if="loggedUser.id == null">
+      <router-link to="/Login"
+      class="gap-4 md:flex z-50 items-center justify-center bottom-0 right-0 m-8 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
           <span class="hidden md:block">Publicar Vehículo</span>
           <AddIcon />
         </router-link>
@@ -82,18 +82,22 @@ export default {
         </router-link>
       </template>
     </div>
-
-    <div class="max-w-md mx-auto md:max-w-(--breakpoint-xl) m-4 grid justify-items-center gap-4 md:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-4">
-      <div v-if="loading" class="flex items-center justify-center w-fit mx-auto bg-gray-50">
+    
+    <div v-if="loading" class="flex items-center justify-center w-fit mx-auto bg-gray-50">
       <Loading role="status" />
-        <span class="sr-only">Cargando...</span>
-      </div>
-      <div v-for="(car, index) in cars" :key="index"
-        class="rounded-2xl flex relative flex-col shadow-xs w-full overflow-hidden hover:bg-primary-300">
+      <span class="sr-only">Cargando...</span>
+    </div>
+    <div v-else class="overflow-y-scroll">
+      <div  class="grid justify-items-center gap-3 grid-cols-2">
+        <div 
+          v-for="(car, index) in cars" 
+          :key="index"
+          class="rounded-2xl flex relative flex-col shadow-xs w-full overflow-hidden"
+          >
         <CardCar :car="car" />
       </div>
     </div>
-
+  </div>
 
   </section>
 </template>
