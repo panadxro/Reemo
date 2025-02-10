@@ -9,7 +9,6 @@ import Chasis from '@icons/Chasis.vue';
 import Transmition from '@icons/Transmition.vue';
 import defaultCarImage from '@assets/Car-Img.png';
 import PopoverPublication from './PopoverPublication.vue';
-import Home from '@icons/Home.vue';
 
 let unsubscribeAuth = () => { };
 
@@ -24,7 +23,7 @@ export default {
       };
     },
     name: 'CardCar',
-    components: { Heading, Arrow, Transmition, Chasis, PopoverPublication, Home },
+    components: { Heading, Arrow, Transmition, Chasis, PopoverPublication },
     props: {
       car: {
         type: Object,
@@ -94,30 +93,41 @@ async handleToggleAvailability(carId) {
 </script>
 
 <template>
-  <div class="flex flex-col border-2 rounded-3xl border-secondary-100 p-4">
-    <div class="flex flex-row justify-between">
-      <div class="flex flex-row gap-2">
-        <span class="bg-secondary-100 py-2 px-4 rounded-xl">Nuevo</span>
-        <span class="bg-secondary-100 py-2 px-4 rounded-xl">Nuevo</span>
-      </div>
-      <Home />
-    </div>
-    <div class="flex justify-end">
-      <figure class="aspect-[21/9] h-24 overflow-hidden "> 
-        <img
+  <div class="flex flex-row border-2 rounded-3xl border-secondary-100 gap-2.5 px-3 py-4">
+    <figure class="aspect-3/2 h-16 overflow-hidden "> 
+      <img
         class="rounded-xl object-center object-cover w-full h-full"
         :src="car.images && car.images.length > 0 ? car.images[0] : defaultCarImage" 
         @error="setDefaultImage"
         :alt="car.marca + ' ' + car.modelo" 
-        />
-      </figure>
-    </div>
-    <div class="flex flex-1 flex-row justify-between items-end">
+      />
+    </figure>
+    <div class="flex flex-1 flex-row justify-between items-center">
       <article class="flex flex-col align-end justify-between">
         <p class="text-sm text-gray-500">{{ car.marca }}</p>
-        <Heading :type="4">{{ car.modelo }}</Heading>
+        <Heading :type="3">{{ car.modelo }}</Heading>
       </article>
-      <Heading :type="4">${{ car.precio }}</Heading>
+      <div class="flex flex-row items-center gap-2">
+        <span class="bg-secondary-100 py-2 px-4 rounded-xl">Disponible</span>
+        <PopoverPublication
+        :isOwner="car.user_id === loggedUser.id"
+        :isAvailable="car.isAvailable"
+        :loading="loading"
+        :onDelete="() => handleDelete(car.id)"
+        :onToggleAvailability="() => handleToggleAvailability(car.id)"
+        />
+      </div>
     </div>
   </div>
 </template>
+
+<!--       <div class="mt-4 flex flex-col items-center gap-4">
+        <button 
+          @click="goToCarDetails(car.id)" 
+          type="button" 
+          class="w-full flex justify-between items-center rounded-xl bg-secondary-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-secondary-800 focus:outline-hidden focus:text-secondary-900 focus:ring-4 focus:ring-secondary-900  focus:bg-white"
+        >
+          <span>Ver Detalles</span>
+          <Arrow direction="right" class="hover:text-secondary-900"/>
+        </button>        
+      </div> -->

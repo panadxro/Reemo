@@ -2,11 +2,14 @@
 import { subscribeToAuthState } from "../../services/auth.js";
 import { updateRentalStatus, fetchRentalRequests } from '../../services/rentedCarService.js';
 
+import Notification from '@icons/Notification.vue';
+
 let unsubscribeAuth = () => { };
 let unsubscribeRequests = () => { }; 
 
 export default {
   name: "AlertRented",
+  components: { Notification },
   data() {
     return {
       loggedUser: {},
@@ -67,12 +70,9 @@ export default {
 
 <template>
   <!-- Botón de notificaciones -->
-  <button type="button" data-dropdown-toggle="notification-dropdown" class="p-2 mr-10 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-gray-100">
-    <span class="sr-only">View notifications</span>
+  <button type="button" data-dropdown-toggle="notification-dropdown" class="rounded-lg hover:cursor-pointer">
     <!-- Icono de campana -->
-    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 14 20">
-      <path d="M12.133 10.632v-1.8A5.406 5.406 0 0 0 7.979 3.57.946.946 0 0 0 8 3.464V1.1a1 1 0 0 0-2 0v2.364a.946.946 0 0 0 .021.106 5.406 5.406 0 0 0-4.154 5.262v1.8C1.867 13.018 0 13.614 0 14.807 0 15.4 0 16 .538 16h12.924C14 16 14 15.4 14 14.807c0-1.193-1.867-1.789-1.867-4.175ZM3.823 17a3.453 3.453 0 0 0 6.354 0H3.823Z" />
-    </svg>
+    <Notification/>
     <!-- Indicador de notificaciones -->
     <div v-if="pendingRequests.length >= 1 && isVisible">
       <div class="absolute inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 rounded-full -top-0 -end--2">{{ pendingRequests.length }}</div>

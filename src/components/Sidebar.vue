@@ -1,13 +1,20 @@
 <script>
-import Logout from "../icons/Logout.vue";
 import Login from "../icons/Login.vue";
 import Reemo from '@icons/Reemo.vue';
-import AlertRented from './rental/AlertRented.vue'
 import Home from '@icons/Home.vue'
+import Search from '@icons/Search.vue'
+import Map from '@icons/Map.vue'
+import User from '@icons/User.vue'
+import AlertRented from './rental/AlertRented.vue'
+import QA from '@icons/QA.vue'
+import Settings from '@icons/Settings.vue'
+import Logout from '@icons/Logout.vue';
+import Cars from '@icons/Cars.vue'
+import People from '@icons/People.vue'
 
 export default {
   name: "Sidebar",
-  components: { Logout, Login, Reemo, AlertRented, Home },
+  components: { Logout, Login, Reemo, AlertRented, Home, Search, Map, User, QA, Settings, Logout, Cars, People },
   props: {
     user: {
       type: Object,
@@ -31,56 +38,116 @@ export default {
 
 <template>
   <nav class="bg-secondary-100 flex flex-col justify-between min-h-full m-2.5 py-12 px-7 rounded-full">
-    <ul class="flex flex-col gap-6 items-center">
+    <ul 
+      v-if="user.role !== 'admin'"
+      class="flex flex-col gap-6 items-center"
+      >
       <li>
-        <a href="" title="Home">
+        <router-link
+          to="/"
+          title="Home"
+          aria-current="page"
+          >
           <Home />
           <span class="sr-only">Home</span>
-        </a>
+        </router-link>
       </li>
       <li>
-        <a href="" title="Search">
-          <Home />
+        <router-link
+        to="/Publications"
+        title="Search"
+        aria-current="page"
+        >
+          <Search />
           <span class="sr-only">Search</span>
-        </a>
+        </router-link>
       </li>
       <li>
         <a href="" title="Map">
-          <Home />
+          <Map />
           <span class="sr-only">Map</span>
         </a>
       </li>
       <li>
-        <a href="" title="Profile">
-          <Home />
+        <router-link
+          to="/Profile"
+          title="Profile"
+          aria-current="page"
+          active-class="text-secondary-900! bg-red-700"
+        >
+          <User />
           <span class="sr-only">Profile</span>
+        </router-link>
+      </li>
+    </ul>
+    <ul 
+      v-else-if="user.role === 'admin'"
+      class="flex flex-col gap-6 items-center"
+      >
+      <li>
+        <router-link
+          to="/"
+          title="Home">
+          aria-current="page"
+          >
+          <Home />
+          <span class="sr-only">Home</span>
+          Inicio
+        </router-link>
+      </li>
+      <li>
+        <a href="" title="Search">
+          <Search />
+          <span class="sr-only">Search</span>
+        </a>
+      </li>
+      <li>
+        <a href="" title="Admins cars">
+          <Cars />
+          <span class="sr-only">Admin cars</span>
+        </a>
+      </li>
+      <li>
+        <a href="" title="Admin users">
+          <People/>
+          <span class="sr-only">Admin users</span>
         </a>
       </li>
     </ul>
-    <ul class="flex flex-col gap-4 items-center">
-      <li>
-        <a href="" title="Notifications">
-          <Home />
+    <ul class="flex flex-col gap-6 items-center">
+      <li 
+        title="Notifications"
+        class="aspect-square max-h-[24px]"
+      >
+          <AlertRented />
           <span class="sr-only">Notifications</span>
-        </a>
       </li>
       <li>
         <a href="" title="Questions & Answers">
-          <Home />
+          <QA />
           <span class="sr-only">Questions & Answers</span>
         </a>
       </li>
       <li>
         <a href="" title="Settings">
-          <Home />
+          <Settings />
           <span class="sr-only">Settings</span>
         </a>
       </li>
       <li>
-        <a href="" title="Logout/Login">
-          <Home />
-          <span class="sr-only">Logout/Login</span>
-        </a>
+        <form
+          class="aspect-square max-h-[24px]"
+          @submit.prevent="handleLogout"
+          >
+          <button 
+            type="submit" 
+            title="Logout"
+            class="hover:cursor-pointer"
+            >
+            <Logout />
+            <span class="sr-only">Logout</span>
+          </button>
+        </form>
       </li>
     </ul>
   </nav>
