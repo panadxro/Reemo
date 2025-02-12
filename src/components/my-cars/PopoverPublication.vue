@@ -33,7 +33,7 @@ export default {
 </script>
 
 <template>
-  <div v-if="isOwner" class="absolute right-4 top-4 flex items-end flex-col z-5">
+  <div v-if="isOwner" class="flex items-end flex-col z-5">
     <button @click="togglePopover" type="button" class="flex w-fit justify-end bg-primary-400/50 rounded-full p-2">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 256 256"><path fill="currentColor" d="M112 60a16 16 0 1 1 16 16a16 16 0 0 1-16-16m16 52a16 16 0 1 0 16 16a16 16 0 0 0-16-16m0 68a16 16 0 1 0 16 16a16 16 0 0 0-16-16"/></svg>
     </button>
