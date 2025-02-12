@@ -76,7 +76,7 @@ export default {
     carsFiltrados() {
       if (this.filtroActual === "habilitados") {
         return this.cars.filter((car) => car.isValidated);
-      } else if (this.filtroActual === "deshabilitados") {
+      } else if (this.filtroActual === "invalidados") {
         return this.cars.filter((car) => !car.isValidated);
       }
       return this.cars;
@@ -111,15 +111,15 @@ export default {
       Validados
     </button>
     <button
-      @click="toggleFiltro('deshabilitados')"
-      :class="['px-4 py-2 rounded-full', filtroActual === 'deshabilitados' ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-gray-700']"
+      @click="toggleFiltro('invalidados')"
+      :class="['px-4 py-2 rounded-full', filtroActual === 'invalidados' ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-gray-700']"
     >
       Invalidados
     </button>
   </div>
 
   <div class="max-w-md mx-auto md:max-w-screen-xl m-4">
-    <table class="min-w-full bg-white">
+    <table v-if="carsFiltrados.length > 0" class="min-w-full bg-white">
       <thead>
         <tr>
           <th class="py-3 px-4">Vehículo</th>
@@ -185,5 +185,8 @@ export default {
         </tr>
       </tbody>
     </table>
+    <div v-else class="text-center py-6">
+      <p class="text-gray-600">No hay autos {{ filtroActual === 'habilitados' ? 'validados' : filtroActual === 'invalidados' ? 'para validar' : 'publicados' }}.</p>
+    </div>
   </div>
 </template>
