@@ -9,7 +9,7 @@ import AddIcon from "@icons/AddIcon.vue";
 import Loading from "@icons/Loading.vue";
 
 import { Loader } from "@googlemaps/js-api-loader";
-import AddressInput from "@/components/google-maps/addressInput.vue";
+import AddressInput from "@/components/google-maps/AddressInput.vue";
 
 export default {
   name: "Publications",
