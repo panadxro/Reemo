@@ -185,19 +185,6 @@ export default {
           class="bg-yellow-100 text-yellow-800 text-base font-medium me-2 px-2.5 py-0.5 rounded border border-yellow-400"
           v-if="!car.isAvailable">El auto fue deshabilitado temporalmente</span>
         </div>
-                
-        <div v-if="car.user_id !== loggedUser?.id" class="flex items-center gap-2">
-          <router-link :to="`/ProfileOwner/${car.user_id}`" class="flex items-center gap-2 hover:cursor-pointer">
-            <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
-            <p class="py-6 hover:underline">{{ car.user.name }} {{ car.user.lastName }}</p>
-          </router-link>
-        </div>
-
-        <div v-else class="flex items-center gap-2">
-          <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
-            <p class="py-6">{{ car.user.name }} {{ car.user.lastName }}</p>
-        </div>
-
 
             <!-- Perfil del usuario -->
             <div v-if="car.user_id !== loggedUser?.id" class="flex items-center gap-2">

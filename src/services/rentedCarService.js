@@ -181,10 +181,10 @@ export async function fetchRentalRequests(userId, callback) {
           })
         );
 
-        // Llamar al callback con las solicitudes actualizadas
         callback(rentalRequests);
       } catch (error) {
-        console.error("Error procesando las solicitudes de alquiler:", error);
+        console.error("Error al obtener las solicitudes de alquiler:", error);
+        unsubscribeRequests = () => {}; // Que devuelva siempre una función y no de eeror
       }
     });
 
@@ -194,33 +194,3 @@ export async function fetchRentalRequests(userId, callback) {
     console.error("Error al obtener las solicitudes de alquiler:", error);
   }
 }
-    
-
-
-
-
-
-
-    // onSnapshot(doc(db, 'users', request.user_id), (snapshot) => {
-    //   try {
-    //     const rentalRequests = await Promise.all(
-    //       snapshot.docs.map(async (docSnap) => {
-    //         const request = { id: docSnap.id, ...docSnap.data() };
-
-
-    //         // const userRef = doc(db, 'users', request.user_id);
-    //         // const userSnap = await getDoc(userRef);
-
-    //         if (userSnap.exists()) {
-    //           const userData = userSnap.data();
-    //           return {
-    //             ...request,
-    //             photoURL: userData.photoURL || null,
-    //             name: userData.name || null,
-    //           };
-    //         } else {
-    //           console.error(`El usuario con ID ${request.user_id} no fue encontrado`);
-    //           return request;
-    //         }
-    //       })
-    //     );
