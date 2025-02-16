@@ -92,68 +92,71 @@ export default {
 </script>
 
 <template>
-  <Heading :type="2" class="m-6 text-center">Administrar Vehículos</Heading>
-  <div v-if="loading" class="flex items-center justify-center w-fit mx-auto bg-gray-50">
-    <Loading role="status" />
-  </div>
-
-  <div class="flex justify-center space-x-4 my-4">
-    <button
-      @click="toggleFiltro('todos')"
-      :class="['px-4 py-2 rounded-full', filtroActual === 'todos' ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-gray-700']"
-    >
-      Todos
-    </button>
-    <button
-      @click="toggleFiltro('habilitados')"
-      :class="['px-4 py-2 rounded-full', filtroActual === 'habilitados' ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-gray-700']"
-    >
-      Validados
-    </button>
-    <button
-      @click="toggleFiltro('deshabilitados')"
-      :class="['px-4 py-2 rounded-full', filtroActual === 'deshabilitados' ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-gray-700']"
-    >
-      Invalidados
-    </button>
-  </div>
-
-  <div class="max-w-md mx-auto md:max-w-(--breakpoint-xl) m-4">
-    <table class="min-w-full bg-white">
-      <thead>
-        <tr>
-          <th class="py-3 px-4">Vehículo</th>
-          <th class="py-3 px-4">Usuarios</th>
-          <th class="py-3 px-4">Año</th>
-          <th class="py-3 px-4">Tipo</th>
-          <th class="py-3 px-4">Estado</th>
-          <th class="py-3 px-4">Fecha</th>
-          <th class="py-3 px-4">Acciones</th>
+  <section class="w-full p-2.5 overflow-hidden">
+    <div class="flex">
+      <Heading :type="2" class="m-6 text-center">Administrar Vehículos</Heading>
+    </div>
+    <div v-if="loading" class="flex items-center justify-center w-fit mx-auto bg-gray-50">
+      <Loading role="status" />
+    </div>
+    <div class="flex flex-row gap-4">
+      <button
+        @click="toggleFiltro('todos')"
+        :class="['px-5 py-2.5 rounded-2xl', filtroActual === 'todos' ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-gray-700']"
+      >
+        Todos
+      </button>
+      <button
+        @click="toggleFiltro('habilitados')"
+        :class="['px-5 py-2.5 rounded-2xl', filtroActual === 'habilitados' ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-gray-700']"
+      >
+        Validados
+      </button>
+      <button
+        @click="toggleFiltro('deshabilitados')"
+        :class="['px-5 py-2.5 rounded-2xl', filtroActual === 'deshabilitados' ? 'bg-cyan-500 text-white' : 'bg-cyan-100 text-gray-700']"
+      >
+        Invalidados
+      </button>
+    </div>
+    <table class="min-w-full bg-white h-full overflow-hidden flex flex-col gap-5">
+      <thead class="mr-4">
+        <tr class="flex w-full border-2 border-secondary-100 rounded-xl">
+          <th class="py-2.5 px-5 flex grow">Vehículo</th>
+          <th class="py-2.5 px-5 flex grow">Usuarios</th>
+          <th class="py-2.5 px-5 flex">Año</th>
+          <th class="py-2.5 px-5 flex grow">Tipo</th>
+          <th class="py-2.5 px-5 flex grow">Estado</th>
+          <th class="py-2.5 px-5 flex">Fecha</th>
+          <th class="py-2.5 px-5 flex-none">Acciones</th>
         </tr>
       </thead>
-      <tbody>
-        <tr v-for="(car, index) in carsFiltrados" :key="index" class="text-center">
-          <td class="py-3 px-4 flex gap-4">
-            <div>
-              <img :src="car.images[0]" alt="Imagen del auto" class="w-16 h-16 object-cover rounded-sm" />
-            </div>
+      <tbody class="flex flex-col gap-5 h-full overflow-y-scroll">
+        <tr 
+          v-for="(car, index) in carsFiltrados" 
+          :key="index" 
+          class="flex w-full max-h-16 border-2 border-secondary-100 rounded-xl">
+          <td class="py-2.5 px-5 flex grow items-center gap-2.5">
+            <figure>
+              <img :src="car.images[0]" alt="Imagen del auto" class="w-14 h-8 object-cover rounded-sm" />
+            </figure>
             <div>
               <p class="text-lg font-semibold">{{ car.marca }}</p>
               <p>{{ car.modelo }}</p>
             </div>
           </td>
-          <td class="py-3 px-4">
+          <td class="py-2.5 px-5 flex grow">
             <router-link :to="`/ProfileOwner/${car.user_id}`" class="flex items-center gap-2 hover:cursor-pointer">
               <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
               <p class="hover:underline">{{ car.user.name }} {{ car.user.lastName }}</p>
             </router-link>
           </td>
-          <td class="py-3 px-4">{{ car.año }}</td>
-          <td class="py-3 px-4">{{ car.chasis }}</td>
-          <td class="py-3 px-4"><Status :isValidated="car.isValidated" /></td>
-          <td class="py-3 px-4">{{ formatDate(car.created_at) }}</td>
-          <td class="py-3 px-4 relative">
-            <div class="relative inline-block">
+          <td class="py-2.5 px-5 flex">{{ car.año }}</td>
+          <td class="py-2.5 px-5 flex grow">{{ car.chasis }}</td>
+          <td class="py-2.5 px-5 flex grow"><Status :isValidated="car.isValidated" /></td>
+          <td class="py-2.5 px-5 flex">{{ formatDate(car.created_at) }}</td>
+          <td class="py-2.5 px-5 flex relative">
+            <div class="relative">
               <button @click="togglePopover(index)" class="text-gray-500 hover:text-gray-700">&#8942;</button>
               <div
                 v-if="popoverIndex === index"
@@ -182,8 +185,8 @@ export default {
               </div>
             </div>
           </td>
-        </tr>
+        </tr>        
       </tbody>
     </table>
-  </div>
+  </section>
 </template>
