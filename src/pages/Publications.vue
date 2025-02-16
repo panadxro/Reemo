@@ -60,7 +60,6 @@ export default {
 <template class="p-2.5 flex flex-col items-center">
   <div class="bg-secondary-100 m-2.5 min-w-[368px] py-10 px-5">
     <Heading :type="1" class="m-6 text-center">Filtros</Heading>
-
   </div>
   <section class="m-2.5 flex flex-col w-full overflow-hidden">
     <div class="flex justify-between items-center">

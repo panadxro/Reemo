@@ -87,31 +87,43 @@ export default {
       <li>
         <router-link
           to="/"
-          title="Home">
+          title="Home"
           aria-current="page"
           >
           <Home />
           <span class="sr-only">Home</span>
-          Inicio
         </router-link>
       </li>
       <li>
-        <a href="" title="Search">
+        <router-link
+        to="/Publications"
+        title="Search"
+        aria-current="page"
+        >
           <Search />
           <span class="sr-only">Search</span>
-        </a>
+        </router-link>
       </li>
       <li>
-        <a href="" title="Admins cars">
+        <router-link
+          to="/admin/CarsValidation"
+          title="Admins cars"
+          aria-current="page"
+        >
           <Cars />
           <span class="sr-only">Admin cars</span>
-        </a>
+        </router-link>
       </li>
-      <li>
-        <a href="" title="Admin users">
+      <li
+      >
+      <router-link
+        to="/admin/Users"
+        title="Admin users"
+          aria-current="page"
+        >
           <People/>
           <span class="sr-only">Admin users</span>
-        </a>
+        </router-link>
       </li>
     </ul>
     <ul class="flex flex-col gap-6 items-center">
@@ -119,8 +131,8 @@ export default {
         title="Notifications"
         class="aspect-square max-h-[24px]"
       >
-          <AlertRented />
-          <span class="sr-only">Notifications</span>
+        <AlertRented />
+        <span class="sr-only">Notifications</span>
       </li>
       <li>
         <a href="" title="Questions & Answers">
