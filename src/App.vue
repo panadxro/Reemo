@@ -43,19 +43,24 @@ export default {
 </script>
 
 <template>
-  <Navbar :user="loggedUser" @logout="handleLogout" />
+  <div v-if="$route.path === '/'">
+    <Navbar :user="loggedUser" @logout="handleLogout" />
+    <main  class="flex flex-col min-h-screen mt-20 mx-auto">
+      <router-view />
+    </main>
+    <FooterLayout />
+  </div>
 
-  <main v-if="$route.path === '/'" class="flex flex-col min-h-screen mt-20 mx-auto">
-    <router-view />
-  </main>
-
-  <main v-else class="flex flex-row min-h-screen max-h-screen p-2.5">
-    <Sidebar :user="loggedUser" />
-    <router-view />
-  </main>
+  <div v-else class="snap-y snap-mandatory relative w-full h-screen overflow-auto">
+    <Navbar :user="loggedUser" @logout="handleLogout" class="snap-start" />
+    <main class="flex flex-row min-h-screen max-h-screen p-2.5 snap-start">
+      <Sidebar :user="loggedUser" />
+      <router-view />
+    </main>
+    <FooterLayout class="snap-start" />
+  </div>
+  
   <Alert />
-
-  <FooterLayout />
 </template>
 
 <style>
