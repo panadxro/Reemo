@@ -84,9 +84,9 @@ export default {
 <template class="p-2.5 flex flex-col items-center">
   <User :user="loggedUser" />
   <section class="parent m-2.5 w-full max-h-vh">
-    <div class="flex profile flex-col">
+    <div class="flex profile flex-col grow">
       <Heading :type="1">Mi perfil</Heading>
-      <article class="bg-secondary-100">
+      <article class="bg-secondary-100 h-full">
         <p>{{ loggedUser.name }} {{ loggedUser.lastName }}</p>
         <p>{{ loggedUser.email }}</p>
       </article>
@@ -100,14 +100,14 @@ export default {
     <div class="div1 bg-gray-100">
 
     </div>
-    <div class="mycars min-w-[520px]">
+    <div class="mycars overflow-hidden">
       <Heading :type="1">Mis autos</Heading>
-      <div 
-        
-        class="flex flex-col gap-5"
-        >
-        <MyCars v-for="car in cars" 
-        :key="car.id" :car="car" />
+      <div class="flex flex-col gap-5 h-full overflow-auto">
+        <MyCars 
+          v-for="car in cars" 
+          :key="car.id" 
+          :car="car" 
+          />
       </div>
     </div>
   </section>

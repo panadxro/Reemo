@@ -17,7 +17,7 @@ export default {
     textSize() {
       // Establece tamaños de texto según el tipo de encabezado
       return {
-        1: "",
+        1: "text-2xl font-semibold ",
         2: "text-4xl mb-3 sm:text-4xl",
         3: "text-2xl mb-2 font-semibold sm:font-medium sm:text-3xl",
         4: "text-xl mb-1 sm:text-lg",
