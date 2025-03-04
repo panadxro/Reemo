@@ -49,12 +49,12 @@ export default {
         </IconNavButton>
       </li>
       <li>
-        <IconNavButton to="/Publications" title="Search">
+        <IconNavButton to="/Search" title="Search">
           <Search />
         </IconNavButton>
       </li>
       <li>
-        <IconNavButton to="/Publications" title="Map">
+        <IconNavButton to="/Search" title="Map">
           <Map />
         </IconNavButton>
       </li>
@@ -74,7 +74,7 @@ export default {
         </IconNavButton>
       </li>
       <li>
-        <IconNavButton to="/Publications" title="Search">
+        <IconNavButton to="/Search" title="Search">
           <Search />
         </IconNavButton>
       </li>
