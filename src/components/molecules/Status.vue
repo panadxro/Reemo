@@ -1,10 +1,4 @@
-<template>
-    <span :class="statusClass" class="px-3 py-1 rounded-full text-sm font-semibold">
-      {{ statusText }}
-    </span>
-  </template>
-  
-  <script>
+<script>
   export default {
     props: {
       isValidated: {
@@ -17,8 +11,15 @@
         return this.isValidated ? "Validado" : "No Validado";
       },
       statusClass() {
-        return this.isValidated ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
+        return this.isValidated ? "bg-vibrant-light-700 text-deep-blue-900" : "bg-red-100 text-red-800";
       },
     },
   };
-  </script>
+</script>
+
+<template>
+  <span :class="statusClass" class="px-4 py-2 rounded-2xl text-sm font-semibold flex items-center">
+    {{ statusText }}
+  </span>
+</template>
+  

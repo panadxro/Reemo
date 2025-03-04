@@ -79,7 +79,7 @@ export default {
         </IconNavButton>
       </li>
       <li>
-        <IconNavButton to="/admin/CarsValidation" title="Admin cars">
+        <IconNavButton to="/admin/Cars" title="Admin cars">
           <Cars />
         </IconNavButton>
       </li>
