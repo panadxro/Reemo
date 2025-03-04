@@ -78,7 +78,7 @@ export default {
           </li>
           <li>
             <router-link
-              to="/Publications"
+              to="/Search"
               class="block py-2 px-3 md:p-0 rounded-sm md:bg-transparent md:text-gray-500 hover:gray-700"
               aria-current="page"
               active-class="text-secondary-900! bg-blue-700"
