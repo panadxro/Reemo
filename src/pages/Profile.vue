@@ -8,12 +8,15 @@ import CardCar from "@components/my-cars/CardCar.vue";
 import User from "@components/user/User.vue";
 import RentedCar from "@components/rental/RentedCar.vue";
 import Loading from "@icons/Loading.vue";
+import MyCars from "@components/my-cars/MyCars.vue";
+import Arrow from "../icons/Arrow.vue";
+import BackButton from "@components/atoms/BackButton.vue";
 
 let unsubscribeAuth = () => { };
 
 export default {
   name: "MyProfile",
-  components: { Heading, CardCar, User, RentedCar, Loading },
+  components: { Heading, CardCar, User, RentedCar, Loading, MyCars, Arrow, BackButton },
   data() {
     return {
       cars: [],
@@ -26,6 +29,7 @@ export default {
         lastName: null,
       },
       rentedCars: [],
+      left: "left",
     };
   },
   methods: {
@@ -80,42 +84,69 @@ export default {
 </script>
 
 
-<template>
-  <div class="flex flex-col justify-center items-center mb-4">
-    <Heading :type="1">Perfil</Heading>
-    <p class="text-sm text-gray-500 truncate">
-      {{ loggedUser.email }}
-    </p>
-  </div>
-  <div class="flex sm:flex-row gap-8 justify-around items-center mb-4 flex-col">
-    <User :user="loggedUser" />
-    <div>
-      <Heading :type="2">Autos alquilados</Heading>
-      <div v-for="rental in rentedCars" :key="index"
-        class="p-4 rounded-2xl shadow-md relative flex flex-row shadow-sm w-full overflow-hidden hover:bg-primary-300">
-        <RentedCar :key="rental.id" :car="rental.car" />
+<template class="p-2.5 flex flex-col items-center">
+  <User :user="loggedUser" />
+  <section class="parent m-2.5 w-full max-h-vh">
+    <div class="flex profile flex-col grow gap-3">
+      <div class="flex items-center gap-5">
+        <BackButton>
+          <Arrow direction="left" />
+        </BackButton>
+        <Heading :type="1" class="medium">Mi perfil</Heading>
+      </div>
+      <article class="bg-secondary-100 h-full rounded-[40px] px-6 py-5 flex flex-row items-center gap-5">
+        <img 
+          v-if="loggedUser.photoURL" 
+          class="w-32 aspect-square rounded-full bg-vibrant-light-800" 
+          :src="`${loggedUser.photoURL}`"
+          :alt="`Perfil de ${loggedUser.userName}`" 
+        />
+        <div>
+          <Heading :type="2" class="medium">{{ loggedUser.name }} {{ loggedUser.lastName }}</Heading>
+          <p>{{ loggedUser.email }}</p>
+        </div>
+      </article>
+    </div>
+
+    <div class="history bg-primary-900 rounded-[40px] px-5 py-7">
+      <div class="flex items-center justify-between">
+        <Heading :type="1" class="text-white">Historial</Heading>
+        <a href="" class="text-white">Ver más</a>
+      </div>
+      <div v-for="rental in rentedCars" :key="rental.id">
+        <RentedCar :car="rental.car" />
       </div>
     </div>
-  </div>
-  <div class="p-4 max-w-md mx-auto md:max-w-screen-xl">
-    <Heading :type="2">Mis autos</Heading>
-  </div>
+    <div class="div1 bg-gray-100 rounded-[40px]">
 
-  <div v-if="loading" class="flex items-center justify-center w-fit mx-auto bg-gray-50">
-    <Loading role="status" />
-
-    <span class="sr-only">Cargando...</span>
-  </div>
-
-  <div class="max-w-md mx-auto md:max-w-screen-xl mb-4 grid gap-4 md:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-4">
-    <div v-for="(car, index) in cars" :key="index"
-      class="rounded-2xl shadow-md relative flex relative flex-col shadow-sm overflow-hidden hover:bg-primary-300">
-      <CardCar :car="car" />
     </div>
-    <router-link to="/Publish"
-      class="flex flex-col justify-center items-center text-gray-300 border-4 border-gray-200 hover:text-gray-400 hover:border-gray-300 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center">Registrar
-      Vehículo
-      <span class="text-3xl font-bold">+</span>
-    </router-link>
-  </div>
+    <div class="mycars overflow-hidden">
+      <div class="flex items-center justify-between">
+        <Heading :type="1">Mis autos</Heading>
+        <a href="" class="text-primary-900">Ver más</a>
+      </div>
+      <div class="flex flex-col gap-5 h-full overflow-auto">
+        <MyCars 
+          v-for="car in cars" 
+          :key="car.id" 
+          :car="car" 
+          />
+      </div>
+    </div>
+  </section>
 </template>
+
+<style scoped>
+  .parent {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    grid-column-gap: 20px;
+    grid-row-gap: 20px;
+  }
+
+  .profile { grid-area: 1 / 1 / 2 / 4; }
+  .history { grid-area: 1 / 4 / 2 / 6; }
+  .div1 { grid-area: 2 / 1 / 3 / 3; }
+  .mycars { grid-area: 2 / 3 / 3 / 6; }
+</style>

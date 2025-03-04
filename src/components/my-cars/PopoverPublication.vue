@@ -40,11 +40,8 @@ export default {
     <div
       v-if="isVisible"
       ref="popover"
-      class="z-50 w-64 mt-2 text-sm text-gray-500 bg-white border border-gray-200 rounded-lg shadow-lg dark:text-gray-400 dark:border-gray-600 dark:bg-gray-800"
+      class="absolute z-50 top-full -right-0 w-64 text-sm bg-white border border-gray-200 rounded-lg shadow-lg"
     >
-      <div class="px-3 py-2 bg-gray-100 border-b border-gray-200 rounded-t-lg dark:border-gray-600 dark:bg-gray-700">
-        <h3 class="font-semibold text-gray-900 dark:text-white">Acciones</h3>
-      </div>
       <div class="px-3 py-2">
         <!-- Le podemos agregar @click="togglePopover" para que se cierre cuando se toca, pero si toca fuera de algun boton se cierra igual.
           Tenemos que agregar avisos antes de borrar por ejemplo -->

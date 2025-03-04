@@ -71,7 +71,7 @@ export default {
       <button 
         @click="goToCarDetails(car.id)" 
         type="button" 
-        class="rounded-xl bg-secondary-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-secondary-800 focus:outline-none focus:text-secondary-900 focus:ring-4 focus:ring-secondary-900  focus:bg-white"
+        class="rounded-xl bg-secondary-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-secondary-800 focus:outline-hidden focus:text-secondary-900 focus:ring-4 focus:ring-secondary-900  focus:bg-white"
       >
         <span class="sr-only">Ver Detalles</span>
         <Arrow direction="right" class="hover:text-secondary-900"/>
