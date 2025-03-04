@@ -1,5 +1,6 @@
 <script>
 import { getCarById, checkIfCarIsRented } from "../services/car-service.js";
+import { Loader } from "@googlemaps/js-api-loader";
 
 import { subscribeToAuthState } from "../services/auth.js";
 import ModalRent from "../components/ModalRent.vue";
@@ -15,7 +16,8 @@ import Check from "../icons/Check.vue";
 import Cross from "../icons/Cross.vue";
 import defaultCarImage from '../assets/Car-Img.png';
 import Loading from "@icons/Loading.vue";
-// import * as icons from '@icons'
+
+
 
 export default {
   props: ["id"],
@@ -56,6 +58,14 @@ export default {
       this.car = await getCarById(carId);
       this.currentImage = this.car.images && this.car.images.length > 0 ? this.car.images[0] : defaultCarImage;
       this.rented = await checkIfCarIsRented(this.car.id);
+      // this.initMap(this.car.coordenadas);
+
+      // Una vez que los datos están listos, inicializa el mapa
+      if (this.car.coordenadas) {
+            await this.loadGoogleMaps();
+            this.initMap(this.car.coordenadas);
+          }
+
     } catch (error) {
       this.errorMsg = "Hubo un error al obtener los detalles del auto. Volvé a intentar";
       console.error("Error al obtener los detalles del auto:", error);
@@ -72,10 +82,62 @@ export default {
     setDefaultImage(event) {
       event.target.src = defaultCarImage;
     },
+
+    async loadGoogleMaps() {
+      const loader = new Loader({
+        apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+        libraries: ["places", "geometry"], // 
+      });
+
+      try {
+        await loader.load(); // Esperamos a que la API se cargue completamente
+      } catch (error) {
+        console.error("Error al cargar Google Maps:", error);
+      }
+    },
+
+    async initMap(coordenadas){
+
+      try {
+
+        const position = { lat: coordenadas.lat, lng: coordenadas.lng };
+        const { Map } = await google.maps.importLibrary("maps");
+        // const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+        
+
+        const map = new Map(document.getElementById('map'),{
+          center: {
+            lat: coordenadas.lat,
+            lng: coordenadas.lng,
+          },
+          zoom: 14,
+          mapId: "4808da25693c56c8",
+          streetViewControl: false, // Desactiva el ícono de Street View
+          mapTypeControl: false, // Oculta el botón de "Mapa / Satélite"
+          disableDefaultUI: true, // Si lo pones en true desactiva todos los controles (zoom, fullscreen, etc.)
+        });
+
+        new google.maps.Circle({
+          strokeColor: "#5DADE2",
+          strokeOpacity: 0.8, 
+          strokeWeight: 2, 
+          fillColor: "#A9D6F5", 
+          fillOpacity: 0.35, 
+          map: map,
+          center: position,
+          radius: 1000, 
+        })
+
+      } catch (error) {
+        console.error("Error al cargar Google Maps: ", error) 
+      }
+
+    }
+
   },
   mounted() {
     subscribeToAuthState((newUserData) => {
-      this.loggedUser = newUserData;
+      this.loggedUser = newUserData;  
     });
   },
 };
@@ -123,21 +185,18 @@ export default {
           class="bg-yellow-100 text-yellow-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-yellow-400"
           v-if="!car.isAvailable">El auto fue deshabilitado temporalmente</span>
         </div>
-                
-        <div v-if="car.user_id !== loggedUser?.id" class="flex items-center gap-2">
-          <router-link :to="`/ProfileOwner/${car.user_id}`" class="flex items-center gap-2 hover:cursor-pointer">
-            <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
-            <p class="py-6 hover:underline">{{ car.user.name }} {{ car.user.lastName }}</p>
-          </router-link>
-        </div>
 
-        <div v-else class="flex items-center gap-2">
-          <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
-            <p class="py-6">{{ car.user.name }} {{ car.user.lastName }}</p>
-        </div>
-
-
-
+            <!-- Perfil del usuario -->
+            <div v-if="car.user_id !== loggedUser?.id" class="flex items-center gap-2">
+              <router-link :to="`/ProfileOwner/${car.user_id}`" class="flex items-center gap-2 hover:cursor-pointer">
+                <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
+                <p class="py-6 hover:underline">{{ car.user.name }} {{ car.user.lastName }}</p>
+              </router-link>
+            </div>
+            <div v-else class="flex items-center gap-2">
+              <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
+              <p class="py-6">{{ car.user.name }} {{ car.user.lastName }}</p>
+            </div>
 
             <p class="mb-3 text-gray-500 break-words">
               {{ car.description }}
@@ -177,9 +236,16 @@ export default {
               </li>
             </ul>
 
+            
+
+            <!-- iniciamos el mapa de Google Maps -->
+            <p><strong>Direccion:</strong> {{ car.direccion }}</p>
+            <div v-if="car.coordenadas" id="map" style="width: 100%; height: 400px; margin-top: 20px;"></div>
+            <p v-else>Cargando mapa..</p>
+
             <hr class="my-3 md:my-4 border-gray-200" />
             <Heading :type="2">Accesorios</Heading>
-            <div class="flex flex-wrap gap-2 text-gray-800">
+            <div class="flex flex-wrap gap-2 text-gray-700">
               <div v-for="(accessory, index) in car.accessories" :key="index">
                 <Pill :accessory="accessory.id" :name="accessory.name" />
               </div>

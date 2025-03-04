@@ -63,7 +63,9 @@ export default {
   },
   unmounted() {
     unsubscribeAuth();
-    unsubscribeRequests(); 
+    if (typeof unsubscribeRequests === 'function') {
+      unsubscribeRequests();
+    }
   },
 };
 </script>
