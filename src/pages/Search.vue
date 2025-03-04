@@ -12,7 +12,7 @@ import { Loader } from "@googlemaps/js-api-loader";
 import AddressInput from "@/components/google-maps/AddressInput.vue";
 
 export default {
-  name: "Publications",
+  name: "Search",
   components: { Heading, CardCar, AddIcon, Loading, AddressInput },
   data() {
     return {
