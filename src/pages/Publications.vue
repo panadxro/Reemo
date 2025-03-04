@@ -319,12 +319,9 @@ export default {
 </script>
 
 <template>
-  <section>
-
-    <Heading :type="1" class="m-6 text-center">Alquilá autos por tu zona</Heading>
-
-    <!-- Input de busqueda con places de google Maps -->
-    <div class="relative">
+  <div class="bg-secondary-100 m-2.5 min-w-[368px] rounded-[40px] py-10 px-5">
+    <Heading :type="1" class="m-6 text-center">Filtros</Heading>
+        <div class="relative">
       <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
         <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg">
@@ -339,46 +336,41 @@ export default {
 
     <!-- Renderizado del mapa -->
     <div id="map" style="width: 100%; height: 400px;"></div>
+  </div>
+  <section class="m-2.5 flex flex-col w-full gap-3 overflow-hidden">
+    <div class="flex justify-between items-center">
+      <Heading :type="1" class="m-6 text-center">Autos disponibles</Heading>
+    
+      <template v-if="loggedUser.id == null">
+        <router-link to="/Login"
+        class="gap-4 md:flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
+          <span class="hidden md:block">Publicar Vehículo</span>
+          <AddIcon />
+        </router-link>
+      </template>
 
+      <template v-else>
+        <router-link to="/Publish"
+          class="gap-4 md:flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
+          <span class="hidden md:block">Publicar Vehículo</span>
+          <AddIcon />
+        </router-link>
+      </template>
+    </div>
     <div v-if="loading" class="flex items-center justify-center w-fit mx-auto bg-gray-50">
       <Loading role="status" />
       <span class="sr-only">Cargando...</span>
     </div>
-
-    <!-- <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-  <div v-for="car in filteredCars" :key="car.id" class="p-4 border rounded">
-    <h2 class="font-bold">{{ car.marca }} {{ car.modelo }}</h2>
-    <p><strong>Dirección:</strong> {{ car.direccion }}</p>
-    <p><strong>Precio:</strong> ${{ car.precio }}</p>
-    <img :src="car.imagen || 'imagen_default.jpg'" alt="Carro" class="w-full h-32 object-cover">
-  </div>
-</div> -->
-
-    <div
-      class="max-w-md mx-auto md:max-w-screen-xl m-4 grid justify-items-center gap-4 md:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-4">
-      <div v-for="(car, index) in filteredCars" :key="car.id"
-        class="rounded-2xl flex relative flex-col shadow-sm w-full overflow-hidden hover:bg-primary-300">
+    <div v-else class="h-full overflow-auto">
+      <div  class="grid justify-items-center gap-3 grid-cols-2">
+        <div 
+          v-for="(car, index) in filteredCars" :key="car.id"
+          class="rounded-2xl flex relative flex-col shadow-xs w-full"
+          >
         <CardCar :car="car" />
       </div>
     </div>
-
-    <template v-if="loggedUser.id == null">
-      <router-link to="/Login"
-        class="fixed gap-4 md:flex z-50 items-center justify-center bottom-0 right-0 m-8 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
-        <span class="hidden md:block">Publicar Vehículo</span>
-        <AddIcon />
-      </router-link>
-    </template>
-
-    <template v-else>
-      <router-link to="/Publish"
-        class="fixed gap-4 md:flex z-50 items-center justify-center bottom-0 right-0 m-8 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
-        <span class="hidden md:block">Publicar Vehículo</span>
-        <AddIcon />
-      </router-link>
-    </template>
-
-
+  </div>
   </section>
 </template>
 
