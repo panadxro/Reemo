@@ -10,8 +10,8 @@ import Publications from "../pages/Publications.vue";
 import Publish from "../pages/CarPublish.vue";
 import CarDetails from "../pages/CarDetails.vue";
 import ProfileOwner from "../pages/ProfileOwner.vue";
-import Admin from "../pages/admin/CarsValidation.vue";
-import Users from "../pages/admin/Users.vue";
+import AdminCars from "../pages/admin/Cars.vue";
+import AdminUsers from "../pages/admin/Users.vue";
 import PrivateChat from "../pages/PrivateChat.vue";
 
 const routes = [
@@ -25,8 +25,8 @@ const routes = [
   { path: "/CarDetails/:id", name: "CarDetails", component: CarDetails, props: true, meta: { needsAuth: true } },
   { path: "/ProfileOwner/:id", name: "ProfileOwner", component: ProfileOwner, props: true, meta: { needsAuth: true } },
   { path: "/ProfileOwner/:id/chat", name: "PrivateChat", component: PrivateChat, props: true, meta: { needsAuth: true } },
-  { path: "/admin/CarsValidation", name: "CarsValidation", component: Admin, meta: { needsAuth: true, role: "admin" } },
-  { path: "/admin/Users", name: "Users", component: Users, meta: { needsAuth: true, role: "admin" } },
+  { path: "/admin/Cars", name: "Cars", component: AdminCars, meta: { needsAuth: true, role: "admin" } },
+  { path: "/admin/Users", name: "Users", component: AdminUsers, meta: { needsAuth: true, role: "admin" } },
 ];
 
 const router = createRouter({

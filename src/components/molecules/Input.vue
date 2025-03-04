@@ -38,7 +38,7 @@ const buttonClasses = computed(() => {
     : (
       props.outline 
       ? 'border-vibrant-light-800 bg-white' 
-      : 'bg-vibrant-light-600 text-deep-blue-900 border-transparent hover:bg-vibrant-light-800'
+      : 'bg-vibrant-light-600 text-deep-blue-900 border-transparent focus:bg-vibrant-light-900'
     );
 
   return `${baseClasses} ${colorClasses}`;
