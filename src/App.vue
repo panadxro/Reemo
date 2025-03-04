@@ -1,6 +1,7 @@
 <script>
 import { logout, subscribeToAuthState } from "./services/auth";
 
+import SimpleLayout from "./pages/SimpleLayout.vue";
 import Navbar from "./components/Navbar.vue";
 import FooterLayout from "./components/Footer.vue";
 import Alert from "./components/atoms/Alert.vue";
@@ -9,6 +10,7 @@ import Sidebar from "./components/Sidebar.vue";
 export default {
   name: "App",
   components: {
+    SimpleLayout,
     Navbar,
     FooterLayout,
     Alert,
@@ -44,12 +46,14 @@ export default {
 
 <template>
   <div v-if="$route.path === '/'">
-    <Navbar :user="loggedUser" @logout="handleLogout" />
+    <Navbar :user="loggedUser" @logout="handleLogout" class="fixed"/>
     <main  class="flex flex-col min-h-screen mt-20 mx-auto">
       <router-view />
     </main>
     <FooterLayout />
   </div>
+  
+  <SimpleLayout v-else-if="['/Login', '/Register', '/ForgotPassword', '/Onboarding'].includes($route.path)" />
 
   <div v-else class="snap-y snap-mandatory relative w-full h-screen overflow-auto">
     <Navbar :user="loggedUser" @logout="handleLogout" class="snap-start" />
@@ -121,9 +125,6 @@ html {
     width: 16px;
     margin: 8px;
   }
-/*   ::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  } */
   ::-webkit-scrollbar-thumb {
     background: #a7ebef;
     border-radius: 16px;
@@ -132,6 +133,7 @@ html {
   ::-webkit-scrollbar-thumb:hover {
     background: #4fd8df;
   }
+
   .no-scroll {
     overflow: hidden;
   }

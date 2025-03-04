@@ -26,18 +26,13 @@ export default {
 
 <template>
   <svg
-    :class="['w-3 h-3 tranform transition-transform duration-300', rotationClass]"
-    aria-hidden="true"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 8 14"
-  >
-    <path
-      stroke="currentColor"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      stroke-width="2"
-      d="m1 13 5.7-5.326a.909.909 0 0 0 0-1.348L1 1"
-    ></path>
+    :class="['tranform transition-transform duration-300', rotationClass]"
+    xmlns="http://www.w3.org/2000/svg" 
+    width="24" 
+    height="24" 
+    viewBox="0 0 24 24" 
+    fill="none">
+    <path d="M9 17L14 12ZM14 12L9 7Z" fill="#010440"/>
+    <path d="M9 17L14 12L9 7" stroke="#010440" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
 </template>

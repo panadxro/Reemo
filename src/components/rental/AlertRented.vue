@@ -70,7 +70,12 @@ export default {
 
 <template>
   <!-- Botón de notificaciones -->
-  <button type="button" data-dropdown-toggle="notification-dropdown" class="rounded-lg hover:cursor-pointer">
+  <button 
+    type="button" 
+    data-dropdown-toggle="notification-dropdown" 
+    class="flex items-center justify-center p-2 rounded-full transition-colors duration-300 cursor-pointer hover:bg-vibrant-light-800"
+    active-class="bg-vibrant-light-800 hover:bg-vibrant-light-800" 
+    >
     <!-- Icono de campana -->
     <Notification/>
     <!-- Indicador de notificaciones -->

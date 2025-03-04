@@ -58,7 +58,7 @@ export default {
 </script>
 
 <template>
-  <div class="bg-secondary-100 m-2.5 min-w-[368px] py-10 px-5">
+  <div class="bg-secondary-100 m-2.5 min-w-[368px] rounded-[40px] py-10 px-5">
     <Heading :type="1" class="m-6 text-center">Filtros</Heading>
   </div>
   <section class="m-2.5 flex flex-col w-full gap-3 overflow-hidden">

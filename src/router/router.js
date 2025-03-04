@@ -4,7 +4,7 @@ import { subscribeToAuthState } from "../services/auth";
 import Home from "../pages/Home.vue";
 import Login from "../pages/Login.vue";
 import Profile from "../pages/Profile.vue";
-import ProfileEdit from "../pages/ProfileEdit.vue";
+import UserOnboarding from "../pages/UserOnboarding.vue";
 import Register from "../pages/Register.vue";
 import Publications from "../pages/Publications.vue";
 import Publish from "../pages/CarPublish.vue";
@@ -21,7 +21,7 @@ const routes = [
   { path: "/Register", component: Register },
   { path: "/Publications", component: Publications },
   { path: "/Publish", component: Publish, meta: { needsAuth: true } },
-  { path: "/Profile/Edit", component: ProfileEdit, meta: { needsAuth: true }},
+  { path: "/Onboarding", component: UserOnboarding, meta: { needsAuth: true }},
   { path: "/CarDetails/:id", name: "CarDetails", component: CarDetails, props: true, meta: { needsAuth: true } },
   { path: "/ProfileOwner/:id", name: "ProfileOwner", component: ProfileOwner, props: true, meta: { needsAuth: true } },
   { path: "/ProfileOwner/:id/chat", name: "PrivateChat", component: PrivateChat, props: true, meta: { needsAuth: true } },
