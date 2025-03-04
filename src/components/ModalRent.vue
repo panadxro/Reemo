@@ -162,9 +162,8 @@ export default {
         <div>
           <label for="rentedUntilDate" class="block text-sm font-medium">Fecha de Fin:</label>
           <div class="grid grid-cols-2 gap-4 mb-4">
-            <input type="date" id="rentedUntilDate" v-model="rentedUntilDate" required :min="rentedFromDate" :disabled="isUntilDateDisabled"
-              class="mt-1 block w-full p-2 border border-gray-300 rounded-sm" />
-
+            <input type="date" id="rentedUntilDate" v-model="rentedUntilDate" required :min="rentedFromDate" :disabled="isUntilTimeDisabled"
+              class="mt-1 block w-full p-2 border border-gray-300 rounded" />
               <select v-model="selectedUntilTime" :disabled="isUntilTimeDisabled" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full h-max-80 p-2.5">
                 <option
                   v-for="time in availableUntilTimes"
