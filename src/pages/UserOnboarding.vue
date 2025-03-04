@@ -8,7 +8,7 @@ import EditPhotoModal from '../components/user/EditPhotoModal.vue';
 let unsubscribeAuth = () => { };
 
 export default {
-  name: 'ProfileEdit',
+  name: 'UserOnboarding',
   components: { Heading, AddImg, EditPhotoModal },
   data() {
     return {
@@ -112,7 +112,7 @@ export default {
           alt="Perfil" class="w-24 h-24 rounded-full" />
       </figure>
       <div class="absolute inset-0 flex items-center justify-center">
-        <label for="photo" class="w-24 w-24 aspect-square rounded-full flex items-center justify-center cursor-pointer">
+        <label for="photo" class="w-24 aspect-square rounded-full flex items-center justify-center cursor-pointer">
           <span class="sr-only">Seleccionar foto</span>
         </label>
         <button type="button" id="photo" @click="openModal" class="hidden"></button>
