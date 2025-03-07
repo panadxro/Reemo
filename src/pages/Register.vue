@@ -38,7 +38,7 @@ export default {
       try {
         await register({ ...this.user });
         addAlert("¡Usuario creado con éxito!", "success");
-        this.$router.push("/Onboarding");
+        this.$router.push("/onboarding");
       } catch (error) {
         let errorCode = error.code;
         switch (errorCode) {
@@ -149,7 +149,7 @@ export default {
     </Input>
     <p class="text-xs text-background-900 text-center font-regular">
       ¿Ya tenés una cuenta?
-      <router-link to="/Login" class="text-primary font-bold">
+      <router-link to="/login" class="text-primary font-bold">
         <span class="hover:underline">
           Inicia sesión
         </span>

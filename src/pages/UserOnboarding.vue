@@ -43,7 +43,7 @@ export default {
 
         await editMyProfile(updatedData);
         console.log("Perfil editado con éxito")
-        this.$router.push('/Profile');
+        this.$router.push('/profile');
       } catch (error) {
         console.error(error);
       } finally {

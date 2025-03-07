@@ -68,7 +68,7 @@ export default {
         addAlert("Perfil editado con éxito", "success")
         // actualizar initialdata
         this.initialData = { ...this.editData };
-        this.$router.push('/Profile');
+        this.$router.push('/profile');
       } catch (error) {
         console.error(error);
         addAlert("Error al editar el perfil", "error");

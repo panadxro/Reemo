@@ -35,7 +35,7 @@ export default {
         id: null,
         email: null,
       };
-      this.$router.push("/Login");
+      this.$router.push("/login");
     },
   },
   mounted() {
@@ -53,7 +53,7 @@ export default {
     <FooterLayout />
   </div>
   
-  <SimpleLayout v-else-if="['/Login', '/Register', '/ForgotPassword', '/Onboarding'].includes($route.path)" />
+  <SimpleLayout v-else-if="['/login', '/register', '/ForgotPassword', '/onboarding'].includes($route.path)" />
 
   <div v-else class="snap-y snap-mandatory relative w-full h-screen overflow-auto">
     <Navbar :user="loggedUser" @logout="handleLogout" class="snap-start" />

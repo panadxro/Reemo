@@ -1,6 +1,6 @@
 <script>
-import { subscribeToAuthState } from "../../services/auth.js";
-import { updateRentalStatus, fetchRentalRequests } from '../../services/rentedCarService.js';
+import { subscribeToAuthState } from "@services/auth.js";
+import { updateRentalStatus, fetchRentalRequests } from '@services/rentedCarService.js';
 
 import Notification from '@icons/Notification.vue';
 
@@ -101,7 +101,7 @@ export default {
         <div class="ms-3 text-sm font-normal">
           <span class="mb-1 text-sm font-semibold text-gray-900">Solicitud de Alquiler</span>
           <div class="mb-2 text-sm font-normal">
-            <span class="mb-1 text-sm font-semibold text-blue-900"><router-link :to="`/ProfileOwner/${request.user_id}`">{{ request.name }}</router-link></span> quiere alquilar <router-link :to="`/CarDetails/${request.carId}`">{{ request.carMarca }} {{ request.carModelo }}</router-link> Responde cuanto antes.
+            <span class="mb-1 text-sm font-semibold text-blue-900"><router-link :to="`/user/${request.user_id}`">{{ request.name }}</router-link></span> quiere alquilar <router-link :to="`/CarDetails/${request.carId}`">{{ request.carMarca }} {{ request.carModelo }}</router-link> Responde cuanto antes.
           </div>
           <div class="mb-2 text-sm font-normal">Estado de solicitud: 
             <span class="mb-1 text-sm font-semibold text-blue-900">{{ request.status }}</span>

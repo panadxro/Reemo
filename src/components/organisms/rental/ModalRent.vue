@@ -1,6 +1,6 @@
 <script>
-import { isCarAlreadyRented, submitRentalRequest } from "../services/rentedCarService";
-import { addAlert } from "../services/alerts";
+import { isCarAlreadyRented, submitRentalRequest } from "@services/rentedCarService";
+import { addAlert } from "@services/alerts";
 
 export default {
   props: ["car", "loggedUser", "rented"],
@@ -71,7 +71,7 @@ export default {
       }
 
       this.close();
-      this.$router.push('/Profile');
+      this.$router.push('/profile');
     },
     timeOptions() {
       for (let hour = 0; hour < 24; hour++) {
