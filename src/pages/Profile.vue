@@ -4,11 +4,11 @@ import { subscribeToAuthState } from "@services/auth.js";
 import { fetchRentedCars } from "@services/rentedCarService.js";
 
 import Heading from "@components/atoms/Heading.vue";
-import CardCar from "@components/my-cars/CardCar.vue";
+import CardCar from "@components/organisms/my-cars/CardCar.vue";
 import UserNav from "@components/user/UserNav.vue";
-import RentedCar from "@components/rental/RentedCar.vue";
+import RentedCar from "@components/organisms/rental/RentedCar.vue";
 import Loading from "@icons/Loading.vue";
-import MyCars from "@components/my-cars/MyCars.vue";
+import UserCar from "@components/organisms/my-cars/UserCar.vue";
 import Arrow from "../icons/Arrow.vue";
 import BackButton from "@components/atoms/BackButton.vue";
 
@@ -16,7 +16,7 @@ let unsubscribeAuth = () => { };
 
 export default {
   name: "MyProfile",
-  components: { Heading, CardCar, UserNav, RentedCar, Loading, MyCars, Arrow, BackButton },
+  components: { Heading, CardCar, UserNav, RentedCar, Loading, UserCar, Arrow, BackButton },
   data() {
     return {
       cars: [],
@@ -113,24 +113,37 @@ export default {
         <Heading :type="1" class="text-white">Historial</Heading>
         <a href="" class="text-white">Ver más</a>
       </div>
-      <div v-for="rental in rentedCars" :key="rental.id">
-        <RentedCar :car="rental.car" />
+      <div v-if="rentedCars.length">
+        <RentedCar v-for="rental in rentedCars" :key="rental.id" :car="rental.car" />
+      </div>
+      <div v-else class="flex flex-col justify-center items-center h-full text-white">
+        <p class=" text-pretty font-semibold opacity-50">Aún no has alquilado ningún vehículo.</p>
+        <router-link to="/search" class="font-semibold opacity-50 hover:opacity-100">
+          <span class="hover:underline">Alquila un vehículo</span>
+        </router-link>
       </div>
     </div>
+
     <div class="div1 bg-gray-100 rounded-[40px]">
 
     </div>
-    <div class="mycars overflow-hidden">
+    <div class="user-car overflow-hidden">
       <div class="flex items-center justify-between">
         <Heading :type="1">Mis autos</Heading>
         <a href="" class="text-primary-900">Ver más</a>
       </div>
-      <div class="flex flex-col gap-5 h-full overflow-auto">
-        <MyCars 
+      <div v-if="cars.length" class="flex flex-col gap-5 h-full overflow-auto">
+        <UserCar 
           v-for="car in cars" 
           :key="car.id" 
           :car="car" 
           />
+      </div>
+      <div v-else class="flex flex-col justify-center items-center h-full">
+        <p class="font-semibold opacity-50">Aún no tienes autos registrados.</p>
+        <router-link to="/" class="font-semibold opacity-50 hover:opacity-100">
+          <span class="hover:underline">Registra un auto</span>
+        </router-link>
       </div>
     </div>
   </section>
@@ -148,5 +161,5 @@ export default {
   .profile { grid-area: 1 / 1 / 2 / 4; }
   .history { grid-area: 1 / 4 / 2 / 6; }
   .div1 { grid-area: 2 / 1 / 3 / 3; }
-  .mycars { grid-area: 2 / 3 / 3 / 6; }
+  .user-car { grid-area: 2 / 3 / 3 / 6; }
 </style>

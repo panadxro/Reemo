@@ -19,6 +19,7 @@ export default {
       user: {
         email: "",
         password: "",
+        remember: false, // Definir como booleano
       },
       loading: false,
       errorMsg: "",
@@ -39,7 +40,7 @@ export default {
       try {
         await login({ ...this.user });
         addAlert("¡Bienvenido a Reemo!", "success");
-        this.$router.push("/Profile");
+        this.$router.push("/profile");
       } catch (error) {
         let errorCode = error.code;
         switch (errorCode) {
@@ -111,8 +112,8 @@ export default {
         </template>
       </Input>
       <div class="flex justify-between items-center">
-        <Checkbox v-model="user.remember" id="remember" name="remember" label="Recordarme" labelPosition="right"/>
-        <router-link to="/Register" class="text-primary text-xs text-background-900 font-bold">
+        <Checkbox v-model="user.remember" id="remember" name="remember" label="Recordarme" labelPosition="right" class="text-white"/>
+        <router-link to="/register" class="text-primary text-xs text-background-900 font-bold">
           <span class="hover:underline">
             ¿Olvidaste tu contraseña?
           </span>
@@ -129,9 +130,9 @@ export default {
     </Input>
     <p class="text-xs text-background-900 text-center font-regular">
       ¿No tenés una cuenta? 
-      <router-link to="/Register" class="text-primary font-bold">
+      <router-link to="/register" class="text-primary font-bold">
         <span class="hover:underline">
-          Register
+          Registrar
         </span>
       </router-link>
     </p>

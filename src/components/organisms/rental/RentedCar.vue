@@ -3,7 +3,7 @@ import { subscribeToAuthState } from "@services/auth.js";
 import { unsubscribeToPublication, toggleAvailability } from '@services/publication.js';
 import { addAlert } from "@services/alerts.js";
 
-import Heading from "../atoms/Heading.vue";
+import Heading from "@components/atoms/Heading.vue";
 import Arrow from '@icons/Arrow.vue';
 import Chasis from '@icons/Chasis.vue';
 import Transmition from '@icons/Transmition.vue';

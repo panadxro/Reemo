@@ -26,7 +26,7 @@ const toggle = () => {
     class="flex items-center cursor-pointer gap-2"
   >
     <!-- Texto a la izquierda -->
-    <span v-if="label && labelPosition === 'left'" class="text-sm text-white">{{ label }}</span>
+    <span v-if="label && labelPosition === 'left'" class="text-sm">{{ label }}</span>
 
     <input
       type="checkbox"
@@ -42,7 +42,7 @@ const toggle = () => {
     </div>
 
     <!-- Texto a la derecha -->
-    <span v-if="label && labelPosition === 'right'" class="text-sm text-white">{{ label }}</span>
+    <span v-if="label && labelPosition === 'right'" class="text-sm">{{ label }}</span>
   </label>
 </template>
 
@@ -52,6 +52,7 @@ const toggle = () => {
   height: 24px;
   border-radius: 6px;
   border: 2px solid #DBFAFC;
+  background-color: #FFFFFF;
   display: flex;
   justify-content: center;
   align-items: center;

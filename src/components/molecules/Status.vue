@@ -1,46 +1,46 @@
 <script>
 export default {
   props: {
-    condition: {
+    status: {
       type: String,
       required: true,
       validator: (value) => {
-        // Lista de conditions válidos
         return [
-          "validado",
-          "no-validado",
-          "nuevo",
-          "alquilado",
-          "disponible",
-          "bloqueado",
+          "registrado", // Nuevo estado
+          "validated",
+          "not-validated",
+          "new",
+          "rented",
+          "available",
+          "blocked",
         ].includes(value);
       },
     },
   },
   computed: {
     statusText() {
-      // Mapeo de conditions a textos
       const textos = {
-        validado: "Validado",
-        "no-validado": "No Validado",
-        nuevo: "Nuevo",
-        alquilado: "Alquilado",
-        disponible: "Disponible",
-        bloqueado: "Bloqueado",
+        registrado: "Registrado", // Texto para el nuevo estado
+        validated: "Validado",
+        "not-validated": "No validado",
+        new: "Nuevo",
+        rented: "Alquilado",
+        available: "Disponible",
+        blocked: "Bloqueado",
       };
-      return textos[this.condition] || "Desconocido";
+      return textos[this.status] || "Unknown";
     },
     statusClass() {
-      // Mapeo de conditions a clases de estilo
       const clases = {
-        validado: "bg-vibrant-light-700 text-deep-blue-900",
-        "no-validado": "bg-red-100 text-red-800",
-        nuevo: "bg-green-100 text-green-800",
-        alquilado: "bg-yellow-100 text-yellow-800",
-        disponible: "bg-blue-100 text-blue-800",
-        bloqueado: "bg-gray-100 text-gray-800",
+        registrado: "bg-purple-100 text-purple-800", // Estilo para el nuevo estado
+        validated: "bg-vibrant-light-700 text-deep-blue-900",
+        "not-validated": "bg-red-100 text-red-800",
+        new: "bg-green-100 text-green-800",
+        rented: "bg-yellow-100 text-yellow-800",
+        available: "bg-blue-100 text-blue-800",
+        blocked: "bg-gray-100 text-gray-800",
       };
-      return clases[this.condition] || "bg-gray-100 text-gray-800"; // Estilo por defecto
+      return clases[this.status] || "bg-gray-100 text-gray-800";
     },
   },
 };

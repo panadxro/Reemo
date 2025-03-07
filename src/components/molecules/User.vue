@@ -33,7 +33,7 @@ export default {
       </p>
     </div>
     <div class="inline-flex items-center text-base font-semibold text-gray-900">
-      <router-link to="/Profile/Edit" class="text-blue-700 underline"
+      <router-link to="/profile/Edit" class="text-blue-700 underline"
         >Editar</router-link
       >
     </div>
