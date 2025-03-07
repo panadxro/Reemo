@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router"; 
 import { subscribeToAuthState } from "../services/auth";
 
 import Home from "../pages/Home.vue";
@@ -15,23 +15,72 @@ import AdminUsers from "../pages/admin/Users.vue";
 import PrivateChat from "../pages/PrivateChat.vue";
 
 const routes = [
-  { path: "/", component: Home },
-  { path: "/Login", component: Login },
-  { path: "/Profile", component: Profile, meta: { needsAuth: true } },
-  { path: "/Register", component: Register },
-  { path: "/Search", component: Search },
-  { path: "/Publish", component: Publish, meta: { needsAuth: true } },
-  { path: "/Onboarding", component: UserOnboarding, meta: { needsAuth: true }},
-  { path: "/CarDetails/:id", name: "CarDetails", component: CarDetails, props: true, meta: { needsAuth: true } },
-  { path: "/ProfileOwner/:id", name: "ProfileOwner", component: ProfileOwner, props: true, meta: { needsAuth: true } },
-  { path: "/ProfileOwner/:id/chat", name: "PrivateChat", component: PrivateChat, props: true, meta: { needsAuth: true } },
-  { path: "/admin/Cars", name: "Cars", component: AdminCars, meta: { needsAuth: true, role: "admin" } },
-  { path: "/admin/Users", name: "Users", component: AdminUsers, meta: { needsAuth: true, role: "admin" } },
+  { path: "/", component: Home, name: "Home" },
+  { path: "/login", component: Login, name: "Login" },
+  { path: "/register", component: Register, name: "Register" },
+  { path: "/search", component: Search, name: "Search" },
+  {
+    path: "/profile",
+    component: Profile,
+    name: "Profile",
+    meta: { needsAuth: true },
+  },
+  {
+    path: "/onboarding",
+    component: UserOnboarding,
+    name: "Onboarding",
+    meta: { needsAuth: true },
+  },
+  {
+    path: "/publish",
+    component: Publish,
+    name: "Publish",
+    meta: { needsAuth: true },
+  },
+  {
+    path: "/car/:id",
+    name: "CarDetails",
+    component: CarDetails,
+    props: true,
+    meta: { needsAuth: true },
+  },
+  {
+    path: "/user/:id",
+    name: "ProfileOwner",
+    component: ProfileOwner,
+    props: true,
+    meta: { needsAuth: true },
+    children: [
+      {
+        path: "chat",
+        name: "PrivateChat",
+        component: PrivateChat,
+        meta: { needsAuth: true },
+      },
+    ],
+  },
+  {
+    path: "/admin",
+    name: "Admin",
+    meta: { needsAuth: true, role: "admin" },
+    children: [
+      {
+        path: "cars",
+        name: "AdminCars",
+        component: AdminCars,
+      },
+      {
+        path: "users",
+        name: "AdminUsers",
+        component: AdminUsers,
+      },
+    ],
+  },
 ];
 
 const router = createRouter({
   routes,
-  history: createWebHashHistory(),
+  history: createWebHistory(),
 });
 
 let loggedUser = {
@@ -49,7 +98,7 @@ subscribeToAuthState((newUserData) => (loggedUser = newUserData));
 router.beforeEach((to) => {
   if (to.meta.needsAuth && loggedUser.id == null) {
     return {
-      path: "/Login",
+      path: "/login",
     };
   }
 

@@ -5,7 +5,7 @@ import Home from '@icons/Home.vue'
 import Search from '@icons/Search.vue'
 import Map from '@icons/Map.vue'
 import UserIcon from '@icons/UserIcon.vue'
-import AlertRented from './rental/AlertRented.vue'
+import AlertRented from '@components/organisms/rental/AlertRented.vue'
 import QA from '@icons/QA.vue'
 import Settings from '@icons/Settings.vue'
 import Logout from '@icons/Logout.vue';
@@ -38,7 +38,7 @@ export default {
 </script>
 
 <template>
-  <nav class="bg-secondary-100 flex flex-col justify-between min-h-full m-2.5 py-12 px-5 rounded-full">
+  <nav class="bg-secondary-100 flex flex-col justify-between min-h-full m-2.5 py-12 px-4 rounded-full">
     <ul 
       v-if="user.role !== 'admin'"
       class="flex flex-col gap-2 items-center"
@@ -49,17 +49,17 @@ export default {
         </IconNavButton>
       </li>
       <li>
-        <IconNavButton to="/Search" title="Search">
+        <IconNavButton to="/search" title="Search">
           <Search />
         </IconNavButton>
       </li>
       <li>
-        <IconNavButton to="/Search" title="Map">
+        <IconNavButton to="/search" title="Map">
           <Map />
         </IconNavButton>
       </li>
       <li>
-        <IconNavButton to="/Profile" title="Profile">
+        <IconNavButton to="/profile" title="Profile">
           <UserIcon />
         </IconNavButton>
       </li>
@@ -74,17 +74,17 @@ export default {
         </IconNavButton>
       </li>
       <li>
-        <IconNavButton to="/Search" title="Search">
+        <IconNavButton to="/search" title="Search">
           <Search />
         </IconNavButton>
       </li>
       <li>
-        <IconNavButton to="/admin/Cars" title="Admin cars">
+        <IconNavButton to="/admin/cars" title="Admin cars">
           <Cars />
         </IconNavButton>
       </li>
       <li>
-        <IconNavButton to="/admin/Users" title="Admin users">
+        <IconNavButton to="/admin/userss" title="Admin users">
           <People />
         </IconNavButton>
       </li>

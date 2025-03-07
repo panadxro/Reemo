@@ -1,7 +1,7 @@
 <script>
 import Heading from "../components/atoms/Heading.vue";
-// import PublishPhotos from '../components/my-cars/PublishPhotos.vue';
-import AddressInput from "@/components/google-maps/AddressInput.vue";
+// import PublishPhotos from '../components/organisms/my-cars/PublishPhotos.vue';
+import AddressInput from "@/components/organisms/google-maps/AddressInput.vue";
 
 import { subscribeToAuthState } from '../services/auth.js';
 import { saveCars, subscribeToNewPublication } from '../services/publication.js'
@@ -229,7 +229,7 @@ export default {
         this.selectedFiles = [null, null, null, null];
         this.photoPreview = ["", "", "", ""];
 
-        this.$router.push('/Profile');
+        this.$router.push('/profile');
       } catch (error) {
         console.error("Error al guardar los datos del auto:", error);
       } finally {

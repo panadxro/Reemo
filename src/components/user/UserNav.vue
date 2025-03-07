@@ -34,7 +34,7 @@ export default {
       :alt="`Perfil de ${user.userName}`" 
     />
     <Heading :type="1" class="regular">{{ user.name }} {{ user.lastName }}</Heading>
-    <p class="text-sm text-gray-500 truncate">
+    <p class="text-sm text-gray-500">
       @{{ user.userName }}
     </p>
     <button type="button" @click="openUserEdit">Editar</button>

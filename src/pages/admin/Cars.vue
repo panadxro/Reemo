@@ -67,7 +67,10 @@ export default {
         const response = await updateCarValidation(carId, isValidated);
         if (response.success) {
           const car = this.cars.find((car) => car.id === carId);
-          if (car) car.isValidated = isValidated;
+          if (car) {
+            car.isValidated = isValidated; // Actualiza isValidated
+            car.status = isValidated ? "validated" : "not-validated"; // Actualiza status
+          }
           addAlert(response.message, "success");
         } else {
           addAlert(response.message, "error");
@@ -76,14 +79,14 @@ export default {
         console.error("Error al actualizar la validación del auto:", error);
         addAlert("Error al actualizar la validación del auto", "error");
       }
-    },
+    }
   },
   computed: {
     carsFiltrados() {
       if (this.filtroActual === "habilitados") {
-        return this.cars.filter((car) => car.isValidated);
+        return this.cars.filter((car) => car.status === "validated");
       } else if (this.filtroActual === "deshabilitados") {
-        return this.cars.filter((car) => !car.isValidated);
+        return this.cars.filter((car) => car.status === "not-validated");
       }
       return this.cars;
     },
@@ -153,20 +156,20 @@ export default {
             </div>
           </td>
           <td class="py-2.5 px-5 flex flex-1">
-            <router-link :to="`/ProfileOwner/${car.user_id}`" class="flex items-center gap-2 hover:cursor-pointer">
+            <router-link :to="`/user/${car.user_id}`" class="flex items-center gap-2 hover:cursor-pointer">
               <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
               <p class="hover:underline">{{ car.user.name }} {{ car.user.lastName }}</p>
             </router-link>
           </td>
           <td class="py-2.5 px-5 flex w-20 items-center">{{ car.año }}</td>
           <td class="py-2.5 px-5 flex flex-1 items-center">{{ car.chasis }}</td>
-          <td class="py-2.5 px-5 flex flex-1"><Status :isValidated="car.isValidated" /></td>
+          <td class="py-2.5 px-5 flex flex-1"><Status :status="car.status" /></td>
           <td class="py-2.5 px-5 flex items-center w-32 font-">{{ formatDate(car.created_at) }}</td>
           <td class="py-2.5 px-5 flex justify-center relative w-24 items-center">
             <Popover
               :items="[
                 { label: 'Ver auto', to: `/CarDetails/${car.id}` },
-                { label: 'Chat', to: `/ProfileOwner/${car.user_id}/chat` },
+                { label: 'Chat', to: `/user/${car.user_id}/chat` },
                 { label: car.isValidated ? 'Invalidar' : 'Validar', action: () => updateValidation(car.id, !car.isValidated), class: `car.isValidated ? 'text-red-500' : ''` },
               ]"
               :isOpen="openPopoverId === index"

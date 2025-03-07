@@ -2,7 +2,7 @@
 import Logout from "../icons/Logout.vue";
 import Login from "../icons/Login.vue";
 import Reemo from '@icons/Reemo.vue';
-import AlertRented from './rental/AlertRented.vue'
+import AlertRented from '@components/organisms/rental/AlertRented.vue'
 
 export default {
   name: "Navbar",
@@ -43,7 +43,7 @@ export default {
 
         <template v-if="!user.id">
           <router-link
-            to="/Login"
+            to="/login"
             class="flex gap-2 items-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
           >
             <span>Iniciar sesión</span>
@@ -78,7 +78,7 @@ export default {
           </li>
           <li>
             <router-link
-              to="/Search"
+              to="/search"
               class="block py-2 px-3 md:p-0 rounded-sm md:bg-transparent md:text-gray-500 hover:gray-700"
               aria-current="page"
               active-class="text-secondary-900! bg-blue-700"
@@ -88,7 +88,7 @@ export default {
           </li>
           <li v-if="user.id">
             <router-link
-              to="/Profile"
+              to="/profile"
               class="block py-2 px-3 md:p-0 rounded-sm md:bg-transparent md:text-gray-500 hover:gray-700"
               aria-current="page"
               active-class="text-secondary-900! bg-blue-700"

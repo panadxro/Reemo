@@ -101,27 +101,10 @@ export default {
 </script>
 
 <template>
-  <div :class="`chip chip-${accessory}`">
+  <div :class="`chip chip-${accessory}`" class="flex items-center gap-2 bg-vibrant-light-700 text-deep-blue-900 font-semibold rounded-2xl py-2 px-4">
     <span class="icon" v-if="IconComponent">
     <component :is="IconComponent" />
     </span>
-    <span class="label">{{ name }}</span>
+    <span class="label text-sm">{{ name }}</span>
   </div>
 </template>
-
-<style scoped>
-.chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem .5rem;
-  border-radius: .5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin: 0.5rem;
-  background-color: #f0f0f0;
-}
-
-.icon {
-  margin-right: 0.5rem;
-}
-</style>  
