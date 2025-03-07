@@ -5,7 +5,7 @@ import { fetchRentedCars } from "@services/rentedCarService.js";
 
 import Heading from "@components/atoms/Heading.vue";
 import CardCar from "@components/my-cars/CardCar.vue";
-import User from "@components/user/User.vue";
+import UserNav from "@components/user/UserNav.vue";
 import RentedCar from "@components/rental/RentedCar.vue";
 import Loading from "@icons/Loading.vue";
 import MyCars from "@components/my-cars/MyCars.vue";
@@ -16,7 +16,7 @@ let unsubscribeAuth = () => { };
 
 export default {
   name: "MyProfile",
-  components: { Heading, CardCar, User, RentedCar, Loading, MyCars, Arrow, BackButton },
+  components: { Heading, CardCar, UserNav, RentedCar, Loading, MyCars, Arrow, BackButton },
   data() {
     return {
       cars: [],
@@ -84,8 +84,8 @@ export default {
 </script>
 
 
-<template class="p-2.5 flex flex-col items-center">
-  <User :user="loggedUser" />
+<template>
+  <UserNav :user="loggedUser" />
   <section class="parent m-2.5 w-full max-h-vh">
     <div class="flex profile flex-col grow gap-3">
       <div class="flex items-center gap-5">

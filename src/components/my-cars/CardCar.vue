@@ -9,7 +9,7 @@ import Chasis from '@icons/Chasis.vue';
 import Transmition from '@icons/Transmition.vue';
 import defaultCarImage from '@assets/Car-Img.png';
 import PopoverPublication from './PopoverPublication.vue';
-import Home from '@icons/Home.vue';
+import Like from '@icons/Like.vue';
 
 let unsubscribeAuth = () => { };
 
@@ -24,7 +24,7 @@ export default {
       };
     },
     name: 'CardCar',
-    components: { Heading, Arrow, Transmition, Chasis, PopoverPublication, Home },
+    components: { Heading, Arrow, Transmition, Chasis, PopoverPublication, Like },
     props: {
       car: {
         type: Object,
@@ -40,8 +40,11 @@ export default {
     setDefaultImage(event) {
       event.target.src = this.defaultCarImage;
     },
+    handleLike() {
+      console.log('Like');
+    }
 
-    async handleDelete(id) {
+/*     async handleDelete(id) {
   this.loading = true;
   try {
     const result = await unsubscribeToPublication(id);
@@ -58,9 +61,9 @@ export default {
   } finally {
     this.loading = false;
   }
-},
+}, */
 
-async handleToggleAvailability(carId) {
+/* async handleToggleAvailability(carId) {
   this.loading = true;
   try {
     const result = await toggleAvailability(carId);
@@ -80,7 +83,7 @@ async handleToggleAvailability(carId) {
   } finally {
     this.loading = false;
   }
-},
+}, */
     },
   mounted() {
     unsubscribeAuth = subscribeToAuthState((newUserData) => {
@@ -94,30 +97,39 @@ async handleToggleAvailability(carId) {
 </script>
 
 <template>
-  <div class="flex flex-col border-2 rounded-3xl border-secondary-100 p-4">
-    <div class="flex flex-row justify-between">
+  <div class="relative flex flex-col border-2 rounded-3xl border-secondary-100 p-4">
+    <button
+      @click.stop="handleLike"
+      class="absolute top-4 right-4 z-10 p-2 rounded-full"
+    >
+      <Like />
+    </button>
+
+    <router-link 
+      :to="{ name: 'CarDetails', params: { id: car.id } }" 
+      class="flex flex-col"
+    >
       <div class="flex flex-row gap-2">
         <span class="bg-secondary-100 py-2 px-4 rounded-xl">Nuevo</span>
         <span class="bg-secondary-100 py-2 px-4 rounded-xl">Nuevo</span>
       </div>
-      <Home />
-    </div>
-    <div class="flex justify-end">
-      <figure class="aspect-[21/9] h-24 overflow-hidden "> 
-        <img
-        class="rounded-xl object-center object-cover w-full h-full"
-        :src="car.images && car.images.length > 0 ? car.images[0] : defaultCarImage" 
-        @error="setDefaultImage"
-        :alt="car.marca + ' ' + car.modelo" 
-        />
-      </figure>
-    </div>
-    <div class="flex flex-1 flex-row justify-between items-end">
-      <article class="flex flex-col align-end justify-between">
-        <p class="text-sm text-gray-500">{{ car.marca }}</p>
-        <Heading :type="4">{{ car.modelo }}</Heading>
-      </article>
-      <Heading :type="4">${{ car.precio }}</Heading>
-    </div>
+      <div class="flex justify-end">
+        <figure class="aspect-[21/9] h-24 overflow-hidden"> 
+          <img
+            class="rounded-xl object-center object-cover w-full h-full"
+            :src="car.images && car.images.length > 0 ? car.images[0] : defaultCarImage" 
+            @error="setDefaultImage"
+            :alt="car.marca + ' ' + car.modelo" 
+          />
+        </figure>
+      </div>
+      <div class="flex flex-1 flex-row justify-between items-end">
+        <article class="flex flex-col align-end justify-between">
+          <p class="text-sm text-gray-500">{{ car.marca }}</p>
+          <Heading :type="4">{{ car.modelo }}</Heading>
+        </article>
+        <Heading :type="4">${{ car.precio }}</Heading>
+      </div>
+    </router-link>
   </div>
 </template>

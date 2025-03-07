@@ -38,7 +38,7 @@ export default {
 </script>
 
 <template>
-  <nav class="bg-secondary-100 flex flex-col justify-between min-h-full m-2.5 py-12 px-5 rounded-full">
+  <nav class="bg-secondary-100 flex flex-col justify-between min-h-full m-2.5 py-12 px-4 rounded-full">
     <ul 
       v-if="user.role !== 'admin'"
       class="flex flex-col gap-2 items-center"
