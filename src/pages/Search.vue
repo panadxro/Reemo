@@ -2,18 +2,22 @@
 import { getAvailableCars, addCar } from "../services/car-service.js";
 import { subscribeToAuthState } from "../services/auth.js";
 import { subscribeToNewPublication } from "../services/publication.js";
+import { Loader } from "@googlemaps/js-api-loader";
+
+import AddressInput from "@/components/organisms/google-maps/AddressInput.vue";
 
 import Heading from "@components/atoms/Heading.vue";
-import CardCar from "@components/my-cars/CardCar.vue";
+import CardCar from "@components/organisms/my-cars/CardCar.vue";
 import AddIcon from "@icons/AddIcon.vue";
 import Loading from "@icons/Loading.vue";
-
-import { Loader } from "@googlemaps/js-api-loader";
-import AddressInput from "@/components/google-maps/AddressInput.vue";
+import Input from "../components/molecules/Input.vue";
+import Arrow from '@icons/Arrow.vue'
+import PriceRange from "../components/molecules/PriceRange.vue";
+import Checkbox from "../components/atoms/Checkbox.vue";
 
 export default {
   name: "Search",
-  components: { Heading, CardCar, AddIcon, Loading, AddressInput },
+  components: { Heading, CardCar, AddIcon, Loading, AddressInput, Input, Arrow, PriceRange, Checkbox },
   data() {
     return {
       cars: [],
@@ -27,6 +31,8 @@ export default {
         email: null,
       },
       loading: false,
+      chassisTypes: ["Sedan", "Van", "SUV", "Pickup"], // Tipos de chasis
+      selectedChassis: [], // Tipos de chasis seleccionados
     };
   },
   methods: {
@@ -91,7 +97,7 @@ export default {
       setTimeout(() => this.updateMapMarkers(), 500);
     },
 
-    initAutocomplete() {
+/*     initAutocomplete() {
       const input = document.getElementById("searchInput");
 
       const autocomplete = new google.maps.places.Autocomplete(input, {
@@ -116,20 +122,20 @@ export default {
 
         this.filterCars();
       })
-    },
+    }, */
 
-    async updateMapMarkers() {
+/*     async updateMapMarkers() {
       
       if(!this.map){
         console.error("El mapa no se esta iniciando");
         return;
-      }
+      } */
       
       // const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-      const { Marker } = await google.maps.importLibrary("marker"); 
+      // const { Marker } = await google.maps.importLibrary("marker"); 
 
       // limpia los marcadores anteriores
-      this.markers.forEach(marker => marker.setMap(null));
+/*       this.markers.forEach(marker => marker.setMap(null));
       this.markers = [];
 
       if (this.filteredCars.length === 0) {
@@ -175,7 +181,7 @@ export default {
               <button class="infowindow-btn" id="btn-${car.id}">Ver Detalles</button>
             </div>
           </div>
-           `;
+           `; */
 
         // const infoWindow = new google.maps.InfoWindow({
         //   content: `
@@ -216,27 +222,27 @@ export default {
         //   `,
         // });
 
-        const customInfoWindow = new google.maps.InfoWindow({
+/*         const customInfoWindow = new google.maps.InfoWindow({
           content: infoWindowContent,
-          // disableAutoPan: true,
-        });
+          disableAutoPan: true,
+        }); */
 
         // cuando clickea afuera del infoWindows se cierra 
-        this.map.addListener('click', () =>{
+/*         this.map.addListener('click', () =>{
           customInfoWindow.close();
-        })
+        }) */
       
         // informacion de los vehiculos al hacer click
         // marker.addListener('click', () => {
         //   infoWindow.open(this.map, marker);
         // })
 
-        marker.addListener('click', () => {
+/*         marker.addListener('click', () => {
           customInfoWindow.open(this.map, marker);
-        })
+        }) */
 
         // redirecciona a la descripcion de cada vehiculo
-        google.maps.event.addListener(customInfoWindow, "domready", () => {
+/*         google.maps.event.addListener(customInfoWindow, "domready", () => {
           const waitForButton = () => {
             const btn = document.getElementById(`btn-${car.id}`);
             if (btn) {
@@ -251,25 +257,25 @@ export default {
           };
           // inicia el proceso de espera
           waitForButton(); 
-        });
+        }); */
 
 
-        this.markers.push(marker);
+/*         this.markers.push(marker);
         // Expande los límites del mapa
         bounds.extend(position); 
-      });
+      }); */
  
-      setTimeout(() => {
+/*       setTimeout(() => {
         if (this.filteredCars.length > 0) {
           this.map.fitBounds(bounds);
         }
-      }, 500);
+      }, 500); */
 
-    },
+    // },
 
 
 
-    async loadGoogleMaps() {
+/*     async loadGoogleMaps() {
       const loader = new Loader({
         apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
         libraries: ["places", "geometry"], // 
@@ -300,15 +306,14 @@ export default {
 
       this.initAutocomplete();
 
-    },
-
+    }, */
   },
   mounted() {
     subscribeToAuthState((newUserData) => {
       this.loggedUser = newUserData;
       this.fetchCars();
-      this.loadGoogleMaps();
-      this.initMap();
+      // this.loadGoogleMaps();
+      // this.initMap();
     });
 
     subscribeToNewPublication((newCars) => {
@@ -319,130 +324,126 @@ export default {
 </script>
 
 <template>
-  <div class="bg-secondary-100 m-2.5 min-w-[368px] rounded-[40px] py-10 px-5">
-    <Heading :type="1" class="m-6 text-center">Filtros</Heading>
-        <div class="relative">
-      <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-        </svg>
+  <section class="parent w-full">
+    <div class="filter bg-secondary-100 m-2.5 min-w-[368px] rounded-[40px] py-10 px-5 flex
+    flex-col gap-6">
+      <Heading :type="2" class="medium">Filtros</Heading>
+      <div class="flex gap-2.5">
+        <Input
+          type="select"
+          name="marca"
+          id="marca"
+          placeholder="Marca"
+          :options="[
+            { value: 'Audi', label: 'Audi' },
+            { value: 'BMW', label: 'BMW' },
+            { value: 'Mercedes', label: 'Mercedes' },
+          ]"
+          icon-position="right"
+          variant="secondary"
+          :outline="true"
+          class="w-full"
+        >
+        </Input>
+        <Input
+          type="select"
+          name="modelo"
+          id="modelo"
+          placeholder="Modelo"
+          :options="[
+            { value: 'A4', label: 'A4' },
+            { value: '3 Series', label: '3 Series' },
+            { value: 'C-Class', label: 'C-Class' },
+          ]"
+          icon-position="right"
+          variant="secondary"
+          :outline="true"
+          class="w-full cursor-pointer"
+        >
+        </Input>
       </div>
-      <input type="text" id="searchInput"
-        class="block p-4 pl-10 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-primary-300 focus:ring-primary-500 focus:border-primary-500 my-5"
-        placeholder="Buscar autos cerca de tu ubicacion" required>
-    </div>
+      <div class="flex flex-col gap-2.5">
+        <Heading :type="3" class="small">Rango de precio</Heading>
+        <PriceRange :min="0" :max="100" />
+      </div>
+      <div class="flex flex-col gap-3">
+        <Heading :type="3" class="small">Chasis</Heading>
+        <div class="flex gap-x-16 gap-y-4 flex-wrap ">
+          <Checkbox
+            v-for="chassis in chassisTypes"
+            :key="chassis"
+            :id="chassis.toLowerCase()" 
+            :name="chassis.toLowerCase()" 
+            :label="chassis" 
+            labelPosition="right" 
+            class="text-deep-blue-900"
+            v-model="selectedChassis"
+            :value="chassis"
+          />
+        </div>
+      </div>
 
-    <!-- Renderizado del mapa -->
-    <div id="map" style="width: 100%; height: 400px;"></div>
-  </div>
-  <section class="m-2.5 flex flex-col w-full gap-3 overflow-hidden">
-    <div class="flex justify-between items-center">
-      <Heading :type="1" class="m-6 text-center">Autos disponibles</Heading>
-    
-      <template v-if="loggedUser.id == null">
-        <router-link to="/Login"
-        class="gap-4 md:flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
-          <span class="hidden md:block">Publicar Vehículo</span>
-          <AddIcon />
-        </router-link>
-      </template>
+        <!--  <div class="relative">
+        <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+          <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </div>
+        <input type="text" id="searchInput"
+          class="block p-4 pl-10 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-primary-300 focus:ring-primary-500 focus:border-primary-500 my-5"
+          placeholder="Buscar autos cerca de tu ubicacion" required>
+      </div> -->
 
-      <template v-else>
-        <router-link to="/Publish"
+      <!-- Renderizado del mapa -->
+  <!--     <div id="map" style="width: 100%; height: 400px;"></div>
+  -->
+    </div> 
+    <section class="explore m-2.5 flex flex-col w-full gap-3 overflow-hidden">
+      <div class="flex justify-between items-center">
+        <Heading :type="1" class="m-6 text-center">Autos disponibles</Heading>
+      
+        <template v-if="loggedUser.id == null">
+          <router-link to="/login"
           class="gap-4 md:flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
-          <span class="hidden md:block">Publicar Vehículo</span>
-          <AddIcon />
-        </router-link>
-      </template>
-    </div>
-    <div v-if="loading" class="flex items-center justify-center w-fit mx-auto bg-gray-50">
-      <Loading role="status" />
-      <span class="sr-only">Cargando...</span>
-    </div>
-    <div v-else class="h-full overflow-auto">
-      <div  class="grid justify-items-center gap-3 grid-cols-2">
-        <div 
-          v-for="(car, index) in filteredCars" :key="car.id"
-          class="rounded-2xl flex relative flex-col shadow-xs w-full"
-          >
-        <CardCar :car="car" />
+            <span class="hidden md:block">Publicar Vehículo</span>
+            <AddIcon />
+          </router-link>
+        </template>
+
+        <template v-else>
+          <router-link to="/publish"
+            class="gap-4 md:flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
+            <span class="hidden md:block">Publicar Vehículo</span>
+            <AddIcon />
+          </router-link>
+        </template>
+      </div>
+      <div v-if="loading" class="flex items-center justify-center w-fit mx-auto bg-gray-50">
+        <Loading role="status" />
+        <span class="sr-only">Cargando...</span>
+      </div>
+      <div v-else class="h-full overflow-auto">
+        <div  class="grid justify-items-center gap-3 grid-cols-2">
+          <div 
+            v-for="(car, index) in cars" :key="car.id"
+            class="rounded-2xl flex relative flex-col shadow-xs w-full"
+            >
+          <CardCar :car="car" />
+        </div>
       </div>
     </div>
-  </div>
+    </section>
   </section>
 </template>
 
 <style>
-  .custom-infowindow {
-  max-width: 300px;
-  background: white;
-  border-radius: 12px 0;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  font-family: Arial, sans-serif;
-  position: relative;
-}
+  .parent {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
 
-.infowindow-container {
-  display: flex;
-  flex-direction: column;
-}
-
-.infowindow-image img {
-  padding: 0 !important;
-  width: 100%;
-  height: 140px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.infowindow-details {
-  padding: 8px;
-  text-align: left;
-}
-
-.infowindow-btn {
-  width: 100%;
-  background: #2A3EF4;
-  color: white;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.infowindow-btn:hover {
-  background: #1d2ecb;
-}
-
-
-.gm-ui-hover-effect {
-  display: none !important;
-}
-
-.gm-style-iw {
-  box-shadow: none !important;
-  border-radius: 10px;
-  padding: 0 !important;
-  width: auto !important;
-  height: auto !important;
-  max-width: none !important;
-}
-
-/* Saca el scroll */
-.gm-style-iw-d {
-  min-height: 250px !important;
-  max-height: none !important;
-  max-width: none !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-}
-
-.gm-style-iw-c {
-  height: auto !important;
-  max-height: none !important;
-}
-
+  .filter { grid-area: 1 / 1 / 3 / 2; }
+  .explore { grid-area: 1 / 2 / 3 / 4; }
 </style>

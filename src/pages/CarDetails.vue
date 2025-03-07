@@ -3,7 +3,7 @@ import { getCarById, checkIfCarIsRented } from "../services/car-service.js";
 import { Loader } from "@googlemaps/js-api-loader";
 
 import { subscribeToAuthState } from "../services/auth.js";
-import ModalRent from "../components/ModalRent.vue";
+import ModalRent from "@components/organisms/rental/ModalRent.vue";
 import Heading from "../components/atoms/Heading.vue";
 import Pill from "../components/atoms/Pill.vue";
 import Loading from "@icons/Loading.vue";
@@ -188,7 +188,7 @@ export default {
         </div>
       </div>
       <div v-if="car.user_id !== loggedUser?.id">
-        <router-link :to="`/ProfileOwner/${car.user_id}`" class="flex items-center gap-2 hover:cursor-pointer">
+        <router-link :to="`/user/${car.user_id}`" class="flex items-center gap-2 hover:cursor-pointer">
           <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
           <p class="font-semibold hover:underline">{{ car.user.name }} {{ car.user.lastName }}</p>
         </router-link>

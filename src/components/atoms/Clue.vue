@@ -1,6 +1,6 @@
 <script>
 export default {
-  name: "Search",
+  name: "Clue",
 };
 </script>
 

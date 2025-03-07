@@ -7,7 +7,7 @@ import LongArrow from "../icons/LongArrow.vue";
 import PublishYourCar from "../components/atoms/PublishYourCar.vue";
 import RentYourCar from "../components/atoms/RentYourCar.vue"
 import NotificationExpress from "../components/atoms/NotificationExpress.vue";
-import RentsExpress from "../components/organisms/RentsExpress.vue";
+import RentsExpress from "../components/atoms/RentsExpress.vue";
 import Income from "../components/atoms/Income.vue";
 import Moments from "../components/atoms/Moments.vue";
 import ConectingCars from "../components/atoms/ConectingCars.vue";
@@ -15,7 +15,7 @@ import GooglePlayLg from "../components/atoms/GooglePlayLg.vue";
 import AppStoreLg from "../components/atoms/AppStoreLg.vue";
 import Brands from "../components/atoms/Brands.vue";
 import Replay from "../components/atoms/Replay.vue";
-import Search from "../components/atoms/Search.vue";
+import Clue from "../components/atoms/Clue.vue";
 import Dropdown from "../components/molecules/Dropdown.vue";
 import Experience from "../components/atoms/Experience.vue";
 import QR from "../components/atoms/QR.vue";
@@ -23,7 +23,7 @@ import InfoSm from "../icons/InfoSm.vue";
 
 export default {
   name: "Home",
-  components: { Heading, Pill, GooglePlayLg, AppStoreLg, ZurichxReemo, ABS, LongArrow, PublishYourCar, RentYourCar, NotificationExpress, RentsExpress, Income, Moments, ConectingCars, Brands, Replay, Search, Dropdown, Experience, QR, InfoSm },
+  components: { Heading, Pill, GooglePlayLg, AppStoreLg, ZurichxReemo, ABS, LongArrow, PublishYourCar, RentYourCar, NotificationExpress, RentsExpress, Income, Moments, ConectingCars, Brands, Replay, Clue, Dropdown, Experience, QR, InfoSm },
 };
 </script>
 
@@ -198,7 +198,7 @@ export default {
                 <span class="sr-only">Ver más</span>
               </button>
             </div>
-            <Search/>
+            <Clue/>
           </article>
         </div>
 

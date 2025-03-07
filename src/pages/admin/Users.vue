@@ -90,7 +90,7 @@ export default {
           class="flex w-full max-h-16 border-2 border-secondary-100 rounded-xl font-semibold"
           >
           <td class="py-2.5 px-5 flex flex-1">
-            <router-link :to="`/ProfileOwner/${user.id}`" class="flex items-center gap-2 hover:cursor-pointer">
+            <router-link :to="`/user/${user.id}`" class="flex items-center gap-2 hover:cursor-pointer">
               <img :src="user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
               <p class="hover:underline">{{ user.name }} {{ user.lastName }}</p>
             </router-link>
@@ -101,8 +101,8 @@ export default {
           <td class="py-2.5 px-5 flex justify-center relative w-24 items-center">
             <Popover
               :items="[
-                { label: 'Ver perfil', to: `/ProfileOwner/${user.id}` },
-                { label: 'Chat', to: `/ProfileOwner/${user.id}/chat` },
+                { label: 'Ver perfil', to: `/user/${user.id}` },
+                { label: 'Chat', to: `/user/${user.id}/chat` },
                 // { label: car.isValidated ? 'Invalidar' : 'Validar', action: () => updateValidation(car.id, !car.isValidated), class: `car.isValidated ? 'text-red-500' : ''` },
               ]"
               :isOpen="openPopoverId === index"
@@ -134,7 +134,7 @@ export default {
             <img :src="user.photoURL" alt="Imagen del usuario" class="w-16 h-16 object-cover rounded-sm" />
           </td>
           <td class="py-3 px-4">
-            <router-link :to="`/ProfileOwner/${user.id}`" class="flex items-center gap-2 hover:cursor-pointer">
+            <router-link :to="`/user/${user.id}`" class="flex items-center gap-2 hover:cursor-pointer">
               <p class="hover:underline">{{ user.name }}</p>
             </router-link>
           </td>
