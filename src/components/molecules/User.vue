@@ -15,7 +15,7 @@ export default {
   <div
     class="max-w-md w-96 mx-auto p-4 sm:px-8 sm:py-4 flex rounded-xl items-center bg-blue-100"
   >
-    <div class="flex-shrink-0">
+    <div class="shrink-0">
       <img
         v-if="user.photoURL"
         class="w-8 h-8 rounded-full"
@@ -33,7 +33,7 @@ export default {
       </p>
     </div>
     <div class="inline-flex items-center text-base font-semibold text-gray-900">
-      <router-link to="/Profile/Edit" class="text-blue-700 underline"
+      <router-link to="/profile/Edit" class="text-blue-700 underline"
         >Editar</router-link
       >
     </div>

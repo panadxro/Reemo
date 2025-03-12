@@ -1,6 +1,6 @@
 <script>
-import { isCarAlreadyRented, submitRentalRequest } from "../services/rentedCarService";
-import { addAlert } from "../services/alerts";
+import { isCarAlreadyRented, submitRentalRequest } from "@services/rentedCarService";
+import { addAlert } from "@services/alerts";
 
 export default {
   props: ["car", "loggedUser", "rented"],
@@ -71,7 +71,7 @@ export default {
       }
 
       this.close();
-      this.$router.push('/Profile');
+      this.$router.push('/profile');
     },
     timeOptions() {
       for (let hour = 0; hour < 24; hour++) {
@@ -149,7 +149,7 @@ export default {
         <div>
           <label for="rentedFromDate" class="block text-sm font-medium">Fecha de Inicio:</label>
           <div class="grid grid-cols-2 gap-4 mb-4">
-            <input type="date" id="rentedFromDate" v-model="rentedFromDate" required :min="today" class="mt-1 block w-full p-2 border border-gray-300 rounded" />
+            <input type="date" id="rentedFromDate" v-model="rentedFromDate" required :min="today" class="mt-1 block w-full p-2 border border-gray-300 rounded-sm" />
 
             <select id="time-select" v-model="selectedTime" :disabled="isTimeDisabled"
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full h-max-80 p-2.5">
@@ -162,9 +162,8 @@ export default {
         <div>
           <label for="rentedUntilDate" class="block text-sm font-medium">Fecha de Fin:</label>
           <div class="grid grid-cols-2 gap-4 mb-4">
-            <input type="date" id="rentedUntilDate" v-model="rentedUntilDate" required :min="rentedFromDate" :disabled="isUntilDateDisabled"
+            <input type="date" id="rentedUntilDate" v-model="rentedUntilDate" required :min="rentedFromDate" :disabled="isUntilTimeDisabled"
               class="mt-1 block w-full p-2 border border-gray-300 rounded" />
-
               <select v-model="selectedUntilTime" :disabled="isUntilTimeDisabled" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full h-max-80 p-2.5">
                 <option
                   v-for="time in availableUntilTimes"
@@ -182,7 +181,7 @@ export default {
           <button type="button" @click="close" class="mr-2 text-gray-600">
             Cancelar
           </button>
-          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+          <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-sm">
             Enviar Solicitud
           </button>
         </div>

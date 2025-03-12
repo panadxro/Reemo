@@ -56,7 +56,7 @@ export default {
   <component :is="tag" class="dropdown">
     <button
       type="button"
-      class="flex items-center justify-between w-full text-left font-bold sm:cursor-default outline-none"
+      class="flex items-center justify-between w-full text-left font-bold sm:cursor-default outline-hidden"
       @click="toggleDropdown"
     >
       <slot name="title"></slot>

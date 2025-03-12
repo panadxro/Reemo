@@ -1,7 +1,7 @@
 <script>
 import Heading from "../components/atoms/Heading.vue";
-// import PublishPhotos from '../components/my-cars/PublishPhotos.vue';
-import AddressInput from "@/components/google-maps/AddressInput.vue";
+// import PublishPhotos from '../components/organisms/my-cars/PublishPhotos.vue';
+import AddressInput from "@/components/organisms/google-maps/AddressInput.vue";
 
 import { subscribeToAuthState } from '../services/auth.js';
 import { saveCars, subscribeToNewPublication } from '../services/publication.js'
@@ -19,6 +19,22 @@ export default {
       selectedFiles: [null, null, null, null],
       photoPreview: ["", "", "", ""],
       cars: [],
+      marcas: {
+        Toyota: ["Corolla", "Camry", "RAV4", "Hilux", "Yaris", "Tacoma", "Land Cruiser", "Prius", "Fortuner"],
+        Ford: ["Mustang", "Fiesta", "Focus", "Ranger", "Explorer", "Escape", "Bronco", "Edge", "F-150"],
+        Chevrolet: ["Cruze", "Spark", "Onix", "Tracker", "Silverado", "Equinox", "Suburban", "Traverse", "Camaro"],
+        Volkswagen: ["Gol", "Vento", "Tiguan", "Amarok", "Passat", "Polo", "Golf", "T-Cross", "Taos"],
+        Renault: ["Kwid", "Logan", "Sandero", "Duster", "Koleos", "Megane", "Captur", "Alaskan"],
+        Nissan: ["Versa", "Sentra", "Altima", "Frontier", "Kicks", "Murano", "Pathfinder", "X-Trail", "370Z"],
+        Peugeot: ["208", "2008", "3008", "5008", "308", "408", "Rifter", "Traveller"],
+        Fiat: ["Mobi", "Argo", "Cronos", "Toro", "Punto", "Uno", "Fiorino", "Ducato"],
+        "Mercedes-Benz": ["A-Class", "C-Class", "E-Class", "GLA", "GLC", "GLE", "GLS", "S-Class", "Sprinter"],
+        Honda: ["Civic", "Accord", "CR-V", "HR-V", "Fit", "Pilot", "City", "Odyssey"],
+        Hyundai: ["Accent", "Elantra", "Santa Fe", "Tucson", "Palisade", "Creta", "Kona", "Venue", "Sonata"]
+      },
+      sortedMarcas: {},
+      selectedMarca: "",
+      selectedModelo: "",
       accessories: [
         { id: 'bt', name: 'Bluetooth' },
         { id: 'gps', name: 'GPS' },
@@ -107,6 +123,15 @@ export default {
     },
     validateStep4() {
       return validateStep4(this.selectedFiles, this.errors);
+    },
+
+    sortMarcasAndModelos() {
+      const sorted = {};
+      const sortedKeys = Object.keys(this.marcas).sort();
+      sortedKeys.forEach((key) => {
+        sorted[key] = [...this.marcas[key]].sort();
+      });
+      this.sortedMarcas = sorted;
     },
 
     nextStep() {
@@ -204,7 +229,7 @@ export default {
         this.selectedFiles = [null, null, null, null];
         this.photoPreview = ["", "", "", ""];
 
-        this.$router.push('/Profile');
+        this.$router.push('/profile');
       } catch (error) {
         console.error("Error al guardar los datos del auto:", error);
       } finally {
@@ -219,6 +244,17 @@ export default {
     unsubscribeAuth = subscribeToAuthState(
       (newUserData) => (this.loggedUser = newUserData)
     );
+  },
+  watch: {
+  selectedMarca(newMarca) {
+    this.newCar.marca = newMarca;
+  },
+  selectedModelo(newModelo) {
+    this.newCar.modelo = newModelo;
+  },
+},
+created() {
+    this.sortMarcasAndModelos();
   },
   unmounted() {
     unsubscribeAuth();
@@ -239,41 +275,60 @@ export default {
 
     <section v-if="step === 1">
       <div class="relative w-full group mb-10">
-        <input type="text" name="marca" id="marca" v-model="newCar.marca" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 peer',
-          errors.marca ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"
-          placeholder=" " />
-
-        <!-- Párrafo para mostrar el mensaje de error -->
+        <select
+          v-model="selectedMarca"
+          @change="selectedModelo = ''"
+          :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 peer', errors.marca ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"
+        >
+          <option value="" disabled>Seleccione una marca</option>
+          <option v-for="(marca, index) in Object.keys(sortedMarcas)" :key="index" :value="marca">
+            {{ marca }}
+          </option>
+        </select>
         <p v-if="errors.marca" class="text-red-500 text-xs italic mt-2">{{ errors.marca }}</p>
-
-        <label for="marca"
-          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">
+        <label
+          for="marca"
+          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white"
+        >
           Marca
         </label>
       </div>
+    
+      <!-- Campo de modelo -->
+      <div class="relative w-full group mb-10">
+        <select
+          v-model="selectedModelo" :disabled="!selectedMarca" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 peer',
+            errors.modelo ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600',
+            !selectedMarca ? 'bg-gray-100 cursor-not-allowed' : ''
+          ]"
+        >
+  <option value="" disabled>Seleccione un modelo</option>
+  <option v-for="(modelo, index) in sortedMarcas[selectedMarca]" :key="index" :value="modelo">
+    {{ modelo }}
+  </option>
+</select>
 
-      <div class="relative w-full  group mb-10">
-        <input type="text" name="modelo" id="modelo" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 focus:border-[3px] peer',
-          errors.modelo ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"
-          placeholder=" " v-model="newCar.modelo" />
-
-        <!-- Parrafo para mostrar el mensaje de error -->
         <p v-if="errors.modelo" class="text-red-500 text-xs italic mt-2">{{ errors.modelo }}</p>
-        <label for="modelo"
-          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Modelo</label>
+        <label
+          for="modelo"
+          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white"
+        >
+          Modelo
+        </label>
       </div>
+      
       <div class="relative w-full  group mb-10">
-        <input type="number" name="motor" id="año" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 focus:border-[3px] peer',
+        <input type="number" name="motor" id="año" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 border-gray-300 appearance-none focus:outline-hidden focus:ring-0 focus:border-blue-600 focus:border-[3px] peer',
           errors.año ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']" placeholder=" "
           min="2005" max="2024" v-model="newCar.año" />
 
         <!-- Parrafo para mostrar el mensaje de error -->
         <p v-if="errors.año" class="text-red-500 text-xs italic mt-2">{{ errors.año }}</p>
         <label for="año"
-          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Año</label>
+          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 peer-focus:rtl:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Año</label>
       </div>
       <div class="relative w-full  group mb-10">
-        <input type="text" name="patente" id="patente" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 focus:border-[3px] peer',
+        <input type="text" name="patente" id="patente" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-hidden focus:ring-0 focus:border-[3px] peer',
           errors.patente ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"
           placeholder=" " v-model="newCar.patente" />
 
@@ -281,10 +336,10 @@ export default {
         <p v-if="errors.patente" class="text-red-500 text-xs italic mt-2">{{ errors.patente }}</p>
 
         <label for="patente"
-          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Patente</label>
+          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 peer-focus:rtl:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Patente</label>
       </div>
       <button @click="nextStep" type="button"
-        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg  w-full sm:w-auto px-5 py-2.5 text-center mt-5">Siguiente</button>
+        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-lg  w-full sm:w-auto px-5 py-2.5 text-center mt-5">Siguiente</button>
     </section>
 
 
@@ -294,10 +349,10 @@ export default {
       <div class="relative w-full  group mb-10">
 
         <label for="description"
-          class="peer-focus:font-large absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Descripción</label>
+          class="peer-focus:font-large absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 peer-focus:rtl:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Descripción</label>
         <textarea v-model="newCar.description" id="description" name="description" rows="4"
           placeholder="Coloque una descripción"
-          :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 focus:border-[3px] peer',
+          :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-hidden focus:ring-0 focus:border-[3px] peer',
             errors.description ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"></textarea>
         <!-- Parrafo para mostrar el mensaje de error -->
         <p v-if="errors.description" class="text-red-500 text-xs italic mt-2">{{ errors.description }}</p>
@@ -322,12 +377,12 @@ export default {
         <p v-if="errors.direccion" class="text-red-500 text-xs italic mt-2">{{ errors.direccion }}</p>
 
         <label for="direccion"
-          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Dirección</label>
+          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 peer-focus:rtl:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Dirección</label>
       </div>
 
       <div class="relative w-full  group mb-10">
         <label for="underline_select" class="sr-only">Combustible</label>
-        <select id="underline_select" name="combustible" v-model="newCar.combustible" :class="['block w-full py-2.5 px-0  text-gray-500 bg-transparent border-2 focus:outline-none focus:ring-0 peer ps-3 rounded-md',
+        <select id="underline_select" name="combustible" v-model="newCar.combustible" :class="['block w-full py-2.5 px-0  text-gray-500 bg-transparent border-2 focus:outline-hidden focus:ring-0 peer ps-3 rounded-md',
           errors.combustible ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600'
         ]">
           <option class="p-4" value="" disabled>Combustible</option>
@@ -342,18 +397,18 @@ export default {
       </div>
 
       <div class="relative w-full  group mb-10">
-        <input type="number" name="kilometraje" id="kilometraje" :class="['block py-2.5 px-0 w-full ps-3 rounded-md bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 focus:border-[3px] peer',
+        <input type="number" name="kilometraje" id="kilometraje" :class="['block py-2.5 px-0 w-full ps-3 rounded-md bg-transparent border-2 appearance-none focus:outline-hidden focus:ring-0 focus:border-[3px] peer',
           errors.kilometraje ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"
           placeholder=" " v-model="newCar.kilometraje" />
         <!-- Parrafo para mostrar el mensaje de error -->
         <p v-if="errors.kilometraje" class="text-red-500 text-xs italic mt-2">{{ errors.kilometraje }}</p>
         <label for="kilometraje"
-          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Kilometraje</label>
+          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 peer-focus:rtl:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Kilometraje</label>
       </div>
 
       <div class="relative w-full  group mb-10">
         <label for="underline_select" class="sr-only">Transmisión</label>
-        <select id="underline_select" name="transmision" v-model="newCar.transmision" :class="['block w-full py-2.5 px-0  text-gray-500 bg-transparent border-2 focus:outline-none focus:ring-0 focus:border-gray-200 peer ps-3 rounded-md',
+        <select id="underline_select" name="transmision" v-model="newCar.transmision" :class="['block w-full py-2.5 px-0  text-gray-500 bg-transparent border-2 focus:outline-hidden focus:ring-0 focus:border-gray-200 peer ps-3 rounded-md',
           errors.transmision ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600'
         ]">
           >
@@ -367,9 +422,9 @@ export default {
       </div>
 
       <button @click="prevStep" type="button"
-        class="me-4 text-white bg-violet-400 hover:bg-zinc-600  focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg  w-full sm:w-auto px-5 py-2.5 text-center">Anterior</button>
+        class="me-4 text-white bg-violet-400 hover:bg-zinc-600  focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-lg  w-full sm:w-auto px-5 py-2.5 text-center">Anterior</button>
       <button @click="nextStep" type="button"
-        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg  w-full sm:w-auto px-5 py-2.5 text-center">Siguiente</button>
+        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-lg  w-full sm:w-auto px-5 py-2.5 text-center">Siguiente</button>
 
 
     </section>
@@ -379,7 +434,7 @@ export default {
       <div class="grid md:grid-cols-2 md:gap-6">
         <div class="relative w-full  group mb-10">
           <label for="underline_select" class="sr-only">Chasis</label>
-          <select id="underline_select" name="chasis" v-model="newCar.chasis" :class="['block w-full py-2.5 px-0  text-gray-500 bg-transparent border-2 focus:outline-none focus:ring-0 focus:border-gray-200 peer ps-3 rounded-md',
+          <select id="underline_select" name="chasis" v-model="newCar.chasis" :class="['block w-full py-2.5 px-0  text-gray-500 bg-transparent border-2 focus:outline-hidden focus:ring-0 focus:border-gray-200 peer ps-3 rounded-md',
             errors.chasis ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600'
           ]">
             <option class="text-gray-200 p-4" value="" disabled selected>Chasis</option>
@@ -405,11 +460,11 @@ export default {
         </div>
 
         <div class="relative w-full  group mb-10">
-          <input type="text" name="motor" id="motor" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 focus:border-[3px] peer',
+          <input type="text" name="motor" id="motor" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-hidden focus:ring-0 focus:border-[3px] peer',
             errors.motor ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"
             placeholder=" " v-model="newCar.motor" />
           <label for="motor"
-            class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Motor</label>
+            class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 peer-focus:rtl:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Motor</label>
           <!-- Parrafo para mostrar el mensaje de error -->
           <p v-if="errors.motor" class="text-red-500 text-xs italic mt-2">{{ errors.motor }}</p>
         </div>
@@ -421,21 +476,21 @@ export default {
 
 
         <div class="relative w-full  group mb-10">
-          <input type="number" name="puertas" id="puertas" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 focus:border-[3px] peer',
+          <input type="number" name="puertas" id="puertas" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-hidden focus:ring-0 focus:border-[3px] peer',
             errors.puertas ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"
             placeholder=" " v-model="newCar.puertas" />
           <label for="puertas"
-            class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">N°
+            class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 peer-focus:rtl:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">N°
             Puertas</label>
           <!-- Parrafo para mostrar el mensaje de error -->
           <p v-if="errors.puertas" class="text-red-500 text-xs italic mt-2">{{ errors.puertas }}</p>
         </div>
         <div class="relative w-full  group mb-10">
-          <input type="number" name="asientos" id="asientos" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 focus:border-[3px] peer',
+          <input type="number" name="asientos" id="asientos" :class="['block py-2.5 px-0 w-full ps-3 rounded-md text-gray-900 bg-transparent border-2 appearance-none focus:outline-hidden focus:ring-0 focus:border-[3px] peer',
             errors.asientos ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"
             placeholder="" v-model="newCar.asientos" />
           <label for="asientos"
-            class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">N°
+            class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 peer-focus:rtl:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">N°
             Asientos</label>
           <!-- Parrafo para mostrar el mensaje de error -->
           <p v-if="errors.asientos" class="text-red-500 text-xs italic mt-2">{{ errors.asientos }}</p>
@@ -444,11 +499,11 @@ export default {
 
 
       <div class="relative w-full  group mb-10">
-        <input type="number" name="precio" id="precio" :class="['block py-2.5 px-0 w-full ps-3 rounded-md bg-transparent border-2 appearance-none focus:outline-none focus:ring-0 focus:border-[3px] peer',
+        <input type="number" name="precio" id="precio" :class="['block py-2.5 px-0 w-full ps-3 rounded-md bg-transparent border-2 appearance-none focus:outline-hidden focus:ring-0 focus:border-[3px] peer',
           errors.precio ? 'border-red-500 focus:border-red-500' : 'border-gray-300 focus:border-blue-600']"
           placeholder=" " v-model="newCar.precio" />
         <label for="precio"
-          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Precio/Día</label>
+          class="peer-focus:font-medium absolute ms-2 px-2 text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:start-0 peer-focus:rtl:translate-x-1/4 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 bg-white">Precio/Día</label>
         <!-- Parrafo para mostrar el mensaje de error -->
         <p v-if="errors.precio" class="text-red-500 text-xs italic mt-2">{{ errors.precio }}</p>
       </div>
@@ -464,9 +519,9 @@ export default {
       </div>
 
       <button @click="prevStep" type="button"
-        class="me-4 text-white bg-violet-400 hover:bg-zinc-600  focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg  w-full sm:w-auto px-5 py-2.5 text-center">Anterior</button>
+        class="me-4 text-white bg-violet-400 hover:bg-zinc-600  focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-lg  w-full sm:w-auto px-5 py-2.5 text-center">Anterior</button>
       <button @click="nextStep" type="button"
-        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg  w-full sm:w-auto px-5 py-2.5 text-center">Siguiente</button>
+        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-lg  w-full sm:w-auto px-5 py-2.5 text-center">Siguiente</button>
 
     </section>
 
@@ -497,7 +552,7 @@ export default {
 
       <div class="mt-4">
         <button @click="prevStep" type="button"
-          class="me-4 text-white bg-violet-400 hover:bg-zinc-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg w-full sm:w-auto px-5 py-2.5 text-center">
+          class="me-4 text-white bg-violet-400 hover:bg-zinc-600 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-lg w-full sm:w-auto px-5 py-2.5 text-center">
           Anterior
         </button>
         <button type="submit" :disabled="loading"

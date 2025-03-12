@@ -1,12 +1,15 @@
 <script>
-import { subscribeToAuthState } from "../../services/auth.js";
-import { updateRentalStatus, fetchRentalRequests } from '../../services/rentedCarService.js';
+import { subscribeToAuthState } from "@services/auth.js";
+import { updateRentalStatus, fetchRentalRequests } from '@services/rentedCarService.js';
+
+import Notification from '@icons/Notification.vue';
 
 let unsubscribeAuth = () => { };
 let unsubscribeRequests = () => { }; 
 
 export default {
   name: "AlertRented",
+  components: { Notification },
   data() {
     return {
       loggedUser: {},
@@ -60,19 +63,23 @@ export default {
   },
   unmounted() {
     unsubscribeAuth();
-    unsubscribeRequests(); 
+    if (typeof unsubscribeRequests === 'function') {
+      unsubscribeRequests();
+    }
   },
 };
 </script>
 
 <template>
   <!-- Botón de notificaciones -->
-  <button type="button" data-dropdown-toggle="notification-dropdown" class="p-2 mr-10 text-gray-500 rounded-lg hover:text-gray-900 hover:bg-gray-100">
-    <span class="sr-only">View notifications</span>
+  <button 
+    type="button" 
+    data-dropdown-toggle="notification-dropdown" 
+    class="flex items-center justify-center p-2 rounded-full transition-colors duration-300 cursor-pointer hover:bg-vibrant-light-800"
+    active-class="bg-vibrant-light-800 hover:bg-vibrant-light-800" 
+    >
     <!-- Icono de campana -->
-    <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 14 20">
-      <path d="M12.133 10.632v-1.8A5.406 5.406 0 0 0 7.979 3.57.946.946 0 0 0 8 3.464V1.1a1 1 0 0 0-2 0v2.364a.946.946 0 0 0 .021.106 5.406 5.406 0 0 0-4.154 5.262v1.8C1.867 13.018 0 13.614 0 14.807 0 15.4 0 16 .538 16h12.924C14 16 14 15.4 14 14.807c0-1.193-1.867-1.789-1.867-4.175ZM3.823 17a3.453 3.453 0 0 0 6.354 0H3.823Z" />
-    </svg>
+    <Notification/>
     <!-- Indicador de notificaciones -->
     <div v-if="pendingRequests.length >= 1 && isVisible">
       <div class="absolute inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-500 border-2 rounded-full -top-0 -end--2">{{ pendingRequests.length }}</div>
@@ -80,7 +87,7 @@ export default {
   </button>
 
   <!-- Dropdown de notificaciones -->
-  <div class="hidden z-50 my-4 max-w-sm max-h-80 text-base list-none bg-white rounded divide-y divide-gray-100 shadow-lg" id="notification-dropdown">
+  <div class="hidden z-50 my-4 max-w-sm max-h-80 text-base list-none bg-white rounded-sm divide-y divide-gray-100 shadow-lg" id="notification-dropdown">
     <div class="block py-2 px-4 text-base font-medium text-center text-gray-700 bg-gray-50">
       Notificaciones
     </div>
@@ -88,13 +95,13 @@ export default {
     <!-- Lista de solicitudes pendientes -->
     <div v-if="pendingRequests.length >= 1 && isVisible" class="overflow-y-scroll max-h-60">
       <div v-for="request in pendingRequests" :key="request.id" class="border p-4 mb-4">
-        <div class="inline-flex items-center justify-center flex-shrink-0 w-12 h-12 rounded-lg">
+        <div class="inline-flex items-center justify-center shrink-0 w-12 h-12 rounded-lg">
           <img class="w-12 h-12 rounded-full" :src="request.photoURL" alt="Avatar del usuario">
         </div>
         <div class="ms-3 text-sm font-normal">
           <span class="mb-1 text-sm font-semibold text-gray-900">Solicitud de Alquiler</span>
           <div class="mb-2 text-sm font-normal">
-            <span class="mb-1 text-sm font-semibold text-blue-900"><router-link :to="`/ProfileOwner/${request.user_id}`">{{ request.name }}</router-link></span> quiere alquilar <router-link :to="`/CarDetails/${request.carId}`">{{ request.carMarca }} {{ request.carModelo }}</router-link> Responde cuanto antes.
+            <span class="mb-1 text-sm font-semibold text-blue-900"><router-link :to="`/user/${request.user_id}`">{{ request.name }}</router-link></span> quiere alquilar <router-link :to="`/CarDetails/${request.carId}`">{{ request.carMarca }} {{ request.carModelo }}</router-link> Responde cuanto antes.
           </div>
           <div class="mb-2 text-sm font-normal">Estado de solicitud: 
             <span class="mb-1 text-sm font-semibold text-blue-900">{{ request.status }}</span>
@@ -103,11 +110,11 @@ export default {
           <div class="grid grid-cols-2 gap-2">
             <div>
               <a @click="acceptRequest(request.id)"
-                class="cursor-pointer inline-flex justify-center w-full px-2 py-1.5 text-xs font-medium text-center text-white bg-secondary-900 rounded-lg hover:bg-secondary-500 focus:ring-4 focus:outline-none focus:ring-secondary-300">Aceptar</a>
+                class="cursor-pointer inline-flex justify-center w-full px-2 py-1.5 text-xs font-medium text-center text-white bg-secondary-900 rounded-lg hover:bg-secondary-500 focus:ring-4 focus:outline-hidden focus:ring-secondary-300">Aceptar</a>
             </div>
             <div>
               <a @click="rejectRequest(request.id)"
-                class="cursor-pointer inline-flex justify-center w-full px-2 py-1.5 text-xs font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200">Rechazar</a>
+                class="cursor-pointer inline-flex justify-center w-full px-2 py-1.5 text-xs font-medium text-center text-gray-900 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-hidden focus:ring-gray-200">Rechazar</a>
             </div>
           </div>
         </div>
