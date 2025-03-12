@@ -6,7 +6,7 @@ import Login from "../pages/Login.vue";
 import Profile from "../pages/Profile.vue";
 import ProfileEdit from "../pages/ProfileEdit.vue";
 import Register from "../pages/Register.vue";
-import Publications from "../pages/Publications.vue";
+import Maps from "../pages/Maps.vue";
 import Publish from "../pages/CarPublish.vue";
 import CarDetails from "../pages/CarDetails.vue";
 import ProfileOwner from "../pages/ProfileOwner.vue";
@@ -19,7 +19,7 @@ const routes = [
   { path: "/Login", component: Login },
   { path: "/Profile", component: Profile, meta: { needsAuth: true } },
   { path: "/Register", component: Register },
-  { path: "/Publications", component: Publications },
+  { path: "/maps", component: Maps },
   { path: "/Publish", component: Publish, meta: { needsAuth: true } },
   { path: "/Profile/Edit", component: ProfileEdit, meta: { needsAuth: true }},
   { path: "/CarDetails/:id", name: "CarDetails", component: CarDetails, props: true, meta: { needsAuth: true } },
