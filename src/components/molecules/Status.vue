@@ -1,24 +1,53 @@
+<script>
+export default {
+  props: {
+    status: {
+      type: String,
+      required: true,
+      validator: (value) => {
+        return [
+          "registrado", // Nuevo estado
+          "validated",
+          "not-validated",
+          "new",
+          "rented",
+          "available",
+          "blocked",
+        ].includes(value);
+      },
+    },
+  },
+  computed: {
+    statusText() {
+      const textos = {
+        registrado: "Registrado", // Texto para el nuevo estado
+        validated: "Validado",
+        "not-validated": "No validado",
+        new: "Nuevo",
+        rented: "Alquilado",
+        available: "Disponible",
+        blocked: "Bloqueado",
+      };
+      return textos[this.status] || "Unknown";
+    },
+    statusClass() {
+      const clases = {
+        registrado: "bg-purple-100 text-purple-800", // Estilo para el nuevo estado
+        validated: "bg-vibrant-light-700 text-deep-blue-900",
+        "not-validated": "bg-red-100 text-red-800",
+        new: "bg-green-100 text-green-800",
+        rented: "bg-yellow-100 text-yellow-800",
+        available: "bg-blue-100 text-blue-800",
+        blocked: "bg-gray-100 text-gray-800",
+      };
+      return clases[this.status] || "bg-gray-100 text-gray-800";
+    },
+  },
+};
+</script>
+
 <template>
-    <span :class="statusClass" class="px-3 py-1 rounded-full text-sm font-semibold">
-      {{ statusText }}
-    </span>
-  </template>
-  
-  <script>
-  export default {
-    props: {
-      isValidated: {
-        type: Boolean,
-        required: true,
-      },
-    },
-    computed: {
-      statusText() {
-        return this.isValidated ? "Validado" : "No Validado";
-      },
-      statusClass() {
-        return this.isValidated ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
-      },
-    },
-  };
-  </script>
+  <span :class="statusClass" class="px-4 py-2 rounded-2xl text-sm font-semibold flex items-center">
+    {{ statusText }}
+  </span>
+</template>

@@ -7,7 +7,7 @@ import LongArrow from "../icons/LongArrow.vue";
 import PublishYourCar from "../components/atoms/PublishYourCar.vue";
 import RentYourCar from "../components/atoms/RentYourCar.vue"
 import NotificationExpress from "../components/atoms/NotificationExpress.vue";
-import RentsExpress from "../components/organisms/RentsExpress.vue";
+import RentsExpress from "../components/atoms/RentsExpress.vue";
 import Income from "../components/atoms/Income.vue";
 import Moments from "../components/atoms/Moments.vue";
 import ConectingCars from "../components/atoms/ConectingCars.vue";
@@ -15,7 +15,7 @@ import GooglePlayLg from "../components/atoms/GooglePlayLg.vue";
 import AppStoreLg from "../components/atoms/AppStoreLg.vue";
 import Brands from "../components/atoms/Brands.vue";
 import Replay from "../components/atoms/Replay.vue";
-import Search from "../components/atoms/Search.vue";
+import Clue from "../components/atoms/Clue.vue";
 import Dropdown from "../components/molecules/Dropdown.vue";
 import Experience from "../components/atoms/Experience.vue";
 import QR from "../components/atoms/QR.vue";
@@ -23,15 +23,15 @@ import InfoSm from "../icons/InfoSm.vue";
 
 export default {
   name: "Home",
-  components: { Heading, Pill, GooglePlayLg, AppStoreLg, ZurichxReemo, ABS, LongArrow, PublishYourCar, RentYourCar, NotificationExpress, RentsExpress, Income, Moments, ConectingCars, Brands, Replay, Search, Dropdown, Experience, QR, InfoSm },
+  components: { Heading, Pill, GooglePlayLg, AppStoreLg, ZurichxReemo, ABS, LongArrow, PublishYourCar, RentYourCar, NotificationExpress, RentsExpress, Income, Moments, ConectingCars, Brands, Replay, Clue, Dropdown, Experience, QR, InfoSm },
 };
 </script>
 
 <template>
   <div class="w-11/12 sm:w-10/12 m-auto flex flex-col gap-32 mb-32">
-    <section class="flex flex-col items-center justify-center sm:flex-row">
+    <section class="flex flex-col items-center justify-between sm:flex-row">
       <div class="flex flex-col gap-4">
-        <Heading :type="1" class="w-[95%] sm:w-full text-pretty text-center sm:text-start"><b>Conectando autos,</b> impulsando oportunidades</Heading>
+        <h1 class="font-medium leading-tight text-5xl block mb-4 sm:text-6xl w-[95%] sm:w-full text-pretty text-center sm:text-start"><b>Conectando autos,</b><br/> impulsando<br/> oportunidades</h1>
         <div class="sm:flex gap-2 hidden">
           <div class="group">
             <a href="#">
@@ -116,7 +116,7 @@ export default {
           <LongArrow/>
         </a>
       </article>
-      <article class="bg-gradient-to-r to-secondary-300 from-secondary-100 pl-9 py-11 flex flex-col gap-16 rounded-[40px] w-full group relative">
+      <article class="bg-linear-to-r to-secondary-300 from-secondary-100 pl-9 py-11 flex flex-col gap-16 rounded-[40px] w-full group relative">
         <div class="flex flex-col gap-4 w-96">
           <Heading :type="3">Alquilá un auto</Heading>
           <p class="text-lg font-regular leading-tight text-slate-600">Conseguí un vehículo que se adapte a vos y comenzá a disfrutarlo.</p>
@@ -198,7 +198,7 @@ export default {
                 <span class="sr-only">Ver más</span>
               </button>
             </div>
-            <Search/>
+            <Clue/>
           </article>
         </div>
 
@@ -257,7 +257,7 @@ export default {
     </a>
   </section>
   <section>
-    <article class="bg-gradient-to-r to-primary-900 from-secondary-900 px-9 py-11 w-full rounded-[40px] shadow-custom flex flex-col items-center text-white overflow-hidden gap-4">
+    <article class="bg-linear-to-r to-primary-900 from-secondary-900 px-9 py-11 w-full rounded-[40px] shadow-custom flex flex-col items-center text-white overflow-hidden gap-4">
       <Experience class="-mt-20"/>
       <Heading :type="3" class="text-white">¿Qué esperás para vivir la experiencia Reemo?</Heading>
       <p>Descargá la app y empezá a alquilar o rentar autos en minutos.</p>

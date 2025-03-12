@@ -28,8 +28,8 @@ export default {
       <Heading :type="5" class="text-align-center mb-4">¿Seguro que quieres descartar los cambios?</Heading>
       <p class="mb-4 text-sm text-gray-600">Los cambios no guardados se perderán.</p>
       <div class="flex justify-center space-x-4">
-        <button @click="discard" class="bg-red-500 text-white px-4 py-2 rounded">Descartar</button>
-        <button @click="cancel" class="bg-gray-300 px-4 py-2 rounded">Cancelar</button>
+        <button @click="discard" class="bg-red-500 text-white px-4 py-2 rounded-sm">Descartar</button>
+        <button @click="cancel" class="bg-gray-300 px-4 py-2 rounded-sm">Cancelar</button>
       </div>
     </div>
   </div>
