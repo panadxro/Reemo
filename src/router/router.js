@@ -6,6 +6,7 @@ import Login from "../pages/Login.vue";
 import Profile from "../pages/Profile.vue";
 import UserOnboarding from "../pages/UserOnboarding.vue";
 import Register from "../pages/Register.vue";
+import Maps from "../pages/Maps.vue";
 import Search from "../pages/Search.vue";
 import Publish from "../pages/CarPublish.vue";
 import CarDetails from "../pages/CarDetails.vue";
@@ -15,10 +16,11 @@ import AdminUsers from "../pages/admin/Users.vue";
 import PrivateChat from "../pages/PrivateChat.vue";
 
 const routes = [
-  { path: "/", component: Home, name: "Home" },
-  { path: "/login", component: Login, name: "Login" },
-  { path: "/register", component: Register, name: "Register" },
-  { path: "/search", component: Search, name: "Search" },
+{ path: "/", component: Home, name: "Home" },
+{ path: "/login", component: Login, name: "Login" },
+{ path: "/register", component: Register, name: "Register" },
+{ path: "/search", component: Search, name: "Search" },
+{ path: "/maps", component: Maps },
   {
     path: "/profile",
     component: Profile,
