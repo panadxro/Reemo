@@ -5,11 +5,11 @@ import { subscribeToAuthState } from "../services/auth.js";
 import { subscribeToNewPublication } from "../services/publication.js";
 
 import Heading from "@components/atoms/Heading.vue";
-import CardCar from "@components/my-cars/CardCar.vue";
+import CardCar from "@components/organisms/my-cars/CardCar.vue";
 import AddIcon from "@icons/AddIcon.vue";
 import Loading from "@icons/Loading.vue";
 
-import AddressInput from "@/components/google-maps/addressInput.vue";
+import AddressInput from "@/components/organisms/google-maps/AddressInput.vue";
 
 // import comentarioIcon from '@/assets/info-maps.png';
 // import comentarioIcon from '@/assets/comentario.png';
