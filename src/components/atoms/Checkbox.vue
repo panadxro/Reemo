@@ -2,7 +2,7 @@
 import CheckIcon from '@/icons/Check.vue';
 
 const props = defineProps({
-  modelValue: Boolean,
+  modelValue: Array,
   id: String,
   name: String,
   label: String, // Texto opcional
@@ -10,14 +10,27 @@ const props = defineProps({
     type: String,
     default: 'right', // 'left' o 'right'
     validator: (value) => ['left', 'right'].includes(value)
-  }
+  },
+  value: String
 });
 
 const emit = defineEmits(['update:modelValue']);
 
 const toggle = () => {
-  emit('update:modelValue', !props.modelValue);
+  let newValue = [...props.modelValue];
+  if (newValue.includes(props.value)) {
+    // Si el valor ya está en el array, lo eliminamos
+    newValue = newValue.filter(item => item !== props.value);
+  } else {
+    // Si el valor no está en el array, lo agregamos
+    newValue.push(props.value);
+  }
+  emit('update:modelValue', newValue);
 };
+
+const isChecked = () => {
+  return props.modelValue.includes(props.value); // Verifica si el valor está en el array
+}
 </script>
 
 <template>
@@ -32,13 +45,13 @@ const toggle = () => {
       type="checkbox"
       :id="id"
       :name="name"
-      :checked="modelValue"
+      :checked="isChecked()"
       @change="toggle"
       class="hidden"
     />
     
     <div class="checkbox-box">
-      <CheckIcon v-if="modelValue" color="#FFFFFF"/>
+      <CheckIcon v-if="isChecked()" color="#FFFFFF"/>
     </div>
 
     <!-- Texto a la derecha -->

@@ -22,7 +22,7 @@ export default {
       try {
         unsubscribeRequests = fetchRentalRequests(this.loggedUser.id, (requests) => {
           this.pendingRequests = requests.filter(request => request.status === 'pendiente');
-          console.log('Solicitudes pendientes:', this.pendingRequests);
+          // console.log('Solicitudes pendientes:', this.pendingRequests);
         });
       } catch (error) {
         console.error("Error al obtener las solicitudes de alquiler:", error);

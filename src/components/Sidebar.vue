@@ -54,7 +54,7 @@ export default {
         </IconNavButton>
       </li>
       <li>
-        <IconNavButton to="/search" title="Map">
+        <IconNavButton to="/maps" title="Map">
           <Map />
         </IconNavButton>
       </li>
@@ -84,7 +84,7 @@ export default {
         </IconNavButton>
       </li>
       <li>
-        <IconNavButton to="/admin/userss" title="Admin users">
+        <IconNavButton to="/admin/users" title="Admin users">
           <People />
         </IconNavButton>
       </li>

@@ -16,11 +16,11 @@ import AdminUsers from "../pages/admin/Users.vue";
 import PrivateChat from "../pages/PrivateChat.vue";
 
 const routes = [
-{ path: "/", component: Home, name: "Home" },
-{ path: "/login", component: Login, name: "Login" },
-{ path: "/register", component: Register, name: "Register" },
-{ path: "/search", component: Search, name: "Search" },
-{ path: "/maps", component: Maps },
+  { path: "/", component: Home, name: "Home" },
+  { path: "/login", component: Login, name: "Login" },
+  { path: "/register", component: Register, name: "Register" },
+  { path: "/search", component: Search, name: "Search" },
+  { path: "/maps", component: Maps },
   {
     path: "/profile",
     component: Profile,
@@ -75,7 +75,7 @@ const routes = [
         path: "users",
         name: "AdminUsers",
         component: AdminUsers,
-      },
+      }
     ],
   },
 ];
