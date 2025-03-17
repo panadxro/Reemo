@@ -88,7 +88,7 @@ export default {
           </li>
           <li v-if="user.id">
             <router-link
-              to="/profile"
+              :to="'/user/' + user.id"
               class="block py-2 px-3 md:p-0 rounded-sm md:bg-transparent md:text-gray-500 hover:gray-700"
               aria-current="page"
               active-class="text-secondary-900! bg-blue-700"

@@ -61,8 +61,8 @@ onAuthStateChanged(auth, (user) => {
 });
 
 export async function login({ email, password }) {
-  await signInWithEmailAndPassword(auth, email, password);
-  return true;
+  const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  return userCredential;
 }
 
 /**

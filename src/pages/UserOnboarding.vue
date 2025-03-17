@@ -1,4 +1,51 @@
 <script>
+export default {
+  data() {
+    return {
+      currentStep: 0, // Paso actual
+      steps: [
+        { title: "Información Básica" },
+        { title: "Información Legal" },
+        { title: "Información de Pago" },
+        { title: "Preferencias y Términos" },
+      ],
+      user: {
+        fullName: "",
+        birthDate: "",
+        phone: "",
+        documentType: "",
+        documentNumber: "",
+        licenseNumber: "",
+        paymentMethod: "",
+        cardNumber: "",
+        cardExpiryDate: "",
+        acceptedTerms: false,
+        acceptedRegulations: false,
+      },
+    };
+  },
+  methods: {
+    nextStep() {
+      if (this.currentStep < this.steps.length - 1) {
+        this.currentStep++;
+      }
+    },
+    prevStep() {
+      if (this.currentStep > 0) {
+        this.currentStep--;
+      }
+    },
+    handleSubmit() {
+      // Lógica para enviar el formulario
+      console.log("Perfil guardado:", this.user);
+    },
+  },
+};
+
+
+
+
+/* 
 import Heading from '../components/atoms/Heading.vue';
 import { editMyProfile, subscribeToAuthState } from '../services/auth';
 
@@ -80,12 +127,70 @@ export default {
   },
   unmounted() {
     unsubscribeAuth();
-  }
+  } 
 }
+*/
 </script>
 
 <template>
-  <div v-if="editing" class="mb-8 flex items-center justify-center w-fit mx-auto bg-gray-50">
+  <div class="wizard">
+    <!-- Indicador de progreso -->
+    <div class="progress-bar">
+      <div v-for="(step, index) in steps" :key="index" :class="{ active: currentStep === index }">
+        Paso {{ index + 1 }}: {{ step.title }}
+      </div>
+    </div>
+
+    <!-- Formulario por pasos -->
+    <form @submit.prevent="handleSubmit">
+      <!-- Paso 1: Información Básica -->
+      <div v-if="currentStep === 0" class="step">
+        <h2>Información Básica</h2>
+        <Input v-model="user.fullName" label="Nombre completo" required />
+        <Input v-model="user.birthDate" type="date" label="Fecha de nacimiento" required />
+        <Input v-model="user.phone" label="Número de teléfono" required />
+      </div>
+
+      <!-- Paso 2: Información Legal -->
+      <div v-if="currentStep === 1" class="step">
+        <h2>Información Legal</h2>
+        <Input v-model="user.documentType" label="Tipo de documento" required />
+        <Input v-model="user.documentNumber" label="Número de documento" required />
+        <Input v-model="user.licenseNumber" label="Número de licencia de conducir" required />
+      </div>
+
+      <!-- Paso 3: Información de Pago -->
+      <div v-if="currentStep === 2" class="step">
+        <h2>Información de Pago</h2>
+        <Input v-model="user.paymentMethod" label="Método de pago" required />
+        <Input v-model="user.cardNumber" label="Número de tarjeta" required />
+        <Input v-model="user.cardExpiryDate" type="date" label="Fecha de vencimiento" required />
+      </div>
+
+      <!-- Paso 4: Preferencias y Términos -->
+      <div v-if="currentStep === 3" class="step">
+        <h2>Preferencias y Términos</h2>
+        <Checkbox v-model="user.acceptedTerms" label="Acepto los términos y condiciones" required />
+        <Checkbox v-model="user.acceptedRegulations" label="Acepto las normativas de conducción" required />
+      </div>
+
+      <!-- Botones de navegación -->
+      <div class="navigation-buttons">
+        <button type="button" @click="prevStep" :disabled="currentStep === 0">Anterior</button>
+        <button type="button" @click="nextStep" :disabled="currentStep === steps.length - 1">Siguiente</button>
+        <button v-if="currentStep === steps.length - 1" type="submit">Guardar perfil</button>
+      </div>
+    </form>
+  </div>
+
+
+
+
+
+
+
+
+  <!-- <div v-if="editing" class="mb-8 flex items-center justify-center w-fit mx-auto bg-gray-50">
     <div role="status">
       <svg aria-hidden="true" class="w-8 h-8 text-gray-200 animate-spin fill-blue-600" viewBox="0 0 100 101" fill="none"
         xmlns="http://www.w3.org/2000/svg">
@@ -145,5 +250,31 @@ export default {
       class="transition-all py-2 px-4 rounded-sm bg-blue-700 text-white focus:bg-blue-500 hover:bg-blue-500 active:bg-blue-900">
       {{ !editing ? 'Aceptar' : 'Guardando...' }}
     </button>
-  </form>
+  </form> -->
 </template>
+
+<style>
+.wizard {
+  max-width: 600px;
+  margin: 0 auto;
+}
+.progress-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.progress-bar div {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  border-bottom: 2px solid #ccc;
+}
+.progress-bar div.active {
+  border-bottom: 2px solid #007bff;
+}
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+</style>
