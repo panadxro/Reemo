@@ -58,7 +58,7 @@ export default {
   <div v-else class="snap-y snap-mandatory relative w-full h-screen overflow-auto">
     <Navbar :user="loggedUser" @logout="handleLogout" class="snap-start" />
     <main class="flex flex-row min-h-screen max-h-screen p-2.5 snap-start relative">
-      <Sidebar :user="loggedUser" />
+      <Sidebar :user="loggedUser" @logout="handleLogout"/>
       <router-view />
     </main>
     <FooterLayout class="snap-start" />

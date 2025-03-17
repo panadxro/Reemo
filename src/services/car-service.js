@@ -30,21 +30,29 @@ import { collection, doc, getDoc, addDoc, serverTimestamp, query, where, getDocs
   }
 
   //Es la que estaba en Profile
-  export function getUserCars(userId, callback) {
-    const carsCollection = collection(db, "cars");
-    const userCarsQuery = query(carsCollection, where("user_id", "==", userId));
-
-    const unsubscribe = onSnapshot(userCarsQuery, (snapshot) => {
-      const cars = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      callback(cars);
-    }, (error) => {
-      console.error("Error al obtener los autos:", error);
+  export function getUserCars(userId) {
+    return new Promise((resolve, reject) => {
+      const carsCollection = collection(db, "cars");
+      const userCarsQuery = query(carsCollection, where("user_id", "==", userId));
+  
+      const unsubscribe = onSnapshot(
+        userCarsQuery,
+        (snapshot) => {
+          const cars = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          resolve(cars); // Resuelve la promesa con los autos
+        },
+        (error) => {
+          console.error("Error al obtener los autos:", error);
+          reject(error); // Rechaza la promesa si hay un error
+        }
+      );
+  
+      // Devuelve la función para desuscribirse
+      return unsubscribe;
     });
-
-    return unsubscribe;
   }
 
   // Es la que estaba en Püblications
