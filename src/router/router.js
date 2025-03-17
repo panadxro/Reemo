@@ -3,17 +3,16 @@ import { subscribeToAuthState } from "../services/auth";
 
 import Home from "../pages/Home.vue";
 import Login from "../pages/Login.vue";
-import Profile from "../pages/Profile.vue";
 import UserOnboarding from "../pages/UserOnboarding.vue";
 import Register from "../pages/Register.vue";
 import Maps from "../pages/Maps.vue";
 import Search from "../pages/Search.vue";
 import Publish from "../pages/CarPublish.vue";
 import CarDetails from "../pages/CarDetails.vue";
-import ProfileOwner from "../pages/ProfileOwner.vue";
 import AdminCars from "../pages/admin/Cars.vue";
 import AdminUsers from "../pages/admin/Users.vue";
 import PrivateChat from "../pages/PrivateChat.vue";
+import UserProfile from "../pages/UserProfile.vue";
 
 const routes = [
   { path: "/", component: Home, name: "Home" },
@@ -21,12 +20,6 @@ const routes = [
   { path: "/register", component: Register, name: "Register" },
   { path: "/search", component: Search, name: "Search" },
   { path: "/maps", component: Maps },
-  {
-    path: "/profile",
-    component: Profile,
-    name: "Profile",
-    meta: { needsAuth: true },
-  },
   {
     path: "/onboarding",
     component: UserOnboarding,
@@ -48,9 +41,11 @@ const routes = [
   },
   {
     path: "/user/:id",
-    name: "ProfileOwner",
-    component: ProfileOwner,
-    props: true,
+    name: "UserProfile",
+    component: UserProfile,
+    props: (route) => ({
+      id: route.params.id,
+    }),
     meta: { needsAuth: true },
     children: [
       {

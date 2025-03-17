@@ -59,7 +59,7 @@ export default {
         </IconNavButton>
       </li>
       <li>
-        <IconNavButton to="/profile" title="Profile">
+        <IconNavButton :to="'/user/' + user.id" title="Profile">
           <UserIcon />
         </IconNavButton>
       </li>

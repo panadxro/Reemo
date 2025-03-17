@@ -38,9 +38,13 @@ export default {
       }
 
       try {
-        await login({ ...this.user });
+        const userCredential = await login({ ...this.user });
+        const userId=  userCredential.user.uid; // Obtener el ID del usuario
+
         addAlert("¡Bienvenido a Reemo!", "success");
-        this.$router.push("/profile");
+
+        // Redirigir al usuario a la página de inicio
+        this.$router.push(`/user/${userId}`);
       } catch (error) {
         let errorCode = error.code;
         switch (errorCode) {
