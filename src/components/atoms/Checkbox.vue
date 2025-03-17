@@ -2,7 +2,7 @@
 import CheckIcon from '@/icons/Check.vue';
 
 const props = defineProps({
-  modelValue: Array,
+  modelValue: [Boolean, Array],
   id: String,
   name: String,
   label: String, // Texto opcional
@@ -17,19 +17,29 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 
 const toggle = () => {
-  let newValue = [...props.modelValue];
-  if (newValue.includes(props.value)) {
-    // Si el valor ya está en el array, lo eliminamos
-    newValue = newValue.filter(item => item !== props.value);
+  if (Array.isArray(props.modelValue)) {
+    // Si modelValue es un array, maneja múltiples selecciones
+    let newValue = [...props.modelValue];
+    if (newValue.includes(props.value)) {
+      // Si el valor ya está en el array, lo eliminamos
+      newValue = newValue.filter(item => item !== props.value);
+    } else {
+      // Si el valor no está en el array, lo agregamos
+      newValue.push(props.value);
+    }
+    emit('update:modelValue', newValue);
   } else {
-    // Si el valor no está en el array, lo agregamos
-    newValue.push(props.value);
+    // Si modelValue es un booleano, maneja una sola selección
+    emit('update:modelValue', !props.modelValue);
   }
-  emit('update:modelValue', newValue);
 };
 
 const isChecked = () => {
+  if (Array.isArray(props.modelValue)) {
   return props.modelValue.includes(props.value); // Verifica si el valor está en el array
+  } else {
+    return props.modelValue; // Devuelve el valor booleano
+  }
 }
 </script>
 

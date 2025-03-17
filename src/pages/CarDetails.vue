@@ -46,7 +46,7 @@ export default {
     try {
       const carId = this.id;
       this.car = await getCarById(carId);
-      console.log("Datos del auto:", this.car);
+      // console.log("Datos del auto:", this.car);
 
       if(!this.car.user) {
         this.car.user = {};
@@ -141,9 +141,7 @@ export default {
 <template>
   <section v-if="car" class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
     <div class="flex items-center gap-5">
-      <BackButton>
-        <Arrow direction="left" />
-      </BackButton>
+      <BackButton />
       <Heading :type="1" class="medium">Alquilar auto</Heading>
     </div>
     <article class="flex flex-col gap-9 bg-background-900 overflow-auto px-5">
