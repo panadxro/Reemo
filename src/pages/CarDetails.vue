@@ -3,22 +3,22 @@ import { getCarById, checkIfCarIsRented } from "../services/car-service.js";
 import { Loader } from "@googlemaps/js-api-loader";
 import { subscribeToAuthState } from "../services/auth.js";
 
-import ModalRent from "@components/organisms/rental/ModalRent.vue";
 import Heading from "../components/atoms/Heading.vue";
 import Pill from "../components/atoms/Pill.vue";
 import Loading from "@icons/Loading.vue";
 import BackButton from "../components/atoms/BackButton.vue";
 import Arrow from "../icons/Arrow.vue";
 import Like from "../icons/Like.vue"
+import RentProcess from "./RentProcess.vue";
 
 export default {
   props: ["id"],
   name: "CarDetails",
   components: {
     Heading,
-    ModalRent,
     Pill,
     Loading, 
+    RentProcess,
     BackButton,
     Arrow,
     Like
@@ -69,9 +69,6 @@ export default {
     this.loading = false;
   },
   methods: {
-    openModal() {
-      this.$refs.ModalRent.open();
-    },
     setCurrentImage(image) {
       this.currentImage = image;
     },
@@ -259,10 +256,10 @@ export default {
     <div v-else class="bg-background-800 w-full h-1/2 rounded-[40px] flex items-center justify-center font-semibold text-background-600">
       <p>Mapa no disponible</p>
     </div>
-    <div class="bg-deep-blue-900 w-full h-1/2 rounded-[40px]">
+    <div class="bg-deep-blue-900 w-full h-1/2 rounded-[40px] p-8">
+      <RentProcess/>
     </div>
 
-    <ModalRent ref="ModalRent" :car="car" :loggedUser="loggedUser" :rented="car.rented" />
 
     <span v-if="rented && car.user_id !== loggedUser?.id"
       class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">Este
