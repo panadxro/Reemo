@@ -1,5 +1,5 @@
 <script>
-import { getUserProfileById } from '../services/user-profile';
+import { getUserProfile } from '../services/user';
 import { subscribeToAuthState } from '../services/auth';
 import { savePrivateChatMessage, subscribeToPrivateChatMessages } from '../services/private-chat';
 import { formatDateHour } from '../libraries/date';
@@ -69,7 +69,7 @@ export default {
 
     this.loadingUser = true;
     
-    getUserProfileById(this.$route.params.id).then((userProfile) => {
+    getUserProfile(this.$route.params.id).then((userProfile) => {
       this.ownerUser = userProfile;
       this.loadingUser = false;
     });

@@ -2,6 +2,10 @@
 export default {
   name: "Arrow",
   props: {
+    color: {
+      type: String,
+      default: "#010440"
+    },
     direction: {
       type: String,
       default: "right",
@@ -32,7 +36,7 @@ export default {
     height="24" 
     viewBox="0 0 24 24" 
     fill="none">
-    <path d="M9 17L14 12ZM14 12L9 7Z" fill="#010440"/>
-    <path d="M9 17L14 12L9 7" stroke="#010440" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M9 17L14 12ZM14 12L9 7Z" :fill="color"/>
+    <path d="M9 17L14 12L9 7" :stroke="color" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
 </template>
