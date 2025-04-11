@@ -7,7 +7,8 @@ import {
 } from "firebase/auth";
 import { auth } from "./firebase";
 
-import { createUserProfile, editUserProfile, getUserProfileById } from "./user-profile";
+// import { createUserProfile, editUserProfile, getUserProfileById } from "./user-profile";
+import { createUserProfile, editUserProfile, getUserProfile } from './user';
 import { uploadFile, getFileURL } from "./file-storage";
 
 let userData = {
@@ -39,7 +40,7 @@ onAuthStateChanged(auth, (user) => {
     localStorage.setItem("user", JSON.stringify(userData));
 
     // Buscamos los datos del perfil, para actualizar los datos del usuario autenticado.
-    getUserProfileById(user.uid).then((profile) => {
+    getUserProfile(user.uid).then((profile) => {
       updateUserData({
         name: profile.name,
         lastName: profile.lastName,
@@ -65,10 +66,6 @@ export async function login({ email, password }) {
   return userCredential;
 }
 
-/**
- *
- * @param {{email: string, password: string}} data
- */
 export async function register({ email, password }) {
   try {
     const credentials = await createUserWithEmailAndPassword(
@@ -78,10 +75,7 @@ export async function register({ email, password }) {
     );
 
     // Creamos el perfil del usuario con el rol "user" por defecto.
-    await createUserProfile(credentials.user.uid, { 
-      email, 
-      role: "user" // Valor por defecto para el nuevo usuario.
-    });
+    await createUserProfile(credentials.user.uid, email);
   } catch (error) {
     console.error("[auth.js register] Error al registrar el usuario: ", error);
     throw error;
