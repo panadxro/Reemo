@@ -157,10 +157,10 @@ export default {
 
         // Documentación
         documents: {
-          dniFront: this.user.dniFrontUrl,
-          dniBack: this.user.dniBackUrl,
-          driverLicenseFront: this.user.driverFrontUrl,
-          driverLicenseBack: this.user.driverBackUrl
+          dniFront: this.dniFrontUrl,
+          dniBack: this.dniBackUrl,
+          driverLicenseFront: this.driverFrontUrl,
+          driverLicenseBack: this.driverBackUrl
         },
 
         //Ubicación
@@ -310,6 +310,10 @@ export default {
     handleProfilePhoto(event) {
       const file = event.target.files[0];
       if (file) {
+        // Limpiar URL previa si existe
+        if (this.profilePhotoPreview) {
+          URL.revokeObjectURL(this.profilePhotoPreview);
+        }
         // Guardar el archivo para subir luego
         this.user.profilePhoto = file;
         // Crear URL temporal para previsualización
@@ -319,6 +323,9 @@ export default {
     handleDNIFront(event) {
       const file = event.target.files[0];
       if (file) {
+        if (this.dniFrontUrl) {
+          URL.revokeObjectURL(this.dniFrontUrl)
+        }
         this.user.dniFrontFile = file;
         this.dniFrontUrl = URL.createObjectURL(file)
       }
@@ -326,6 +333,9 @@ export default {
     handleDNIBack(event) {
       const file = event.target.files[0];
       if (file) {
+        if (this.dniBackUrl) {
+          URL.revokeObjectURL(this.dniFrontUrl)
+        }
         this.user.dniBackFile = file;
         this.dniBackUrl = URL.createObjectURL(file)
       }
@@ -333,6 +343,9 @@ export default {
     handleDriverFront(event) {
       const file = event.target.files[0];
       if (file) {
+        if (this.driverFrontUrl) {
+          URL.revokeObjectURL(this.dniFrontUrl)
+        }
         this.user.driverFrontFile = file;
         this.driverFrontUrl = URL.createObjectURL(file)
       }
@@ -340,6 +353,9 @@ export default {
     handleDriverBack(event) {
       const file = event.target.files[0];
       if (file) {
+        if (this.driverBackUrl) {
+          URL.revokeObjectURL(this.dniFrontUrl)
+        }
         this.user.driverBackFile = file;
         this.driverBackUrl = URL.createObjectURL(file)
       }
@@ -357,18 +373,12 @@ export default {
         this.user = {
           ...this.user,
           // Información personal
-          profilePhotoPreview: personalInfo?.profilePhoto || null,
           ...['username', 'firstName', 'lastName', 'phone', 'gender', 'birthDate']
-            .reduce((acc, key) => ({
+          .reduce((acc, key) => ({
               ...acc,
               [key]: personalInfo[key] || ''
             }), {}),
-          // Documentación
-          dniFrontUrl: documents?.dniFront || null,
-          dniBackUrl: documents?.dniBack || null,
-          driverFrontUrl: documents?.driverLicenseFront || null,
-          driverBackUrl: documents?.driverLicenseBack || null,
-          documentNumber: documents?.documentNumber || '',
+
 
           // Ubicación
           ...['province', 'city', 'postalCode', 'street', 'floor', 'apartment']
@@ -382,6 +392,13 @@ export default {
           acceptedPrivacyPolicy: agreements.acceptedPrivacyPolicy || false,
           acceptedNotifications: agreements.acceptedMarketing || false
         };
+        // Documentación
+        this.profilePhotoPreview = personalInfo?.profilePhoto || null;
+        this.dniFrontUrl = documents?.dniFront || null;
+        this.dniBackUrl = documents?.dniBack || null;
+        this.driverFrontUrl = documents?.driverLicenseFront || null;
+        this.driverBackUrl = documents?.driverLicenseBack || null;
+        this.documentNumber = documents?.documentNumber || '';
 
         //  Método de pago
         if (primaryPaymentMethod.type) {
@@ -431,6 +448,13 @@ export default {
     });
   },
   beforeUnmount() {
+    // Limpiar todas las URLs de objetos
+    if (this.profilePhotoPreview) URL.revokeObjectURL(this.profilePhotoPreview);
+    if (this.dniFrontUrl) URL.revokeObjectURL(this.dniFrontUrl);
+    if (this.dniBackUrl) URL.revokeObjectURL(this.dniBackUrl);
+    if (this.driverFrontUrl) URL.revokeObjectURL(this.driverFrontUrl);
+    if (this.driverBackUrl) URL.revokeObjectURL(this.driverBackUrl);
+
     this.unsubscribeAuth?.();
   }
 };
@@ -472,8 +496,8 @@ export default {
           <div class="flex flex-col gap-5">
             <div class="flex gap-3">
               <label for="profile-picture">
-                <img v-if="user.profilePhotoPreview" 
-                  :src="profilePhotoPreview ? profilePhotoPreview : user.profilePhotoPreview" 
+                <img v-if="profilePhotoPreview" 
+                  :src="profilePhotoPreview" 
                   alt="Foto de perfil" 
                   class="profile-picture" />
                 <img v-else src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="Foto de perfil por defecto" class="profile-picture cursor-pointer" />
@@ -528,7 +552,7 @@ export default {
               <p class="text-sm font-medium">Para completar la verificación de identidad, sube una foto clara y ligible de tu DNI.</p>
               <div class="flex gap-3">
                 <label for="dni-front" class="cursor-pointer">
-                  <img v-if="user.dniFrontUrl" :src="dniFrontUrl ? dniFrontUrl : user.dniFrontUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <img v-if="dniFrontUrl" :src="dniFrontUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
                   <DNIFront v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
@@ -541,7 +565,7 @@ export default {
               </div>
               <div class="flex gap-3">
                 <label for="dni-back" class="cursor-pointer">
-                  <img v-if="user.dniBackUrl" :src="dniBackUrl ? dniBackUrl : user.dniBackUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
+                  <img v-if="dniBackUrl" :src="dniBackUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
                   <DNIBack v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
@@ -556,7 +580,7 @@ export default {
               <p class="text-sm font-medium">Para poder alquilar en nuestra plataforma, es esencial que tengas vinculado tu registro de conducir. </p>
               <div class="flex gap-3">
                 <label for="driver-front" class="cursor-pointer">
-                  <img v-if="user.driverFrontUrl" :src="driverFrontUrl ? driverFrontUrl : user.driverFrontUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <img v-if="driverFrontUrl" :src="driverFrontUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
                   <DriverFront v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
@@ -567,7 +591,7 @@ export default {
               </div>
               <div class="flex gap-3">
                 <label for="driver-back" class="cursor-pointer">
-                  <img v-if="user.driverBackUrl" :src="driverBackUrl ? driverBackUrl : user.driverBackUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <img v-if="driverBackUrl" :src="driverBackUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
                   <DriverBack v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
