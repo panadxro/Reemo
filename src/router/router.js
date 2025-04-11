@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router"; 
 import { subscribeToAuthState } from "../services/auth";
+import { useAuthStore } from '@stores/auth.store'
 
 import Home from "../pages/Home.vue";
 import Login from "../pages/Login.vue";
@@ -23,7 +24,7 @@ const routes = [
   {
     path: "/onboarding",
     component: UserOnboarding,
-    name: "Onboarding",
+    name: "onboarding",
     meta: { needsAuth: true },
   },
   {
@@ -104,6 +105,17 @@ router.beforeEach((to) => {
       path: "/",
     };
   }
+});
+
+router.beforeEach(async (to, from, next) => {
+  if (to.meta.requiresOnboarding) {
+    const user = await getCurrentUser(); // Implementa esta función
+    if (user && user.onboardingCompleted) {
+      next('/home');
+      return;
+    }
+  }
+  next();
 });
 
 export default router;

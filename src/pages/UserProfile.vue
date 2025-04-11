@@ -72,10 +72,27 @@ export default {
         this.isProfileOwner = userId === this.loggedUser?.id;
 
         // Obtener datos del usuario
-        this.user = this.isProfileOwner ? this.loggedUser : await getUserById(userId);
-        if (!this.user) {
+        const userData = this.isProfileOwner ? this.loggedUser : await getUserById(userId);
+
+        if (!userData) {
           console.error("Usuario no encontrado.");
         }
+
+        // Mapear los datos del onboarding a la estructura esperada
+        this.user = {
+          id: userId,
+          email: userData.email,
+          userName: userData.personalInfo?.username || '',
+          name: userData.personalInfo?.firstName || '',
+          lastName: userData.personalInfo?.lastName || '',
+          photoURL: userData.personalInfo?.profilePhoto || '',
+          phone: userData.personalInfo?.phone || '',
+          birthDate: userData.personalInfo?.birthDate || '',
+          gender: userData.personalInfo?.gender || '',
+          address: userData.address || {},
+          documents: userData.documents || {},
+          paymentMethods: userData.paymentMethods || []
+        };
 
         // Obtener autos y publicaciones del usuario
         this.posts = await getPostsByUserId(userId);
@@ -97,7 +114,7 @@ export default {
 
 <template>
   <!-- Sidebar (solo para el usuario logueado) -->
-  <UserNav v-if="isProfileOwner" :user="loggedUser" />
+  <UserNav v-if="isProfileOwner" :user="user" />
   <section class="parent m-2.5 w-full max-h-vh">
 
     <!-- Perfil del usuario -->
@@ -108,14 +125,14 @@ export default {
       </div>
       <article v-if="isProfileOwner" class="bg-secondary-100 h-full rounded-[40px] px-6 py-5 flex flex-row items-center gap-5">
         <img 
-          v-if="loggedUser.photoURL" 
+          v-if="user.photoURL" 
           class="w-32 aspect-square rounded-full bg-vibrant-light-800" 
-          :src="`${loggedUser.photoURL}`"
-          :alt="`Perfil de ${loggedUser.userName}`" 
+          :src="`${user.photoURL}`"
+          :alt="`Perfil de ${user.userName}`" 
         />
         <div>
-          <Heading :type="2" class="medium">{{ loggedUser.name }} {{ loggedUser.lastName }}</Heading>
-          <p>{{ loggedUser.email }}</p>
+          <Heading :type="2" class="medium">{{ user.name }} {{ user.lastName }}</Heading>
+          <p>{{ user.email }}</p>
         </div>
       </article>
       <article v-else class="bg-secondary-100 h-full rounded-[40px] px-6 py-5 flex flex-row items-center gap-5">
