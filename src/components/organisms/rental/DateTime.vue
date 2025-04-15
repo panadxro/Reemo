@@ -2,215 +2,258 @@
 import Calendar from '../../atoms/Calendar.vue';
 
 export default {
-  components: {
-    Calendar,
+  components: { Calendar },
+  props: {
+    disabled: {
+      type: Boolean,
+      default: false
+    },
+    // Nuevos props para poder inicializar con valores
+    initialFromDate: {
+      type: String,
+      default: ""
+    },
+    initialUntilDate: {
+      type: String,
+      default: ""
+    },
+    initialFromHour: {
+      type: String,
+      default: ""
+    },
+    initialUntilHour: {
+      type: String,
+      default: ""
+    }
   },
   data() {
+    const today = this.getTodayDate();
     return {
-      todayDate: this.getTodayDate(),
-      rentedFromDate: this.getTodayDate(),
-      rentedFromHour: "",
-      rentedUntilDate: "",
-      rentedUntilHour: "",
+      todayDate: today,
+      rentedFromDate: this.initialFromDate || today,
+      rentedFromHour: this.initialFromHour || "",
+      rentedUntilDate: this.initialUntilDate || "",
+      rentedUntilHour: this.initialUntilHour || "",
       availableHours: [],
-      availableUntilHours: [],
+      availableUntilHours: []
     };
   },
   methods: {
     getTodayDate() {
       const today = new Date();
-      const offset = today.getTimezoneOffset();
-      today.setMinutes(today.getMinutes() - offset);
-      return today.toISOString().split("T")[0];
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
     },
+    
     generateTimeOptions() {
-      let hours = [];
-      for (let h = 0; h < 24; h++) {
-        for (let m of ["00", "30"]) {
-          hours.push(`${String(h).padStart(2, "0")}:${m}`);
-        }
-      }
-      return hours;
+      return Array.from({ length: 48 }, (_, i) => {
+        const hours = Math.floor(i / 2);
+        const mins = (i % 2) * 30;
+        return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+      });
     },
-    isPastTime(selectedDate, selectedTime) {
-      const now = new Date();
-      const [hours, minutes] = selectedTime.split(':').map(Number);
-      const selectedDateTime = new Date(selectedDate);
-      selectedDateTime.setHours(hours, minutes, 0, 0);
-      return selectedDateTime < now;
-    },
+    
     getCurrentTimeSlot() {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    // Redondear al siguiente intervalo de 30 minutos
-    if (minutes < 30) {
-      return `${String(hours).padStart(2, '0')}:30`;
-    } else {
-      // Si pasamos de 30 minutos, avanzamos a la hora siguiente
-      return `${String(hours + 1).padStart(2, '0')}:00`;
-    }
-  },
-
-  updateAvailableHours() {
-    if (!this.rentedFromDate) {
-      this.availableHours = [];
-      this.rentedFromHour = "";
-      return;
-    }
-
-    const now = new Date();
-    const allHours = this.generateTimeOptions();
-    const todayStr = this.getTodayDate();
-
-    if (this.rentedFromDate === todayStr) {
-      const currentSlot = this.getCurrentTimeSlot();
-      this.availableHours = allHours.filter(hour => hour >= currentSlot);
-      
-      if (this.availableHours.length === 0) {
-        // Si no hay horas disponibles hoy, avanzamos al día siguiente
-        const tomorrow = new Date(now);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        this.rentedFromDate = tomorrow.toISOString().split("T")[0];
+      const now = new Date();
+      const hours = now.getHours();
+      return now.getMinutes() < 30 
+        ? `${String(hours).padStart(2, '0')}:30`
+        : `${String(hours + 1).padStart(2, '0')}:00`;
+    },
+    
+    updateAvailableHours() {
+      // Si está deshabilitado y tenemos valores iniciales, configurarlos manualmente
+      if (this.disabled) {
+        const allHours = this.generateTimeOptions();
         this.availableHours = allHours;
-        this.rentedFromHour = this.availableHours[0];
+        this.availableUntilHours = allHours;
+        
+        // Si hay datos almacenados en localStorage, usarlos
+        const savedData = localStorage.getItem('rentalData');
+        if (savedData) {
+          const data = JSON.parse(savedData);
+          this.rentedFromDate = data.rentedFromDate || this.rentedFromDate;
+          this.rentedUntilDate = data.rentedUntilDate || this.rentedUntilDate;
+          this.rentedFromHour = data.selectedTime || this.rentedFromHour;
+          this.rentedUntilHour = data.selectedUntilTime || this.rentedUntilHour;
+          
+          // Forzar que availableHours contenga estos valores
+          if (!this.availableHours.includes(this.rentedFromHour)) {
+            this.availableHours.push(this.rentedFromHour);
+          }
+          if (!this.availableUntilHours.includes(this.rentedUntilHour)) {
+            this.availableUntilHours.push(this.rentedUntilHour);
+          }
+          
+          this.emitDates();
+        }
         return;
       }
-    } else {
-      // Para días futuros, mostramos todas las horas
-      this.availableHours = allHours;
-    }
-
-    // Si la hora seleccionada no está disponible, la reseteamos
-    if (!this.availableHours.includes(this.rentedFromHour) || !this.rentedFromHour) {
-      this.rentedFromHour = this.availableHours[0];
-    }
-
-    this.updateAvailableUntilHours();
-  },
-
-  updateAvailableUntilHours() {
-    if (!this.rentedUntilDate || !this.rentedFromHour) {
-      this.availableUntilHours = [];
-      this.rentedUntilHour = "";
-      return;
-    }
-
-    const allHours = this.generateTimeOptions();
-    const todayStr = this.getTodayDate();
-    
-    // Si es el mismo día, solo horas después de la hora de retiro
-    if (this.rentedUntilDate === this.rentedFromDate) {
-      this.availableUntilHours = allHours.filter(h => h > this.rentedFromHour);
-    } 
-    // Si es un día diferente
-    else {
-      // Si es hoy, solo horas futuras
-      if (this.rentedUntilDate === todayStr) {
-        const currentSlot = this.getCurrentTimeSlot();
-        this.availableUntilHours = allHours.filter(hour => hour >= currentSlot);
-      } 
-      // Si es un día futuro
-      else {
-        this.availableUntilHours = allHours;
+      
+      // Lógica normal cuando no está deshabilitado
+      if (!this.rentedFromDate) {
+        this.availableHours = [];
+        this.rentedFromHour = "";
+        return;
       }
+      
+      const allHours = this.generateTimeOptions();
+      const isToday = this.rentedFromDate === this.todayDate;
+      
+      this.availableHours = isToday 
+        ? allHours.filter(h => h >= this.getCurrentTimeSlot())
+        : allHours;
+      
+      if (this.availableHours.length === 0 && isToday) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        this.rentedFromDate = tomorrow.toISOString().split('T')[0];
+        this.availableHours = allHours;
+      }
+      
+      this.rentedFromHour = this.availableHours.includes(this.rentedFromHour) 
+        ? this.rentedFromHour 
+        : this.availableHours[0] || "";
+      
+      this.updateAvailableUntilHours();
+    },
+    
+    updateAvailableUntilHours() {
+      if (this.disabled) {
+        return; // Si está deshabilitado, ya lo manejamos en updateAvailableHours
+      }
+      
+      if (!this.rentedUntilDate || !this.rentedFromHour) {
+        this.availableUntilHours = [];
+        this.rentedUntilHour = "";
+        return;
+      }
+      
+      const allHours = this.generateTimeOptions();
+      const isSameDay = this.rentedUntilDate === this.rentedFromDate;
+      
+      this.availableUntilHours = isSameDay
+        ? allHours.filter(h => h > this.rentedFromHour)
+        : allHours;
+      
+      this.rentedUntilHour = this.availableUntilHours.includes(this.rentedUntilHour)
+        ? this.rentedUntilHour
+        : this.availableUntilHours[0] || "";
+    },
+    
+    emitDates() {
+      this.$emit('update-dates', {
+        rentedFromDate: this.rentedFromDate,
+        rentedUntilDate: this.rentedUntilDate,
+        rentedFromHour: this.rentedFromHour,
+        rentedUntilHour: this.rentedUntilHour
+      });
     }
-
-    // Si la hora seleccionada no está disponible, la reseteamos
-    if (!this.availableUntilHours.includes(this.rentedUntilHour) || !this.rentedUntilHour) {
-      this.rentedUntilHour = this.availableUntilHours[0] || "";
-    }
-  },
   },
   watch: {
-    rentedFromDate(newFromDate) {
-    this.updateAvailableHours();
-    
-    if (this.rentedUntilDate && newFromDate) {
-      const fromDate = new Date(newFromDate);
-      const untilDate = new Date(this.rentedUntilDate);
-      
-      if (fromDate > untilDate) {
-        this.rentedUntilDate = '';
+    rentedFromDate(newDate, oldDate) {
+      if (!this.disabled && this.rentedUntilDate && newDate > this.rentedUntilDate) {
+        this.rentedUntilDate = "";
+        this.rentedUntilHour = "";
       }
-    }
-  },
-    rentedFromHour() {
-      this.updateAvailableUntilHours();
+      this.updateAvailableHours();
+      this.emitDates();
     },
     rentedUntilDate() {
       this.updateAvailableUntilHours();
+      this.emitDates();
+    },
+    rentedFromHour() {
+      this.updateAvailableUntilHours();
+      this.emitDates();
+    },
+    rentedUntilHour() {
+      this.emitDates();
+    },
+    disabled(newVal) {
+      this.updateAvailableHours();
     }
   },
   mounted() {
-  this.updateAvailableHours();
-  if (this.rentedFromDate === this.todayDate && this.availableHours.length > 0) {
-    this.rentedFromHour = this.availableHours[0];
+    this.updateAvailableHours();
   }
-}
 };
 </script>
 
 <template>
-  <div>
-    <div class="flex gap-8 justify-between">
-      <!-- Día y hora de retiro -->
-      <div class="">
-        <label class="block text-sm font-medium mb-1 text-white">Día y hora de retiro</label>
-        <div class="flex items-center bg-[#343666] border border-gray-700 rounded-2xl p-4 text-white">
+  <div class="flex flex-col md:flex-row gap-4">
+    <!-- Retiro -->
+    <div class="flex-1">
+      <label class="block text-sm font-medium mb-1 text-white">Retiro</label>
+      <div class="flex items-center bg-[#343666] border border-gray-700 rounded-2xl p-3"
+           :class="{ 'opacity-80': disabled }">
+        <div class="flex items-center gap-2 flex-1">
           <Calendar />
-  
-          <input type="date" v-model="rentedFromDate" :min="todayDate"
-            class="bg-transparent text-white outline-none w-[130px] cursor-pointer" />
-  
-          <select v-model="rentedFromHour" class="bg-transparent text-white outline-none w-[90px]"
-            :disabled="!rentedFromDate || availableHours.length === 0">
-            <option v-for="hour in availableHours" :key="hour" :value="hour" class="bg-[#DBFAFC] text-[#010440]">
-              {{ hour }}
-            </option>
-          </select>
+          <input 
+            type="date" 
+            v-model="rentedFromDate" 
+            :min="todayDate"
+            :disabled="disabled"
+            class="bg-transparent text-white outline-none cursor-pointer w-full"
+            :class="{ 'cursor-not-allowed': disabled }"
+          />
         </div>
-      </div>
-  
-      <!-- Día y hora de devolución -->
-      <div class="">
-        <label class="block text-sm font-medium mb-1 text-white">Día y hora de devolución</label>
-        <div class="flex items-center bg-[#343666] border border-gray-700 rounded-2xl p-4 text-white">
-          <Calendar />
-  
-          <input type="date" v-model="rentedUntilDate" :min="rentedFromDate || todayDate"
-            class="bg-transparent text-white outline-none w-[130px] cursor-pointer" :disabled="!rentedFromDate" />
-  
-          <select v-model="rentedUntilHour" class="bg-transparent text-white outline-none w-[90px]"
-            :disabled="!rentedUntilDate || availableUntilHours.length === 0">
-            <option v-for="hour in availableUntilHours" :key="hour" :value="hour" class="bg-[#DBFAFC] text-[#010440]">
-              {{ hour }}
-            </option>
-          </select>
-        </div>
+        
+        <select 
+          v-model="rentedFromHour" 
+          :disabled="!rentedFromDate || disabled || availableHours.length === 0"
+          class="bg-transparent text-white outline-none"
+          :class="{ 'cursor-not-allowed': disabled }"
+        >
+          <option 
+            v-for="hour in availableHours" 
+            :key="hour" 
+            :value="hour"
+            class="bg-[#DBFAFC] text-[#010440]"
+          >
+            {{ hour }}
+          </option>
+        </select>
       </div>
     </div>
-  
-      <section class="my-8 mx-2 flex flex-col gap-4">
-        <div class="text-white flex justify-between">
-          <p>Tiempo Total</p>
-          <p>$</p>
+    
+    <!-- Devolución -->
+    <div class="flex-1">
+      <label class="block text-sm font-medium mb-1 text-white">Devolución</label>
+      <div class="flex items-center bg-[#343666] border border-gray-700 rounded-2xl p-3"
+           :class="{ 'opacity-80': disabled }">
+        <div class="flex items-center gap-2 flex-1">
+          <Calendar />
+          <input 
+            type="date" 
+            v-model="rentedUntilDate" 
+            :min="rentedFromDate || todayDate"
+            :disabled="!rentedFromDate || disabled"
+            class="bg-transparent text-white outline-none cursor-pointer w-full"
+            :class="{ 'cursor-not-allowed': disabled }"
+          />
         </div>
-        <div class="text-white flex justify-between">
-          <p>Precio</p>
-          <p>$</p>
-        </div>
-        <div class="text-white flex justify-between">
-          <p>Impuestos</p>
-          <p>$</p>
-        </div>
-        <div class="text-white flex justify-between">
-          <p>Seguro</p>
-          <p>$</p>
-        </div>
-      </section>
+        
+        <select 
+          v-model="rentedUntilHour" 
+          :disabled="!rentedUntilDate || disabled || availableUntilHours.length === 0"
+          class="bg-transparent text-white outline-none"
+          :class="{ 'cursor-not-allowed': disabled }"
+        >
+          <option 
+            v-for="hour in availableUntilHours" 
+            :key="hour" 
+            :value="hour"
+            class="bg-[#DBFAFC] text-[#010440]"
+          >
+            {{ hour }}
+          </option>
+        </select>
+      </div>
+    </div>
   </div>
-  
 </template>
 
 <style scoped>
@@ -226,7 +269,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   width: 100%;
   position: absolute;
 }
+
+input[disabled], select[disabled] {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
 </style>
-
-
-
