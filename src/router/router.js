@@ -1,6 +1,5 @@
-import { createRouter, createWebHistory } from "vue-router"; 
-import { subscribeToAuthState } from "../services/auth";
-import { useAuthStore } from '@stores/auth.store'
+import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore, useUserStore } from '@stores'
 
 import Home from "../pages/Home.vue";
 import Login from "../pages/Login.vue";
@@ -14,11 +13,22 @@ import AdminCars from "../pages/admin/Cars.vue";
 import AdminUsers from "../pages/admin/Users.vue";
 import PrivateChat from "../pages/PrivateChat.vue";
 import UserProfile from "../pages/UserProfile.vue";
+import NotFound from "../pages/NotFound.vue"
 
 const routes = [
   { path: "/", component: Home, name: "Home" },
   { path: "/login", component: Login, name: "Login" },
   { path: "/register", component: Register, name: "Register" },
+  {
+    path: "/:pathMatch(.*)*",
+    component: NotFound,
+    name: "NotFound",
+    beforeEnter: (to) => {
+      if (!to.matched.length) {
+        return '/404'
+      }
+    },
+   },
   { path: "/search", component: Search, name: "Search" },
   { path: "/maps", component: Maps },
   {
@@ -79,43 +89,43 @@ const routes = [
 const router = createRouter({
   routes,
   history: createWebHistory(),
-});
-
-let loggedUser = {
-  id: null,
-  email: null,
-  userName: null,
-  name: null,
-  lastName: null,
-  role: null,
-};
-
-// Subscribe to auth state changes
-subscribeToAuthState((newUserData) => (loggedUser = newUserData));
-
-router.beforeEach((to) => {
-  if (to.meta.needsAuth && loggedUser.id == null) {
-    return {
-      path: "/login",
-    };
-  }
-
-  if (to.meta.role && loggedUser.role !== to.meta.role) {
-    return {
-      path: "/",
-    };
-  }
-});
-
-router.beforeEach(async (to, from, next) => {
-  if (to.meta.requiresOnboarding) {
-    const user = await getCurrentUser(); // Implementa esta función
-    if (user && user.onboardingCompleted) {
-      next('/home');
-      return;
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    } else {
+      return { top: 0 };
     }
   }
-  next();
 });
+
+router.beforeEach(async (to) => {
+    const authStore = useAuthStore();
+
+    // Si el usuario está logueado, permite la navegación
+    if (authStore.isLoggedIn) {
+        return true;
+    }
+    // Si no esta logueado pero el authstore esta inicializado
+    else {
+        // Si no requiere auth, continúa con getCurrentUser
+        if (!to.meta.needsAuth) {
+            return true;
+        }
+        // Si la ruta requiere autenticación, y el store esta inicializado, redirige a /login
+        if (to.meta.needsAuth && !authStore.isInitialiazed) {
+          
+            return { path: "/login", query: { redirect: to.fullPath } };
+        }
+    }
+  if (to.meta.needsAdmin) {
+    const userStore = useUserStore();
+    await userStore.loadUserProfile(authStore.user.id);
+    if (to.meta.role && userStore.profileData.role !== to.meta.role) {
+      return {
+        path: "/",
+      };
+    }
+  }
+})
 
 export default router;

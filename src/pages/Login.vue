@@ -1,5 +1,6 @@
 <script>
-import { login } from "../services/auth";
+import { reactive } from "vue";
+import { useAuthStore } from "@stores";
 import { addAlert } from "../services/alerts";
 
 import Heading from "../components/atoms/Heading.vue";
@@ -7,23 +8,20 @@ import Reemo from '@icons/Reemo.vue';
 import Google from "../icons/Google.vue";
 import FacebookIcon from "../icons/FacebookIcon.vue";
 import Input from "../components/molecules/Input.vue";
-import Mail from "../icons/Mail.vue";
+import Mail from "@icons/Mail.vue";
 import Password from "../icons/Password.vue";
 import Checkbox from "../components/atoms/Checkbox.vue";
 
 export default {
   name: "Login",
   components: { Heading, Reemo, Google, FacebookIcon, Input, Mail, Password, Checkbox },
-  data() {
-    return {
-      user: {
-        email: "",
-        password: "",
-        remember: false, // Definir como booleano
-      },
-      loading: false,
-      errorMsg: "",
-    };
+  setup() {
+    const authStore = useAuthStore();
+    const user = reactive({
+      email: "",
+      password: "",
+    });
+    return { authStore, user };
   },
   methods: {
     async handleSubmit() {
@@ -31,33 +29,18 @@ export default {
       this.errorMsg = "";
 
       // Validaciones previas
-      if (!this.user.email || !this.user.password) {
-        addAlert("Por favor, ingresa tu email y contraseña.", "error");
+      if (!this.user.email) {
+        addAlert("Por favor, ingresa tu email.", "error");
+        this.loading = false;
+        return;
+      } 
+      if (!this.user.password) {
+        addAlert("Por favor, ingresa tu contraseña.", "error");
         this.loading = false;
         return;
       }
-
-      try {
-        const userCredential = await login({ ...this.user });
-        const userId=  userCredential.user.uid; // Obtener el ID del usuario
-
-        addAlert("¡Bienvenido a Reemo!", "success");
-
-        // Redirigir al usuario a la página de inicio
-        this.$router.push(`/user/${userId}`);
-      } catch (error) {
-        let errorCode = error.code;
-        switch (errorCode) {
-        case 'auth/invalid-email':
-          return addAlert('El correo electrónico ingresado no es válido.', 'error');
-        case 'auth/wrong-password':
-          return addAlert('La contraseña es incorrecta.', 'error');
-        case 'auth/user-not-found':
-          return addAlert('No existe una cuenta con este email.', 'error');
-        default:
-          return addAlert('Error al iniciar sesión. Intenta de nuevo.', 'error');
-        console.error("[Login.vue] Error al autenticar:", error);
-        }
+      try{
+        await this.authStore.loginUser(this.user)
       } finally {
         this.loading = false;
       }
@@ -88,7 +71,7 @@ export default {
         <hr class="grow h-px bg-background-900!"/>
       </div>
       <Input 
-        v-model="user.email" 
+        v-model="user.email"
         type="email" 
         id="email" 
         name="email" 
@@ -102,7 +85,7 @@ export default {
         </template>
       </Input>
       <Input 
-        v-model="user.password" 
+        v-model="user.password"
         type="password" 
         id="password" 
         name="password" 
@@ -126,10 +109,10 @@ export default {
     </div>
     <Input 
       type="submit" 
-      :text="loading ? 'Cargando...' : 'Iniciar sesión'"
+      :text="authStore.loading ? 'Cargando...' : 'Iniciar sesión'"
       :iconPosition="'left'"
       :variant="'primary'"
-      :class="loading ? 'cursor-not-allowed bg-deep-blue-700' : 'cursor-pointer'"
+      :class="authStore.loading ? 'cursor-not-allowed bg-deep-blue-700' : 'cursor-pointer'"
     >
     </Input>
     <p class="text-xs text-background-900 text-center font-regular">
