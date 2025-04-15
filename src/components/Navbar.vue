@@ -1,35 +1,18 @@
-<script>
+<script setup>
+import { useAuthStore } from "@/stores/auth.store";
+
 import Logout from "../icons/Logout.vue";
 import Login from "../icons/Login.vue";
-import Reemo from '@icons/Reemo.vue';
-import AlertRented from '@components/organisms/rental/AlertRented.vue'
+import Reemo from "@icons/Reemo.vue";
 
-export default {
-  name: "Navbar",
-  components: { Logout, Login, Reemo, AlertRented },
-  props: {
-    user: {
-      type: Object,
-      required: true,
-    },
-  },
-  data(){
-    return{
-      rentalRequest: null,
-    }
-  },
-  methods: {
-    handleLogout() {
-      this.$emit("logout");
-    },
-  },
+const authStore = useAuthStore();
+
+const handleLogout = () => {
+  authStore.logout();
 };
-
-
 </script>
 
 <template>
-  <!-- ESTE ES EL DE LOS USUARIOS NORMALES -->
   <nav class="top-0 z-10 left-0 right-0 shadow-lg bg-white border-gray-200">
     <div class="max-w-(--breakpoint-xl) flex flex-wrap items-center justify-between mx-auto p-4">
       <router-link to="/" class="flex items-center space-x-3 rtl:space-x-reverse">
@@ -38,10 +21,7 @@ export default {
 
       <!-- Botones de inicio/cierre de sesión -->
       <div class="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-
-        <!-- <AlertRented v-if="user && user.id"/> -->
-
-        <template v-if="!user.id">
+        <template v-if="!authStore.isLoggedIn">
           <router-link
             to="/login"
             class="flex gap-2 items-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
@@ -51,15 +31,13 @@ export default {
           </router-link>
         </template>
         <template v-else>
-          <form @submit.prevent="handleLogout">
-            <button
-              type="submit"
-              class="flex gap-2 items-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
-            >
-              <span>Cerrar sesión</span>
-              <Logout />
-            </button>
-          </form>
+          <button
+            @click="handleLogout"
+            class="flex gap-2 items-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
+          >
+            <span>Cerrar sesión</span>
+            <Logout />
+          </button>
         </template>
       </div>
 
@@ -86,9 +64,9 @@ export default {
               Encontrar un auto
             </router-link>
           </li>
-          <li v-if="user.id">
+          <li v-if="authStore.isLoggedIn">
             <router-link
-              :to="'/user/' + user.id"
+              :to="'/user/' + authStore.user.id"
               class="block py-2 px-3 md:p-0 rounded-sm md:bg-transparent md:text-gray-500 hover:gray-700"
               aria-current="page"
               active-class="text-secondary-900! bg-blue-700"
