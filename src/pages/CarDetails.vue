@@ -9,7 +9,6 @@ import Loading from "@icons/Loading.vue";
 import BackButton from "../components/atoms/BackButton.vue";
 import Arrow from "../icons/Arrow.vue";
 import Like from "../icons/Like.vue"
-import RentProcess from "./RentProcess.vue";
 
 export default {
   props: ["id"],
@@ -17,8 +16,7 @@ export default {
   components: {
     Heading,
     Pill,
-    Loading, 
-    RentProcess,
+    Loading,
     BackButton,
     Arrow,
     Like
@@ -37,7 +35,14 @@ export default {
         role: null
       },
       currentImage: null,
-      defaultUserImage: "/src/assets/User.png"
+      defaultUserImage: "/src/assets/User.png",
+      defaultCarImage: "/src/assets/Car-Img.png",
+      hideMap: false,
+      mapInitialized: false,
+      selectedDates: {
+        startDate: null,
+        endDate: null
+      }
     };
   },
   async created() {
@@ -46,91 +51,155 @@ export default {
     try {
       const carId = this.id;
       this.car = await getCarById(carId);
-      // console.log("Datos del auto:", this.car);
 
-      if(!this.car.user) {
+      if (!this.car.user) {
         this.car.user = {};
       }
 
-      this.currentImage = this.car.images && this.car.images.length > 0 ? this.car.images[0] : defaultCarImage;
+      this.currentImage = this.car.images && this.car.images.length > 0 ? this.car.images[0] : this.defaultCarImage;
       this.rented = await checkIfCarIsRented(this.car.id);
-      // this.initMap(this.car.coordenadas);
-
-      // Inicializa el mapa si las coordenadas están definidas
-      if (this.car.coordenadas && this.car.coordenadas.lat && this.car.coordenadas.lng) {
-        await this.loadGoogleMaps();
-        this.initMap(this.car.coordenadas);
-      }
-
     } catch (error) {
       this.errorMsg = "Hubo un error al obtener los detalles del auto. Volvé a intentar";
       console.error("Error al obtener los detalles del auto:", error);
     }
     this.loading = false;
   },
+
+  async mounted() {
+    subscribeToAuthState((newUserData) => {
+      this.loggedUser = newUserData;
+    });
+
+    try {
+      await this.loadGoogleMaps();
+      this.checkAndInitMap();
+    } catch (err) {
+      console.error("Error al cargar Google Maps:", err);
+    }
+  },
+
   methods: {
     setCurrentImage(image) {
       this.currentImage = image;
     },
     setDefaultImage(event) {
-      event.target.src = defaultCarImage;
+      event.target.src = this.defaultCarImage;
     },
 
     async loadGoogleMaps() {
       const loader = new Loader({
         apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-        libraries: ["places", "geometry"], 
+        libraries: ["places", "geometry"],
       });
 
       try {
-        await loader.load(); // Esperamos a que la API se cargue completamente
+        return await loader.load();
       } catch (error) {
         console.error("Error al cargar Google Maps:", error);
+        throw error;
       }
     },
 
-    async initMap(coordenadas){
+    checkAndInitMap() {
+      // Solo inicializar el mapa si debe mostrarse y aún no ha sido inicializado
+      if (this.showMap && !this.mapInitialized && 
+          this.car?.coordenadas?.lat && this.car?.coordenadas?.lng) {
+        this.initMap(this.car.coordenadas);
+      }
+    },
+
+    async initMap(coordenadas) {
       if (!coordenadas || !coordenadas.lat || !coordenadas.lng) {
         console.error("Coordenadas no válidas:", coordenadas);
         return;
       }
-      try {
 
+      // Asegurarse de que el elemento existe antes de inicializar el mapa
+      const mapElement = document.getElementById('map');
+      if (!mapElement) {
+        console.error("Elemento de mapa no encontrado");
+        return;
+      }
+
+      try {
         const position = { lat: coordenadas.lat, lng: coordenadas.lng };
         const { Map } = await google.maps.importLibrary("maps");
 
-        const map = new Map(document.getElementById('map'),{
+        const map = new Map(mapElement, {
           center: {
             lat: coordenadas.lat,
             lng: coordenadas.lng,
           },
           zoom: 14,
           mapId: "4808da25693c56c8",
-          streetViewControl: false, // Desactiva el ícono de Street View
-          mapTypeControl: false, // Oculta el botón de "Mapa / Satélite"
-          disableDefaultUI: true, // Si lo pones en true desactiva todos los controles (zoom, fullscreen, etc.)
+          streetViewControl: false,
+          mapTypeControl: false,
+          disableDefaultUI: true,
         });
 
         new google.maps.Circle({
           strokeColor: "#5DADE2",
-          strokeOpacity: 0.8, 
-          strokeWeight: 2, 
-          fillColor: "#A9D6F5", 
-          fillOpacity: 0.35, 
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: "#A9D6F5",
+          fillOpacity: 0.35,
           map: map,
           center: position,
-          radius: 1000, 
-        })
+          radius: 1000,
+        });
+
+        this.mapInitialized = true;
       } catch (error) {
-        console.error("Error al cargar Google Maps: ", error) 
+        console.error("Error al inicializar Google Maps:", error);
       }
     }
   },
-  mounted() {
-    subscribeToAuthState((newUserData) => {
-      this.loggedUser = newUserData;  
-    });
+  watch: {
+    startDate(newVal) {
+      this.$emit('update:dates', { startDate: newVal, endDate: this.endDate });
+    },
+    endDate(newVal) {
+      this.$emit('update:dates', { startDate: this.startDate, endDate: newVal });
+    },
+    '$route'(to) {
+      // Actualizar hideMap basado en la ruta
+      this.hideMap = to.path.includes('/information') || to.path.includes('/confirmation');
+    },
+    // Observar cambios en showMap para reinicializar el mapa cuando sea necesario
+    showMap(newVal) {
+      if (newVal) {
+        this.$nextTick(() => {
+          this.checkAndInitMap();
+        });
+      }
+    },
+    // Observar cambios en las coordenadas del auto para reinicializar el mapa
+    'car.coordenadas': {
+      handler(newCoords) {
+        if (newCoords && this.showMap) {
+          this.$nextTick(() => {
+            this.checkAndInitMap();
+          });
+        }
+      },
+      deep: true
+    }
   },
+  computed: {
+    shouldShowMap() {
+      return !this.$route.path.includes('/information') && 
+             !this.$route.path.includes('/confirmation');
+    },
+    // Nueva propiedad computada que combina todas las condiciones
+    showMap() {
+      return this.car && 
+             this.car.coordenadas && 
+             this.car.coordenadas.lat && 
+             this.car.coordenadas.lng && 
+             this.shouldShowMap && 
+             !this.hideMap;
+    }
+  }
 };
 </script>
 
@@ -153,33 +222,23 @@ export default {
             <!-- Botón de "Me gusta" -->
             <Like />
           </div>
-          <img 
-            class="object-center w-full h-full object-cover"
-            :src="currentImage" 
-            @error="setDefaultImage" 
-            alt="Auto" 
-          />
+          <img class="object-center w-full h-full object-cover" :src="currentImage" @error="setDefaultImage"
+            alt="Auto" />
         </figure>
 
         <!-- Miniaturas debajo de la imagen principal -->
         <div class="flex justify-between gap-2.5">
-          <img 
-            v-for="(image, index) in car.images" 
-            :key="index" 
-            :src="image" 
-            @click="setCurrentImage(image)"
-            @error="setDefaultImage" 
-            :class="{ active: image === currentImage }" 
-            class="max-h-20 object-center w-full flex-1 h-full border-2 object-cover cursor-pointer rounded-2xl hover:opacity-90 focus:border-vibrant-light-900" 
-            alt=""
-            />
+          <img v-for="(image, index) in car.images" :key="index" :src="image" @click="setCurrentImage(image)"
+            @error="setDefaultImage" :class="{ active: image === currentImage }"
+            class="max-h-20 object-center w-full flex-1 h-full border-2 object-cover cursor-pointer rounded-2xl hover:opacity-90 focus:border-vibrant-light-900"
+            alt="" />
         </div>
       </div>
       <div class="flex items-center justify-between mt-4">
         <Heading :type="2" class="large flex flex-col">
           <span class="text-background-600 text-lg!">
             {{ car.marca }}
-          </span> 
+          </span>
           {{ car.modelo }}
         </Heading>
         <div class="flex flex-col items-end gap-2">
@@ -191,10 +250,7 @@ export default {
       </div>
       <div v-if="car.user_id !== loggedUser?.id">
         <router-link :to="`/user/${car.user_id}`" class="flex items-center gap-2 hover:cursor-pointer">
-          <img 
-            :src="car.user?.photoURL || defaultUserImage" 
-            :alt="car.user.userName" 
-            :title="car.user.userName"
+          <img :src="car.user?.photoURL || defaultUserImage" :alt="car.user.userName" :title="car.user.userName"
             class="w-8 h-8 object-cover rounded-full" />
           <p class="font-semibold hover:underline">
             {{ car.user.name }} {{ car.user.lastName }}
@@ -235,8 +291,9 @@ export default {
       </div>
       <div class="flex flex-col gap-4">
         <Heading :type="2" class="medium">Accesorios</Heading>
-          <div  class="flex flex-wrap gap-2 text-gray-700">
-            <Pill v-for="(accessory, index) in car.accessories" :key="index" :accessory="accessory.id" :name="accessory.name" />
+        <div class="flex flex-wrap gap-2 text-gray-700">
+          <Pill v-for="(accessory, index) in car.accessories" :key="index" :accessory="accessory.id"
+            :name="accessory.name" />
         </div>
       </div>
     </article>
@@ -246,26 +303,32 @@ export default {
     <p v-else>Cargando...</p>
   </section>
   <div class="m-2.5 w-full flex flex-col gap-3">
-    <!-- iniciamos el mapa de Google Maps -->
-    <div 
-      v-if="car.coordenadas" 
-      id="map" 
-      style="width: 100%; height: 50%; border-radius: 40px;"
-      >
+    <!-- Ocultar completamente el contenedor del mapa en las rutas de pago/confirmación -->
+    <div v-if="shouldShowMap">
+      <div id="map" v-show="showMap" style="width: 100%; height: 300px; border-radius: 40px;"></div>
+      
+      <div v-show="!showMap"
+        class="bg-background-800 w-full h-[300px] rounded-[40px] flex items-center justify-center font-semibold text-background-600">
+        <p>Mapa no disponible</p>
+      </div>
     </div>
-    <div v-else class="bg-background-800 w-full h-1/2 rounded-[40px] flex items-center justify-center font-semibold text-background-600">
-      <p>Mapa no disponible</p>
+  
+    <div class="bg-deep-blue-900 w-full rounded-[40px] p-8 h-fit">
+      <router-view v-if="car && car.precio !== undefined && loggedUser" 
+        :car="car" 
+        :logged-user="loggedUser"
+        :rented="rented" 
+        @hide-map="hideMap = true" 
+        @show-map="hideMap = false" />
     </div>
-    <div class="bg-deep-blue-900 w-full h-1/2 rounded-[40px] p-8">
-      <RentProcess/>
-    </div>
-
 
     <span v-if="rented && car.user_id !== loggedUser?.id"
-      class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">Este
-      auto ya esta alquilado</span>
+      class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">
+      Este auto ya esta alquilado
+    </span>
     <span v-if="rented && car.user_id == loggedUser?.id"
-      class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">Tu
-      auto ya esta alquilado</span>
+      class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">
+      Tu auto ya esta alquilado
+    </span>
   </div>
 </template>

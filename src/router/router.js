@@ -13,6 +13,9 @@ import AdminCars from "../pages/admin/Cars.vue";
 import AdminUsers from "../pages/admin/Users.vue";
 import PrivateChat from "../pages/PrivateChat.vue";
 import UserProfile from "../pages/UserProfile.vue";
+import RentalStep1 from '../components/organisms/rental/RentalStep1.vue';
+import RentalStep2 from '../components/organisms/rental/RentalStep2.vue';
+import RentalStep3 from '../components/organisms/rental/RentalStep3.vue';
 
 const routes = [
   { path: "/", component: Home, name: "Home" },
@@ -38,6 +41,23 @@ const routes = [
     component: CarDetails,
     props: true,
     meta: { needsAuth: true },
+    children: [
+      {
+        path: '',
+        name: 'car-details',
+        component: RentalStep1 ,
+      },
+      {
+        path: 'information',
+        name: 'rent-information',
+        component: RentalStep2 ,
+      },
+      {
+        path: 'confirmation',
+        name: 'car-confirmation',
+        component: RentalStep3 ,
+      }
+    ]
   },
   {
     path: "/user/:id",
