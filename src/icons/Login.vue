@@ -8,10 +8,10 @@ export default {
   <svg
     xmlns="http://www.w3.org/2000/svg"
     class="icon icon-tabler icon-tabler-login"
-    width="16"
-    height="16"
+    width="24"
+    height="24"
     viewBox="0 0 24 24"
-    stroke-width="2.5"
+    stroke-width="3"
     stroke="currentColor"
     fill="none"
     stroke-linecap="round"
