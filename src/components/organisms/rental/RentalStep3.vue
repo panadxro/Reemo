@@ -3,11 +3,13 @@ import RentalFooter from "@/components/organisms/rental/RentalFooter.vue";
 import DateTime from "@/components/organisms/rental/DateTime.vue";
 import { isCarAlreadyRented, submitRentalRequest } from "@services/rentedCarService";
 import { addAlert } from "@services/alerts";
+import BackButton from "@components/atoms/BackButton.vue";
 
 export default {
   components: {
     RentalFooter,
-    DateTime
+    DateTime,
+    BackButton
   },
   props: {
     car: {
@@ -105,14 +107,13 @@ export default {
 
 <template>
     <div class="space-y-6">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold text-white">Paso 3: Confirmación</h2>
-        <button @click="goBack" class="flex items-center text-white hover:underline hover:cursor-pointer">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-        </button>
-      </div>
+      <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4 text-white">
+      <BackButton class="bg-white"/>
+      <h2 class="text-xl font-bold ">Confirmación</h2>
+    </div>
+      <p class="text-white">4/4</p>
+    </div>
       
       <DateTime 
         @update-dates="handleDateUpdate" 

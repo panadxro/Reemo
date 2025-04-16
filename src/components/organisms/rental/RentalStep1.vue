@@ -59,6 +59,7 @@ export default {
       };
       
       localStorage.setItem('rentalData', JSON.stringify(rentalData));
+      console.log("Datos de alquiler guardados:", rentalData);
     },
     
     goToInformation() {
@@ -106,8 +107,9 @@ export default {
 
 <template>
     <div class="space-y-6">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-xl font-bold text-white">Paso 1: Selecciona las fechas</h2>
+      <div class="flex justify-between items-center mb-4 text-white">
+        <h2 class="text-xl font-bold">Selecciona las fechas</h2>
+        <p>1/4</p>
       </div>
       
       <DateTime 
