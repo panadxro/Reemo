@@ -118,7 +118,7 @@ const router = createRouter({
   }
 });
 
-router.beforeEach(async (to) => {
+/* router.beforeEach(async (to) => {
   const authStore = useAuthStore();
   // Esperar que se resuelva el estado de autenticacion del usuario
   if (!authStore.isInitialiazed) {
@@ -133,8 +133,8 @@ router.beforeEach(async (to) => {
   }
   // Si el usuario está logueado
   if (authStore.isLoggedIn) {
-    if (to.meta.isLogin) return "/" // Esto es dudoso "isLogin"
-
+    // if (to.meta.isLogin) return "/" // Esto es dudoso "isLogin"
+    console.log("Hola" + to.meta.isLogin)
     return true;
   }
   // Si no requiere auth, sigue adelante
@@ -150,6 +150,36 @@ router.beforeEach(async (to) => {
     }
   }
   return "/login";
-});
+}); */
+
+router.beforeEach(async (to) => {
+  const authStore = useAuthStore();
+
+  // Si el usuario está logueado, permite la navegación
+  if (authStore.isLoggedIn) {
+      return true;
+  }
+  // Si no esta logueado pero el authstore esta inicializado
+  else {
+      // Si no requiere auth, continúa con getCurrentUser
+      if (!to.meta.needsAuth) {
+          return true;
+      }
+      // Si la ruta requiere autenticación, y el store esta inicializado, redirige a /login
+      if (to.meta.needsAuth && !authStore.isInitialiazed) {
+        
+          return { path: "/login", query: { redirect: to.fullPath } };
+      }
+  }
+if (to.meta.needsAdmin) {
+  const userStore = useUserStore();
+  await userStore.loadUserProfile(authStore.user.id);
+  if (to.meta.role && userStore.profileData.role !== to.meta.role) {
+    return {
+      path: "/",
+    };
+  }
+}
+})
 
 export default router;
