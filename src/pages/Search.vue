@@ -343,8 +343,7 @@ export default {
           variant="secondary"
           :outline="true"
           class="w-full"
-        >
-        </Input>
+        />
         <Input
           type="select"
           name="modelo"
@@ -359,8 +358,7 @@ export default {
           variant="secondary"
           :outline="true"
           class="w-full cursor-pointer"
-        >
-        </Input>
+        />
       </div>
       <div class="flex flex-col gap-2.5">
         <Heading :type="3" class="small">Rango de precio</Heading>

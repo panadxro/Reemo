@@ -1,69 +1,61 @@
-<script>
-import { logout, subscribeToAuthState } from "./services/auth";
+<script setup>
+import { watch, onMounted, markRaw, shallowRef } from 'vue'
+import { useRoute } from 'vue-router'
+import { useAuthStore } from '@stores/auth.store'
 
-import SimpleLayout from "./pages/SimpleLayout.vue";
-import Navbar from "./components/Navbar.vue";
-import FooterLayout from "./components/Footer.vue";
-import Alert from "./components/atoms/Alert.vue";
-import Sidebar from "./components/Sidebar.vue";
+import DefaultLayout from '@layouts/DefaultLayout.vue'
+import SimpleLayout from "@layouts/SimpleLayout.vue"
+import DashboardLayout from './layouts/DashboardLayout.vue'
+import Alert from './components/atoms/Alert.vue';
 
-export default {
-  name: "App",
-  components: {
-    SimpleLayout,
-    Navbar,
-    FooterLayout,
-    Alert,
-    Sidebar,
-  },
-  data() {
-    return {
-      loggedUser: {
-        id: null,
-        email: null,
-        photoURL: null,
-        userName: null,
-        name: null,
-        lastName: null,
-      },
-    };
-  },
-  methods: {
-    handleLogout() {
-      logout();
-      this.loggedUser = {
-        id: null,
-        email: null,
-      };
-      this.$router.push("/login");
-    },
-  },
-  mounted() {
-    subscribeToAuthState((newUserData) => (this.loggedUser = newUserData));
-  },
-};
+const route = useRoute()
+const authStore = useAuthStore()
+
+const layoutComponents = {
+  default: markRaw(DefaultLayout),
+  simple: markRaw(SimpleLayout),
+  dashboard: markRaw(DashboardLayout)
+}
+
+// Mapeo de rutas a tipos de layout
+const layoutMap = {
+  // Layout simple (sin navbar/footer)
+  '/login': 'simple',
+  '/register': 'simple',
+  '/ForgotPassword': 'simple',
+  '/onboarding': 'simple',
+  
+  // Rutas con layout de dashboard (con sidebar)
+  '/user': 'dashboard',
+  '/admin': 'dashboard',
+  '/search': 'dashboard',
+  '/map': 'dashboard',
+  '/car': 'dashboard',
+  
+  // Por defecto (con navbar y footer)
+  '/404': 'default',
+  'default': 'default'
+}
+
+const currentLayout = shallowRef(layoutComponents.default)
+
+watch(() => route.path, (path) => {
+  // Buscar el layout correspondiente
+  const matchedLayoutKey = Object.keys(layoutMap).find(key => path.startsWith(key))
+  const layoutType = matchedLayoutKey ? layoutMap[matchedLayoutKey] : layoutMap.default
+  
+  // Asignamos el componente directamente (ya está marcado como no reactivo)
+  currentLayout.value = layoutComponents[layoutType]
+}, { immediate: true })
+
 </script>
 
 <template>
-  <div v-if="$route.path === '/'">
-    <Navbar :user="loggedUser" @logout="handleLogout" class="fixed"/>
-    <main  class="flex flex-col min-h-screen mt-20 mx-auto">
+  <div class="2xl:max-w-5/6 m-auto">
+    <component :is="currentLayout">
       <router-view />
-    </main>
-    <FooterLayout />
+    </component>
   </div>
-  
-  <SimpleLayout v-else-if="['/login', '/register', '/ForgotPassword', '/onboarding'].includes($route.path)" />
-
-  <div v-else class="snap-y snap-mandatory relative w-full h-screen overflow-auto">
-    <Navbar :user="loggedUser" @logout="handleLogout" class="snap-start" />
-    <main class="flex flex-row min-h-screen max-h-screen p-2.5 snap-start relative">
-      <Sidebar :user="loggedUser" @logout="handleLogout"/>
-      <router-view />
-    </main>
-    <FooterLayout class="snap-start" />
-  </div>
-  
   <Alert />
 </template>
 

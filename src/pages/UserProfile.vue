@@ -1,8 +1,7 @@
 <script>
-import { getUserById, getPostsByUserId } from "../services/users";
-import { getUserCars } from "@services/car-service.js";
-import { subscribeToAuthState } from "@services/auth.js";
-import { fetchRentedCars } from "@services/rentedCarService.js";
+import { useUserStore, useAuthStore } from '@stores'
+import { onMounted, ref, computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
 
 import Heading from "@components/atoms/Heading.vue";
 import CardCar from "@components/organisms/my-cars/CardCar.vue";
@@ -13,137 +12,113 @@ import UserCar from "@components/organisms/my-cars/UserCar.vue";
 import Arrow from "../icons/Arrow.vue";
 import BackButton from "@components/atoms/BackButton.vue";
 
-let unsubscribeAuth = () => {};
-
 export default {
   name: "UserProfile",
   components: { Heading, CardCar, UserNav, RentedCar, Loading, UserCar, Arrow, BackButton },
   props: {
-    id: String, // ID del usuario cuyo perfil se está viendo
-  },
-  data() {
-    return {
-      user: {}, // Datos del usuario
-      posts: [], // Publicaciones del usuario
-      cars: [], // Autos del usuario
-      rentedCars: [], // Autos alquilados
-      loading: true,
-      loggedUser: {
-        id: null,
-        email: null,
-        userName: null,
-        name: null,
-        lastName: null,
-      }, // Usuario logueado
-      isProfileOwner: false, // Variable local para determinar si el perfil es del usuario logueado
-    };
+    id: {
+      type: String,
+      required: true,
+    },
   },
   watch: {
     id: {
-      immediate: true, // Ejecuta el watcher inmediatamente al montar el componente
-      handler(newId, oldId) {
-        if (newId !== oldId) {
-          this.loadUserData(newId); // Cargar datos del nuevo usuario
-        }
+      handler() {
+        this.userStore.loadUserProfile(this.id);
       },
-    },
+      immediate: true,
+    }
   },
-  async created() {
-    // Suscribirse a cambios en el estado de autenticación
-    subscribeToAuthState((user) => {
-      this.loggedUser = user;
+  setup() {
+    const userStore = useUserStore();
+    const authStore = useAuthStore();
+    const route = useRoute();
+
+    const loggedUserId = computed(() => {
+      return authStore.user?.id
+    })
+
+    const userIdFromRoute =computed(() => {
+      return route.params.id;
+    }) 
+
+    const isOwnProfile = computed(() => {
+      return loggedUserId.value === userIdFromRoute.value;
     });
 
-    // Cargar datos del usuario inicial
-    await this.loadUserData(this.id);
-  },
-  methods: {
-    async loadUserData(userId) {
-      try {
-        this.loading = true;
+    const showProfile = computed(() => {
+      return isOwnProfile.value ? userStore.profileData : userStore.visitedProfileData
+    })
 
-        // Reiniciar datos
-        this.user = {};
-        this.posts = [];
-        this.cars = [];
-        this.rentedCars = [];
-
-        // Determinar si el perfil es del usuario logueado
-        this.isProfileOwner = userId === this.loggedUser?.id;
-
-        // Obtener datos del usuario
-        this.user = this.isProfileOwner ? this.loggedUser : await getUserById(userId);
-        if (!this.user) {
-          console.error("Usuario no encontrado.");
-        }
-
-        // Obtener autos y publicaciones del usuario
-        this.posts = await getPostsByUserId(userId);
-        this.cars = await getUserCars(userId);
-
-        // Obtener autos alquilados (solo para el usuario logueado)
-        if (this.isProfileOwner) {
-          this.rentedCars = await fetchRentedCars(this.loggedUser.id);
-        }
-      } catch (error) {
-        console.error("Error al cargar el perfil:", error);
-      } finally {
-        this.loading = false;
+    watch(userIdFromRoute, async (newUserId, oldUserId) => {
+      if (newUserId !== oldUserId) {
+        await userStore.loadUserProfile(newUserId);
       }
-    },
-  },
-};
+    });
+
+    onMounted(async () => {
+      await userStore.loadUserProfile(userIdFromRoute.value);
+    });
+    
+
+    return {
+      userStore,
+      isOwnProfile,
+      posts: userStore.posts,
+      rentedCars: userStore.rentedCars,
+      showProfile
+    };
+  }
+}
 </script>
 
 <template>
   <!-- Sidebar (solo para el usuario logueado) -->
-  <UserNav v-if="isProfileOwner" :user="loggedUser" />
+  <UserNav v-if="isOwnProfile" />
   <section class="parent m-2.5 w-full max-h-vh">
 
     <!-- Perfil del usuario -->
     <div class="flex profile flex-col grow gap-3">
       <div class="flex items-center gap-5">
         <BackButton />
-        <Heading :type="1" class="medium">{{ isProfileOwner ? "Mi perfil" : user.userName }}</Heading>
+        <Heading v-if="showProfile && showProfile.personalInfo" :type="1" class="medium">{{ isOwnProfile ? "Mi perfil" : showProfile.personalInfo.username }}</Heading>
       </div>
-      <article v-if="isProfileOwner" class="bg-secondary-100 h-full rounded-[40px] px-6 py-5 flex flex-row items-center gap-5">
+      <article v-if="isOwnProfile" class="bg-secondary-100 h-full rounded-[40px] px-6 py-5 flex flex-row items-center gap-5">
         <img 
-          v-if="loggedUser.photoURL" 
+          v-if="showProfile.personalInfo.profilePhoto" 
           class="w-32 aspect-square rounded-full bg-vibrant-light-800" 
-          :src="`${loggedUser.photoURL}`"
-          :alt="`Perfil de ${loggedUser.userName}`" 
+          :src="showProfile.personalInfo.profilePhoto"
+          :alt="`Perfil de ${showProfile.personalInfo.username}`" 
         />
         <div>
-          <Heading :type="2" class="medium">{{ loggedUser.name }} {{ loggedUser.lastName }}</Heading>
-          <p>{{ loggedUser.email }}</p>
+          <Heading :type="2" class="medium">{{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }}</Heading>
+          <p>{{ showProfile.email }}</p>
         </div>
-      </article>
-      <article v-else class="bg-secondary-100 h-full rounded-[40px] px-6 py-5 flex flex-row items-center gap-5">
+      </article> 
+      <article v-else-if="showProfile && showProfile.personalInfo" class="bg-secondary-100 h-full rounded-[40px] px-6 py-5 flex flex-row items-center gap-5"> 
         <img 
-          v-if="user.photoURL" 
+          v-if="showProfile.personalInfo.profilePhoto" 
           class="w-32 aspect-square rounded-full bg-vibrant-light-800" 
-          :src="user.photoURL"
-          :alt="`Perfil de ${user.userName}`" 
-        />
-        <div>
-          <Heading :type="2" class="medium">{{ user.name }} {{ user.lastName }}</Heading>
-          <p>{{ user.email }}</p>
-          <!-- Botón "Enviar mensaje" (solo para otros usuarios) -->
+          :src="showProfile.personalInfo.profilePhoto" 
+          :alt="`Perfil de ${showProfile.personalInfo.username}`" 
+        /> 
+        <div> 
+          <Heading :type="2" class="medium">{{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }}</Heading>
+          <p>{{ showProfile.email }}</p>
           <router-link 
-            v-if="!isProfileOwner && loggedUser && loggedUser.id !== user.id"
-            :to="`/user/${user.id}/chat`" 
+            v-if="!isOwnProfile && showProfile.personalInfo && showProfile.personalInfo.id !== this.id"
+            :to="`/user/${this.id}/chat`" 
             class="py-1 px-2 bg-primary-900 text-white rounded-lg"
-          >
-            Enviar Mensaje
+          > Enviar Mensaje
           </router-link>
         </div>
       </article>
     </div>
 
     <!-- Autos del usuario -->
-    <div class="overflow-hidden flex flex-col gap-5 px-5" :class="isProfileOwner ? 'my-cars' : 'user-cars'">
+    <div class="overflow-hidden flex flex-col gap-5 px-5" :class="isOwnProfile ? 'my-cars' : 'user-cars'">
       <div class="flex items-center justify-between">
-        <Heading :type="1">{{ isProfileOwner ? "Mis autos" : "Vehículos" }}</Heading>
+        <Heading :type="1">{{ isOwnProfile ? "Mis autos" : "Vehículos" }}</Heading>
         <a href="" class="text-primary-900">Ver más</a>
       </div>
       <div v-if="posts.length" class="flex flex-col gap-5 h-full overflow-auto">
@@ -154,8 +129,8 @@ export default {
           />
       </div>
       <div v-else class="flex flex-col justify-center items-center h-full">
-        <p class="font-semibold opacity-50">{{ isProfileOwner ? "Aún no tienes autos registrados." : "Este usuario no tiene autos registrados." }}</p>
-        <router-link v-if="isProfileOwner" to="/" class="font-semibold opacity-50 hover:opacity-100">
+        <p class="font-semibold opacity-50">{{ isOwnProfile ? "Aún no tienes autos registrados." : "Este usuario no tiene autos registrados." }}</p>
+        <router-link v-if="isOwnProfile" to="/" class="font-semibold opacity-50 hover:opacity-100">
           <span class="hover:underline">Registra un auto</span>
         </router-link>
       </div>
@@ -163,13 +138,13 @@ export default {
 
     <div
       v-if="!$route.matched.some(route => route.name === 'PrivateChat')"
-      :class="isProfileOwner ? 'div-my-user' : 'div-user'"
+      :class="isOwnProfile ? 'div-my-user' : 'div-user'"
       class="div1 bg-gray-100 rounded-[40px]">
       <p>Usuario</p>
     </div>  
 
     <!-- Historial (solo para el usuario logueado) -->
-    <div v-if="isProfileOwner" class="my-history bg-primary-900 rounded-[40px] px-5 py-7">
+    <div v-if="isOwnProfile" class="my-history bg-primary-900 rounded-[40px] px-5 py-7">
       <div class="flex items-center justify-between">
         <Heading :type="1" class="text-white">Historial</Heading>
         <a href="" class="text-white">Ver más</a>
