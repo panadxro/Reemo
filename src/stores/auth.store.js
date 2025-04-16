@@ -1,6 +1,8 @@
-import { defineStore } from 'pinia'
-import { login, logout, subscribeToAuthState } from '@services/auth'
-import { addAlert } from '@services/alerts'
+import { defineStore } from 'pinia';
+import { login, logout, subscribeToAuthState, register } from '@services/auth';
+import { addAlert } from '@services/alerts';
+import router from '@router/router';
+import { useUserStore } from '@stores'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -14,22 +16,34 @@ export const useAuthStore = defineStore('auth', {
     isSubmitting: false,
     isInitialiazed: false
   }),
+  persist: {
+    key: 'auth_session',
+    storage: localStorage,
+    pick: ['user', 'isLoggedIn']
+  },
   actions: {
     init() {
       if (this.isInitialiazed) return;
       this.isInitialiazed = true;
 
       // Suscribirse a cambios de autenticación
-      subscribeToAuthState((newUserData) => {
-        if (newUserData) {
-          this.user = {
-            id: newUserData.uid,
-            email: newUserData.email
+      subscribeToAuthState(async (newUserData) => {
+        console.log('Firebase auth state changed:', newUserData);
+        const userStore = useUserStore();
+        if (newUserData.id) {
+          this.user = {            
+            id: newUserData.id,
+            email: newUserData.email,
+          };
+          this.isLoggedIn = true;          
+
+          if (!userStore.profileData.personalInfo.userName) {
+            await userStore.loadUserProfile(newUserData.id); // Cargamos el perfil
           }
-          this.isLoggedIn = true;
         } else {
           this.user = { id: null, email: null };
           this.isLoggedIn = false;
+          // userStore.resetProfile();
         }
       })
     },
@@ -57,9 +71,36 @@ export const useAuthStore = defineStore('auth', {
           email: userCredential.user.email
         }
         this.isLoggedIn = true
-
+        subscribeToAuthState((user)=>{})
+        const userStore = useUserStore();
+        await userStore.loadUserProfile(this.user.id);
+        router.push(`/user/${this.user.id}`);
         addAlert("!Bienvenido a Reemo!", "success")
         return userCredential
+      } catch (error) {
+        this.handleLoginError(error)
+        throw error
+      } finally {
+        this.loading = false
+        setTimeout(() => {
+          this.isSubmitting = false
+        }, 3000)
+      }
+    },
+    async registerUser(credentials){
+      if (this.isSubmitting) {
+        console.warn("Intento de registro mientras ya se está procesando")
+        return Promise.reject("Operación ya en curso")
+      }
+
+      this.isSubmitting = true
+      this.loading = true
+      this.error = null
+
+      try {
+        await register(credentials)
+        router.push('/onboarding');
+        addAlert("!Bienvenido a Reemo!", "success")
       } catch (error) {
         this.handleLoginError(error)
         throw error
@@ -75,7 +116,8 @@ export const useAuthStore = defineStore('auth', {
       try {
         await logout()
         this.$reset()
-        this.user = { id: null, email: null}
+        localStorage.removeItem('auth_session');
+        router.push("/");
       } catch (error) {
         console.error("Error durante el deslogeo:", error)
         throw error;
