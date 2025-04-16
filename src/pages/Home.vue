@@ -28,7 +28,7 @@ export default {
 </script>
 
 <template>
-  <div class="w-11/12 sm:w-10/12 m-auto flex flex-col gap-32 mb-32">
+  <div class="w-11/12 sm:w-10/12 m-auto bg-white rounded-3xl px-8 flex flex-col gap-32 mb-32">
     <section class="flex flex-col items-center justify-between sm:flex-row">
       <div class="flex flex-col gap-4">
         <h1 class="font-medium leading-tight text-5xl block mb-4 sm:text-6xl w-[95%] sm:w-full text-pretty text-center sm:text-start"><b>Conectando autos,</b><br/> impulsando<br/> oportunidades</h1>
