@@ -1,5 +1,5 @@
-import { createRouter, createWebHistory } from "vue-router"; 
-import { subscribeToAuthState } from "../services/auth";
+import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore, useUserStore } from '@stores'
 
 import Home from "../pages/Home.vue";
 import Login from "../pages/Login.vue";
@@ -16,17 +16,28 @@ import UserProfile from "../pages/UserProfile.vue";
 import RentalStep1 from '../components/organisms/rental/RentalStep1.vue';
 import RentalStep2 from '../components/organisms/rental/RentalStep2.vue';
 import RentalStep3 from '../components/organisms/rental/RentalStep3.vue';
-
+import NotFound from "../pages/NotFound.vue"
+ 
 const routes = [
   { path: "/", component: Home, name: "Home" },
   { path: "/login", component: Login, name: "Login" },
   { path: "/register", component: Register, name: "Register" },
+  {
+    path: "/:pathMatch(.*)*",
+    component: NotFound,
+    name: "NotFound",
+    beforeEnter: (to) => {
+      if (!to.matched.length) {
+        return '/404'
+      }
+    },
+   },
   { path: "/search", component: Search, name: "Search" },
   { path: "/maps", component: Maps },
   {
     path: "/onboarding",
     component: UserOnboarding,
-    name: "Onboarding",
+    name: "onboarding",
     meta: { needsAuth: true },
   },
   {
@@ -98,32 +109,47 @@ const routes = [
 const router = createRouter({
   routes,
   history: createWebHistory(),
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    } else {
+      return { top: 0 };
+    }
+  }
 });
 
-let loggedUser = {
-  id: null,
-  email: null,
-  userName: null,
-  name: null,
-  lastName: null,
-  role: null,
-};
-
-// Subscribe to auth state changes
-subscribeToAuthState((newUserData) => (loggedUser = newUserData));
-
-router.beforeEach((to) => {
-  if (to.meta.needsAuth && loggedUser.id == null) {
-    return {
-      path: "/login",
-    };
+router.beforeEach(async (to) => {
+  const authStore = useAuthStore();
+  // Esperar que se resuelva el estado de autenticacion del usuario
+  if (!authStore.isInitialiazed) {
+    await new Promise((resolve) => {
+      const unsubscribe = authStore.$subscribe((mutation, state) => {
+        if (state.isInitialiazed) {
+          unsubscribe();
+          resolve();
+        }
+      });
+    });
   }
+  // Si el usuario está logueado
+  if (authStore.isLoggedIn) {
+    if (to.meta.isLogin) return "/" // Esto es dudoso "isLogin"
 
-  if (to.meta.role && loggedUser.role !== to.meta.role) {
-    return {
-      path: "/",
-    };
+    return true;
   }
+  // Si no requiere auth, sigue adelante
+  if (!to.meta.needsAuth) return true;
+  // Si el usuario no esta logueado y requiere auth
+  if (to.meta.needsAdmin) {
+    const userStore = useUserStore();
+    await userStore.loadUserProfile(authStore.user.id);
+    if (to.meta.role && userStore.profileData.role !== to.meta.role) {
+      return {
+        path: "/",
+      };
+    }
+  }
+  return "/login";
 });
 
 export default router;
