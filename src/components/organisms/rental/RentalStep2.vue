@@ -3,13 +3,15 @@ import RentalFooter from "@/components/organisms/rental/RentalFooter.vue";
 import DateTime from "@/components/organisms/rental/DateTime.vue";
 import Dropdown from "@components/molecules/Dropdown.vue";
 import Heading from "@components/atoms/Heading.vue"
+import BackButton from "@components/atoms/BackButton.vue";
 
 export default {
   components: {
     RentalFooter,
     DateTime,
     Dropdown,
-    Heading
+    Heading,
+    BackButton
   },
   props: {
     car: {
@@ -37,9 +39,6 @@ export default {
     };
   },
   methods: {
-    goBack() {
-      this.$router.push(`/car/${this.car.id}`);
-    },
 
     handleDateUpdate() {
       //Hay que tener esta funcion para que no aparezca el error en consola,
@@ -68,14 +67,12 @@ export default {
 
 <template>
   <div class="space-y-6">
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-bold text-white">Paso 2: Datos de pago</h2>
-      <button @click="goBack" class="flex items-center text-white hover:underline hover:cursor-pointer">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24"
-          stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-        </svg>
-      </button>
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4 text-white">
+      <BackButton class="bg-white"/>
+      <h2 class="text-xl font-bold ">Información</h2>
+    </div>
+      <p class="text-white">2/4</p>
     </div>
 
     <DateTime @update-dates="handleDateUpdate" :disabled="true" :initial-values="{
@@ -181,14 +178,14 @@ export default {
               <p>24-47 hs antes del alquiler</p>
               <div class="flex justify-between items-center gap-4">
               <span class="text-gray-300">25%</span>
-              <p>${{ Number(calculatePercentage(25).toFixed(0)).toLocaleString('es-AR') }}</p>
+              <p >${{ Number(calculatePercentage(25).toFixed(0)).toLocaleString('es-AR') }}</p>
               </div>
             </div>
             <div class="flex justify-between items-center">
               <p>3-23 hs antes del alquiler</p>
               <div class="flex justify-between items-center gap-4">
               <span class="text-gray-300">40%</span>
-              <p>${{ Number(calculatePercentage(40).toFixed(0)).toLocaleString('es-AR') }}</p>
+              <p >${{ Number(calculatePercentage(40).toFixed(0)).toLocaleString('es-AR') }}</p>
 
               </div>
             </div>
@@ -196,7 +193,7 @@ export default {
               <p>3-0 hs antes del alquiler</p>
               <div class="flex justify-between items-center gap-4">
               <span class="text-gray-300">100%</span>
-              <p>${{ Number(calculatePercentage(100).toFixed(0)).toLocaleString('es-AR') }}</p>
+              <p >${{ Number(calculatePercentage(100).toFixed(0)).toLocaleString('es-AR') }}</p>
 
               </div>
             </div>
