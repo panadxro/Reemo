@@ -42,7 +42,8 @@ export default {
       selectedDates: {
         startDate: null,
         endDate: null
-      }
+      },
+      mapInstance: null,
     };
   },
   async created() {
@@ -76,6 +77,8 @@ export default {
     } catch (err) {
       console.error("Error al cargar Google Maps:", err);
     }
+
+    this.handleRouteChange();
   },
 
   methods: {
@@ -114,22 +117,25 @@ export default {
         return;
       }
 
-      // Asegurarse de que el elemento existe antes de inicializar el mapa
-      const mapElement = document.getElementById('map');
-      if (!mapElement) {
-        console.error("Elemento de mapa no encontrado");
-        return;
-      }
-
       try {
+        // Limpiar mapa existente si hay uno
+        if (this.mapInstance) {
+          google.maps.event.clearInstanceListeners(this.mapInstance);
+          const mapContainer = document.getElementById('map');
+          if (mapContainer) mapContainer.innerHTML = '';
+        }
+
         const position = { lat: coordenadas.lat, lng: coordenadas.lng };
         const { Map } = await google.maps.importLibrary("maps");
 
-        const map = new Map(mapElement, {
-          center: {
-            lat: coordenadas.lat,
-            lng: coordenadas.lng,
-          },
+        const mapContainer = document.getElementById('map');
+        if (!mapContainer) {
+          console.error("Elemento del mapa no encontrado");
+          return;
+        }
+
+        this.mapInstance = new Map(mapContainer, {
+          center: position,
           zoom: 14,
           mapId: "4808da25693c56c8",
           streetViewControl: false,
@@ -143,15 +149,21 @@ export default {
           strokeWeight: 2,
           fillColor: "#A9D6F5",
           fillOpacity: 0.35,
-          map: map,
+          map: this.mapInstance,
           center: position,
           radius: 1000,
         });
-
-        this.mapInitialized = true;
       } catch (error) {
-        console.error("Error al inicializar Google Maps:", error);
+        console.error("Error al inicializar el mapa:", error);
       }
+    },
+
+    handleRouteChange() {
+      this.$nextTick(() => {
+        if (this.showMap && this.car?.coordenadas) {
+          this.initMap(this.car.coordenadas);
+        }
+      });
     }
   },
   watch: {
@@ -161,9 +173,13 @@ export default {
     endDate(newVal) {
       this.$emit('update:dates', { startDate: this.startDate, endDate: newVal });
     },
-    '$route'(to) {
-      // Actualizar hideMap basado en la ruta
-      this.hideMap = to.path.includes('/information') || to.path.includes('/confirmation');
+    '$route'(to, from) {
+      this.handleRouteChange();
+    },
+    showMap(newVal) {
+      if (newVal && this.car?.coordenadas) {
+        this.initMap(this.car.coordenadas);
+      }
     },
     // Observar cambios en showMap para reinicializar el mapa cuando sea necesario
     showMap(newVal) {
@@ -303,12 +319,17 @@ export default {
     <p v-else>Cargando...</p>
   </section>
   <div class="m-2.5 w-full flex flex-col gap-3">
-    <!-- Ocultar completamente el contenedor del mapa en las rutas de pago/confirmación -->
-    <div v-if="shouldShowMap">
-      <div id="map" v-show="showMap" style="width: 100%; height: 300px; border-radius: 40px;"></div>
+    <div v-if="shouldShowMap" class="map-container">
+      <div 
+        id="map"
+        v-show="showMap" 
+        style="width: 100%; height: 300px; border-radius: 40px;"
+      ></div>
       
-      <div v-show="!showMap"
-        class="bg-background-800 w-full h-[300px] rounded-[40px] flex items-center justify-center font-semibold text-background-600">
+      <div 
+        v-show="!showMap"
+        class="bg-background-800 w-full h-[300px] rounded-[40px] flex items-center justify-center font-semibold text-background-600"
+      >
         <p>Mapa no disponible</p>
       </div>
     </div>
