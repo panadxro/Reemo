@@ -51,9 +51,11 @@ watch(() => route.path, (path) => {
 </script>
 
 <template>
-  <component :is="currentLayout">
-    <router-view />
-  </component>
+  <div class="2xl:max-w-5/6 m-auto">
+    <component :is="currentLayout">
+      <router-view />
+    </component>
+  </div>
   <Alert />
 </template>
 
