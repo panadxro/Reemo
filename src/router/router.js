@@ -14,7 +14,7 @@ import AdminUsers from "../pages/admin/Users.vue";
 import PrivateChat from "../pages/PrivateChat.vue";
 import UserProfile from "../pages/UserProfile.vue";
 import NotFound from "../pages/NotFound.vue"
-
+ 
 const routes = [
   { path: "/", component: Home, name: "Home" },
   { path: "/login", component: Login, name: "Login" },
@@ -98,24 +98,27 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
-    const authStore = useAuthStore();
+  const authStore = useAuthStore();
+  // Esperar que se resuelva el estado de autenticacion del usuario
+  if (!authStore.isInitialiazed) {
+    await new Promise((resolve) => {
+      const unsubscribe = authStore.$subscribe((mutation, state) => {
+        if (state.isInitialiazed) {
+          unsubscribe();
+          resolve();
+        }
+      });
+    });
+  }
+  // Si el usuario está logueado
+  if (authStore.isLoggedIn) {
+    if (to.meta.isLogin) return "/" // Esto es dudoso "isLogin"
 
-    // Si el usuario está logueado, permite la navegación
-    if (authStore.isLoggedIn) {
-        return true;
-    }
-    // Si no esta logueado pero el authstore esta inicializado
-    else {
-        // Si no requiere auth, continúa con getCurrentUser
-        if (!to.meta.needsAuth) {
-            return true;
-        }
-        // Si la ruta requiere autenticación, y el store esta inicializado, redirige a /login
-        if (to.meta.needsAuth && !authStore.isInitialiazed) {
-          
-            return { path: "/login", query: { redirect: to.fullPath } };
-        }
-    }
+    return true;
+  }
+  // Si no requiere auth, sigue adelante
+  if (!to.meta.needsAuth) return true;
+  // Si el usuario no esta logueado y requiere auth
   if (to.meta.needsAdmin) {
     const userStore = useUserStore();
     await userStore.loadUserProfile(authStore.user.id);
@@ -125,6 +128,7 @@ router.beforeEach(async (to) => {
       };
     }
   }
-})
+  return "/login";
+});
 
 export default router;
