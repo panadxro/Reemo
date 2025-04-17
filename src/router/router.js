@@ -52,23 +52,6 @@ const routes = [
     component: CarDetails,
     props: true,
     meta: { needsAuth: true },
-    children: [
-      {
-        path: '',
-        name: 'car-details',
-        component: RentalStep1 ,
-      },
-      {
-        path: 'information',
-        name: 'rent-information',
-        component: RentalStep2 ,
-      },
-      {
-        path: 'confirmation',
-        name: 'car-confirmation',
-        component: RentalStep3 ,
-      }
-    ]
   },
   {
     path: "/user/:id",

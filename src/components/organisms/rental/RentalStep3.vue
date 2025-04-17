@@ -1,15 +1,15 @@
 <script>
 import RentalFooter from "@/components/organisms/rental/RentalFooter.vue";
 import DateTime from "@/components/organisms/rental/DateTime.vue";
+import RentalHeader from "@components/organisms/rental/RentalHeader.vue";
 import { isCarAlreadyRented, submitRentalRequest } from "@services/rentedCarService";
 import { addAlert } from "@services/alerts";
-import BackButton from "@components/atoms/BackButton.vue";
 
 export default {
   components: {
     RentalFooter,
     DateTime,
-    BackButton
+    RentalHeader
   },
   props: {
     car: {
@@ -23,7 +23,19 @@ export default {
     rented: {
       type: Boolean,
       default: false
-    }
+    },
+    currentStep: {  
+    type: Number,
+    required: true
+  },
+  sections: {  
+    type: Array,
+    required: true
+  },
+  prevStep: {
+    type: Function,
+    required: true
+  }
   },
   data() {
     return {
@@ -43,8 +55,8 @@ export default {
     };
   },
   methods: {
-    goBack() {
-      this.$router.push(`/car/${this.car.id}/information`);
+    goToNextStep() {
+      this.$emit('continue');
     },
 
     handleDateUpdate(){
@@ -81,39 +93,49 @@ export default {
         rented_until: `${this.rentalData.rentedUntilDate}T${this.rentalData.selectedUntilTime}:00`,
         status: "pendiente",
         rental_price: this.rentalData.currentTotalPrice,
-        payment_method: {
-          type: "credit_card",
-          last_four: this.paymentInfo.cardNumber.slice(-4)
-        }
       };
     }
   },
   mounted() {
-    this.$emit('hide-map');
-    
-    // Cargar datos del paso anterior
-    const savedData = localStorage.getItem('rentalData');
-    const savedPaymentInfo = localStorage.getItem('paymentInfo');
-    
-    if (savedData && savedPaymentInfo) {
+  console.log('Datos cargados del localStorage (raw):', localStorage.getItem('rentalData'));
+
+  const savedData = localStorage.getItem('rentalData');
+  const savedPaymentInfo = localStorage.getItem('paymentInfo');
+  
+  if (savedData) {
+    try {
       this.rentalData = JSON.parse(savedData);
-      this.paymentInfo = JSON.parse(savedPaymentInfo);
-    } else {
+      console.log("Datos de reserva después de parse:", this.rentalData);
+      console.log("Precio total:", this.rentalData.currentTotalPrice);
+      
+      // Si el precio es undefined o null, intentamos obtenerlo de otra forma
+      if (this.rentalData.currentTotalPrice === undefined || this.rentalData.currentTotalPrice === null) {
+        const parsedData = JSON.parse(savedData);
+        this.rentalData.currentTotalPrice = parsedData.currentTotalPrice || 0;
+        console.log("Precio recuperado manualmente:", this.rentalData.currentTotalPrice);
+      }
+      
+      if (savedPaymentInfo) {
+        this.paymentInfo = JSON.parse(savedPaymentInfo);
+      }
+    } catch (e) {
+      console.error("Error al procesar datos guardados:", e);
       this.$router.push(`/car/${this.car.id}`);
     }
+  } else {
+    this.$router.push(`/car/${this.car.id}`);
   }
+}
 };
 </script>
 
 <template>
     <div class="space-y-6">
-      <div class="flex items-center justify-between">
-      <div class="flex items-center gap-4 text-white">
-      <BackButton class="bg-white"/>
-      <h2 class="text-xl font-bold ">Confirmación</h2>
-    </div>
-      <p class="text-white">4/4</p>
-    </div>
+      <RentalHeader 
+        :current-step="currentStep"
+        :sections="sections"
+        :prev-step="prevStep"
+      />
       
       <DateTime 
         @update-dates="handleDateUpdate" 
@@ -158,12 +180,11 @@ export default {
       </div>
       
       <RentalFooter 
-        :total-amount="rentalData.currentTotalPrice"
-        button-text="Finalizar reserva"
-        :is-disabled="false"
-        :is-confirmation="true"
-        @confirm="submitRental"
-      />
+      :total-amount="rentalData.currentTotalPrice"
+      button-text="Enviar solicitud" 
+      :is-confirmation="false"
+      @continue="submitRental" 
+    />
     </div>
   </template>
   

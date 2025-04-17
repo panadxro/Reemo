@@ -8,7 +8,11 @@ import Pill from "../components/atoms/Pill.vue";
 import Loading from "@icons/Loading.vue";
 import BackButton from "../components/atoms/BackButton.vue";
 import Arrow from "../icons/Arrow.vue";
-import Like from "../icons/Like.vue"
+import Like from "../icons/Like.vue";
+
+import RentalStep1 from "@components/organisms/rental/RentalStep1.vue";
+import RentalStep2 from "@components/organisms/rental/RentalStep2.vue";
+import RentalStep3 from "@components/organisms/rental/RentalStep3.vue";
 
 export default {
   props: ["id"],
@@ -19,7 +23,10 @@ export default {
     Loading,
     BackButton,
     Arrow,
-    Like
+    Like,
+    RentalStep1,
+    RentalStep2,
+    RentalStep3,
   },
   data() {
     return {
@@ -37,13 +44,21 @@ export default {
       currentImage: null,
       defaultUserImage: "/src/assets/User.png",
       defaultCarImage: "/src/assets/Car-Img.png",
-      hideMap: false,
       mapInitialized: false,
-      selectedDates: {
-        startDate: null,
-        endDate: null
+      rentalData: {
+        rentedFromDate: "",
+        rentedUntilDate: "",
+        selectedTime: "",
+        selectedUntilTime: "",
+        currentTotalPrice: 0
       },
-      mapInstance: null,
+      currentStep: 0,
+      sections: [
+        { title: "Selecciona las fechas" },
+        { title: "Información" },
+        { title: "Método de pago" },
+        { title: "Enviar solicitud" },
+      ],
     };
   },
   async created() {
@@ -77,8 +92,16 @@ export default {
     } catch (err) {
       console.error("Error al cargar Google Maps:", err);
     }
-
-    this.handleRouteChange();
+    
+    // Cargar datos guardados previamente
+    const savedData = localStorage.getItem('rentalData');
+    if (savedData) {
+      try {
+        this.rentalData = JSON.parse(savedData);
+      } catch (e) {
+        console.error("Error al cargar datos guardados:", e);
+      }
+    }
   },
 
   methods: {
@@ -87,6 +110,43 @@ export default {
     },
     setDefaultImage(event) {
       event.target.src = this.defaultCarImage;
+    },
+
+    nextStep() {
+      if (this.currentStep < this.sections.length - 1) {
+        this.currentStep++;
+      }
+    },
+    prevStep() {
+      if (this.currentStep > 0) {
+        this.currentStep--;
+      }
+    },
+
+    handleRentalDataUpdate(data) {
+      // Actualizar datos de alquiler
+      this.rentalData = { ...this.rentalData, ...data };
+      
+      // Guardar en localStorage
+      localStorage.setItem('rentalData', JSON.stringify(this.rentalData));
+      // console.log("Datos de alquiler actualizados:", this.rentalData);
+    },
+
+    handleTotalUpdate(price) {
+    this.handleRentalDataUpdate({ currentTotalPrice: price });
+   },
+
+    submitRentalRequest() {
+      // Aquí iría la lógica para enviar la solicitud de alquiler
+      console.log("Enviando solicitud de alquiler:", this.rentalData);
+      // Implementar la lógica de envío al backend
+      alert("¡Solicitud enviada con éxito!");
+      
+      // Limpiar el almacenamiento
+      localStorage.removeItem('rentalData');
+      
+      // Redirigir al usuario
+      // this.$router.push('/rental-confirmation');
     },
 
     async loadGoogleMaps() {
@@ -104,7 +164,6 @@ export default {
     },
 
     checkAndInitMap() {
-      // Solo inicializar el mapa si debe mostrarse y aún no ha sido inicializado
       if (this.showMap && !this.mapInitialized && 
           this.car?.coordenadas?.lat && this.car?.coordenadas?.lng) {
         this.initMap(this.car.coordenadas);
@@ -118,7 +177,6 @@ export default {
       }
 
       try {
-        // Limpiar mapa existente si hay uno
         if (this.mapInstance) {
           google.maps.event.clearInstanceListeners(this.mapInstance);
           const mapContainer = document.getElementById('map');
@@ -153,43 +211,14 @@ export default {
           center: position,
           radius: 1000,
         });
+        
+        this.mapInitialized = true;
       } catch (error) {
         console.error("Error al inicializar el mapa:", error);
       }
-    },
-
-    handleRouteChange() {
-      this.$nextTick(() => {
-        if (this.showMap && this.car?.coordenadas) {
-          this.initMap(this.car.coordenadas);
-        }
-      });
     }
   },
   watch: {
-    startDate(newVal) {
-      this.$emit('update:dates', { startDate: newVal, endDate: this.endDate });
-    },
-    endDate(newVal) {
-      this.$emit('update:dates', { startDate: this.startDate, endDate: newVal });
-    },
-    '$route'(to, from) {
-      this.handleRouteChange();
-    },
-    showMap(newVal) {
-      if (newVal && this.car?.coordenadas) {
-        this.initMap(this.car.coordenadas);
-      }
-    },
-    // Observar cambios en showMap para reinicializar el mapa cuando sea necesario
-    showMap(newVal) {
-      if (newVal) {
-        this.$nextTick(() => {
-          this.checkAndInitMap();
-        });
-      }
-    },
-    // Observar cambios en las coordenadas del auto para reinicializar el mapa
     'car.coordenadas': {
       handler(newCoords) {
         if (newCoords && this.showMap) {
@@ -202,23 +231,17 @@ export default {
     }
   },
   computed: {
-    shouldShowMap() {
-      return !this.$route.path.includes('/information') && 
-             !this.$route.path.includes('/confirmation');
+    isDisabled() {
+      // Lógica para deshabilitar el botón según el paso
+      if (this.currentStep === 0) {
+        return !this.rentalData.rentedFromDate || !this.rentalData.rentedUntilDate || !this.rentalData.selectedTime || !this.rentalData.selectedUntilTime || this.rented;
+      }
+      return false;
     },
-    // Nueva propiedad computada que combina todas las condiciones
-    showMap() {
-      return this.car && 
-             this.car.coordenadas && 
-             this.car.coordenadas.lat && 
-             this.car.coordenadas.lng && 
-             this.shouldShowMap && 
-             !this.hideMap;
-    }
+    
   }
 };
 </script>
-
 
 <template>
   <section v-if="car" class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
@@ -319,28 +342,59 @@ export default {
     <p v-else>Cargando...</p>
   </section>
   <div class="m-2.5 w-full flex flex-col gap-3">
-    <div v-if="shouldShowMap" class="map-container">
+    <div class="map-container">
       <div 
         id="map"
-        v-show="showMap" 
+        v-if="this.currentStep === 0"
         style="width: 100%; height: 300px; border-radius: 40px;"
       ></div>
       
-      <div 
-        v-show="!showMap"
-        class="bg-background-800 w-full h-[300px] rounded-[40px] flex items-center justify-center font-semibold text-background-600"
-      >
-        <p>Mapa no disponible</p>
+      <div v-else>
+        <!-- <p>Mapa no disponible</p> -->
       </div>
     </div>
   
+    <!-- Proceso de renta por pasos -->
     <div class="bg-deep-blue-900 w-full rounded-[40px] p-8 h-fit">
-      <router-view v-if="car && car.precio !== undefined && loggedUser" 
-        :car="car" 
-        :logged-user="loggedUser"
-        :rented="rented" 
-        @hide-map="hideMap = true" 
-        @show-map="hideMap = false" />
+       <!-- Paso 1: Selección de fechas -->
+  <RentalStep1 
+  v-if="currentStep === 0"
+  :car="car" 
+  :logged-user="loggedUser"
+  :rented="rented"
+  :current-step="currentStep"
+  :sections="sections"
+  @update-dates="handleRentalDataUpdate"
+  @total-updated="handleTotalUpdate"
+  @continue="nextStep"
+  :prev-step="prevStep"
+/>
+
+<!-- Paso 2: Información -->
+<RentalStep2 
+  v-if="currentStep === 1"
+  :car="car"
+  :logged-user="loggedUser"
+  :rented="rented"
+  :current-step="currentStep"
+  :sections="sections"
+  @continue="nextStep"
+  :prev-step="prevStep"
+/>
+
+<!-- Paso 3: Confirmación -->
+<RentalStep3 
+  v-if="currentStep === 2"
+  :car="car"
+  :loggedUser="loggedUser"
+  :rented="rented"
+  :current-step="currentStep"
+  :sections="sections"
+  @continue="nextStep"
+  :prev-step="prevStep"
+/>
+      
+      
     </div>
 
     <span v-if="rented && car.user_id !== loggedUser?.id"
