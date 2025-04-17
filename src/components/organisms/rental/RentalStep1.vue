@@ -2,12 +2,15 @@
 import DateTime from '@/components/organisms/rental/DateTime.vue';
 import PriceCalculator from '@/components/organisms/rental/PriceCalculator.vue';
 import RentalFooter from '@/components/organisms/rental/RentalFooter.vue';
+import RentalHeader from '@/components/organisms/rental/RentalHeader.vue';
 
 export default {
+  name: 'RentalStep1',
   components: {
     DateTime,
     PriceCalculator,
-    RentalFooter
+    RentalFooter,
+    RentalHeader
   },
   props: {
     car: {
@@ -21,7 +24,19 @@ export default {
     rented: {
       type: Boolean,
       default: false
-    }
+    },
+    currentStep: {
+      type: Number,
+      required: true
+    },
+    sections: {
+      type: Array,
+      required: true
+    },
+  prevStep: {
+    type: Function,
+    required: true
+  }
   },
   data() {
     return {
@@ -39,80 +54,70 @@ export default {
       this.selectedTime = data.rentedFromHour;
       this.selectedUntilTime = data.rentedUntilHour;
       
-      // Guardar datos para pasos siguientes
-      this.saveRentalData();
+      // Emitir al componente padre
+      this.$emit('update-dates', {
+        rentedFromDate: this.rentedFromDate,
+        rentedUntilDate: this.rentedUntilDate,
+        selectedTime: this.selectedTime,
+        selectedUntilTime: this.selectedUntilTime
+      });
     },
     
     handleTotalUpdate(price) {
       this.currentTotalPrice = price;
-      this.saveRentalData();
+      this.$emit('total-updated', price);
     },
     
-    saveRentalData() {
-      // Guardar datos en localStorage para pasos siguientes
-      const rentalData = {
-        rentedFromDate: this.rentedFromDate,
-        rentedUntilDate: this.rentedUntilDate,
-        selectedTime: this.selectedTime,
-        selectedUntilTime: this.selectedUntilTime,
-        currentTotalPrice: this.currentTotalPrice
-      };
-      
-      localStorage.setItem('rentalData', JSON.stringify(rentalData));
-      console.log("Datos de alquiler guardados:", rentalData);
-    },
-    
-    goToInformation() {
-      if (!this.rentedFromDate || !this.rentedUntilDate || !this.selectedTime || !this.selectedUntilTime) {
-        alert("Por favor, completa todos los campos de fecha y hora");
-        return;
-      }
-      
-      this.$router.push(`/car/${this.car.id}/information`);
+    goToNextStep() {
+    if (!this.rentedFromDate || !this.rentedUntilDate || !this.selectedTime || !this.selectedUntilTime) {
+      // AGREGAR LAS ALERTAS QUE TENEMOS EN EL PROYECTO
+      // aunque no se si es necesario porque el botón de continuar está deshabilitado, pero por las dudas
+      alert("Por favor, completa todos los campos de fecha y hora");
+      return;
     }
-  },
+    
+    // Guarda los datos con la estructura correcta antes de avanzar
+    const rentalData = {
+      rentedFromDate: this.rentedFromDate,
+      rentedUntilDate: this.rentedUntilDate,
+      selectedTime: this.selectedTime,
+      selectedUntilTime: this.selectedUntilTime,
+      currentTotalPrice: this.currentTotalPrice
+    };
+    
+    localStorage.setItem('rentalData', JSON.stringify(rentalData));
+    
+    this.$emit('continue');
+  }
 
-  // NO FUNCIONA, ARREGLAR
+  },
   mounted() {
-  this.$emit('show-map'); // Mostrar el mapa al montar
-  
-  const savedData = localStorage.getItem('rentalData');
-  if (savedData) {
-    try {
-      const data = JSON.parse(savedData);
-      this.rentedFromDate = data.rentedFromDate || "";
-      this.rentedUntilDate = data.rentedUntilDate || "";
-      this.selectedTime = data.selectedTime || "";
-      this.selectedUntilTime = data.selectedUntilTime || "";
-      this.currentTotalPrice = data.currentTotalPrice || 0;
-      
-      
-      if (this.rentedFromDate && this.rentedUntilDate) {
-        this.$nextTick(() => {
-          this.$emit('dates-loaded', {
-            rentedFromDate: this.rentedFromDate,
-            rentedUntilDate: this.rentedUntilDate,
-            rentedFromHour: this.selectedTime,
-            rentedUntilHour: this.selectedUntilTime
-          });
-        });
+    const savedData = localStorage.getItem('rentalData');
+    if (savedData) {
+      try {
+        const data = JSON.parse(savedData);
+        this.rentedFromDate = data.rentedFromDate || "";
+        this.rentedUntilDate = data.rentedUntilDate || "";
+        this.selectedTime = data.selectedTime || "";
+        this.selectedUntilTime = data.selectedUntilTime || "";
+        this.currentTotalPrice = data.currentTotalPrice || 0;
+      } catch (e) {
+        console.error("Error al cargar datos guardados:", e);
       }
-    } catch (e) {
-      console.error("Error al cargar datos guardados:", e);
     }
   }
-}
 };
 </script>
 
 <template>
-    <div class="space-y-6">
-      <div class="flex justify-between items-center mb-4 text-white">
-        <h2 class="text-xl font-bold">Selecciona las fechas</h2>
-        <p>1/4</p>
-      </div>
-      
-      <DateTime 
+  <div class="space-y-6">
+    <RentalHeader 
+  :current-step="currentStep"
+  :sections="sections"
+  :prev-step="prevStep"
+/>
+    
+    <DateTime 
       @update-dates="handleDateUpdate" 
       :disabled="rented"
       :initial-values="{
@@ -122,23 +127,22 @@ export default {
         rentedUntilHour: selectedUntilTime
       }"
     />
-      
-      <PriceCalculator
-        :start-date="rentedFromDate"
-        :start-time="selectedTime"
-        :end-date="rentedUntilDate"
-        :end-time="selectedUntilTime"
-        :daily-price="car.precio"
-        @total-updated="handleTotalUpdate"
-      />
-      
-      <RentalFooter 
-        :total-amount="currentTotalPrice"
-        button-text="Siguiente"
-        :is-disabled="!rentedFromDate || !rentedUntilDate || rented"
-        :is-confirmation="false"
-        @continue="goToInformation"
-      />
-    </div>
-  </template>
-  
+    
+    <PriceCalculator
+      :start-date="rentedFromDate"
+      :start-time="selectedTime"
+      :end-date="rentedUntilDate"
+      :end-time="selectedUntilTime"
+      :daily-price="car.precio"
+      @total-updated="handleTotalUpdate"
+    />
+    
+    <RentalFooter 
+      :total-amount="currentTotalPrice"
+      button-text="Siguiente"
+      :is-disabled="!rentedFromDate || !rentedUntilDate || rented"
+      :is-confirmation="false"
+      @continue="goToNextStep"
+    />
+  </div>
+</template>

@@ -1,17 +1,18 @@
 <script>
 import RentalFooter from "@/components/organisms/rental/RentalFooter.vue";
 import DateTime from "@/components/organisms/rental/DateTime.vue";
-import Dropdown from "@components/molecules/Dropdown.vue";
-import Heading from "@components/atoms/Heading.vue"
+import RentalHeader from "@/components/organisms/rental/RentalHeader.vue";
+import Heading from "@components/atoms/Heading.vue";
 import BackButton from "@components/atoms/BackButton.vue";
 
 export default {
+  name: 'RentalStep2',
   components: {
     RentalFooter,
     DateTime,
-    Dropdown,
     Heading,
-    BackButton
+    BackButton,
+    RentalHeader
   },
   props: {
     car: {
@@ -25,7 +26,19 @@ export default {
     rented: {
       type: Boolean,
       default: false
-    }
+    },
+    currentStep: {
+      type: Number,
+      required: true
+    },
+    sections: {
+      type: Array,
+      required: true
+    },
+  prevStep: {
+    type: Function,
+    required: true
+  }
   },
   data() {
     return {
@@ -39,27 +52,30 @@ export default {
     };
   },
   methods: {
-
     handleDateUpdate() {
-      //Hay que tener esta funcion para que no aparezca el error en consola,
-      //pero como esta desahabilitado no se va a usar el actualizar fecha
+      // Esta función es necesaria para evitar errores en la consola
+      // pero como está deshabilitado no se utilizará para actualizar fechas
     },
 
-    goToConfirmation() {
-      this.$router.push(`/car/${this.car.id}/confirmation`);
+    goToNextStep() {
+      this.$emit('continue');
     },
-    calculatePercentage(percentage){
+    
+    calculatePercentage(percentage) {
       return this.rentalData.currentTotalPrice * (percentage / 100);
     }
   },
   mounted() {
-    this.$emit('hide-map');
-
+    
+    // Cargar datos guardados
     const savedData = localStorage.getItem('rentalData');
     if (savedData) {
-      this.rentalData = JSON.parse(savedData);
-    } else {
-      this.$router.push(`/car/${this.car.id}`);
+      try {
+        this.rentalData = JSON.parse(savedData);
+        // console.log("Datos guardados cargados:", this.rentalData);
+      } catch (e) {
+        console.error("Error al cargar datos guardados:", e);
+      }
     }
   }
 };
@@ -67,59 +83,22 @@ export default {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-4 text-white">
-      <BackButton class="bg-white"/>
-      <h2 class="text-xl font-bold ">Información</h2>
-    </div>
-      <p class="text-white">2/4</p>
-    </div>
+    <RentalHeader 
+  :current-step="currentStep"
+  :sections="sections"
+  :prev-step="prevStep"
+/>
 
-    <DateTime @update-dates="handleDateUpdate" :disabled="true" :initial-values="{
-      rentedFromDate: rentalData.rentedFromDate,
-      rentedUntilDate: rentalData.rentedUntilDate,
-      rentedFromHour: rentalData.selectedTime,
-      rentedUntilHour: rentalData.selectedUntilTime
-    }" />
-
-    <!-- Es el componente hecho con Dropdowns para no borrarlo por si lo quieren -->
-    <!-- Hay mucha diferencia entre el 4 y el 3 -->
-    <!-- <div class="mt-8">
-      <Heading type="3" class="text-white">Tiempos de reserva</Heading>
-      
-    <Dropdown class="flex flex-col py-5 rounded-3xl text-white">
-      <template #title>
-        <Heading type="5" class="text-white">Tiempos estipulados</Heading>
-      </template>
-<p class="pt-4 text-white">Al elegir fecha de retiro y de devolución, el usuario se compromete con el propietario para
-  devolverlo en tiempo y forma.</p>
-</Dropdown>
-
-<Dropdown class="flex flex-col py-5 rounded-3xl text-white">
-  <template #title>
-        <Heading type="5" class="text-white">Exceso de tiempo</Heading>
-      </template>
-  <p class="pt-4 text-white">Al exceder el tiempo elegido, se cobra una tarifa adicional de $10.000 por cada hora.</p>
-</Dropdown>
-</div> -->
-
-    <!-- <div class="mt-8">
-      <Heading type="3" class="text-white">Política de cancelación</Heading>
-      
-    <Dropdown class="flex flex-col py-5 rounded-3xl text-white">
-      <template #title>
-        <Heading type="5" class="text-white">Cancelación del propietario</Heading>
-      </template>
-      <p class="pt-4 text-white">Vas a recibir un reembolso completo si el dueño cancela después de haber aceptado la reserva.</p>
-    </Dropdown>
-
-    <Dropdown class="flex flex-col py-5 rounded-3xl text-white">
-      <template #title>
-        <Heading type="5" class="text-white">Cancelación del arrendatario</Heading>
-      </template>
-      <p class="pt-4 text-white">Estos son los precios que deberás abonar en caso de que canceles la reserva dependiendo el tiempo de antelación.</p>
-    </Dropdown>
-    </div> -->
+    <DateTime 
+      @update-dates="handleDateUpdate" 
+      :disabled="true" 
+      :initial-values="{
+        rentedFromDate: rentalData.rentedFromDate,
+        rentedUntilDate: rentalData.rentedUntilDate,
+        rentedFromHour: rentalData.selectedTime,
+        rentedUntilHour: rentalData.selectedUntilTime
+      }" 
+    />
 
     <section class="text-white">
       <div class="my-8">
@@ -136,7 +115,7 @@ export default {
           </p>
         </div>
   
-        <div >
+        <div>
           <Heading type="5" class="text-white mb-2 mt-4">
             Exceso de tiempo
           </Heading>
@@ -144,7 +123,6 @@ export default {
             Al exceder el tiempo elegido, se cobra una tarifa adicional de $10.000 por cada hora.
           </p>
         </div>
-  
       </div>
   
       <div class="my-8">
@@ -166,44 +144,45 @@ export default {
             Cancelación del arrendatario
           </Heading>
           <p>
-            Estos son los preciops que deberías abonar en caso de que canceles la reserva dependiendo el tiempo de antelación
+            Estos son los precios que deberás abonar en caso de que canceles la reserva dependiendo el tiempo de antelación.
           </p>
   
           <article class="grid gap-4 mt-4">
             <div class="flex justify-between items-center">
-               <p>48 hs o más antes del alquiler</p>
-               <p>Sin coste</p> 
+              <p>48 hs o más antes del alquiler</p>
+              <p>Sin coste</p> 
             </div>
             <div class="flex justify-between items-center">
               <p>24-47 hs antes del alquiler</p>
               <div class="flex justify-between items-center gap-4">
-              <span class="text-gray-300">25%</span>
-              <p >${{ Number(calculatePercentage(25).toFixed(0)).toLocaleString('es-AR') }}</p>
+                <span class="text-gray-300">25%</span>
+                <p>${{ Number(calculatePercentage(25).toFixed(0)).toLocaleString('es-AR') }}</p>
               </div>
             </div>
             <div class="flex justify-between items-center">
               <p>3-23 hs antes del alquiler</p>
               <div class="flex justify-between items-center gap-4">
-              <span class="text-gray-300">40%</span>
-              <p >${{ Number(calculatePercentage(40).toFixed(0)).toLocaleString('es-AR') }}</p>
-
+                <span class="text-gray-300">40%</span>
+                <p>${{ Number(calculatePercentage(40).toFixed(0)).toLocaleString('es-AR') }}</p>
               </div>
             </div>
             <div class="flex justify-between items-center">
               <p>3-0 hs antes del alquiler</p>
               <div class="flex justify-between items-center gap-4">
-              <span class="text-gray-300">100%</span>
-              <p >${{ Number(calculatePercentage(100).toFixed(0)).toLocaleString('es-AR') }}</p>
-
+                <span class="text-gray-300">100%</span>
+                <p>${{ Number(calculatePercentage(100).toFixed(0)).toLocaleString('es-AR') }}</p>
               </div>
             </div>
           </article>
         </div>
-  
       </div>
     </section>
 
-    <RentalFooter :total-amount="rentalData.currentTotalPrice" button-text="Siguiente" :is-confirmation="false"
-      @continue="goToConfirmation" />
+    <RentalFooter 
+      :total-amount="rentalData.currentTotalPrice" 
+      button-text="Siguiente" 
+      :is-confirmation="false"
+      @continue="goToNextStep" 
+    />
   </div>
 </template>
