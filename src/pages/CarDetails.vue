@@ -74,6 +74,10 @@ export default {
 
       this.currentImage = this.car.images && this.car.images.length > 0 ? this.car.images[0] : this.defaultCarImage;
       this.rented = await checkIfCarIsRented(this.car.id);
+      if (this.car.coordenadas && this.car.coordenadas.lat && this.car.coordenadas.lng) {
+        await this.loadGoogleMaps();
+        this.initMap(this.car.coordenadas);
+      }
     } catch (error) {
       this.errorMsg = "Hubo un error al obtener los detalles del auto. Volvé a intentar";
       console.error("Error al obtener los detalles del auto:", error);
@@ -85,13 +89,6 @@ export default {
     subscribeToAuthState((newUserData) => {
       this.loggedUser = newUserData;
     });
-
-    try {
-      await this.loadGoogleMaps();
-      this.checkAndInitMap();
-    } catch (err) {
-      console.error("Error al cargar Google Maps:", err);
-    }
     
     // Cargar datos guardados previamente
     const savedData = localStorage.getItem('rentalData');
@@ -152,69 +149,50 @@ export default {
     async loadGoogleMaps() {
       const loader = new Loader({
         apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-        libraries: ["places", "geometry"],
+        libraries: ["places", "geometry"], 
       });
 
       try {
-        return await loader.load();
+        await loader.load(); // Esperamos a que la API se cargue completamente
       } catch (error) {
         console.error("Error al cargar Google Maps:", error);
-        throw error;
       }
     },
 
-    checkAndInitMap() {
-      if (this.showMap && !this.mapInitialized && 
-          this.car?.coordenadas?.lat && this.car?.coordenadas?.lng) {
-        this.initMap(this.car.coordenadas);
-      }
-    },
-
-    async initMap(coordenadas) {
+    async initMap(coordenadas){
       if (!coordenadas || !coordenadas.lat || !coordenadas.lng) {
         console.error("Coordenadas no válidas:", coordenadas);
         return;
       }
-
       try {
-        if (this.mapInstance) {
-          google.maps.event.clearInstanceListeners(this.mapInstance);
-          const mapContainer = document.getElementById('map');
-          if (mapContainer) mapContainer.innerHTML = '';
-        }
 
         const position = { lat: coordenadas.lat, lng: coordenadas.lng };
         const { Map } = await google.maps.importLibrary("maps");
 
-        const mapContainer = document.getElementById('map');
-        if (!mapContainer) {
-          console.error("Elemento del mapa no encontrado");
-          return;
-        }
-
-        this.mapInstance = new Map(mapContainer, {
-          center: position,
+        const map = new Map(document.getElementById('map'),{
+          center: {
+            lat: coordenadas.lat,
+            lng: coordenadas.lng,
+          },
           zoom: 14,
           mapId: "4808da25693c56c8",
-          streetViewControl: false,
-          mapTypeControl: false,
-          disableDefaultUI: true,
+          streetViewControl: false, // Desactiva el ícono de Street View
+          mapTypeControl: false, // Oculta el botón de "Mapa / Satélite"
+          disableDefaultUI: true, // Si lo pones en true desactiva todos los controles (zoom, fullscreen, etc.)
         });
 
         new google.maps.Circle({
           strokeColor: "#5DADE2",
-          strokeOpacity: 0.8,
-          strokeWeight: 2,
-          fillColor: "#A9D6F5",
-          fillOpacity: 0.35,
-          map: this.mapInstance,
+          strokeOpacity: 0.8, 
+          strokeWeight: 2, 
+          fillColor: "#A9D6F5", 
+          fillOpacity: 0.35, 
+          map: map,
           center: position,
-          radius: 1000,
-        });
-        
-        this.mapInitialized = true;
+          radius: 1000, 
+        })
       } catch (error) {
-        console.error("Error al inicializar el mapa:", error);
+        console.error("Error al cargar Google Maps: ", error) 
       }
     }
   },
@@ -228,7 +206,15 @@ export default {
         }
       },
       deep: true
+    },
+    currentStep(newStep, oldStep) {
+    // Si volvemos al paso 0, reinicializamos el mapa
+    if (newStep === 0 && oldStep !== 0) {
+      this.$nextTick(() => {
+        this.checkAndInitMap();
+      });
     }
+  }
   },
   computed: {
     isDisabled() {
@@ -345,13 +331,9 @@ export default {
     <div class="map-container">
       <div 
         id="map"
-        v-if="this.currentStep === 0"
         style="width: 100%; height: 300px; border-radius: 40px;"
+        v-show="currentStep === 0"
       ></div>
-      
-      <div v-else>
-        <!-- <p>Mapa no disponible</p> -->
-      </div>
     </div>
   
     <!-- Proceso de renta por pasos -->
