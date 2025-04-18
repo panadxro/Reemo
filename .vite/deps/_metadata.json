@@ -1,0 +1,43 @@
+{
+  "hash": "f54d87f3",
+  "configHash": "91c93832",
+  "lockfileHash": "d8830562",
+  "browserHash": "08770d75",
+  "optimized": {
+    "pinia": {
+      "src": "../../node_modules/pinia/dist/pinia.mjs",
+      "file": "pinia.js",
+      "fileHash": "939acb10",
+      "needsInterop": false
+    },
+    "vue": {
+      "src": "../../node_modules/vue/dist/vue.runtime.esm-bundler.js",
+      "file": "vue.js",
+      "fileHash": "e981c72a",
+      "needsInterop": false
+    },
+    "pinia-plugin-persistedstate": {
+      "src": "../../node_modules/pinia-plugin-persistedstate/dist/index.js",
+      "file": "pinia-plugin-persistedstate.js",
+      "fileHash": "0124a9d4",
+      "needsInterop": false
+    },
+    "@fawmi/vue-google-maps": {
+      "src": "../../node_modules/@fawmi/vue-google-maps/src/main.js",
+      "file": "@fawmi_vue-google-maps.js",
+      "fileHash": "84a80ebb",
+      "needsInterop": false
+    },
+    "vue-router": {
+      "src": "../../node_modules/vue-router/dist/vue-router.mjs",
+      "file": "vue-router.js",
+      "fileHash": "a110daed",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "chunk-IJV5NOMV": {
+      "file": "chunk-IJV5NOMV.js"
+    }
+  }
+}
