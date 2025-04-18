@@ -14,7 +14,7 @@ export const useAuthStore = defineStore('auth', {
     error: null,
     isLoggedIn: false,
     isSubmitting: false,
-    isInitialiazed: false
+    isInitialized: false
   }),
   persist: {
     key: 'auth_session',
@@ -23,8 +23,8 @@ export const useAuthStore = defineStore('auth', {
   },
   actions: {
     init() {
-      if (this.isInitialiazed) return;
-      this.isInitialiazed = true;
+      if (this.isInitialized) return;
+      this.isInitialized = true;
 
       // Suscribirse a cambios de autenticación
       subscribeToAuthState(async (newUserData) => {
@@ -115,8 +115,9 @@ export const useAuthStore = defineStore('auth', {
       // Logica de logout
       try {
         await logout()
-        this.$reset()
-        localStorage.removeItem('auth_session');
+        this.user = { id: null, email: null }
+        this.isLoggedIn = false
+        // localStorage.removeItem('auth_session');
         router.push("/");
       } catch (error) {
         console.error("Error durante el deslogeo:", error)

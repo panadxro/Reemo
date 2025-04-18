@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore, useUserStore } from '@stores'
+import { useAuthStore, useUserStore } from '@stores';
+import { storeToRefs } from 'pinia';
 
 import Home from "../pages/Home.vue";
 import Login from "../pages/Login.vue";
@@ -99,9 +100,10 @@ const router = createRouter({
 
 router.beforeEach(async (to) => {
   const authStore = useAuthStore();
+  const { isLoggedIn } = storeToRefs(authStore);
 
   // Si el usuario está logueado, permite la navegación
-  if (authStore.isLoggedIn) {
+  if (isLoggedIn.value === true) {
     return true;
   }
   // Si no esta logueado pero el authstore esta inicializado
@@ -111,7 +113,7 @@ router.beforeEach(async (to) => {
       return true;
     }
     // Si la ruta requiere autenticación, y el store esta inicializado, redirige a /login
-    if (to.meta.needsAuth && !authStore.isLoggedIn) {
+    if (to.meta.needsAuth && isLoggedIn.value === false) {
       return { path: "/login", query: { redirect: to.fullPath } };
     }
   }
