@@ -85,7 +85,7 @@ export default {
     this.loading = false;
   },
 
-  async mounted() {
+  mounted() {
     subscribeToAuthState((newUserData) => {
       this.loggedUser = newUserData;
     });
@@ -115,18 +115,27 @@ export default {
       }
     },
     prevStep() {
-      if (this.currentStep > 0) {
-        this.currentStep--;
+  if (this.currentStep > 0) {
+    const savedData = localStorage.getItem('rentalData');
+    if (savedData) {
+      try {
+        const data = JSON.parse(savedData);
+        this.rentedFromDate = data.rentedFromDate || "";
+        this.rentedUntilDate = data.rentedUntilDate || "";
+        this.selectedTime = data.selectedTime || "";
+        this.selectedUntilTime = data.selectedUntilTime || "";
+        this.currentTotalPrice = data.currentTotalPrice || 0;
+      } catch (e) {
+        console.error("Error al cargar datos guardados:", e);
       }
-    },
+    }
+    this.currentStep--;
+  }
+},
 
     handleRentalDataUpdate(data) {
-      // Actualizar datos de alquiler
       this.rentalData = { ...this.rentalData, ...data };
-      
-      // Guardar en localStorage
       localStorage.setItem('rentalData', JSON.stringify(this.rentalData));
-      // console.log("Datos de alquiler actualizados:", this.rentalData);
     },
 
     handleTotalUpdate(price) {
@@ -195,26 +204,6 @@ export default {
         console.error("Error al cargar Google Maps: ", error) 
       }
     }
-  },
-  watch: {
-    'car.coordenadas': {
-      handler(newCoords) {
-        if (newCoords && this.showMap) {
-          this.$nextTick(() => {
-            this.checkAndInitMap();
-          });
-        }
-      },
-      deep: true
-    },
-    currentStep(newStep, oldStep) {
-    // Si volvemos al paso 0, reinicializamos el mapa
-    if (newStep === 0 && oldStep !== 0) {
-      this.$nextTick(() => {
-        this.checkAndInitMap();
-      });
-    }
-  }
   },
   computed: {
     isDisabled() {
@@ -346,10 +335,11 @@ export default {
   :rented="rented"
   :current-step="currentStep"
   :sections="sections"
+  :initial-data="rentalData"
+  :prev-step="prevStep"
   @update-dates="handleRentalDataUpdate"
   @total-updated="handleTotalUpdate"
   @continue="nextStep"
-  :prev-step="prevStep"
 />
 
 <!-- Paso 2: Información -->
