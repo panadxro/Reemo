@@ -142,6 +142,13 @@ export default {
         ? this.rentedUntilHour
         : this.availableUntilHours[0] || "";
     },
+
+    updateInputs(values) {
+    this.rentedFromDate = values.rentedFromDate;
+    this.rentedUntilDate = values.rentedUntilDate;
+    this.rentedFromHour = values.rentedFromHour;
+    this.rentedUntilHour = values.rentedUntilHour;
+  },
     
     emitDates() {
       this.$emit('update-dates', {

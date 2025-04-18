@@ -36,16 +36,20 @@ export default {
   prevStep: {
     type: Function,
     required: true
+  },
+  initialData:{
+    type: Object,
+    default: () => ({})
   }
   },
   data() {
     return {
-      rentedFromDate: "",
-      rentedUntilDate: "",
-      selectedTime: "",
-      selectedUntilTime: "",
-      currentTotalPrice: 0
-    };
+    rentedFromDate: this.initialData.rentedFromDate || "",
+    rentedUntilDate: this.initialData.rentedUntilDate || "",
+    selectedTime: this.initialData.selectedTime || "",
+    selectedUntilTime: this.initialData.selectedUntilTime || "",
+    currentTotalPrice: this.initialData.currentTotalPrice || 0
+  };
   },
   methods: {
     handleDateUpdate(data) {
@@ -105,7 +109,21 @@ export default {
         console.error("Error al cargar datos guardados:", e);
       }
     }
+  },
+  watch: {
+  initialData: {
+    deep: true,
+    handler(newData) {
+      if (newData) {
+        this.rentedFromDate = newData.rentedFromDate || "";
+        this.rentedUntilDate = newData.rentedUntilDate || "";
+        this.selectedTime = newData.selectedTime || "";
+        this.selectedUntilTime = newData.selectedUntilTime || "";
+        this.currentTotalPrice = newData.currentTotalPrice || 0;
+      }
+    }
   }
+}
 };
 </script>
 
@@ -117,16 +135,14 @@ export default {
   :prev-step="prevStep"
 />
     
-    <DateTime 
-      @update-dates="handleDateUpdate" 
-      :disabled="rented"
-      :initial-values="{
-        rentedFromDate: rentedFromDate,
-        rentedUntilDate: rentedUntilDate,
-        rentedFromHour: selectedTime,
-        rentedUntilHour: selectedUntilTime
-      }"
-    />
+<DateTime 
+@update-dates="handleDateUpdate" 
+:disabled="rented"
+:initialFromDate="rentedFromDate"
+:initialUntilDate="rentedUntilDate"
+:initialFromHour="selectedTime"
+:initialUntilHour="selectedUntilTime"
+/>
     
     <PriceCalculator
       :start-date="rentedFromDate"
