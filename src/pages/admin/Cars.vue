@@ -34,9 +34,10 @@ export default {
         const carsWithUser = await Promise.all(
           cars.map(async (car) => {
             const user = await getUserById(car.user_id);
-            return { ...car, user };
+            return { ...car, user: user || {} };
           })
         );
+        // console.log("Datos de carsWithUser:", carsWithUser);
         this.cars = carsWithUser;
       } catch (error) {
         console.error("Error al buscar autos:", error);
@@ -163,12 +164,12 @@ export default {
           </td>
           <td class="py-2.5 px-5 flex w-20 items-center">{{ car.año }}</td>
           <td class="py-2.5 px-5 flex flex-1 items-center">{{ car.chasis }}</td>
-          <td class="py-2.5 px-5 flex flex-1"><Status :status="car.status" /></td>
+          <td class="py-2.5 px-5 flex flex-1"><Status status="registrado" /></td>
           <td class="py-2.5 px-5 flex items-center w-32 font-">{{ formatDate(car.created_at) }}</td>
           <td class="py-2.5 px-5 flex justify-center relative w-24 items-center">
             <Popover
               :items="[
-                { label: 'Ver auto', to: `/CarDetails/${car.id}` },
+                { label: 'Ver auto', to: `/car/${car.id}` },
                 { label: 'Chat', to: `/user/${car.user_id}/chat` },
                 { label: car.isValidated ? 'Invalidar' : 'Validar', action: () => updateValidation(car.id, !car.isValidated), class: `car.isValidated ? 'text-red-500' : ''` },
               ]"

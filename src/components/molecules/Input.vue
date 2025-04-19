@@ -84,7 +84,7 @@ const removeFocus = (event) => {
       @input="$emit('update:modelValue', $event.target.value)"
       :value="modelValue"
       autocomplete="off"
-      class="flex bg-transparent border-none outline-none"
+      class="w-full bg-transparent border-none outline-none"
       :aria-label="placeholder"
     />
 

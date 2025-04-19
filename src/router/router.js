@@ -1,36 +1,41 @@
-import { createRouter, createWebHistory } from "vue-router"; 
-import { subscribeToAuthState } from "../services/auth";
+import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore, useUserStore } from '@stores';
+import { storeToRefs } from 'pinia';
 
 import Home from "../pages/Home.vue";
 import Login from "../pages/Login.vue";
-import Profile from "../pages/Profile.vue";
 import UserOnboarding from "../pages/UserOnboarding.vue";
 import Register from "../pages/Register.vue";
 import Maps from "../pages/Maps.vue";
 import Search from "../pages/Search.vue";
 import Publish from "../pages/CarPublish.vue";
 import CarDetails from "../pages/CarDetails.vue";
-import ProfileOwner from "../pages/ProfileOwner.vue";
 import AdminCars from "../pages/admin/Cars.vue";
 import AdminUsers from "../pages/admin/Users.vue";
 import PrivateChat from "../pages/PrivateChat.vue";
-
+import UserProfile from "../pages/UserProfile.vue";
+import NotFound from "../pages/NotFound.vue"
+ 
 const routes = [
-{ path: "/", component: Home, name: "Home" },
-{ path: "/login", component: Login, name: "Login" },
-{ path: "/register", component: Register, name: "Register" },
-{ path: "/search", component: Search, name: "Search" },
-{ path: "/maps", component: Maps },
+  { path: "/", component: Home, name: "Home" },
+  { path: "/login", component: Login, name: "Login" },
+  { path: "/register", component: Register, name: "Register" },
   {
-    path: "/profile",
-    component: Profile,
-    name: "Profile",
-    meta: { needsAuth: true },
-  },
+    path: "/:pathMatch(.*)*",
+    component: NotFound,
+    name: "NotFound",
+    beforeEnter: (to) => {
+      if (!to.matched.length) {
+        return '/404'
+      }
+    },
+   },
+  { path: "/search", component: Search, name: "Search" },
+  { path: "/maps", component: Maps },
   {
     path: "/onboarding",
     component: UserOnboarding,
-    name: "Onboarding",
+    name: "onboarding",
     meta: { needsAuth: true },
   },
   {
@@ -44,13 +49,14 @@ const routes = [
     name: "CarDetails",
     component: CarDetails,
     props: true,
-    meta: { needsAuth: true },
   },
   {
     path: "/user/:id",
-    name: "ProfileOwner",
-    component: ProfileOwner,
-    props: true,
+    name: "UserProfile",
+    component: UserProfile,
+    props: (route) => ({
+      id: route.params.id,
+    }),
     meta: { needsAuth: true },
     children: [
       {
@@ -75,7 +81,7 @@ const routes = [
         path: "users",
         name: "AdminUsers",
         component: AdminUsers,
-      },
+      }
     ],
   },
 ];
@@ -83,32 +89,34 @@ const routes = [
 const router = createRouter({
   routes,
   history: createWebHistory(),
-});
-
-let loggedUser = {
-  id: null,
-  email: null,
-  userName: null,
-  name: null,
-  lastName: null,
-  role: null,
-};
-
-// Subscribe to auth state changes
-subscribeToAuthState((newUserData) => (loggedUser = newUserData));
-
-router.beforeEach((to) => {
-  if (to.meta.needsAuth && loggedUser.id == null) {
-    return {
-      path: "/login",
-    };
-  }
-
-  if (to.meta.role && loggedUser.role !== to.meta.role) {
-    return {
-      path: "/",
-    };
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    } else {
+      return { top: 0 };
+    }
   }
 });
+
+router.beforeEach(async (to) => {
+  const authStore = useAuthStore();
+  const { isLoggedIn } = storeToRefs(authStore);
+
+  // Si el usuario está logueado, permite la navegación
+  if (isLoggedIn.value === true) {
+    return true;
+  }
+  // Si no esta logueado pero el authstore esta inicializado
+  else {
+    // Si no requiere auth
+    if (!to.meta.needsAuth) {
+      return true;
+    }
+    // Si la ruta requiere autenticación, y el store esta inicializado, redirige a /login
+    if (to.meta.needsAuth && isLoggedIn.value === false) {
+      return { path: "/login", query: { redirect: to.fullPath } };
+    }
+  }
+})
 
 export default router;

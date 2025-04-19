@@ -1,6 +1,7 @@
-<script>
+<script setup>
+import { useAuthStore, useUserStore } from "../stores";
+
 import Login from "../icons/Login.vue";
-import Reemo from '@icons/Reemo.vue';
 import Home from '@icons/Home.vue'
 import Search from '@icons/Search.vue'
 import Map from '@icons/Map.vue'
@@ -13,34 +14,18 @@ import Cars from '@icons/Cars.vue'
 import People from '@icons/People.vue'
 import IconNavButton from './molecules/IconNavButton.vue'
 
-export default {
-  name: "Sidebar",
-  components: { Logout, Login, Reemo, AlertRented, Home, Search, Map, UserIcon, QA, Settings, Logout, Cars, People, IconNavButton },
-  props: {
-    user: {
-      type: Object,
-      required: true,
-    },
-  },
-  data(){
-    return{
-      rentalRequest: null,
-    }
-  },
-  methods: {
-    handleLogout() {
-      this.$emit("logout");
-    },
-  },
+const authStore = useAuthStore();
+const userStore = useUserStore();
+
+const handleLogout = () => {
+  authStore.logout();
 };
-
-
 </script>
 
 <template>
   <nav class="bg-secondary-100 flex flex-col justify-between min-h-full m-2.5 py-12 px-4 rounded-full">
     <ul 
-      v-if="user.role !== 'admin'"
+      v-if="userStore.profileData.role === 'user'"
       class="flex flex-col gap-2 items-center"
       >
       <li>
@@ -59,13 +44,13 @@ export default {
         </IconNavButton>
       </li>
       <li>
-        <IconNavButton to="/profile" title="Profile">
+        <IconNavButton :to="'/user/' + authStore?.user.id" title="Profile">
           <UserIcon />
         </IconNavButton>
       </li>
     </ul>
     <ul 
-      v-else-if="user.role === 'admin'"
+      v-else-if="userStore.profileData.role === 'admin'"
       class="flex flex-col gap-2 items-center"
       >
       <li>
@@ -88,12 +73,17 @@ export default {
           <People />
         </IconNavButton>
       </li>
+      <li>
+        <IconNavButton :to="'/user/' + authStore?.user.id" title="Profile">
+          <UserIcon />
+        </IconNavButton>
+      </li>
     </ul>
     <ul class="flex flex-col gap-2 items-center">
       <li title="Notifications">
         <AlertRented />
       </li>
-      <li>
+      <li v-if="userStore.profileData.role === 'user'">
         <IconNavButton to="/" title="Questions & Answers">
           <QA />
         </IconNavButton>
@@ -103,20 +93,21 @@ export default {
           <Settings />
         </IconNavButton>
       </li>
-      <li>
-        <form
-          @submit.prevent="handleLogout"
+      <li v-if="authStore.isLoggedIn">
+        <button 
+          @click="handleLogout"
+          title="Logout"
+          class=" flex items-center justify-center p-2 rounded-full transition-colors duration-300 cursor-pointer hover:bg-vibrant-light-800"
+          active-class="bg-vibrant-light-800hover:cursor-pointer hover:bg-vibrant-light-800"
           >
-          <button 
-            type="submit" 
-            title="Logout"
-            class=" flex items-center justify-center p-2 rounded-full transition-colors duration-300 cursor-pointer hover:bg-vibrant-light-800"
-            active-class="bg-vibrant-light-800hover:cursor-pointer hover:bg-vibrant-light-800"
-            >
-            <Logout />
-            <span class="sr-only">Logout</span>
-          </button>
-        </form>
+          <Logout />
+          <span class="sr-only">Logout</span>
+        </button>
+      </li>
+      <li v-else>
+        <IconNavButton to="/login" title="Log In">
+          <Login />
+        </IconNavButton>
       </li>
     </ul>
   </nav>

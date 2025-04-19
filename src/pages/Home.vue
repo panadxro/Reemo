@@ -28,8 +28,8 @@ export default {
 </script>
 
 <template>
-  <div class="w-11/12 sm:w-10/12 m-auto flex flex-col gap-32 mb-32">
-    <section class="flex flex-col items-center justify-between sm:flex-row">
+  <div class="w-11/12 sm:w-10/12 m-auto bg-white rounded-3xl px-8 flex flex-col gap-32 mb-32">
+    <section class="flex flex-col items-center justify-between sm:flex-row 2xl:justify-center gap-16">
       <div class="flex flex-col gap-4">
         <h1 class="font-medium leading-tight text-5xl block mb-4 sm:text-6xl w-[95%] sm:w-full text-pretty text-center sm:text-start"><b>Conectando autos,</b><br/> impulsando<br/> oportunidades</h1>
         <div class="sm:flex gap-2 hidden">
@@ -113,7 +113,7 @@ export default {
         </div>
         <a href="" class="flex items-center justify-between py-2 px-5 rounded-xl bg-primary-800 text-white w-36">
           <span>Publicar</span>
-          <LongArrow/>
+          <LongArrow color="#FFFFFF" direction="right"/>
         </a>
       </article>
       <article class="bg-linear-to-r to-secondary-300 from-secondary-100 pl-9 py-11 flex flex-col gap-16 rounded-[40px] w-full group relative">
@@ -126,7 +126,7 @@ export default {
         </div>
         <a href="" class="flex items-center justify-between py-2 px-5 rounded-xl bg-secondary-300 text-white w-36">
           <span>Ver autos</span>
-          <LongArrow/>
+          <LongArrow color="#FFFFFF" direction="right"/>
         </a>
       </article>
     </div>
@@ -149,7 +149,7 @@ export default {
 
           <a href="" class="flex items-center justify-between py-2 px-5 rounded-xl bg-secondary-900 text-white w-36">
             <span>Ver autos</span>
-            <LongArrow/>
+            <LongArrow color="#FFFFFF" direction="right"/>
           </a>
         </div>
          <RentsExpress class="flex flex-1 mr-16"/>
@@ -184,7 +184,7 @@ export default {
             <div class="flex flex-col gap-16">
               <Heading :type="3" class="text-white">Viví momentos <br/>inolvidables</Heading>
               <button class="bg-secondary-900 w-fit px-6 rounded-full">
-                <LongArrow/>
+                <LongArrow color="#FFFFFF" direction="right"/>
                 <span class="sr-only">Ver más</span>
               </button>
             </div>
@@ -194,7 +194,7 @@ export default {
             <div class="flex flex-col gap-16">
               <Heading :type="3" class="text-white">Buscá y encontrá <br/>tu auto ideal</Heading>
               <button class="bg-secondary-900 w-fit px-6 rounded-full">
-                <LongArrow/>
+                <LongArrow color="#FFFFFF" direction="right"/>
                 <span class="sr-only">Ver más</span>
               </button>
             </div>
@@ -253,7 +253,7 @@ export default {
     </div>
     <a href="" class="flex items-center gap-4 py-2 px-4 rounded-2xl bg-secondary-900 w-fit">
       <span class="font-semibold text-white">Ir a todas las preguntas</span>
-      <LongArrow/>
+      <LongArrow color="#FFFFFF" direction="right"/>
     </a>
   </section>
   <section>
@@ -270,3 +270,18 @@ export default {
   </section>
   </div>
 </template>
+
+<style scoped>
+section {
+  margin: auto;
+  @media screen and (min-width: 2220px) {
+    width: 50%;
+  }
+  @media screen and (min-width: 1480px) and (max-width: 2219px) {
+    width: 75%;
+  }
+  @media screen and (max-width: 1479px) {
+    width: 100%;
+  }
+}
+</style>

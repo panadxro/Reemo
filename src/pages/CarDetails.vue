@@ -1,8 +1,8 @@
 <script>
 import { getCarById, checkIfCarIsRented } from "../services/car-service.js";
 import { Loader } from "@googlemaps/js-api-loader";
-
 import { subscribeToAuthState } from "../services/auth.js";
+
 import ModalRent from "@components/organisms/rental/ModalRent.vue";
 import Heading from "../components/atoms/Heading.vue";
 import Pill from "../components/atoms/Pill.vue";
@@ -26,7 +26,9 @@ export default {
   data() {
     return {
       rented: false,
-      car: null,
+      car: {
+        user: {},
+      },
       loading: false,
       errorMsg: "",
       loggedUser: {
@@ -35,6 +37,7 @@ export default {
         role: null
       },
       currentImage: null,
+      defaultUserImage: "/src/assets/User.png"
     };
   },
   async created() {
@@ -43,15 +46,21 @@ export default {
     try {
       const carId = this.id;
       this.car = await getCarById(carId);
+      // console.log("Datos del auto:", this.car);
+
+      if(!this.car.user) {
+        this.car.user = {};
+      }
+
       this.currentImage = this.car.images && this.car.images.length > 0 ? this.car.images[0] : defaultCarImage;
       this.rented = await checkIfCarIsRented(this.car.id);
       // this.initMap(this.car.coordenadas);
 
-      // Una vez que los datos están listos, inicializa el mapa
-      if (this.car.coordenadas) {
-            await this.loadGoogleMaps();
-            this.initMap(this.car.coordenadas);
-          }
+      // Inicializa el mapa si las coordenadas están definidas
+      if (this.car.coordenadas && this.car.coordenadas.lat && this.car.coordenadas.lng) {
+        await this.loadGoogleMaps();
+        this.initMap(this.car.coordenadas);
+      }
 
     } catch (error) {
       this.errorMsg = "Hubo un error al obtener los detalles del auto. Volvé a intentar";
@@ -84,13 +93,14 @@ export default {
     },
 
     async initMap(coordenadas){
-
+      if (!coordenadas || !coordenadas.lat || !coordenadas.lng) {
+        console.error("Coordenadas no válidas:", coordenadas);
+        return;
+      }
       try {
 
         const position = { lat: coordenadas.lat, lng: coordenadas.lng };
         const { Map } = await google.maps.importLibrary("maps");
-        // const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-        
 
         const map = new Map(document.getElementById('map'),{
           center: {
@@ -114,13 +124,10 @@ export default {
           center: position,
           radius: 1000, 
         })
-
       } catch (error) {
         console.error("Error al cargar Google Maps: ", error) 
       }
-
     }
-
   },
   mounted() {
     subscribeToAuthState((newUserData) => {
@@ -132,11 +139,9 @@ export default {
 
 
 <template>
-  <section class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
+  <section v-if="car" class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
     <div class="flex items-center gap-5">
-      <BackButton>
-        <Arrow direction="left" />
-      </BackButton>
+      <BackButton />
       <Heading :type="1" class="medium">Alquilar auto</Heading>
     </div>
     <article class="flex flex-col gap-9 bg-background-900 overflow-auto px-5">
@@ -189,12 +194,18 @@ export default {
       </div>
       <div v-if="car.user_id !== loggedUser?.id">
         <router-link :to="`/user/${car.user_id}`" class="flex items-center gap-2 hover:cursor-pointer">
-          <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
-          <p class="font-semibold hover:underline">{{ car.user.name }} {{ car.user.lastName }}</p>
+          <img 
+            :src="car.user?.photoURL || defaultUserImage" 
+            :alt="car.user.userName" 
+            :title="car.user.userName"
+            class="w-8 h-8 object-cover rounded-full" />
+          <p class="font-semibold hover:underline">
+            {{ car.user.name }} {{ car.user.lastName }}
+          </p>
         </router-link>
       </div>
       <div v-else>
-        <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
+        <img :src="car.user.photoURL" :alt="car.user.userName" class="w-8 h-8 object-cover rounded-full" />
         <p class="py-6">{{ car.user.name }} {{ car.user.lastName }}</p>
       </div>
       <ul class="font-semibold">
@@ -233,6 +244,10 @@ export default {
       </div>
     </article>
   </section>
+  <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
+    <p v-if="errorMsg">{{ errorMsg }}</p>
+    <p v-else>Cargando...</p>
+  </section>
   <div class="m-2.5 w-full flex flex-col gap-3">
     <!-- iniciamos el mapa de Google Maps -->
     <div 
@@ -245,7 +260,6 @@ export default {
       <p>Mapa no disponible</p>
     </div>
     <div class="bg-deep-blue-900 w-full h-1/2 rounded-[40px]">
-      <p></p>
     </div>
 
     <ModalRent ref="ModalRent" :car="car" :loggedUser="loggedUser" :rented="car.rented" />
