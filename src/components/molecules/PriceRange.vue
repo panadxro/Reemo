@@ -7,13 +7,18 @@ export default {
     },
     max: {
       type: Number,
-      default: 100,
+      default: 100000,
     },
+    modelValue: {
+      type: Object,
+      required: true,
+    },
+    
   },
   data() {
     return {
-      minValue: this.min,
-      maxValue: this.max,
+      // minValue: this.min,
+      // maxValue: this.max,
     };
   },
   computed: {
@@ -53,6 +58,24 @@ export default {
         transform: 'translateX(-50%)',
       };
     },
+
+    minValue: {
+      get() {
+        return this.modelValue.minPrice;
+      },
+      set(val) {
+        this.$emit('update:modelValue', { ...this.modelValue, minPrice: val });
+      }
+    },
+    maxValue: {
+      get() {
+        return this.modelValue.maxPrice;
+      },
+      set(val) {
+        this.$emit('update:modelValue', { ...this.modelValue, maxPrice: val });
+      }
+    },
+
   },
   methods: {
     updateMin(event) {
@@ -78,14 +101,16 @@ export default {
       <input
         type="range"
         v-model="minValue"
+        step="5000"
         :min="min"
         :max="max"
         @input="updateMin"
-        class="slider-thumb min-thumb"
+        class="slider-thumb min-thumb cursor-pointer"
       />
       <input
         type="range"
         v-model="maxValue"
+        step="5000"
         :min="min"
         :max="max"
         @input="updateMax"
@@ -127,7 +152,7 @@ export default {
   left: 0;
   right: 0;
   height: 4px;
-  background-color: #ffffff;
+  background-color: #35353528;
   border-radius: 2px;
   transform: translateY(-50%);
 }
