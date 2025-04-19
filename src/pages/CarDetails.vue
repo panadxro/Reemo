@@ -13,6 +13,7 @@ import Like from "../icons/Like.vue";
 import RentalStep1 from "@components/organisms/rental/RentalStep1.vue";
 import RentalStep2 from "@components/organisms/rental/RentalStep2.vue";
 import RentalStep3 from "@components/organisms/rental/RentalStep3.vue";
+import RentalStep4 from "@components/organisms/rental/RentalStep4.vue";
 
 export default {
   props: ["id"],
@@ -27,6 +28,7 @@ export default {
     RentalStep1,
     RentalStep2,
     RentalStep3,
+    RentalStep4,
   },
   data() {
     return {
@@ -205,16 +207,16 @@ export default {
       }
     }
   },
-  computed: {
-    isDisabled() {
-      // Lógica para deshabilitar el botón según el paso
-      if (this.currentStep === 0) {
-        return !this.rentalData.rentedFromDate || !this.rentalData.rentedUntilDate || !this.rentalData.selectedTime || !this.rentalData.selectedUntilTime || this.rented;
-      }
-      return false;
-    },
+  // computed: {
+  //   isDisabled() {
+  //     // Lógica para deshabilitar el botón según el paso
+  //     if (this.currentStep === 0) {
+  //       return !this.rentalData.rentedFromDate || !this.rentalData.rentedUntilDate || !this.rentalData.selectedTime || !this.rentalData.selectedUntilTime || this.rented;
+  //     }
+  //     return false;
+  //   },
     
-  }
+  // }
 };
 </script>
 
@@ -354,9 +356,20 @@ export default {
   :prev-step="prevStep"
 />
 
-<!-- Paso 3: Confirmación -->
+<!-- Paso 4: Método de pafo -->
 <RentalStep3 
-  v-if="currentStep === 2"
+v-if="currentStep === 2"
+:car="car"
+:logged-user="loggedUser"
+:rented="rented"
+:current-step="currentStep"
+:sections="sections"
+@continue="nextStep"
+:prev-step="prevStep"/>
+
+<!-- Paso 4: Confirmación -->
+<RentalStep4 
+  v-if="currentStep === 3"
   :car="car"
   :loggedUser="loggedUser"
   :rented="rented"
