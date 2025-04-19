@@ -50,12 +50,6 @@ export async function saveUserData(uid, data) {
     const userRef = doc(db, 'users', uid);
     const cleanData = {
       ...data,
-      // Asegura que los strings no sean undefined
-      personalInfo: {
-        firstName: data.personalInfo?.firstName || '',
-        lastName: data.personalInfo?.lastName || '',
-        // ... otros campos
-      },
       updateAt: serverTimestamp()
     }
     await setDoc(userRef, {

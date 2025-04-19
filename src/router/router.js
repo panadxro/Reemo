@@ -116,16 +116,15 @@ router.beforeEach(async (to) => {
 
     return true;
   }
-  // Si no requiere auth, sigue adelante
-  if (!to.meta.needsAuth) return true;
-  // Si el usuario no esta logueado y requiere auth
-  if (to.meta.needsAdmin) {
-    const userStore = useUserStore();
-    await userStore.loadUserProfile(authStore.user.id);
-    if (to.meta.role && userStore.profileData.role !== to.meta.role) {
-      return {
-        path: "/",
-      };
+  // Si no esta logueado pero el authstore esta inicializado
+  else {
+    // Si no requiere auth
+    if (!to.meta.needsAuth) {
+      return true;
+    }
+    // Si la ruta requiere autenticación, y el store esta inicializado, redirige a /login
+    if (to.meta.needsAuth && isLoggedIn.value === false) {
+      // return { path: "/login", query: { redirect: to.fullPath } };
     }
   }
   return "/login";

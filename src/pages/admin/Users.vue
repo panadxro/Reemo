@@ -1,30 +1,48 @@
-
 <script>
-import { getUsers, updateUserRole } from "../../services/users.js";
+import { computed } from "vue";
+import { useAdminStore } from "../../stores/admin.store";
 import { addAlert } from "../../services/alerts";
 
 
 import Heading from "@components/atoms/Heading.vue";
 import Input from "../../components/molecules/Input.vue";
 import Popover from "../../components/molecules/Popover.vue";
+import { onMounted } from "vue";
 
 export default {
+  name: "AdminUsers",
   components: { Heading, Input, Popover },
-  data() {
+  setup() {
+    const adminStore = useAdminStore();
+
+    const users = computed(() => {
+      return adminStore.users;
+    });
+
+    onMounted(async () => {
+      await adminStore.fetchUsers();
+    });
+
+    return {
+      adminStore,
+      users,
+    };
+  },
+/*   data() {
+    
+
     return {
       users: [],
       openPopoverId: null,
     };
-  },
-  async created() {
-    this.users = await getUsers();
-  },
+  }, */
   methods: {
-    async updateRole(user) {
+/*     async updateRole(user) {
+      const adminStore = useAdminStore();
       try {
         const newRole = user.role;
-        const response = await updateUserRole(user.id, newRole);
-
+        const response = await adminStore.updateUserRole(user.id, newRole);
+        
         if (response.success) {
           const updatedUser = this.users.find((u) => u.id === user.id);
           if (updatedUser) {
@@ -38,7 +56,7 @@ export default {
         console.error("Error al actualizar el rol:", error);
         addAlert("Error al actualizar el rol", "error");
       }
-    },
+    }, */
     // Manejar la apertura/cierre del popover
     handleTogglePopover(popoverId) {
       this.openPopoverId = this.openPopoverId === popoverId ? null : popoverId;
@@ -86,20 +104,20 @@ export default {
       </thead>
       <tbody class="flex flex-col gap-5 h-full overflow-y-scroll">
         <tr 
-          v-for="(user, index) in users" :key="user.id" 
+          v-for="(user, index) in users" :key="user.id"
           class="flex w-full max-h-16 border-2 border-secondary-100 rounded-xl font-semibold"
           >
           <td class="py-2.5 px-5 flex flex-1">
-            <router-link :to="`/user/${user.id}`" class="flex items-center gap-2 hover:cursor-pointer">
+            <!-- <router-link :to="`/user/${user.id}`" class="flex items-center gap-2 hover:cursor-pointer"> -->
               <img :src="user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
               <p class="hover:underline">{{ user.name }} {{ user.lastName }}</p>
-            </router-link>
+            <!-- </router-link> -->
           </td>
           <td class="py-2.5 px-5 flex flex-1 items-center">Usuario</td>
           <td class="py-2.5 px-5 flex flex-1">Habilitado</td>
           <td class="py-2.5 px-5 flex items-center w-32 font-">03/02/2025</td>
           <td class="py-2.5 px-5 flex justify-center relative w-24 items-center">
-            <Popover
+<!--             <Popover
               :items="[
                 { label: 'Ver perfil', to: `/user/${user.id}` },
                 { label: 'Chat', to: `/user/${user.id}/chat` },
@@ -109,7 +127,7 @@ export default {
               :popoverId="index"
               @toggle-popover="handleTogglePopover"
               @close-popover="handleClosePopover"
-            />
+            /> -->
           </td>
         </tr>        
       </tbody>

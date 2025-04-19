@@ -1,5 +1,13 @@
 import { defineStore } from 'pinia'
-import { getUserProfile, saveUserData } from '../services/user'
+import {
+  getUserProfile,
+  saveUserData,
+  updatePersonalInfo,
+  updateUserDocuments,
+  updateUserAddress,
+  addPaymentMethod,
+  acceptedTerms
+} from '../services/user'
 import { useAuthStore } from '@stores'
 
 export const useUserStore = defineStore('user', {
@@ -105,6 +113,32 @@ export const useUserStore = defineStore('user', {
         }
       } catch (error) {
         this.error = error.message || 'Error al guardar'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+    async completeOnboarding(userData) {
+      const { uid, profile, documents, address, agreements } = userData
+      this.loading = true
+      try {
+        if(profile) {
+          await updatePersonalInfo(uid, profile)
+        }
+        if(documents){
+          await updateUserDocuments(uid, documents)
+        }
+        if(address){
+          await updateUserAddress(uid, address)
+        }
+        if(payment){
+          await addPaymentMethod(uid, payment)
+        }
+        if(agreements){
+          await acceptedTerms(uid, agreements)
+        }
+      } catch (error) {
+        this.error = error.message || 'Error al guardar el onboarding'
         throw error
       } finally {
         this.loading = false
