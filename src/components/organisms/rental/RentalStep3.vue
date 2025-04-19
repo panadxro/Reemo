@@ -205,50 +205,55 @@ export default {
         this.loading = false;
       }
     },
-
-    getPaymentMethodLabel(method) {
-      if (!method) return '';
+    
+    getPaymentMethodIdentifier(method) {
+      if (!method) return null;
       
       switch(method.type) {
         case 'credit_card':
-          return `Tarjeta terminada en ${method.cardNumber.slice(-4)}`;
+          return `card-${method.cardNumber}`;
         case 'digital_wallet':
-          return `${method.walletType}: ${method.walletId}`;
+          return `wallet-${method.walletType}-${method.walletId}`;
         case 'paypal':
-          return `PayPal: ${method.email}`;
+          return `paypal-${method.email}`;
         default:
-          return 'Método de pago';
-      }
-    },
-
-    getPaymentMethodIcon(method) {
-      if (!method) return '';
-      
-      switch(method.type) {
-        case 'credit_card':
-          return 'credit-card';
-        case 'digital_wallet':
-          return method.walletType === 'mercadopago' ? 'mercadopago' : 'wallet';
-        case 'paypal':
-          return 'paypal';
-        default:
-          return 'payment';
-      }
-    }
+          return null;
+  }
+},
   },
   async mounted() {
-    // Cargar datos guardados
-    const savedData = localStorage.getItem('rentalData');
-    if (savedData) {
-      try {
-        this.rentalData = JSON.parse(savedData);
-      } catch (e) {
-        console.error("Error al cargar datos guardados:", e);
+  // Cargar datos guardados
+  const savedData = localStorage.getItem('rentalData');
+  if (savedData) {
+    try {
+      const parsedData = JSON.parse(savedData);
+      this.rentalData = parsedData;
+      
+      // Guardar temporalmente el ID o identificador único del método de pago seleccionado
+      const savedPaymentMethodId = parsedData.selectedPaymentMethod ? 
+        this.getPaymentMethodIdentifier(parsedData.selectedPaymentMethod) : null;
+      
+      // Primero cargamos los métodos de pago
+      await this.fetchPaymentMethods();
+      
+      // Si teníamos un método guardado, buscamos su equivalente en los métodos recién cargados
+      if (savedPaymentMethodId && this.paymentMethods.length > 0) {
+        const matchedMethod = this.paymentMethods.find(method => 
+          this.getPaymentMethodIdentifier(method) === savedPaymentMethodId
+        );
+        
+        if (matchedMethod) {
+          this.rentalData.selectedPaymentMethod = matchedMethod;
+        }
       }
+    } catch (e) {
+      console.error("Error al cargar datos guardados:", e);
+      await this.fetchPaymentMethods();
     }
-    
+  } else {
     await this.fetchPaymentMethods();
-  },
+  }
+},
   computed: {
     isNextDisabled() {
       return !this.rentalData.selectedPaymentMethod && !this.showNewPaymentForm;
@@ -318,13 +323,24 @@ export default {
                 <!-- Aca tendirmaos que poner los iconos segun metodo de pago -->
                 <MercadoPago v-if="method.walletType === 'mercadopago'"/>
                 <Uala v-if="method.walletType === 'uala'"/>
+                <PayPal v-if="method.type === 'paypal'"/>
+                <CreditCard v-if="method.type === 'credit_card'"/>
                 
               </div>
               
               <div>
                 <p class="font-medium text-white">
-                  {{ method.type === 'credit_card' ? 'Tarjeta terminada en ' + method.cardNumber.slice(-4) : 
-                     method.type === 'digital_wallet' ? method.walletType : 'PayPal' }}
+                  {{
+                    method.type === 'credit_card' 
+                      ? 'Tarjeta terminada en ' + method.cardNumber.slice(-4) 
+                      : method.type === 'paypal' 
+                        ? 'PayPal' 
+                        : method.walletType === 'uala' 
+                          ? 'Ualá' 
+                          : method.walletType === 'mercadopago' 
+                            ? 'Mercado Pago' 
+                            : method.walletType || 'Otro método'
+                  }}
                 </p>
                 <p class="text-sm text-gray-300">
                   {{ method.type === 'credit_card' ? method.cardholder : 
@@ -350,7 +366,7 @@ export default {
       </div>
       
       <div v-else-if="!loading && paymentMethods.length === 0" class="text-center py-4 text-gray-300">
-        <p>No tienes métodos de pago guardados</p>
+        <p>No tenés métodos de pago guardados</p>
       </div>
       
       <!-- Botón para agregar nuevo método de pago -->
@@ -385,7 +401,7 @@ export default {
             class="flex-1 p-3 border rounded-xl cursor-pointer text-center transition-all text-white"
             :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': selectedPaymentMethodType === 'digital_wallet', 'border-gray-600': selectedPaymentMethodType !== 'digital_wallet'}"
           >
-            Billetera
+            Billetera Virtual
           </div>
           <div 
             @click="selectedPaymentMethodType = 'paypal'" 
