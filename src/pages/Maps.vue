@@ -184,13 +184,13 @@ export default {
       </router-link>
     </template>
 
-    <template v-else>
+    <!-- <template v-else>
       <router-link to="/Publish"
         class="fixed gap-4 md:flex z-50 items-center justify-center bottom-0 right-0 m-8 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
         <span class="hidden md:block">Publicar Vehículo</span>
         <AddIcon />
       </router-link>
-    </template>
+    </template> -->
 
 
   </section>

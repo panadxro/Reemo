@@ -2,7 +2,7 @@
 import CheckIcon from '@/icons/Check.vue';
 
 const props = defineProps({
-  modelValue: Boolean,
+  modelValue: [Boolean, Array],
   id: String,
   name: String,
   label: String, // Texto opcional
@@ -10,14 +10,37 @@ const props = defineProps({
     type: String,
     default: 'right', // 'left' o 'right'
     validator: (value) => ['left', 'right'].includes(value)
-  }
+  },
+  value: String
 });
 
 const emit = defineEmits(['update:modelValue']);
 
 const toggle = () => {
-  emit('update:modelValue', !props.modelValue);
+  if (Array.isArray(props.modelValue)) {
+    // Si modelValue es un array, maneja múltiples selecciones
+    let newValue = [...props.modelValue];
+    if (newValue.includes(props.value)) {
+      // Si el valor ya está en el array, lo eliminamos
+      newValue = newValue.filter(item => item !== props.value);
+    } else {
+      // Si el valor no está en el array, lo agregamos
+      newValue.push(props.value);
+    }
+    emit('update:modelValue', newValue);
+  } else {
+    // Si modelValue es un booleano, maneja una sola selección
+    emit('update:modelValue', !props.modelValue);
+  }
 };
+
+const isChecked = () => {
+  if (Array.isArray(props.modelValue)) {
+  return props.modelValue.includes(props.value); // Verifica si el valor está en el array
+  } else {
+    return props.modelValue; // Devuelve el valor booleano
+  }
+}
 </script>
 
 <template>
@@ -32,13 +55,13 @@ const toggle = () => {
       type="checkbox"
       :id="id"
       :name="name"
-      :checked="modelValue"
+      :checked="isChecked()"
       @change="toggle"
       class="hidden"
     />
     
     <div class="checkbox-box">
-      <CheckIcon v-if="modelValue" color="#FFFFFF"/>
+      <CheckIcon v-if="isChecked()" color="#FFFFFF"/>
     </div>
 
     <!-- Texto a la derecha -->
