@@ -113,9 +113,9 @@ router.beforeEach(async (to) => {
       return true;
     }
     // Si la ruta requiere autenticación, y el store esta inicializado, redirige a /login
-    if (to.meta.needsAuth && isLoggedIn.value === false) {
-      return { path: "/login", query: { redirect: to.fullPath } };
-    }
+    // if (to.meta.needsAuth && isLoggedIn.value === false) {
+    //   return { path: "/login", query: { redirect: to.fullPath } };
+    // }
   }
 })
 
