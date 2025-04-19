@@ -175,6 +175,7 @@ export default {
         <input type="text" id="searchInput" placeholder="Buscar un auto..."
           class="bg-transparent outline-none text-gray-700 w-full pl-2 placeholder-gray-400">
       </div>
+     
 
 
       <div class="bg-white border-secondary-100 border-2 rounded-2xl p-4 w-full h-full overflow-hidden">

@@ -1,5 +1,4 @@
 <script>
-import { editMyProfilePhoto } from '../../services/auth';
 import { addAlert } from '../../services/alerts';
 
 import AddImg from '@icons/addImg.vue';
@@ -28,7 +27,6 @@ export default {
       }
       this.editing = true;
       try {
-        await editMyProfilePhoto(this.editData.photo);
         addAlert('Foto editada con éxito', 'success');
         this.initialData = { ...this.editData };
         this.close();

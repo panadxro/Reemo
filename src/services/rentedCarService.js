@@ -11,7 +11,6 @@ export async function fetchRentedCars(userId) {
         where("user_id", "==", userId),
         where("status", "==", "aceptado")
       );
-      console.log("Id del usuario", userId);
 
       // Obtenemos los documentos de la coleccion filtrada
       const carsSnapshot = await getDocs(q);

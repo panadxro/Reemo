@@ -1,72 +1,57 @@
-<script>
-import { register } from "../services/auth";
+<script setup>
+import { reactive } from "vue";
+import { useAuthStore } from "@stores";
 import { addAlert } from "../services/alerts";
 
 import Heading from "../components/atoms/Heading.vue";
-import Reemo from '@icons/Reemo.vue';
+import Reemo from "@icons/Reemo.vue";
 import Google from "../icons/Google.vue";
 import FacebookIcon from "../icons/FacebookIcon.vue";
 import Input from "../components/molecules/Input.vue";
 import Mail from "../icons/Mail.vue";
 import Password from "../icons/Password.vue";
-import Checkbox from "../components/atoms/Checkbox.vue";
 
-export default {
-  name: "Register",
-  components: { Heading, Reemo, Google, FacebookIcon, Input, Mail, Password, Checkbox },
-  data() {
-    return {
-      user: {
-        email: "",
-        password: "",
-        repeatPassword: "",
-      },
-      loading: false,
-      errorMsg: "",
-      passwordMatchError: false,
-    };
-  },
-  methods: {
-    async handleSubmit() {
-      if (this.user.password !== this.user.repeatPassword) {
-        this.passwordMatchError = true;
-        return addAlert('Las contraseñas no coinciden', 'error');
-      }
-      this.loading = true;
-      this.errorMsg = "";
-      this.passwordMatchError = false; 
-      try {
-        await register({ ...this.user });
-        addAlert("¡Usuario creado con éxito!", "success");
-        this.$router.push("/onboarding");
-      } catch (error) {
-        let errorCode = error.code;
-        switch (errorCode) {
-          case 'auth/missing-password':
-            return addAlert('Para crear un usuario debés ingresar una contraseña', 'warning');
-          case 'auth/weak-password':
-            return addAlert('La contraseña debe tener al menos 6 caracteres', 'warning');
-          case 'auth/email-already-in-use':
-            return addAlert('El mail utilizado ya tiene un usuario asignado', 'error');
-          case 'auth/invalid-email':
-            return addAlert('El email ingresado no es válido', 'error');
-          default:
-            return addAlert('Error al registrar usuario', 'error');
-        }
-      } finally {
-        this.loading = false;
-      }
-    },
-  },
+const authStore = useAuthStore();
+
+const user = reactive({
+  email: "",
+  password: "",
+  repeatPassword: "",
+});
+
+const handleSubmit = async () => {
+  console.log("Credentials to send:", {
+    email: user.email,
+    password: user.password,
+  });
+  if (!user.email || !user.password || !user.repeatPassword) {
+    addAlert("Por favor, completa todos los campos.", "error");
+    return;
+  }
+  if (user.password.length < 6) {
+    addAlert("La contraseña debe tener al menos 6 caracteres.", "error");
+    return;
+  }
+  if (user.password !== user.repeatPassword) {
+    addAlert("Las contraseñas no coinciden.", "error");
+    return;
+  }
+  try {
+    await authStore.registerUser({
+      email: user.email,
+      password: user.password,
+    });
+  } catch (error) {}
 };
+
 </script>
 
 <template>
   <form
-    action="#" @submit.prevent="handleSubmit" 
+    action="#" @submit.prevent="handleSubmit" autocomplete="off"
     class="flex flex-col max-w-lg px-16 py-12 bg-deep-blue-900 rounded-[40px] shadow-lg gap-9"
     >
-    <Reemo color="#FFFFFF"/>
+    <Reemo color="#FFFFFF" />
     <div class="flex flex-col gap-5">
       <Heading :type="1" class="font-extrabold! text-background-900! large">Registrate</Heading>
       <p class="text-xs text-background-900 font-semibold">¡Bienvenido! Selecciona un método para crear una cuenta:</p>
@@ -83,7 +68,7 @@ export default {
         <hr class="grow h-px bg-background-900!"/>
       </div>
       <Input 
-        v-model="user.email" 
+        v-model="user.email"
         type="email" 
         id="email" 
         name="email" 
@@ -97,7 +82,7 @@ export default {
         </template>
       </Input>
       <Input 
-        v-model="user.password" 
+        v-model="user.password"
         type="password" 
         id="password" 
         name="password" 
@@ -111,7 +96,7 @@ export default {
         </template>
       </Input>
       <Input 
-        v-model="user.repeatPassword" 
+        v-model="user.repeatPassword"
         type="password" 
         id="repeatPassword" 
         name="repeatPassword" 
@@ -129,7 +114,7 @@ export default {
         <router-link to="/" class="text-primary font-bold">
           <span class="hover:underline">
             Política de privacidad 
-          </span>
+          </span> 
         </router-link>
         y nuestra 
         <router-link to="/" class="text-primary font-bold">
@@ -141,10 +126,10 @@ export default {
     </div>
     <Input 
       type="submit" 
-      :text="loading ? 'Cargando...' : 'Registrarse'"
+      :text="authStore.loading ? 'Cargando...' : 'Registrarse'"
       :iconPosition="'left'"
       :variant="'primary'"
-      :class="loading ? 'cursor-not-allowed bg-deep-blue-700' : 'cursor-pointer'"
+      :class="authStore.loading ? 'cursor-not-allowed bg-deep-blue-700' : 'cursor-pointer'"
     >
     </Input>
     <p class="text-xs text-background-900 text-center font-regular">

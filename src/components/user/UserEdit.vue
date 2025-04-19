@@ -1,5 +1,5 @@
 <script>
-import { editMyProfile, subscribeToAuthState } from "@services/auth.js";
+import { subscribeToAuthState } from "@services/auth.js";
 import { addAlert } from "@services/alerts.js";
 
 import Heading from "../atoms/Heading.vue";
@@ -64,7 +64,6 @@ export default {
           photo: this.editData.photo ? this.editData.photo : this.editData.photoURL,
         };
 
-        await editMyProfile(updatedData);
         addAlert("Perfil editado con éxito", "success")
         // actualizar initialdata
         this.initialData = { ...this.editData };
