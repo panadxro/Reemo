@@ -15,7 +15,7 @@ export const useAuthStore = defineStore('auth', {
     error: null,
     isLoggedIn: false,
     isSubmitting: false,
-    isInitialiazed: false
+    isInitialized: false
   }),
   persist: {
     key: 'auth_session',
@@ -24,8 +24,8 @@ export const useAuthStore = defineStore('auth', {
   },
   actions: {
     init() {
-      if (this.isInitialiazed) return;
-      this.isInitialiazed = true;
+      if (this.isInitialized) return;
+      this.isInitialized = true;
 
       // Leer el valor de auth_session de localStorage
       const authSessionValue = localStorage.getItem('auth_session');

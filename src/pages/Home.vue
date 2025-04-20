@@ -29,7 +29,7 @@ export default {
 
 <template>
   <div class="w-11/12 sm:w-10/12 m-auto bg-white rounded-3xl px-8 flex flex-col gap-32 mb-32">
-    <section class="flex flex-col items-center justify-between sm:flex-row">
+    <section class="flex flex-col items-center justify-between sm:flex-row 2xl:justify-center gap-16">
       <div class="flex flex-col gap-4">
         <h1 class="font-medium leading-tight text-5xl block mb-4 sm:text-6xl w-[95%] sm:w-full text-pretty text-center sm:text-start"><b>Conectando autos,</b><br/> impulsando<br/> oportunidades</h1>
         <div class="sm:flex gap-2 hidden">
@@ -270,3 +270,18 @@ export default {
   </section>
   </div>
 </template>
+
+<style scoped>
+section {
+  margin: auto;
+  @media screen and (min-width: 2220px) {
+    width: 50%;
+  }
+  @media screen and (min-width: 1480px) and (max-width: 2219px) {
+    width: 75%;
+  }
+  @media screen and (max-width: 1479px) {
+    width: 100%;
+  }
+}
+</style>
