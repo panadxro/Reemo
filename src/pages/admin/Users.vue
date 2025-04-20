@@ -1,13 +1,12 @@
 <script>
-import { computed } from "vue";
+import { computed, onMounted } from "vue";
 import { useAdminStore } from "../../stores/admin.store";
 import { addAlert } from "../../services/alerts";
-
+import { formatDate } from "../../libraries/date";
 
 import Heading from "@components/atoms/Heading.vue";
 import Input from "../../components/molecules/Input.vue";
 import Popover from "../../components/molecules/Popover.vue";
-import { onMounted } from "vue";
 
 export default {
   name: "AdminUsers",
@@ -28,35 +27,27 @@ export default {
       users,
     };
   },
-/*   data() {
-    
-
+  data() {
     return {
-      users: [],
       openPopoverId: null,
+      filter: 'all',
     };
-  }, */
+  },
   methods: {
-/*     async updateRole(user) {
-      const adminStore = useAdminStore();
+    async updateRole(user) {
       try {
-        const newRole = user.role;
-        const response = await adminStore.updateUserRole(user.id, newRole);
-        
-        if (response.success) {
-          const updatedUser = this.users.find((u) => u.id === user.id);
-          if (updatedUser) {
-            updatedUser.role = newRole;
-          }
-          addAlert(response.message, "success");
-        } else {
-          addAlert(response.message, "error");
-        }
+        const newRole = user.role === 'user' ? 'admin' : 'user';
+        await this.adminStore.changeUserRole(user.id, newRole);
+        user.role = newRole;
+        addAlert("Rol actualizado con éxito", "success");
       } catch (error) {
-        console.error("Error al actualizar el rol:", error);
-        addAlert("Error al actualizar el rol", "error");
+          addAlert("Error al actualizar el rol", "error");
       }
-    }, */
+    },
+    toggleFiltro(filtro) {
+      this.filter = filtro;
+    },
+    formatDate,
     // Manejar la apertura/cierre del popover
     handleTogglePopover(popoverId) {
       this.openPopoverId = this.openPopoverId === popoverId ? null : popoverId;
@@ -64,6 +55,20 @@ export default {
     // Cerrar el popover cuando se hace scroll o clic fuera
     handleClosePopover() {
       this.openPopoverId = null;
+    },
+  },
+  computed: {
+      userFilter() {
+        if (this.filter === 'habilitados') {
+          return this.users.filter((user) => user.profileCompleted);
+        } else if (this.filter === 'deshabilitados') {
+          return this.users.filter((user) => !user.profileCompleted);
+        } else {
+          // If filter is not 'habilitados' or 'deshabilitados', show all users.
+          // return an array with all users
+          return this.users;
+        }
+
     },
   },
 };
@@ -78,18 +83,24 @@ export default {
         text="Todos"
         variant="secondary"
         class="cursor-pointer"
+        :class="filter === 'all' ? ' bg-vibrant-light-900' : ''"
+        @click="toggleFiltro('all')"
       />
       <Input 
         type="button"
         text="Verificados"
         variant="secondary"
         class="cursor-pointer"
+        :class="filter === 'habilitados' ? ' bg-vibrant-light-900' : ''"
+        @click="toggleFiltro('habilitados')"
       />
       <Input 
         type="button"
         text="No verificados"
         variant="secondary"
         class="cursor-pointer"
+        :class="filter === 'deshabilitados' ? ' bg-vibrant-light-900' : ''"
+        @click="toggleFiltro('deshabilitados')"
       />
     </div>
     <table class="min-w-full bg-white h-full overflow-hidden flex flex-col gap-5">
@@ -104,30 +115,30 @@ export default {
       </thead>
       <tbody class="flex flex-col gap-5 h-full overflow-y-scroll">
         <tr 
-          v-for="(user, index) in users" :key="user.id"
+          v-for="(user, index) in userFilter" :key="user.id"
           class="flex w-full max-h-16 border-2 border-secondary-100 rounded-xl font-semibold"
           >
           <td class="py-2.5 px-5 flex flex-1">
-            <!-- <router-link :to="`/user/${user.id}`" class="flex items-center gap-2 hover:cursor-pointer"> -->
-              <img :src="user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
-              <p class="hover:underline">{{ user.name }} {{ user.lastName }}</p>
-            <!-- </router-link> -->
+            <router-link :to="`/user/${user.id}`" class="flex items-center gap-2 hover:cursor-pointer">
+              <img :src="user.personalInfo.profilePhoto" :alt="user.personalInfo.username" class="w-8 h-8 object-cover rounded-full" />
+              <p class="hover:underline">{{ user.personalInfo.firstName }} {{ user.personalInfo.lastName }}</p>
+            </router-link>
           </td>
-          <td class="py-2.5 px-5 flex flex-1 items-center">Usuario</td>
-          <td class="py-2.5 px-5 flex flex-1">Habilitado</td>
-          <td class="py-2.5 px-5 flex items-center w-32 font-">03/02/2025</td>
+          <td class="py-2.5 px-5 flex flex-1 items-center">{{ user.role == 'admin' ? 'Administrador' : 'Usuario'}}</td>
+          <td class="py-2.5 px-5 flex flex-1 items-center">{{ user.profileCompleted == true ? 'Verificado' : 'No Verificado'}}</td>
+          <td class="py-2.5 px-5 flex items-center w-32 font-">{{ formatDate(user.createdAt) }}</td>
           <td class="py-2.5 px-5 flex justify-center relative w-24 items-center">
-<!--             <Popover
+            <Popover
               :items="[
                 { label: 'Ver perfil', to: `/user/${user.id}` },
                 { label: 'Chat', to: `/user/${user.id}/chat` },
-                // { label: car.isValidated ? 'Invalidar' : 'Validar', action: () => updateValidation(car.id, !car.isValidated), class: `car.isValidated ? 'text-red-500' : ''` },
+                { label: user.role == 'user' ? 'Otorgar admin' : 'Quitar admin', action: () => updateRole(user), class: `car.isValidated ? 'text-red-500' : ''` },
               ]"
               :isOpen="openPopoverId === index"
               :popoverId="index"
               @toggle-popover="handleTogglePopover"
               @close-popover="handleClosePopover"
-            /> -->
+            />
           </td>
         </tr>        
       </tbody>

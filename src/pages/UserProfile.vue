@@ -1,7 +1,7 @@
 <script>
 import { useUserStore, useAuthStore } from '@stores'
 import { onMounted, ref, computed, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import Heading from "@components/atoms/Heading.vue";
 import CardCar from "@components/organisms/my-cars/CardCar.vue";
@@ -33,6 +33,7 @@ export default {
     const userStore = useUserStore();
     const authStore = useAuthStore();
     const route = useRoute();
+    const router = useRouter();
 
     const loggedUserId = computed(() => {
       return authStore.user?.id
@@ -58,6 +59,13 @@ export default {
 
     onMounted(async () => {
       await userStore.loadUserProfile(userIdFromRoute.value);
+
+      if(loggedUserId.value && isOwnProfile.value){
+        if(!userStore.profileData.profileCompleted){
+          router.push('/onboarding')
+        }
+      }
+
     });
     
 
@@ -86,7 +94,7 @@ export default {
       <article v-if="isOwnProfile" class="bg-secondary-100 h-full rounded-[40px] px-6 py-5 flex flex-row items-center gap-5">
         <img 
           v-if="showProfile.personalInfo.profilePhoto" 
-          class="w-32 aspect-square rounded-full bg-vibrant-light-800" 
+          class="w-32 aspect-square rounded-full object-cover bg-vibrant-light-800" 
           :src="showProfile.personalInfo.profilePhoto"
           :alt="`Perfil de ${showProfile.personalInfo.username}`" 
         />
@@ -98,7 +106,7 @@ export default {
       <article v-else-if="showProfile && showProfile.personalInfo" class="bg-secondary-100 h-full rounded-[40px] px-6 py-5 flex flex-row items-center gap-5"> 
         <img 
           v-if="showProfile.personalInfo.profilePhoto" 
-          class="w-32 aspect-square rounded-full bg-vibrant-light-800" 
+          class="w-32 aspect-square rounded-full object-cover bg-vibrant-light-800" 
           :src="showProfile.personalInfo.profilePhoto" 
           :alt="`Perfil de ${showProfile.personalInfo.username}`" 
         /> 

@@ -73,7 +73,7 @@ export const useUserStore = defineStore('user', {
       this.loading = true
       try {
         const userProfile = await getUserProfile(userId); // Llamada al servicio. Aqui llegan los datos
-        console.log(userProfile) // puedes borrar esta linea, es solo para ver que recibes
+        // console.log(userProfile) // puedes borrar esta linea, es solo para ver que recibes
         if (userId === authStore.user?.id) {
           this.profileData = {
             ...userProfile, // hacemos un spread del userProfile para que tome todos los datos que no estan en personalInfo.
@@ -82,6 +82,7 @@ export const useUserStore = defineStore('user', {
              email: userProfile?.email || '', // Ajustado con el ?, lo movemos dentro de personalInfo
              emailVerified: userProfile?.emailVerified || false, // tambien lo agregamos
            },
+           role: userProfile?.role || 'user' // guardamos el rol del usuario
          };
         } else {
           // Crea una nueva propiedad para el perfil visitado

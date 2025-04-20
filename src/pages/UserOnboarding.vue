@@ -26,10 +26,6 @@ export default {
       openDropdown: null,
       currentStep: 0, // Paso actual
       profilePhotoPreview: null,
-      dniFrontPreview: null,
-      dniBackPreview: null,
-      driverFrontPreview: null,
-      driverBackPreview: null,
       dniFrontUrl: null,
       dniBackUrl: null,
       driverFrontUrl: null,
@@ -74,11 +70,11 @@ export default {
         birthDate: "",
         documentType: "",
         documentNumber: "",
-        dniFrontFile: null,
-        dniBackFile: null,
+        dniFrontUrl: null,
+        dniBackUrl: null,
         licenseNumber: "",
-        driverFrontFile: null,
-        driverBackFile: null,
+        driverFrontUrl: null,
+        driverBackUrl: null,
         province: "",
         city: "",
         postalCode: "",
@@ -240,7 +236,7 @@ export default {
         addAlert('Debes aceptar los términos y políticas', 'error')
         return
       }
-/*       let paymentValid = false;
+      let paymentValid = false;
       const payment = this.paymentMethods[this.selectedPaymentMethod];
 
       switch(this.selectedPaymentMethod) {
@@ -262,7 +258,7 @@ export default {
         console.error("Debes completar la información de pago");
         this.currentStep = 3;
         return;
-      } */
+      }
 
       // Lógica para enviar el formulario
       try {
@@ -282,24 +278,24 @@ export default {
             uploadUserFile(uid, this.user.profilePhoto, 'profile/avatar.jpg').then(url =>  { this.user.profilePhoto = url; })
           );
         }
-        if (this.user.dniFrontFile instanceof File) {
+        if (this.user.dniFrontUrl instanceof File) {
           uploadPromises.push(
-            uploadUserFile(uid, this.user.dniFrontFile, 'documents/dni_front.jpg').then(url =>  { this.user.dniFrontFile = url; })
+            uploadUserFile(uid, this.user.dniFrontUrl, 'documents/dni_front.jpg').then(url =>  { this.user.dniFrontUrl = url; })
           );
         }
-        if (this.user.dniBackFile instanceof File) {
+        if (this.user.dniBackUrl instanceof File) {
           uploadPromises.push(
-            uploadUserFile(uid, this.user.dniBackFile, 'documents/dni_back.jpg').then(url =>  { this.user.dniBackFile = url; })
+            uploadUserFile(uid, this.user.dniBackUrl, 'documents/dni_back.jpg').then(url =>  { this.user.dniBackUrl = url; })
           );
         }
-        if (this.user.driverFrontFile instanceof File) {
+        if (this.user.driverFrontUrl instanceof File) {
           uploadPromises.push(
-            uploadUserFile(uid, this.user.driverFrontFile, 'documents/drive_front.jpg').then(url =>  { this.user.driverFrontFile = url; })
+            uploadUserFile(uid, this.user.driverFrontUrl, 'documents/drive_front.jpg').then(url =>  { this.user.driverFrontUrl = url; })
           );
         }
-        if (this.user.driverBackFile instanceof File) {
+        if (this.user.driverBackUrl instanceof File) {
           uploadPromises.push(
-            uploadUserFile(uid, this.user.driverBackFile, 'documents/driver_back.jpg').then(url =>  { this.user.driverBackFile = url; })
+            uploadUserFile(uid, this.user.driverBackUrl, 'documents/driver_back.jpg').then(url =>  { this.user.driverBackUrl = url; })
           );
         }
 
@@ -310,7 +306,6 @@ export default {
 
         // 3. Guardar en Firestore
         await this.profileStore.saveProfile(uid, userData);
-        await saveUserData(uid, this.user);
         await completeOnboarding(uid);
         
         // 4. Redirección o feedback
@@ -328,7 +323,6 @@ export default {
       const file = event.target.files[0];
       if (file) {
         // Guardar el archivo para subir luego
-        
         this.user.profilePhoto = file;
         // Crear URL temporal para previsualización
         this.profilePhotoPreview = URL.createObjectURL(file);
@@ -337,28 +331,28 @@ export default {
     handleDNIFront(event) {
       const file = event.target.files[0];
       if (file) {
-        this.user.dniFrontFile = file;
-        this.dniFrontPreview = URL.createObjectURL(file)
+        this.user.dniFrontUrl = file;
+        this.dniFrontUrl = URL.createObjectURL(file)
       }
     },
     handleDNIBack(event) {
       const file = event.target.files[0];
       if (file) {
-        this.user.dniBackFile = file;
-        this.dniBackFile = file;
-        this.dniBackPreview = URL.createObjectURL(file);      }
+        this.user.dniBackUrl = file;
+        this.dniBackUrl = URL.createObjectURL(file)
+      }
     },
     handleDriverFront(event) {
       const file = event.target.files[0];
       if (file) {
-        this.user.driverFrontFile = file;
+        this.user.driverFrontUrl = file;
         this.driverFrontUrl = URL.createObjectURL(file)
-        this.driverFrontPreview = URL.createObjectURL(file)      }
-    },   
+      }
+    },
     handleDriverBack(event) {
       const file = event.target.files[0];
       if (file) {
-        this.user.driverBackFile = file;
+        this.user.driverBackUrl = file;
         this.driverBackUrl = URL.createObjectURL(file)
       }
     },
@@ -489,9 +483,9 @@ export default {
 
           <div class="flex flex-col gap-5">
             <div class="flex gap-3">
-              <label for="profile-picture" class="cursor-pointer">
-                <img v-if="profilePhotoPreview" 
-                  :src="profilePhotoPreview" 
+              <label for="profile-picture">
+                <img v-if="profilePhotoPreview || user.profilePhotoPreview" 
+                  :src="profilePhotoPreview ? profilePhotoPreview : user.profilePhotoPreview" 
                   alt="Foto de perfil" 
                   class="profile-picture" />
                 <img v-else src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="Foto de perfil por defecto" class="profile-picture cursor-pointer" />
@@ -546,9 +540,8 @@ export default {
               <p class="text-sm font-medium">Para completar la verificación de identidad, sube una foto clara y ligible de tu DNI.</p>
               <div class="flex gap-3">
                 <label for="dni-front" class="cursor-pointer">
-                  <img v-if="user.dniFrontFile" :src="dniFrontPreview ? dniFrontPreview : dniFrontUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
-                  <DNIFront v-else />
-<!--                   <img v-if="dniFrontPreview" :src="dniFrontPreview" class="w-[140px] h-[85px] object-cover rounded-sm mt-2" alt="DNI Frontal Preview" /> -->
+                  <img v-if="user.dniFrontUrl || dniFrontUrl" :src="dniFrontUrl ? dniFrontUrl : user.dniFrontUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <DNIFront v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
                   <label for="dni-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar frente del DNI</label>
@@ -556,13 +549,11 @@ export default {
                     Parte frontal de tu Documento Nacional de Identidad.
                   </span>
                 </div>
-                <input id="dni-front" type="file" accept="image/*" @change="handleDNIFront" class="hidden"/>
+                <input id="dni-front" type="file" accept="image/*" @change="handleDNIFront" class="hidden" />
               </div>
               <div class="flex gap-3">
                 <label for="dni-back" class="cursor-pointer">
-                  <img v-if="user.dniBackFile" :src="dniBackPreview ? dniBackPreview : dniBackUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
-<!--                   <img v-if="dniBackPreview" :src="dniBackPreview" class="w-[140px] h-[85px] object-cover rounded-sm mt-2" alt="DNI Dorsal Preview" /> -->
-
+                  <img v-if="user.dniBackUrl || dniBackUrl" :src="dniBackUrl ? dniBackUrl : user.dniBackUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
                   <DNIBack v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
@@ -577,9 +568,8 @@ export default {
               <p class="text-sm font-medium">Para poder alquilar en nuestra plataforma, es esencial que tengas vinculado tu registro de conducir. </p>
               <div class="flex gap-3">
                 <label for="driver-front" class="cursor-pointer">
-                  <img v-if="user.driverFrontFile" :src="driverFrontPreview ? driverFrontPreview : driverFrontUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
-                  <DriverFront v-else />
-<!--                   <img v-if="driverFrontPreview" :src="driverFrontPreview" class="w-[140px] h-[85px] object-cover rounded-sm mt-2" alt="Driver Frontal Preview" /> -->
+                  <img v-if="user.driverFrontUrl || driverFrontUrl" :src="driverFrontUrl ? driverFrontUrl : user.driverFrontUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <DriverFront v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
                   <label for="driver-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
@@ -589,8 +579,7 @@ export default {
               </div>
               <div class="flex gap-3">
                 <label for="driver-back" class="cursor-pointer">
-                  <img v-if="user.driverBackFile" :src="driverBackPreview ? driverBackPreview : driverBackUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
-<!--                   <img v-if="driverBackPreview" :src="driverBackPreview" class="w-[140px] h-[85px] object-cover rounded-sm mt-2" alt="Driver Dorsal Preview" /> -->
+                  <img v-if="user.driverBackUrl || driverBackUrl" :src="driverBackUrl ? driverBackUrl : user.driverBackUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
                   <DriverBack v-else/>
                 </label>
                 <div class="flex flex-col gap-4">

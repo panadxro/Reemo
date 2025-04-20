@@ -1,5 +1,6 @@
 <script>
 import { reactive } from "vue";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "@stores";
 import { addAlert } from "../services/alerts";
 
@@ -21,6 +22,14 @@ export default {
       email: "",
       password: "",
     });
+    const router = useRouter();
+    
+    const authSessionHistory = sessionStorage.getItem('auth_session_history');
+    const authSession = JSON.parse(authSessionHistory);
+    if (authSession.isLoggedIn) {
+      router.push("/");
+    }
+
     return { authStore, user };
   },
   methods: {

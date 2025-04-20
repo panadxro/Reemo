@@ -1,5 +1,6 @@
 <script setup>
 import { reactive } from "vue";
+import { useRouter } from "vue-router";
 import { useAuthStore } from "@stores";
 import { addAlert } from "../services/alerts";
 
@@ -12,6 +13,13 @@ import Mail from "../icons/Mail.vue";
 import Password from "../icons/Password.vue";
 
 const authStore = useAuthStore();
+const router = useRouter();
+
+const authSessionHistory = sessionStorage.getItem('auth_session_history');
+const authSession = JSON.parse(authSessionHistory);
+if (authSession.isLoggedIn) {
+  router.push("/");
+}
 
 const user = reactive({
   email: "",
@@ -40,6 +48,7 @@ const handleSubmit = async () => {
     await authStore.registerUser({
       email: user.email,
       password: user.password,
+      role: "user",
     });
   } catch (error) {}
 };
