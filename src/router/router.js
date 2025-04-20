@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore, useUserStore } from '@stores'
+import { useAuthStore, useUserStore } from '@stores';
+import { storeToRefs } from 'pinia';
 
 import Home from "../pages/Home.vue";
 import Login from "../pages/Login.vue";
@@ -98,22 +99,11 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
-  const authStore = useAuthStore();
-  // Esperar que se resuelva el estado de autenticacion del usuario
-  if (!authStore.isInitialiazed) {
-    await new Promise((resolve) => {
-      const unsubscribe = authStore.$subscribe((mutation, state) => {
-        if (state.isInitialiazed) {
-          unsubscribe();
-          resolve();
-        }
-      });
-    });
-  }
-  // Si el usuario está logueado
-  if (authStore.isLoggedIn) {
-    if (to.meta.isLogin) return "/" // Esto es dudoso "isLogin"
+  const authSessionHistory = sessionStorage.getItem('auth_session_history');
+  const authSession = JSON.parse(authSessionHistory);
 
+  // Si el usuario está logueado, permite la navegación
+  if (authSession.isLoggedIn === true) {
     return true;
   }
   // Si no esta logueado pero el authstore esta inicializado
@@ -123,11 +113,10 @@ router.beforeEach(async (to) => {
       return true;
     }
     // Si la ruta requiere autenticación, y el store esta inicializado, redirige a /login
-    if (to.meta.needsAuth && isLoggedIn.value === false) {
-      // return { path: "/login", query: { redirect: to.fullPath } };
+    if (to.meta.needsAuth && authSession.isLoggedIn === false) {
+      return { path: "/login", query: { redirect: to.fullPath } };
     }
   }
-  return "/login";
-});
+})
 
 export default router;
