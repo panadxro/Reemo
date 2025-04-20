@@ -20,6 +20,7 @@ export default defineConfig({
       { find: '@libraries', replacement: fileURLToPath(new URL('./src/libraries', import.meta.url)) },
       { find: '@stores', replacement: fileURLToPath(new URL('./src/stores', import.meta.url)) },
       { find: '@layouts', replacement: fileURLToPath(new URL('./src/layouts', import.meta.url)) },
+      { find: '@stores', replacement: fileURLToPath(new URL('./src/stores', import.meta.url)) },
     ],
   },
 });

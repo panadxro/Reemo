@@ -198,9 +198,11 @@ export async function createOverlayView( map, car, marker, content, vueInstance)
 
 
 
-export function updateCars(cars, searchLocation, map) {
+// export function updateCars(cars, searchLocation, map, filters = {}) {
+export function updateCars(cars, searchLocation, map ) {
   if (!searchLocation || !searchLocation.lat || !searchLocation.lng) {
     console.error("searchLocation no es válido");
+    // alert('No hay autos disponibles en esta zona')
     return [];
   }
 
@@ -208,6 +210,7 @@ export function updateCars(cars, searchLocation, map) {
     searchLocation.lat,
     searchLocation.lng
   );
+  
   const searchRadius = 5000;
 
   const filteredCars = cars.filter((car) => {
@@ -221,9 +224,19 @@ export function updateCars(cars, searchLocation, map) {
       searchLatLng,
       carLatLng
     );
-
+    
     return distance <= searchRadius;
   });
+
+  // const filterByPreferences = filteredCars.filter(car => {
+  //   return (
+  //     car.price >= filters.minPrice &&
+  //     car.price <= filters.maxPrice &&
+  //     (filters.marca ? car.marca === filters.marca : true) &&
+  //     (filters.modelo ? car.modelo === filters.modelo : true) &&
+  //     (filters.transmision ? car.transmision === filters.transmision : true)
+  //   );
+  // });
 
   if (map) {
     // centramos el mapa en la busqueda
@@ -236,7 +249,9 @@ export function updateCars(cars, searchLocation, map) {
   }
 
   return filteredCars;
+  // return filterByPreferences;
 }
+
 
 // Maneja el autocompletado del buscador de Google Maps
 export function initAutocomplete(inputId, onPlaceSelected) {
