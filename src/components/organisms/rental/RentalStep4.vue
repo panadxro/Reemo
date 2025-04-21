@@ -115,7 +115,6 @@ export default {
       
       console.log("Método de pago cargado:", this.rentalData.selectedPaymentMethod);
       
-      // Si el método de pago es undefined o null, verifica si hay datos específicos guardados
       if (!this.rentalData.selectedPaymentMethod) {
         const savedPaymentMethod = localStorage.getItem('selectedPaymentMethod');
         if (savedPaymentMethod) {
@@ -123,7 +122,6 @@ export default {
         }
       }
       
-      // Si el precio es undefined o null, intentamos obtenerlo
       if (this.rentalData.currentTotalPrice === undefined || this.rentalData.currentTotalPrice === null) {
         this.rentalData.currentTotalPrice = parsedData.currentTotalPrice || 0;
       }
@@ -156,28 +154,20 @@ computed: {
         :disabled="true" 
       />
       
-      <!-- Contenido de confirmación -->
-      <div class="bg-[#343666] border border-gray-700 rounded-2xl p-4">
+      <div class=" p-4">
         <div class="flex items-center justify-center mb-4">
-          <div class="bg-green-500 rounded-full p-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
+          
         </div>
         
-        <h3 class="text-white font-semibold text-center text-xl mb-3">
-          Confirma los detalles de tu reserva
-        </h3>
+        
         
         <div class="space-y-4 text-white">
-          <div class="border-b border-gray-700 pb-2">
-            <h4 class="font-medium mb-2">Datos del vehículo</h4>
+          <div class="pb-2">
             <div class="flex gap-3">
               <img 
                 :src="car.images && car.images[0]" 
                 alt="Auto" 
-                class="w-20 h-20 object-cover rounded-lg" 
+                class="w-30 h-30 object-cover rounded-lg" 
               />
               <div>
                 <p class="font-semibold">{{ car.marca }} {{ car.modelo }}</p>
@@ -186,11 +176,9 @@ computed: {
             </div>
           </div>
           
-          <div class="border-b border-gray-700 pb-2">
-            <h4 class="font-medium mb-2">Método de pago</h4>
+          <div class="pb-2">
             <div class="flex items-center gap-3">
               
-                <!-- Usar la propiedad computada -->
                 <div class="rounded-xl bg-white p-2">
                   <MercadoPago v-if="paymentMethod && paymentMethod.type === 'digital_wallet' && paymentMethod.walletType === 'mercadopago'" class="h-6 w-6"/>
                 <Uala v-else-if="paymentMethod && paymentMethod.type === 'digital_wallet' && paymentMethod.walletType === 'uala'" class="h-6 w-6"/>

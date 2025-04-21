@@ -320,8 +320,7 @@ export default {
         >
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 flex items-center justify-center rounded-full ">
-                <!-- Aca tendirmaos que poner los iconos segun metodo de pago -->
+              <div class="w-10 h-10 flex items-center justify-center p-1 rounded-xl bg-white">
                   <MercadoPago v-if="method.walletType === 'mercadopago'"/>
                 <Uala v-if="method.walletType === 'uala'"/>
                 <PayPal v-if="method.type === 'paypal'"/>
