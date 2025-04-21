@@ -128,6 +128,7 @@ export default {
 </script>
 
 <template>
+  <div class="relative">
   <div class="space-y-6">
     <RentalHeader 
   :current-step="currentStep"
@@ -154,11 +155,12 @@ export default {
     />
     
     <RentalFooter 
-      :total-amount="currentTotalPrice"
+    :total-amount="currentTotalPrice"
       button-text="Siguiente"
       :is-disabled="!rentedFromDate || !rentedUntilDate || rented"
       :is-confirmation="false"
       @continue="goToNextStep"
     />
   </div>
+</div>
 </template>

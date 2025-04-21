@@ -278,6 +278,7 @@ export default {
 </script>
 
 <template>
+  <div class="relative">
   <div class="space-y-6">
     <RentalHeader 
       :current-step="currentStep"
@@ -507,4 +508,5 @@ export default {
       @continue="goToNextStep" 
     />
   </div>
+</div>
 </template>
