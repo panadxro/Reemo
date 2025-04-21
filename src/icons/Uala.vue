@@ -6,9 +6,6 @@ export default {
 
 <template>
     <svg width="80px" height="40px" viewBox="0 0 80 40" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-        <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
-        <title>Logo / Logotipo</title>
-        <desc>Created with Sketch.</desc>
         <g id="Welcome" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
             <g id="Home---Desktop-" transform="translate(-187.000000, -45.000000)">
                 <g id="Logo-/-Logotipo" transform="translate(187.000000, 45.000000)">
