@@ -327,7 +327,7 @@ export default {
       ></div>
     </div>
   
-    <div class="bg-deep-blue-900 w-full rounded-[40px] p-8 h-fit">
+    <div class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-y-scroll">
   <RentalStep1 
   v-if="currentStep === 0"
   :car="car" 
