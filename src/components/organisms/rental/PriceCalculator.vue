@@ -21,7 +21,7 @@ export default {
       // Despues ver cuanto es el seguro
       // Por ahora lo dejo en 500
       type: Number,
-      default: 500
+      default: 25000
     }
   },
   computed: {

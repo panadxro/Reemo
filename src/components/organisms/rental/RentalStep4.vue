@@ -3,13 +3,21 @@ import RentalFooter from "@/components/organisms/rental/RentalFooter.vue";
 import DateTime from "@/components/organisms/rental/DateTime.vue";
 import RentalHeader from "@components/organisms/rental/RentalHeader.vue";
 import { isCarAlreadyRented, submitRentalRequest } from "@services/rentedCarService";
+import MercadoPago from "@icons/MercadoPago.vue";
+import Uala from "@icons/Uala.vue";
+import CreditCard from "@icons/CreditCard.vue";
+import PayPal from "@icons/PayPal.vue";
 import { addAlert } from "@services/alerts";
 
 export default {
   components: {
     RentalFooter,
     DateTime,
-    RentalHeader
+    RentalHeader,
+    MercadoPago,
+    Uala,
+    CreditCard,
+    PayPal,
   },
   props: {
     car: {
@@ -44,14 +52,15 @@ export default {
         rentedUntilDate: "",
         selectedTime: "",
         selectedUntilTime: "",
-        currentTotalPrice: 0
+        currentTotalPrice: 0,
+        selectedPaymentMethod: null,
       },
       paymentInfo: {
         cardName: "",
         cardNumber: "",
         expiryDate: "",
         cvv: ""
-      }
+      },
     };
   },
   methods: {
@@ -97,26 +106,26 @@ export default {
     }
   },
   mounted() {
-  console.log('Datos cargados del localStorage:', localStorage.getItem('rentalData'));
-
   const savedData = localStorage.getItem('rentalData');
-  const savedPaymentInfo = localStorage.getItem('paymentInfo');
   
   if (savedData) {
     try {
-      this.rentalData = JSON.parse(savedData);
-      console.log("Datos de reserva después de parse:", this.rentalData);
-      console.log("Precio total:", this.rentalData.currentTotalPrice);
+      const parsedData = JSON.parse(savedData);
+      this.rentalData = parsedData;
       
-      // Si el precio es undefined o null, intentamos obtenerlo de otra forma
-      if (this.rentalData.currentTotalPrice === undefined || this.rentalData.currentTotalPrice === null) {
-        const parsedData = JSON.parse(savedData);
-        this.rentalData.currentTotalPrice = parsedData.currentTotalPrice || 0;
-        console.log("Precio recuperado manualmente:", this.rentalData.currentTotalPrice);
+      console.log("Método de pago cargado:", this.rentalData.selectedPaymentMethod);
+      
+      // Si el método de pago es undefined o null, verifica si hay datos específicos guardados
+      if (!this.rentalData.selectedPaymentMethod) {
+        const savedPaymentMethod = localStorage.getItem('selectedPaymentMethod');
+        if (savedPaymentMethod) {
+          this.rentalData.selectedPaymentMethod = JSON.parse(savedPaymentMethod);
+        }
       }
       
-      if (savedPaymentInfo) {
-        this.paymentInfo = JSON.parse(savedPaymentInfo);
+      // Si el precio es undefined o null, intentamos obtenerlo
+      if (this.rentalData.currentTotalPrice === undefined || this.rentalData.currentTotalPrice === null) {
+        this.rentalData.currentTotalPrice = parsedData.currentTotalPrice || 0;
       }
     } catch (e) {
       console.error("Error al procesar datos guardados:", e);
@@ -125,7 +134,12 @@ export default {
   } else {
     this.$router.push(`/car/${this.car.id}`);
   }
-}
+},
+computed: {
+  paymentMethod() {
+    return this.rentalData.selectedPaymentMethod;
+  }
+},
 };
 </script>
 
@@ -174,7 +188,39 @@ export default {
           
           <div class="border-b border-gray-700 pb-2">
             <h4 class="font-medium mb-2">Método de pago</h4>
-            <p>Tarjeta terminada en {{ paymentInfo.cardNumber.slice(-4) }}</p>
+            <div class="flex items-center gap-3">
+              
+                <!-- Usar la propiedad computada -->
+                <div class="rounded-xl bg-white p-2">
+                  <MercadoPago v-if="paymentMethod && paymentMethod.type === 'digital_wallet' && paymentMethod.walletType === 'mercadopago'" class="h-6 w-6"/>
+                <Uala v-else-if="paymentMethod && paymentMethod.type === 'digital_wallet' && paymentMethod.walletType === 'uala'" class="h-6 w-6"/>
+                <PayPal v-else-if="paymentMethod && paymentMethod.type === 'paypal'" class="h-6 w-6"/>
+                <CreditCard v-else-if="paymentMethod && paymentMethod.type === 'credit_card'" class="h-6 w-6"/>
+                </div>
+
+              <div v-if="paymentMethod">
+                <p class="font-medium text-white">
+                  {{
+                    paymentMethod.type === 'credit_card' 
+                      ? 'Tarjeta terminada en ' + paymentMethod.cardNumber.slice(-4) 
+                      : paymentMethod.type === 'paypal' 
+                        ? 'PayPal' 
+                        : paymentMethod.type === 'digital_wallet' && paymentMethod.walletType === 'uala' 
+                          ? 'Ualá' 
+                          : paymentMethod.type === 'digital_wallet' && paymentMethod.walletType === 'mercadopago' 
+                            ? 'Mercado Pago' 
+                            : paymentMethod.walletType || 'Otro método'
+                  }}
+                </p>
+                <p class="text-sm text-gray-300">
+                  {{ paymentMethod.type === 'credit_card' ? paymentMethod.cardholder : 
+                     paymentMethod.type === 'digital_wallet' ? paymentMethod.walletId : paymentMethod.email }}
+                </p>
+              </div>
+              <div v-else class="text-red-400">
+                No se ha seleccionado método de pago
+              </div>
+            </div>
           </div>
         </div>
       </div>

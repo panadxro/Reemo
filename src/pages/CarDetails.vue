@@ -327,9 +327,7 @@ export default {
       ></div>
     </div>
   
-    <!-- Proceso de renta por pasos -->
     <div class="bg-deep-blue-900 w-full rounded-[40px] p-8 h-fit">
-       <!-- Paso 1: Selección de fechas -->
   <RentalStep1 
   v-if="currentStep === 0"
   :car="car" 
