@@ -163,20 +163,6 @@ computed: {
         
         <div class="space-y-4 text-white">
           <div class="pb-2">
-            <div class="flex gap-3">
-              <img 
-                :src="car.images && car.images[0]" 
-                alt="Auto" 
-                class="w-30 h-30 object-cover rounded-lg" 
-              />
-              <div>
-                <p class="font-semibold">{{ car.marca }} {{ car.modelo }}</p>
-                <p class="text-gray-300">Año: {{ car.año }}</p>
-              </div>
-            </div>
-          </div>
-          
-          <div class="pb-2">
             <div class="flex items-center gap-3">
               
                 <div class="rounded-xl bg-white p-2">

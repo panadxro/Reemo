@@ -28,7 +28,7 @@ export default {
 </script>
 
 <template>
-  <div class="flex justify-between items-center mt-8 p-4 rounded-xl sticky bottom-0 left-0 right-0 bg-deep-blue-900 shadow-sm shadow-primary-800 z-10">
+  <div class="flex justify-between items-center mt-8 p-4 rounded-xl sticky bottom-0 left-0 right-0 bg-deep-blue-800/30 shadow-sm shadow-primary-800 z-10 backdrop-blur-xl">
     <div class="text-white font-bold text-2xl">
       Total: ARS ${{ totalAmount.toLocaleString('es-AR') }}
     </div>
