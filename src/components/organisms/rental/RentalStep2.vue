@@ -82,7 +82,7 @@ export default {
 </script>
 
 <template>
-  <div class="relative min-h-screen">
+  <div class="relative">
     <div class="space-y-6">
       <RentalHeader 
     :current-step="currentStep"
@@ -102,6 +102,40 @@ export default {
       />
   
       <section class="text-white">
+        
+        <div class="my-8">
+          <Heading type="3" class="text-white py-4">
+            Pagos
+          </Heading>
+    
+          <div>
+            <Heading type="5" class="text-white mb-2">
+              Depósito de seguridad
+            </Heading>
+            <p>
+              Antes del inicio de la reserva, se realiza un depósito de seguridad reembolsable. Este monto puede variar según el vehículo, y será devuelto una vez finalizada la reserva, siempre y cuando no se reporten daños o infracciones.
+            </p>
+          </div>
+    
+          <div>
+            <Heading type="5" class="text-white mb-2 mt-4">
+              Cobros adicionales
+            </Heading>
+            <p>
+              Se pueden aplicar cargos extras por combustible, limpieza excesiva, infracciones de tránsito, o cualquier daño ocasionado durante el período de uso.
+            </p>
+          </div>
+
+          <div>
+            <Heading type="5" class="text-white mb-2 mt-4">
+              Facturación
+            </Heading>
+            <p>
+              Una vez confirmado la reserva y el pago, vas a recibir una factura electrónica en tu correo registrado.
+            </p>
+          </div>
+        </div>
+        
         <div class="my-8">
           <Heading type="3" class="text-white py-4">
             Tiempos de reserva

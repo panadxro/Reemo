@@ -297,7 +297,6 @@ export default {
       }" 
     />
 
-    <!-- Sección de métodos de pago -->
     <div class="rounded-xl space-y-4">
       <div class="flex items-center justify-between">
         <Heading :type="3" class="text-white py-4">Formas de pago</Heading>
@@ -306,7 +305,6 @@ export default {
         </div>
       </div>
       
-      <!-- Lista de métodos de pago existentes -->
       <div v-if="!loading && paymentMethods.length > 0" class="space-y-3">
         <div 
           v-for="(method, index) in paymentMethods" 
@@ -349,7 +347,6 @@ export default {
               </div>
             </div>
             
-            <!-- Checkbox indicador de selección -->
             <div 
               class="w-6 h-6 rounded-full border flex items-center justify-center"
               :class="{
@@ -369,7 +366,6 @@ export default {
         <p>No tenés métodos de pago guardados</p>
       </div>
       
-      <!-- Botón para agregar nuevo método de pago -->
       <div 
         v-if="!showNewPaymentForm"
         @click="toggleNewPaymentForm" 
@@ -383,11 +379,9 @@ export default {
         </div>
       </div>
       
-      <!-- Formulario para agregar nuevo método de pago -->
       <div v-if="showNewPaymentForm" class="mt-6">
         <Heading :type="4" class="text-white py-4">Nuevo método de pago</Heading>
         
-        <!-- Selector de tipo de método de pago -->
         <div class="flex gap-4 mb-6">
           <div 
             @click="selectedPaymentMethodType = 'credit_card'" 
@@ -412,7 +406,6 @@ export default {
           </div>
         </div>
         
-        <!-- Formulario de tarjeta de crédito -->
         <div v-if="selectedPaymentMethodType === 'credit_card'" class="space-y-4">
           <Input 
             type="text"
@@ -446,7 +439,6 @@ export default {
           </div>
         </div>
         
-        <!-- Formulario de billetera digital -->
         <div v-if="selectedPaymentMethodType === 'digital_wallet'" class="space-y-4">
           <Input 
             type="select"
@@ -469,7 +461,6 @@ export default {
           />
         </div>
         
-        <!-- Formulario de PayPal -->
         <div v-if="selectedPaymentMethodType === 'paypal'" class="space-y-4">
           <Input 
             type="email"
@@ -480,7 +471,6 @@ export default {
           />
         </div>
         
-        <!-- Botones de acción -->
         <div class="flex gap-4 mt-6">
           <button 
             @click="toggleNewPaymentForm" 
