@@ -145,12 +145,9 @@ export default {
    },
 
     submitRentalRequest() {
-      // Aquí iría la lógica para enviar la solicitud de alquiler
       console.log("Enviando solicitud de alquiler:", this.rentalData);
-      // Implementar la lógica de envío al backend
       alert("¡Solicitud enviada con éxito!");
       
-      // Limpiar el almacenamiento
       localStorage.removeItem('rentalData');
       
       // Redirigir al usuario
@@ -373,6 +370,7 @@ v-if="currentStep === 2"
   :rented="rented"
   :current-step="currentStep"
   :sections="sections"
+  :initial-data="rentalData"
   @continue="nextStep"
   :prev-step="prevStep"
 />

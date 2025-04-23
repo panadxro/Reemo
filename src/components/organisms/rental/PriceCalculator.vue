@@ -15,7 +15,7 @@ export default {
       // Porcentaje de impuestos a aplicar al precio base
       // Por ahora lo dejo en 10% pero lo podemos cambiar
       type: Number,
-      default: 0.1
+      default: 0.21
     },
     insuranceFee: {
       // Despues ver cuanto es el seguro
