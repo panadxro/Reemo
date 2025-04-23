@@ -19,7 +19,7 @@ export default {
     Uala,
     CreditCard,
     PayPal,
-    PriceCalculator
+    PriceCalculator,
   },
   props: {
     car: {
@@ -35,17 +35,17 @@ export default {
       default: false
     },
     currentStep: {  
-    type: Number,
-    required: true
-  },
-  sections: {  
-    type: Array,
-    required: true
-  },
-  prevStep: {
-    type: Function,
-    required: true
-  }
+      type: Number,
+      required: true
+    },
+    sections: {  
+      type: Array,
+      required: true
+    },
+    prevStep: {
+      type: Function,
+      required: true
+    }
   },
   data() {
     return {
@@ -63,6 +63,7 @@ export default {
         expiryDate: "",
         cvv: ""
       },
+      acceptTerms: false
     };
   },
   methods: {
@@ -70,24 +71,33 @@ export default {
       this.$emit('continue');
     },
 
-    formatDate(dateStr) {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  },
+    formatDate(dateString) {
+      if (!dateString) return '';
+      const [year, month, day] = dateString.split('-');
+      return `${day}/${month}/${year}`;
+    },
 
     handleTotalUpdate(price) {
       this.currentTotalPrice = price;
       this.$emit('total-updated', price);
     },
 
-    handleDateUpdate(){
-        //Hay que tener esta funcion para que no aparezca el error en consola,
-        //pero como esta desahabilitado no se va a usar el actualizar fecha
-      },
+    handleDateUpdate() {
+      // Función placeholder para evitar errores
+    },
     
     async submitRental() {
       try {
+        if (!this.acceptTerms) {
+          addAlert("Debes aceptar los términos y condiciones", "error");
+          return;
+        }
+
+        if (!this.rentalData.selectedPaymentMethod) {
+          addAlert("Por favor selecciona un método de pago", "error");
+          return;
+        }
+
         if (await isCarAlreadyRented(this.car.id)) {
           addAlert("Este auto ya está alquilado", "info");
           return;
@@ -102,7 +112,7 @@ export default {
         this.$router.push("/profile");
       } catch (error) {
         console.error("Error:", error);
-        addAlert("Error al procesar la reserva", "error");
+        addAlert("Error al procesar la reserva: " + (error.message || "Por favor intenta nuevamente"), "error");
       }
     },
     
@@ -115,86 +125,136 @@ export default {
         rented_until: `${this.rentalData.rentedUntilDate}T${this.rentalData.selectedUntilTime}:00`,
         status: "pendiente",
         rental_price: this.rentalData.currentTotalPrice,
+        payment_method: this.getPaymentMethodName(this.rentalData.selectedPaymentMethod)
       };
     },
 
     formatPrice(price) {
-    return price.toLocaleString('es-AR');
-  }
+      return Math.round(price).toLocaleString('es-AR', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      });
+    },
+
+    getPaymentIcon(paymentMethod) {
+      if (!paymentMethod) return null;
+      const icons = {
+        mercadopago: MercadoPago,
+        uala: Uala,
+        paypal: PayPal,
+        credit_card: CreditCard
+      };
+      return icons[paymentMethod.walletType || paymentMethod.type];
+    },
+    
+    getPaymentMethodName(paymentMethod) {
+      if (!paymentMethod) return 'No especificado';
+      const names = {
+        credit_card: 'Tarjeta de crédito',
+        paypal: 'PayPal',
+        uala: 'Ualá',
+        mercadopago: 'Mercado Pago'
+      };
+      return paymentMethod.type === 'credit_card' 
+        ? `${names.credit_card} (**** ${paymentMethod.cardNumber.slice(-4)})` 
+        : names[paymentMethod.walletType || paymentMethod.type];
+    },
+    
+    getPaymentDetails(paymentMethod) {
+      if (!paymentMethod) return '';
+      if (paymentMethod.type === 'credit_card') {
+        return `Titular: ${paymentMethod.cardholder} - Vence ${paymentMethod.expiryDate}`;
+      }
+      return paymentMethod.email || paymentMethod.walletId || '';
+    }
+  },
+  computed: {
+    paymentMethod() {
+      return this.rentalData.selectedPaymentMethod;
+    },
+    priceHours() {
+      return this.car.precio / 24;
+    },
+    rentalHours() {
+      if (!this.rentalData.rentedFromDate || !this.rentalData.rentedUntilDate) return 0;
+
+      try {
+        const start = new Date(`${this.rentalData.rentedFromDate}T${this.rentalData.selectedTime || '00:00'}`);
+        const end = new Date(`${this.rentalData.rentedUntilDate}T${this.rentalData.selectedUntilTime || '00:00'}`);
+        return Math.max(0, (end - start) / (1000 * 60 * 60));
+      } catch {
+        return 0;
+      }
+    },
+    formatRentalTime() {
+      return (hours) => {
+        const days = Math.floor(hours / 24);
+        const remainingHours = Math.floor(hours % 24);
+        const minutes = Math.floor((hours % 1) * 60);
+
+        let timeString = "";
+
+        if (days > 0) {
+          timeString += `${days} día${days > 1 ? 's' : ''} `;
+        }
+
+        if (remainingHours > 0) {
+          timeString += `${remainingHours} hora${remainingHours > 1 ? 's' : ''} `;
+        }
+
+        if (minutes > 0) {
+          timeString += `${minutes} minuto${minutes > 1 ? 's' : ''}`;
+        }
+
+        return timeString.trim() || "0 horas";
+      };
+    },
+    basePrice() {
+      return this.priceHours * this.rentalHours;
+    },
+    taxes() {
+      return this.basePrice * 0.21;
+    },
+    insurance() {
+      return 25000;
+    },
+    totalPrice() {
+      return this.basePrice + this.taxes + this.insurance;
+    },
+    isFormValid() {
+      return this.acceptTerms && this.paymentMethod;
+    }
   },
   mounted() {
-  const savedData = localStorage.getItem('rentalData');
-  
-  if (savedData) {
-    try {
-      const parsedData = JSON.parse(savedData);
-      this.rentalData = parsedData;
-      
-      console.log("Método de pago cargado:", this.rentalData.selectedPaymentMethod);
-      
-      if (!this.rentalData.selectedPaymentMethod) {
-        const savedPaymentMethod = localStorage.getItem('selectedPaymentMethod');
-        if (savedPaymentMethod) {
-          this.rentalData.selectedPaymentMethod = JSON.parse(savedPaymentMethod);
+    const savedData = localStorage.getItem('rentalData');
+    
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        this.rentalData = {
+          ...this.rentalData,
+          ...parsedData
+        };
+        
+        if (!this.rentalData.selectedPaymentMethod) {
+          const savedPaymentMethod = localStorage.getItem('selectedPaymentMethod');
+          if (savedPaymentMethod) {
+            this.rentalData.selectedPaymentMethod = JSON.parse(savedPaymentMethod);
+          }
         }
+        
+        if (this.rentalData.currentTotalPrice === undefined || this.rentalData.currentTotalPrice === null) {
+          this.rentalData.currentTotalPrice = parsedData.currentTotalPrice || 0;
+        }
+      } catch (e) {
+        console.error("Error al procesar datos guardados:", e);
+        addAlert("Error al cargar los datos de reserva", "error");
+        this.$router.push(`/car/${this.car.id}`);
       }
-      
-      if (this.rentalData.currentTotalPrice === undefined || this.rentalData.currentTotalPrice === null) {
-        this.rentalData.currentTotalPrice = parsedData.currentTotalPrice || 0;
-      }
-    } catch (e) {
-      console.error("Error al procesar datos guardados:", e);
+    } else {
       this.$router.push(`/car/${this.car.id}`);
     }
-  } else {
-    this.$router.push(`/car/${this.car.id}`);
   }
-},
-computed: {
-  paymentMethod() {
-    return this.rentalData.selectedPaymentMethod;
-  },
-  calculateDuration() {
-    if (!this.rentalData.rentedFromDate || !this.rentalData.rentedUntilDate) return 0;
-    
-    const start = new Date(this.rentalData.rentedFromDate);
-    const end = new Date(this.rentalData.rentedUntilDate);
-    const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  },
-  calculateHours() {
-    if (!this.rentalData.selectedTime || !this.rentalData.selectedUntilTime) return 0;
-    
-    const [startHour, startMin] = this.rentalData.selectedTime.split(':').map(Number);
-    const [endHour, endMin] = this.rentalData.selectedUntilTime.split(':').map(Number);
-    
-    let hourDiff = endHour - startHour;
-    let minDiff = endMin - startMin;
-    
-    if (minDiff < 0) {
-      hourDiff--;
-      minDiff += 60;
-    }
-    
-    if (hourDiff < 0) {
-      hourDiff += 24;
-    }
-    
-    return hourDiff + (minDiff > 30 ? 1 : minDiff > 0 ? 0.5 : 0);
-  },
-  calculateBasePrice() {
-    return this.car.precio * this.calculateDuration;
-  },
-  calculateTaxes() {
-    // Asumiendo un 21% de IVA
-    return this.calculateBasePrice * 0.21;
-  },
-  calculateInsurance() {
-    // Precio fijo de seguro por día
-    return 25000;
-  }
-},
 };
 </script>
 
@@ -205,85 +265,137 @@ computed: {
       :sections="sections"
       :prev-step="prevStep"
     />
+    <DateTime 
+      @update-dates="handleDateUpdate" 
+      :disabled="true" 
+      :initial-values="{
+        rentedFromDate: rentalData.rentedFromDate,
+        rentedUntilDate: rentalData.rentedUntilDate,
+        rentedFromHour: rentalData.selectedTime,
+        rentedUntilHour: rentalData.selectedUntilTime
+      }" 
+    />
     
-    <div class="p-4 rounded-xl bg-blue-950 text-white">
-      <h2 class="text-xl font-bold mb-4">Resumen de la Reserva</h2>
+    <div class=" text-white">
+      <h2 class="text-2xl font-bold mb-6">
+        Resumen de tu Reserva
+      </h2>
       
-      
-      <!-- Desglose de Costos -->
-      <div class="space-y-3 border-b border-blue-800 pb-4 mb-4">
-        <div class="flex justify-between">
-          <span>Tiempo total</span>
-          <span>{{ calculateDuration }} días {{ calculateHours }} hs</span>
+      <div class="space-y-4 pb-6 my-6">
+        <h3 class="font-semibold pb-2">
+          Detalle de alquiler
+        </h3>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-400">Retiro</p>
+            <p class="font-medium">{{ formatDate(rentalData.rentedFromDate) }} a las {{ rentalData.selectedTime }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Devolución</p>
+            <p class="font-medium">{{ formatDate(rentalData.rentedUntilDate) }} a las {{ rentalData.selectedUntilTime }}</p>
+          </div>
         </div>
         
-        <div class="flex justify-between">
-          <span>Precio base</span>
-          <span>${{ formatPrice(calculateBasePrice) }}</span>
+        <div class="bg-primary-800 p-3 rounded-lg">
+          <div class="flex justify-between items-center">
+            <span class="font-medium">Duración total</span>
+            <span class="font-semibold">{{ formatRentalTime(rentalHours) }}</span>
+          </div>
         </div>
+      </div>
+
+      <div class="space-y-3 pb-6 mb-6">
+        <h3 class="font-semibold pb-2">Detalle de pago</h3>
         
-        <div class="flex justify-between">
-          <span>Impuestos</span>
-          <span>${{ formatPrice(calculateTaxes) }}</span>
-        </div>
-        
-        <div class="flex justify-between">
-          <span>Seguro</span>
-          <span>${{ formatPrice(calculateInsurance) }}</span>
+        <div class="space-y-2">
+          <div class="flex justify-between">
+            <span class="text-gray-400">Subtotal:</span>
+            <span>$ {{ formatPrice(basePrice) }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Impuestos (21%):</span>
+            <span>$ {{ formatPrice(taxes) }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-400">Seguro:</span>
+            <span>$ {{ formatPrice(insurance) }}</span>
+          </div>
+          <div class="flex justify-between pt-2 border-t border-gray-200 text-secondary-300">
+            <span class="font-semibold">Total:</span>
+            <span class="font-bold">$ {{ formatPrice(totalPrice) }}</span>
+          </div>
         </div>
       </div>
       
-      <!-- Método de Pago -->
-      <div class="bg-blue-900 rounded-lg p-4 mb-4">
-        <div class="flex items-center gap-3">
-          <div class="rounded-xl bg-white p-2">
-            <MercadoPago v-if="paymentMethod && paymentMethod.type === 'digital_wallet' && paymentMethod.walletType === 'mercadopago'" class="h-6 w-6"/>
-            <Uala v-else-if="paymentMethod && paymentMethod.type === 'digital_wallet' && paymentMethod.walletType === 'uala'" class="h-6 w-6"/>
-            <PayPal v-else-if="paymentMethod && paymentMethod.type === 'paypal'" class="h-6 w-6"/>
-            <CreditCard v-else-if="paymentMethod && paymentMethod.type === 'credit_card'" class="h-6 w-6"/>
+      <div class="mb-6">
+        <h3 class="font-semibold pb-2">
+          Método de pago
+        </h3>
+        
+        <div 
+          class="border rounded-lg p-4 transition-all"
+          :class="{
+            'border-secondary-300 bg-primary-800': paymentMethod,
+            'border-red-300': !paymentMethod
+          }"
+        >
+          <div v-if="paymentMethod" class="flex items-center gap-3">
+            <div class="rounded-xl bg-white p-2 shadow-sm">
+              <component :is="getPaymentIcon(paymentMethod)" class="h-6 w-6" />
+            </div>
+            
+            <div>
+              <p class="font-medium">{{ getPaymentMethodName(paymentMethod) }}</p>
+              <p class="text-sm text-gray-400">
+                {{ getPaymentDetails(paymentMethod) }}
+              </p>
+            </div>
           </div>
           
-          <div>
-            <p v-if="paymentMethod" class="font-medium">
-              {{
-                paymentMethod.type === 'credit_card' 
-                  ? 'Tarjeta terminada en ' + paymentMethod.cardNumber.slice(-4) 
-                  : paymentMethod.type === 'paypal' 
-                    ? 'PayPal' 
-                    : paymentMethod.type === 'digital_wallet' && paymentMethod.walletType === 'uala' 
-                      ? 'Ualá' 
-                      : paymentMethod.type === 'digital_wallet' && paymentMethod.walletType === 'mercadopago' 
-                        ? 'Mercado Pago' 
-                        : paymentMethod.walletType || 'Otro método'
-              }}
-            </p>
-            <p class="text-sm text-gray-300">
-              {{ paymentMethod ? (paymentMethod.type === 'credit_card' ? paymentMethod.cardholder : 
-                 paymentMethod.type === 'digital_wallet' ? paymentMethod.walletId : paymentMethod.email) 
-                 : 'No se ha seleccionado método de pago' }}
-            </p>
+          <div v-else class="text-center py-4">
+            <p class="text-gray-500">No se ha seleccionado método de pago</p>
+            <button 
+              @click="$emit('change-step', 2)"
+              class="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
+            >
+              Seleccionar método de pago
+            </button>
           </div>
         </div>
       </div>
       
-      <!-- Información útil para el usuario -->
-      <div class="bg-blue-800 rounded-lg p-4 mb-4 text-sm">
-        <h3 class="font-bold mb-2">Información importante:</h3>
-        <ul class="list-disc pl-5 space-y-1">
+      <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 text-sm">
+        <h3 class="font-bold mb-2 text-yellow-800">Información importante:</h3>
+        <ul class="list-disc pl-5 space-y-1 text-yellow-700">
           <li>Presenta tu licencia de conducir vigente al momento del retiro</li>
-          <li>El vehículo se entregará con tanque lleno y deberá devolverse en las mismas condiciones</li>
-          <li>Recuerda revisar el estado del vehículo antes de retirarlo</li>
+          <li>Toma fotografías del vehículo antes de usarlo para evitar conflictos. En caso de encontrar daños, informar al dueño del vehículo</li>
+          <li>El seguro cubre daños básicos (consulta coberturas completas)</li>
         </ul>
       </div>
       
+      <div class="mb-6 ">
+        <label class="flex items-start gap-2">
+          <input 
+            type="checkbox" 
+            v-model="acceptTerms"
+            class="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          >
+          <span class="text-sm text-white">
+            Acepto los <a href="#" class="text-secondary-300 hover:underline">Términos y Condiciones</a> 
+            y la <a href="#" class="text-secondary-300 hover:underline">Política de Privacidad</a>
+          </span>
+        </label>
+      </div>
     </div>
     
     <RentalFooter 
       :total-amount="rentalData.currentTotalPrice"
       button-text="Enviar solicitud" 
-      :is-confirmation="false"
-      @continue="submitRental" 
+      :is-disabled="!isFormValid"
+      :is-confirmation="true"
+      @confirm="submitRental" 
     />
+    <p v-if="!isFormValid" class="text-red-300">Debes aceptar los terminos y condiciones</p>
   </div>
 </template>
-  
