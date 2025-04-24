@@ -5,3 +5,4 @@ export * from './documents';
 export * from './address';
 export * from './payment';
 export * from './agreements';
+export * from './admin';

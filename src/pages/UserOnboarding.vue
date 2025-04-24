@@ -70,11 +70,11 @@ export default {
         birthDate: "",
         documentType: "",
         documentNumber: "",
-        dniFrontFile: null,
-        dniBackFile: null,
+        dniFrontUrl: null,
+        dniBackUrl: null,
         licenseNumber: "",
-        driverFrontFile: null,
-        driverBackFile: null,
+        driverFrontUrl: null,
+        driverBackUrl: null,
         province: "",
         city: "",
         postalCode: "",
@@ -278,24 +278,24 @@ export default {
             uploadUserFile(uid, this.user.profilePhoto, 'profile/avatar.jpg').then(url =>  { this.user.profilePhoto = url; })
           );
         }
-        if (this.user.dniFrontFile instanceof File) {
+        if (this.user.dniFrontUrl instanceof File) {
           uploadPromises.push(
-            uploadUserFile(uid, this.user.dniFrontFile, 'documents/dni_front.jpg').then(url =>  { this.user.dniFrontFile = url; })
+            uploadUserFile(uid, this.user.dniFrontUrl, 'documents/dni_front.jpg').then(url =>  { this.user.dniFrontUrl = url; })
           );
         }
-        if (this.user.dniBackFile instanceof File) {
+        if (this.user.dniBackUrl instanceof File) {
           uploadPromises.push(
-            uploadUserFile(uid, this.user.dniBackFile, 'documents/dni_back.jpg').then(url =>  { this.user.dniBackFile = url; })
+            uploadUserFile(uid, this.user.dniBackUrl, 'documents/dni_back.jpg').then(url =>  { this.user.dniBackUrl = url; })
           );
         }
-        if (this.user.driverFrontFile instanceof File) {
+        if (this.user.driverFrontUrl instanceof File) {
           uploadPromises.push(
-            uploadUserFile(uid, this.user.driverFrontFile, 'documents/drive_front.jpg').then(url =>  { this.user.driverFrontFile = url; })
+            uploadUserFile(uid, this.user.driverFrontUrl, 'documents/drive_front.jpg').then(url =>  { this.user.driverFrontUrl = url; })
           );
         }
-        if (this.user.driverBackFile instanceof File) {
+        if (this.user.driverBackUrl instanceof File) {
           uploadPromises.push(
-            uploadUserFile(uid, this.user.driverBackFile, 'documents/driver_back.jpg').then(url =>  { this.user.driverBackFile = url; })
+            uploadUserFile(uid, this.user.driverBackUrl, 'documents/driver_back.jpg').then(url =>  { this.user.driverBackUrl = url; })
           );
         }
 
@@ -331,28 +331,28 @@ export default {
     handleDNIFront(event) {
       const file = event.target.files[0];
       if (file) {
-        this.user.dniFrontFile = file;
+        this.user.dniFrontUrl = file;
         this.dniFrontUrl = URL.createObjectURL(file)
       }
     },
     handleDNIBack(event) {
       const file = event.target.files[0];
       if (file) {
-        this.user.dniBackFile = file;
+        this.user.dniBackUrl = file;
         this.dniBackUrl = URL.createObjectURL(file)
       }
     },
     handleDriverFront(event) {
       const file = event.target.files[0];
       if (file) {
-        this.user.driverFrontFile = file;
+        this.user.driverFrontUrl = file;
         this.driverFrontUrl = URL.createObjectURL(file)
       }
     },
     handleDriverBack(event) {
       const file = event.target.files[0];
       if (file) {
-        this.user.driverBackFile = file;
+        this.user.driverBackUrl = file;
         this.driverBackUrl = URL.createObjectURL(file)
       }
     },
@@ -484,7 +484,7 @@ export default {
           <div class="flex flex-col gap-5">
             <div class="flex gap-3">
               <label for="profile-picture">
-                <img v-if="user.profilePhotoPreview" 
+                <img v-if="profilePhotoPreview || user.profilePhotoPreview" 
                   :src="profilePhotoPreview ? profilePhotoPreview : user.profilePhotoPreview" 
                   alt="Foto de perfil" 
                   class="profile-picture" />
@@ -540,7 +540,7 @@ export default {
               <p class="text-sm font-medium">Para completar la verificación de identidad, sube una foto clara y ligible de tu DNI.</p>
               <div class="flex gap-3">
                 <label for="dni-front" class="cursor-pointer">
-                  <img v-if="user.dniFrontUrl" :src="dniFrontUrl ? dniFrontUrl : user.dniFrontUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <img v-if="user.dniFrontUrl || dniFrontUrl" :src="dniFrontUrl ? dniFrontUrl : user.dniFrontUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
                   <DNIFront v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
@@ -553,7 +553,7 @@ export default {
               </div>
               <div class="flex gap-3">
                 <label for="dni-back" class="cursor-pointer">
-                  <img v-if="user.dniBackUrl" :src="dniBackUrl ? dniBackUrl : user.dniBackUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
+                  <img v-if="user.dniBackUrl || dniBackUrl" :src="dniBackUrl ? dniBackUrl : user.dniBackUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
                   <DNIBack v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
@@ -568,7 +568,7 @@ export default {
               <p class="text-sm font-medium">Para poder alquilar en nuestra plataforma, es esencial que tengas vinculado tu registro de conducir. </p>
               <div class="flex gap-3">
                 <label for="driver-front" class="cursor-pointer">
-                  <img v-if="user.driverFrontUrl" :src="driverFrontUrl ? driverFrontUrl : user.driverFrontUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <img v-if="user.driverFrontUrl || driverFrontUrl" :src="driverFrontUrl ? driverFrontUrl : user.driverFrontUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
                   <DriverFront v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
@@ -579,7 +579,7 @@ export default {
               </div>
               <div class="flex gap-3">
                 <label for="driver-back" class="cursor-pointer">
-                  <img v-if="user.driverBackUrl" :src="driverBackUrl ? driverBackUrl : user.driverBackUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <img v-if="user.driverBackUrl || driverBackUrl" :src="driverBackUrl ? driverBackUrl : user.driverBackUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
                   <DriverBack v-else/>
                 </label>
                 <div class="flex flex-col gap-4">

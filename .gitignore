@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 .idx
 .env
+.vite
 
 # Ignorar firebase
 src/services/firebase.js
@@ -31,5 +32,3 @@ src/services/firebase.js
 reglas-firestore.txt
 reglas-storage.txt
 datos.md
-
-.env
