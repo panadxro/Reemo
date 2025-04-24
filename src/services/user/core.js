@@ -5,9 +5,24 @@ import { getDownloadURL } from 'firebase/storage';
 
 export async function createUserProfile( uid, email ) {
   const userRef = doc(db, 'users', uid);
-  await setDoc(userRef, {
+  const initialData = {
+    personalInfo: {
+      firstName: 'Desconocido',
+      lastName: '',
+      profilePhoto: '/src/assets/User.png',
+      username: 'Desconocido'
+    },
+    documents: {},
+    address: {},
+    paymentMethods: [],
+    agreements: {},
+    email: email,
+    role: 'user'
+  }
+    await setDoc(userRef, {
+    ...initialData,
+
     uid, 
-    email, 
     emailVerified: false, 
     profileCompleted: false, 
     role: 'user', 
@@ -48,16 +63,7 @@ export async function saveUserData(uid, data) {
     if (!uid) throw new Error("UID is required")
 
     const userRef = doc(db, 'users', uid);
-    const cleanData = {
-      ...data,
-      // Asegura que los strings no sean undefined
-      personalInfo: {
-        firstName: data.personalInfo?.firstName || '',
-        lastName: data.personalInfo?.lastName || '',
-        // ... otros campos
-      },
-      updateAt: serverTimestamp()
-    }
+
     await setDoc(userRef, {
       ...data,
       updateAt: serverTimestamp()

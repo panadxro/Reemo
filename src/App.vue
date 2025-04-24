@@ -1,7 +1,6 @@
 <script setup>
-import { watch, onMounted, markRaw, shallowRef } from 'vue'
+import { watch, markRaw, shallowRef } from 'vue'
 import { useRoute } from 'vue-router'
-import { useAuthStore } from '@stores/auth.store'
 
 import DefaultLayout from '@layouts/DefaultLayout.vue'
 import SimpleLayout from "@layouts/SimpleLayout.vue"
@@ -9,7 +8,6 @@ import DashboardLayout from './layouts/DashboardLayout.vue'
 import Alert from './components/atoms/Alert.vue';
 
 const route = useRoute()
-const authStore = useAuthStore()
 
 const layoutComponents = {
   default: markRaw(DefaultLayout),

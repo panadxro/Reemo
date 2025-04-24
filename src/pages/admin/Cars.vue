@@ -149,7 +149,7 @@ export default {
           class="flex w-full max-h-16 border-2 border-secondary-100 rounded-xl font-semibold">
           <td class="py-2.5 px-5 flex flex-1 items-center gap-2.5">
             <figure>
-              <img :src="car.images[0]" alt="Imagen del auto" class="w-14 h-8 object-cover rounded-sm" />
+              <img :src="car.personalInfo.profilePhoto" alt="Imagen del auto" class="w-14 h-8 object-cover rounded-sm" />
             </figure>
             <div>
               <p class="text-sm font-semibold ">{{ car.marca }}</p>

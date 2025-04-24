@@ -1,5 +1,13 @@
 import { defineStore } from 'pinia'
-import { getUserProfile, saveUserData } from '../services/user'
+import {
+  getUserProfile,
+  saveUserData,
+  updatePersonalInfo,
+  updateUserDocuments,
+  updateUserAddress,
+  addPaymentMethod,
+  acceptedTerms
+} from '../services/user'
 import { useAuthStore } from '@stores'
 
 export const useUserStore = defineStore('user', {
@@ -65,7 +73,7 @@ export const useUserStore = defineStore('user', {
       this.loading = true
       try {
         const userProfile = await getUserProfile(userId); // Llamada al servicio. Aqui llegan los datos
-        console.log(userProfile) // puedes borrar esta linea, es solo para ver que recibes
+        // console.log(userProfile) // puedes borrar esta linea, es solo para ver que recibes
         if (userId === authStore.user?.id) {
           this.profileData = {
             ...userProfile, // hacemos un spread del userProfile para que tome todos los datos que no estan en personalInfo.
@@ -74,6 +82,7 @@ export const useUserStore = defineStore('user', {
              email: userProfile?.email || '', // Ajustado con el ?, lo movemos dentro de personalInfo
              emailVerified: userProfile?.emailVerified || false, // tambien lo agregamos
            },
+           role: userProfile?.role || 'user' // guardamos el rol del usuario
          };
         } else {
           // Crea una nueva propiedad para el perfil visitado
@@ -105,6 +114,32 @@ export const useUserStore = defineStore('user', {
         }
       } catch (error) {
         this.error = error.message || 'Error al guardar'
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+    async completeOnboarding(userData) {
+      const { uid, profile, documents, address, agreements } = userData
+      this.loading = true
+      try {
+        if(profile) {
+          await updatePersonalInfo(uid, profile)
+        }
+        if(documents){
+          await updateUserDocuments(uid, documents)
+        }
+        if(address){
+          await updateUserAddress(uid, address)
+        }
+        if(payment){
+          await addPaymentMethod(uid, payment)
+        }
+        if(agreements){
+          await acceptedTerms(uid, agreements)
+        }
+      } catch (error) {
+        this.error = error.message || 'Error al guardar el onboarding'
         throw error
       } finally {
         this.loading = false
