@@ -1,10 +1,9 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore, useUserStore } from '@stores';
-import { storeToRefs } from 'pinia';
 
 import Home from "../pages/Home.vue";
 import Login from "../pages/Login.vue";
 import UserOnboarding from "../pages/UserOnboarding.vue";
+import CarRegister from "../pages/CarRegister.vue";
 import Register from "../pages/Register.vue";
 import Maps from "../pages/Maps.vue";
 import Search from "../pages/Search.vue";
@@ -43,6 +42,12 @@ const routes = [
     component: Publish,
     name: "Publish",
     meta: { needsAuth: true },
+  },
+  {
+    path: "/car/register",
+    component: CarRegister,
+    name: "CarRegister",
+    meta: { needsAuth: true},
   },
   {
     path: "/car/:id",
