@@ -10,10 +10,7 @@ import BackButton from "../components/atoms/BackButton.vue";
 import Arrow from "../icons/Arrow.vue";
 import Like from "../icons/Like.vue";
 
-import RentalStep1 from "@components/organisms/rental/RentalStep1.vue";
-import RentalStep2 from "@components/organisms/rental/RentalStep2.vue";
-import RentalStep3 from "@components/organisms/rental/RentalStep3.vue";
-import RentalStep4 from "@components/organisms/rental/RentalStep4.vue";
+import RentalProcess from "@/components/organisms/rental/RentalProcess.vue";
 
 export default {
   props: ["id"],
@@ -25,10 +22,7 @@ export default {
     BackButton,
     Arrow,
     Like,
-    RentalStep1,
-    RentalStep2,
-    RentalStep3,
-    RentalStep4,
+    RentalProcess
   },
   data() {
     return {
@@ -325,56 +319,13 @@ export default {
     </div>
   
     <div class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-y-scroll">
-  <RentalStep1 
-  v-if="currentStep === 0"
-  :car="car" 
-  :logged-user="loggedUser"
-  :rented="rented"
-  :current-step="currentStep"
-  :sections="sections"
-  :initial-data="rentalData"
-  :prev-step="prevStep"
-  @update-dates="handleRentalDataUpdate"
-  @total-updated="handleTotalUpdate"
-  @continue="nextStep"
-/>
-
-<!-- Paso 2: Información -->
-<RentalStep2 
-  v-if="currentStep === 1"
-  :car="car"
-  :logged-user="loggedUser"
-  :rented="rented"
-  :current-step="currentStep"
-  :sections="sections"
-  @continue="nextStep"
-  :prev-step="prevStep"
-/>
-
-<!-- Paso 4: Método de pafo -->
-<RentalStep3 
-v-if="currentStep === 2"
-:car="car"
-:logged-user="loggedUser"
-:rented="rented"
-:current-step="currentStep"
-:sections="sections"
-@continue="nextStep"
-:prev-step="prevStep"/>
-
-<!-- Paso 4: Confirmación -->
-<RentalStep4 
-  v-if="currentStep === 3"
-  :car="car"
-  :loggedUser="loggedUser"
-  :rented="rented"
-  :current-step="currentStep"
-  :sections="sections"
-  :initial-data="rentalData"
-  @continue="nextStep"
-  :prev-step="prevStep"
-/>
       
+      <RentalProcess 
+        v-if="!loading && !errorMsg"
+        :car-id="car.id"
+        :user-id="loggedUser.id"
+        :is-car-rented="rented"
+      />  
       
     </div>
 
