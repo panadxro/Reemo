@@ -22,7 +22,7 @@ export default {
   },
   computed: {
     currentTitle() {
-      return this.sections[this.currentStep]?.title || '';
+      return this.sections[this.currentStep - 1]?.title || '';
     },
     stepIndicator() {
       return `${this.currentStep}/${this.sections.length}`;

@@ -4,6 +4,8 @@
   import { useRentalStore } from '@/stores/rent.store.js';
   import { useRouter } from 'vue-router';
   import { addAlert } from '@/services/alerts';
+  import { useAuthStore } from '@stores/auth.store';
+  import { useCarStore } from '@stores/car.store.js';
   
   // Componentes
   import RentalHeader from '@/components/organisms/rental/RentalHeader.vue';
@@ -19,6 +21,9 @@
   import Uala from '@/icons/Uala.vue';
   import PayPal from '@/icons/PayPal.vue';
   import CreditCard from '@/icons/CreditCard.vue';
+
+const authStore = useAuthStore();
+const carStore = useCarStore();
   
   // Props
   const props = defineProps({
@@ -54,11 +59,16 @@
   // Métodos
   function totalUpdated(total) {
     store.rentalData.currentTotalPrice = total;
+    store.calculatePrice();
   }
   
   async function handleSubmit() {
   if (!store.rentalData.selectedPaymentMethod) {
     addAlert('Por favor selecciona un método de pago antes de confirmar la reserva.', 'error');
+    return;
+  }
+  if (!store.acceptTerms) {
+    addAlert('Debes aceptar los términos y condiciones', 'error');
     return;
   }
 
@@ -77,45 +87,44 @@
 }
   
   // Lifecycle hooks
-  onMounted(async () => {
-    // Cargar datos del auto y usuario
-    await store.setInitialData({
-      id: props.carId,
-      user_id: props.userId,
-      // Aquí deberías cargar los datos completos del auto desde tu API
-      // Este es un ejemplo simplificado:
-      marca: 'Cargando...',
-      modelo: '',
-      patente: '',
-      precio: 0
-    }, { id: props.userId }, props.isCarRented);
-    
+  onMounted(async () => {    
+    store.setInitialData(carStore.car, authStore.user, carStore.isCarRented);
     watch(() => store.currentStep, async (newStep) => {
-  if (newStep === 3) {
-    await store.fetchPaymentMethods(); // Cargar métodos de pago al volver al paso 3
-
-    // Verificar si el método seleccionado sigue existiendo
-    if (store.rentalData.selectedPaymentMethod) {
-      const methodExists = store.paymentMethods.some(
-        method =>
-          store.getPaymentMethodIdentifier(method) ===
-          store.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod)
-      );
-
-      // Si el método seleccionado no existe, seleccionar el primero disponible
-      if (!methodExists) {
-        store.rentalData.selectedPaymentMethod = store.paymentMethods[0] || null;
+      console.log("Nuevo Paso:", newStep);
+      if (newStep === 3) {
+        console.log("Fetch a los métodos de pago..."); 
+        await store.fetchPaymentMethods();
+        console.log("Métodos de pago:", store.paymentMethods);
+        
+        // Verificar método seleccionado
+        if (store.rentalData.selectedPaymentMethod && 
+            !store.paymentMethods.some(m => 
+              store.getPaymentMethodIdentifier(m) === 
+              store.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod)
+            )) {
+          store.rentalData.selectedPaymentMethod = store.paymentMethods[0] || null;
+        }
       }
-    }
-  }
-});
+    });
 
-    // Agregar también un watch para el selectedPaymentMethod
     watch(() => store.rentalData.selectedPaymentMethod, (newMethod) => {
     if (newMethod && store.showNewPaymentForm) {
         store.showNewPaymentForm = false;
     }
     }, { immediate: true });
+
+    watch(
+  () => [
+    store.rentalData.rentedFromDate,
+    store.rentalData.selectedTime,
+    store.rentalData.rentedUntilDate,
+    store.rentalData.selectedUntilTime
+  ],
+  () => {
+    store.calculatePrice();
+  },
+  { deep: true }
+);
     
     // Si ya estamos en el paso 3 al montar, cargar los métodos de pago
     if (store.currentStep === 3) {
@@ -563,13 +572,13 @@
         </div>
         
         <RentalFooter
-  :total-amount="store.totalPrice"
-  :button-text="store.currentStep === 4 ? 'Confirmar reserva' : 'Continuar'"
-  :is-disabled="store.isNextDisabled"
-  :is-confirmation="store.currentStep === 4"
-  @continue="store.nextStep"
-  @confirm="handleSubmit"
-/>
+          :total-amount="store.totalPrice"
+          :button-text="store.currentStep === 4 ? 'Confirmar reserva' : 'Continuar'"
+          :is-disabled="store.isNextDisabled"
+          :is-confirmation="store.currentStep === 4"
+          @continue="store.nextStep"
+          @confirm="handleSubmit"
+        />
       </div>
     </div>
   </template>
