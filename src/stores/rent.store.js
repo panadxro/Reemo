@@ -44,6 +44,7 @@ export const useRentalStore = defineStore('rental', {
     },
     selectedPaymentMethodType: 'credit_card', 
     showNewPaymentForm: false,
+    initialPaymentMethodLoaded: false,
     loading: false,
     errorMessage: "",
     acceptTerms: false
@@ -54,7 +55,7 @@ export const useRentalStore = defineStore('rental', {
       if (this.currentStep === 1) {
         return !this.rentalData.rentedFromDate || !this.rentalData.rentedUntilDate || this.rented;
       } else if (this.currentStep === 3) {
-        return !this.rentalData.selectedPaymentMethod && !this.showNewPaymentForm;
+        return !this.rentalData.selectedPaymentMethod || !this.paymentMethods.length;
       } else if (this.currentStep === 4) {
         return !this.acceptTerms || !this.rentalData.selectedPaymentMethod;
       }
@@ -141,6 +142,12 @@ export const useRentalStore = defineStore('rental', {
     },
     
     nextStep() {
+
+      if (this.currentStep === 3 && !this.rentalData.selectedPaymentMethod) {
+        addAlert('Por favor selecciona un método de pago', 'error');
+        return;
+      }
+
       if (this.currentStep < 4) {
         this.currentStep++;
         this.saveCurrentData();
@@ -188,11 +195,13 @@ export const useRentalStore = defineStore('rental', {
       this.loading = true;
       try {
         const methods = await getPaymentMethods(this.loggedUser.id);
+        console.log("Métodos de pago obtenidos:", methods);
         this.paymentMethods = methods;
         
-        if (methods.length > 0 && !this.rentalData.selectedPaymentMethod) {
-          this.rentalData.selectedPaymentMethod = methods[0];
-        }
+        // if (methods.length > 0 && !this.rentalData.selectedPaymentMethod && !this.initialPaymentMethodLoaded) {
+        //   this.rentalData.selectedPaymentMethod = methods[0];
+        //   this.initialPaymentMethodLoaded = true;
+        // }
       } catch (error) {
         console.error("Error al obtener métodos de pago:", error);
         this.errorMessage = "Error al cargar métodos de pago";

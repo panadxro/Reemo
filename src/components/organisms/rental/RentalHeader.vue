@@ -25,7 +25,7 @@ export default {
       return this.sections[this.currentStep]?.title || '';
     },
     stepIndicator() {
-      return `${this.currentStep + 1}/${this.sections.length}`;
+      return `${this.currentStep}/${this.sections.length}`;
     }
   }
 };

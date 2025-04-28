@@ -57,20 +57,24 @@
   }
   
   async function handleSubmit() {
-    submitting.value = true;
-    try {
-      const success = await store.submitRental();
-      if (success) {
-        // Redirigir al usuario a la página de confirmación o a la página principal
-        router.push({ name: 'rental-success', params: { id: store.car.id } });
-      }
-    } catch (error) {
-      console.error('Error al procesar la reserva:', error);
-      addAlert('Ha ocurrido un error al procesar tu reserva. Por favor, intenta nuevamente.', 'error');
-    } finally {
-      submitting.value = false;
-    }
+  if (!store.rentalData.selectedPaymentMethod) {
+    addAlert('Por favor selecciona un método de pago antes de confirmar la reserva.', 'error');
+    return;
   }
+
+  submitting.value = true;
+  try {
+    const success = await store.submitRental();
+    if (success) {
+      router.push({ name: 'rental-success', params: { id: store.car.id } });
+    }
+  } catch (error) {
+    console.error('Error al procesar la reserva:', error);
+    addAlert('Ha ocurrido un error al procesar tu reserva. Por favor, intenta nuevamente.', 'error');
+  } finally {
+    submitting.value = false;
+  }
+}
   
   // Lifecycle hooks
   onMounted(async () => {
@@ -86,12 +90,32 @@
       precio: 0
     }, { id: props.userId }, props.isCarRented);
     
-    // Cargar métodos de pago al llegar al paso 3
     watch(() => store.currentStep, async (newStep) => {
-      if (newStep === 3) {
-        await store.fetchPaymentMethods();
+  if (newStep === 3) {
+    await store.fetchPaymentMethods(); // Cargar métodos de pago al volver al paso 3
+
+    // Verificar si el método seleccionado sigue existiendo
+    if (store.rentalData.selectedPaymentMethod) {
+      const methodExists = store.paymentMethods.some(
+        method =>
+          store.getPaymentMethodIdentifier(method) ===
+          store.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod)
+      );
+
+      // Si el método seleccionado no existe, seleccionar el primero disponible
+      if (!methodExists) {
+        store.rentalData.selectedPaymentMethod = store.paymentMethods[0] || null;
       }
-    });
+    }
+  }
+});
+
+    // Agregar también un watch para el selectedPaymentMethod
+    watch(() => store.rentalData.selectedPaymentMethod, (newMethod) => {
+    if (newMethod && store.showNewPaymentForm) {
+        store.showNewPaymentForm = false;
+    }
+    }, { immediate: true });
     
     // Si ya estamos en el paso 3 al montar, cargar los métodos de pago
     if (store.currentStep === 3) {
@@ -256,14 +280,14 @@
             </div>
             
             <div v-if="!store.loading && store.paymentMethods.length > 0" class="space-y-3">
-              <div 
+                <div 
                 v-for="(method, index) in store.paymentMethods" 
                 :key="index"
                 @click="store.selectPaymentMethod(method)"
                 class="border rounded-xl p-4 cursor-pointer transition-all"
                 :class="{
-                  'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': store.rentalData.selectedPaymentMethod === method, 
-                  'border-gray-600 hover:border-vibrant-light-900': store.rentalData.selectedPaymentMethod !== method
+                  'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': store.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) === store.getPaymentMethodIdentifier(method), 
+                  'border-gray-600 hover:border-vibrant-light-900': store.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) !== store.getPaymentMethodIdentifier(method)
                 }"
               >
                 <div class="flex items-center justify-between">
@@ -274,7 +298,6 @@
                       <PayPal v-if="method.type === 'paypal'"/>
                       <CreditCard v-if="method.type === 'credit_card'"/>
                     </div>
-                    
                     <div>
                       <p class="font-medium text-white">
                         {{
@@ -295,15 +318,14 @@
                       </p>
                     </div>
                   </div>
-                  
                   <div 
                     class="w-6 h-6 rounded-full border flex items-center justify-center"
                     :class="{
-                      'bg-vibrant-light-900 border-vibrant-light-900': store.rentalData.selectedPaymentMethod === method, 
-                      'border-gray-300': store.rentalData.selectedPaymentMethod !== method
+                      'bg-vibrant-light-900 border-vibrant-light-900': store.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) === store.getPaymentMethodIdentifier(method), 
+                      'border-gray-300': store.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) !== store.getPaymentMethodIdentifier(method)
                     }"
                   >
-                    <svg v-if="store.rentalData.selectedPaymentMethod === method" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <svg v-if="store.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) === store.getPaymentMethodIdentifier(method)" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
                       <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                     </svg>
                   </div>
