@@ -10,10 +10,10 @@ export const useRentalStore = defineStore('rental', {
     loggedUser: null,
     rented: false,
     sections: [
-      { id: 1, name: 'Fechas' },
-      { id: 2, name: 'Términos' },
-      { id: 3, name: 'Pago' },
-      { id: 4, name: 'Confirmación' }
+      { id: 1, title: 'Selecciona las fechas' },
+      { id: 2, title: 'Información' },
+      { id: 3, title: 'Método de pago' },
+      { id: 4, title: 'Confirma tu reserva' }
     ],
     rentalData: {
       rentedFromDate: "",
@@ -116,6 +116,11 @@ export const useRentalStore = defineStore('rental', {
   
   actions: {
     setInitialData(car, loggedUser, rented = false) {
+      if (!loggedUser || !loggedUser.id) {
+        console.error("Usuario no válido proporcionado:", loggedUser);
+        throw new Error("Se requiere un usuario válido");
+      }
+  
       this.car = car;
       this.loggedUser = loggedUser;
       this.rented = rented;
@@ -187,10 +192,12 @@ export const useRentalStore = defineStore('rental', {
     },
     
     async fetchPaymentMethods() {
-      if (!this.loggedUser || !this.loggedUser.id) {
-        this.errorMessage = "Usuario no identificado";
-        return;
-      }
+      console.log("Fetching payment methods for user:", this.loggedUser); // Agrega esto
+  if (!this.loggedUser || !this.loggedUser.id) {
+    console.error("Usuario no identificado"); // Agrega esto
+    this.errorMessage = "Usuario no identificado";
+    return;
+  }
       
       this.loading = true;
       try {
