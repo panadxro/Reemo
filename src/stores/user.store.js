@@ -44,21 +44,20 @@ export const useUserStore = defineStore('user', {
       this.loading = value
     },
     resetProfile() {
-      const authStore = useAuthStore();
-      this.profileData = { // Corregido: Usar profileData para el reset
-          personalInfo: {
-            firstName: '',
-            lastName: '',
-            email: '',
-            profilePhoto: '',
-            username: ''
-          },
-          documents: {},
-          address: {},
-          paymentMethods: [],
-          agreements: {},
-          role: 'user' // Valor por defecto
-        }
+      this.profileData = {
+        personalInfo: {
+          firstName: '',
+          lastName: '',
+          email: '',
+          profilePhoto: '',
+          username: ''
+        },
+        documents: {},
+        address: {},
+        paymentMethods: [],
+        agreements: {},
+        role: 'user'
+      }
       this.visitedProfileData = null;
       this.visitedRole = null;
       this.posts = [];
@@ -72,29 +71,27 @@ export const useUserStore = defineStore('user', {
       const authStore = useAuthStore();
       this.loading = true
       try {
-        const userProfile = await getUserProfile(userId); // Llamada al servicio. Aqui llegan los datos
-        // console.log(userProfile) // puedes borrar esta linea, es solo para ver que recibes
+        const userProfile = await getUserProfile(userId);
         if (userId === authStore.user?.id) {
           this.profileData = {
-            ...userProfile, // hacemos un spread del userProfile para que tome todos los datos que no estan en personalInfo.
+            ...userProfile,
            personalInfo: {
-             ...userProfile?.personalInfo, // Ahora usamos userProfile en vez de profileData
-             email: userProfile?.email || '', // Ajustado con el ?, lo movemos dentro de personalInfo
-             emailVerified: userProfile?.emailVerified || false, // tambien lo agregamos
+             ...userProfile?.personalInfo,
+             email: userProfile?.email || '',
+             emailVerified: userProfile?.emailVerified || false,
            },
-           role: userProfile?.role || 'user' // guardamos el rol del usuario
+           role: userProfile?.role || 'user'
          };
         } else {
-          // Crea una nueva propiedad para el perfil visitado
           this.visitedProfileData = {
-            ...userProfile, // hacemos un spread del userProfile para que tome todos los datos que no estan en personalInfo.
+            ...userProfile,
             personalInfo: {
-              ...userProfile?.personalInfo, // Ahora usamos userProfile en vez de profileData
-              email: userProfile?.email || '', // Ajustado con el ?, lo movemos dentro de personalInfo
-              emailVerified: userProfile?.emailVerified || false, // tambien lo agregamos
+              ...userProfile?.personalInfo,
+              email: userProfile?.email || '',
+              emailVerified: userProfile?.emailVerified || false,
             },
           };
-          this.visitedRole = userProfile?.role || 'user'; // guardamos el rol del usuario visitado
+          this.visitedRole = userProfile?.role || 'user';
         }
       } catch (error) {
         this.error = error.message;

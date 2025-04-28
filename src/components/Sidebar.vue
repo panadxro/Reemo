@@ -5,7 +5,7 @@ import Login from "../icons/Login.vue";
 import Home from '@icons/Home.vue'
 import Search from '@icons/Search.vue'
 import Map from '@icons/Map.vue'
-import UserIcon from '@icons/UserIcon.vue'
+import User from '@icons/User.vue'
 import AlertRented from '@components/organisms/rental/AlertRented.vue'
 import QA from '@icons/QA.vue'
 import Settings from '@icons/Settings.vue'
@@ -45,7 +45,7 @@ const handleLogout = () => {
       </li>
       <li>
         <IconNavButton :to="'/user/' + authStore?.user.id" title="Profile">
-          <UserIcon />
+          <User />
         </IconNavButton>
       </li>
     </ul>
@@ -75,7 +75,7 @@ const handleLogout = () => {
       </li>
       <li>
         <IconNavButton :to="'/user/' + authStore?.user.id" title="Profile">
-          <UserIcon />
+          <User />
         </IconNavButton>
       </li>
     </ul>

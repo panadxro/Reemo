@@ -1,8 +1,9 @@
 <script>
-import { useAuthStore, useUserStore } from '@/stores'
-import { onMounted, onBeforeUnmount } from 'vue'
+import { ref, markRaw, watch } from 'vue';
+import { useAuthStore, useUserStore, useUiStore } from '@stores'
+import { onMounted, onBeforeUnmount, computed } from 'vue'
 import { saveUserData, completeOnboarding, getUserProfile } from '../services/user';
-import { subscribeToAuthState } from "../services/auth.js";
+// import { subscribeToAuthState } from "../services/auth.js";
 import { uploadUserFile } from '../services/storage/documents.js';
 import { addAlert } from "../services/alerts.js";
 
@@ -17,10 +18,15 @@ import DNIBack from '../components/atoms/DNIBack.vue';
 import DriverFront from '../components/atoms/DriverFront.vue';
 import DriverBack from '../components/atoms/DriverBack.vue';
 import Loading from '@icons/Loading.vue';
+import User from '@icons/User.vue';
+import Documentation from '@icons/Documentation.vue';
+import Location from '@icons/Location.vue';
+import Payment from '@icons/Payment.vue';
+import Clipboard from '@icons/Clipboard.vue';
 
 export default {
   name: "UserOnboarding",
-  components: { Heading, Input, Checkbox, LongArrow, Reemo, DropdownForm, DNIFront, DNIBack, DriverFront, DriverBack, Loading },
+  components: { Heading, Input, Checkbox, LongArrow, Reemo, DropdownForm, DNIFront, DNIBack, DriverFront, DriverBack, Loading, User, Documentation, Location, Payment, Clipboard },
   data() {
     return {
       openDropdown: null,
@@ -51,11 +57,26 @@ export default {
       selectedPaymentMethod: 'credit_card',
       loading: false,
       sections: [
-        { title: "Información Personal" },
-        { title: "Documentación" },
-        { title: "Ubicación" },
-        { title: "Método de Pago" },
-        { title: "Términos y Condiciones" },
+        { 
+          title: "Información Personal",
+          icon: markRaw(User)
+        },
+        { 
+          title: "Documentación",
+          icon: markRaw(Documentation)
+        },
+        { 
+          title: "Ubicación",
+          icon: markRaw(Location)
+        },
+        { 
+          title: "Método de Pago",
+          icon: markRaw(Payment)
+        },
+        { 
+          title: "Términos y Condiciones",
+          icon: markRaw(Clipboard)
+        },
       ],
       loggedUser: {
         id: null
@@ -119,39 +140,74 @@ export default {
       },
     };
   },
-  async created() {
-    subscribeToAuthState((user) => {
-      this.loggedUser = user || {};
-    });
+  watch: {
+    currentStep(newStep) {
+      const sectionId = `section-${newStep + 1}`;
+      this.uiStore.openInitialDropdown(sectionId, this.getInitialDropdownId(newStep));
+    }
   },
   setup() {
     const authStore = useAuthStore()
-    const profileStore = useUserStore()
+    const userStore = useUserStore()
+    const uiStore = useUiStore()
     
-    const handleBeforeUnload = (event) => {
+    const loggedUserId = computed(() => {
+      return authStore.user?.id
+    }) 
+
+    const personalInfo = computed(() => {
+      return userStore.personalInfo
+    })
+
+    const documents = computed(() => {
+      return userStore.documents
+    })
+
+    const address = computed(() => {
+      return userStore.address
+    })
+
+    const payment = computed(() => {
+      return userStore.paymentMethods
+    })
+
+    const agreements = computed(() => {
+      return userStore.agreements
+    })
+/*     const handleBeforeUnload = (event) => {
       const message = '¿Estás seguro de que quieres salir? Los cambios no guardados se perderán.';
       event.preventDefault();
       event.returnValue = message;
       return message;
-    };
-    
-    onMounted(() => {
-      authStore.init() // Inicializa la escucha de auth
-      window.addEventListener('beforeunload', handleBeforeUnload);
+    }; */
+
+    onMounted(async () => {
+      // authStore.init() // Inicializa la escucha de auth
+      // window.addEventListener('beforeunload', handleBeforeUnload);
+      await userStore.loadUserProfile(loggedUserId);
+
+
     })
 
     onBeforeUnmount(() => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // window.removeEventListener('beforeunload', handleBeforeUnload);
     });
 
     return {
       authStore,
-      profileStore
+      userStore,
+      uiStore,
+      loggedUserId,
+      personalInfo,
+      documents,
+      address,
+      payment,
+      agreements
     }
   },
   methods: {
     async prepareUserData() {
-      const uid = this.loggedUser?.id; 
+      const uid = loggedUserId; 
       const paymentData = this.paymentMethods[this.selectedPaymentMethod];
       this.loading = true;
 
@@ -210,10 +266,18 @@ export default {
       };
     },
     handleDropdownToggle(dropdownInstance) {
-      if (this.openDropdown && this.openDropdown !== dropdownInstance) {
+/*       if (this.openDropdown && this.openDropdown !== dropdownInstance) {
         this.openDropdown.closeDropdown();
       }
-      this.openDropdown = dropdownInstance.isOpen ? dropdownInstance : null;
+      this.openDropdown = dropdownInstance.isOpen ? dropdownInstance : null; */
+      console.log('Dropdown toggled:', dropdownInstance)
+    },
+    getInitialDropdownId(step) {
+      const initialDropdowns = {
+        1: 'doc-identidad',
+        3: 'tarjeta'
+      };
+      return initialDropdowns[step];
     },
     nextStep() {
       if (this.currentStep < this.sections.length - 1) {
@@ -231,12 +295,12 @@ export default {
     },
     async handleSubmit() {
       // Validar paso de términos
-      if (!this.user.acceptedTerms || !this.user.acceptedPrivacyPolicy) {
+      if (!this.agreements.acceptedTerms || !this.agreements.acceptedPrivacyPolicy) {
         console.log("Debes aceptar los términos y políticas");
         addAlert('Debes aceptar los términos y políticas', 'error')
         return
       }
-      let paymentValid = false;
+/*       let paymentValid = false;
       const payment = this.paymentMethods[this.selectedPaymentMethod];
 
       switch(this.selectedPaymentMethod) {
@@ -258,12 +322,12 @@ export default {
         console.error("Debes completar la información de pago");
         this.currentStep = 3;
         return;
-      }
+      } */
 
       // Lógica para enviar el formulario
       try {
         this.loading = true;
-        const uid = this.loggedUser?.id;
+        const uid = this.loggedUserId;
         // Validacion adicional
         if (!uid) {
           addAlert('No se pudo identificar al usuario', 'error')
@@ -273,29 +337,29 @@ export default {
         // 1. Subir archivos primero
         const uploadPromises = [];
 
-        if (this.user.profilePhoto instanceof File) {
+        if (this.personalInfo.profilePhoto instanceof File) {
           uploadPromises.push(
-            uploadUserFile(uid, this.user.profilePhoto, 'profile/avatar.jpg').then(url =>  { this.user.profilePhoto = url; })
+            uploadUserFile(uid, this.personalInfo.profilePhoto, 'profile/avatar.jpg').then(url =>  { this.personalInfo.profilePhoto = url; })
           );
         }
-        if (this.user.dniFrontUrl instanceof File) {
+        if (this.documents.dniFront instanceof File) {
           uploadPromises.push(
-            uploadUserFile(uid, this.user.dniFrontUrl, 'documents/dni_front.jpg').then(url =>  { this.user.dniFrontUrl = url; })
+            uploadUserFile(uid, this.documents.dniFront, 'documents/dni_front.jpg').then(url =>  { this.documents.dniFront = url; })
           );
         }
-        if (this.user.dniBackUrl instanceof File) {
+        if (this.documents.dniBack instanceof File) {
           uploadPromises.push(
-            uploadUserFile(uid, this.user.dniBackUrl, 'documents/dni_back.jpg').then(url =>  { this.user.dniBackUrl = url; })
+            uploadUserFile(uid, this.documents.dniBack, 'documents/dni_back.jpg').then(url =>  { this.documents.dniBack = url; })
           );
         }
-        if (this.user.driverFrontUrl instanceof File) {
+        if (this.documents.driverLicenseFront instanceof File) {
           uploadPromises.push(
-            uploadUserFile(uid, this.user.driverFrontUrl, 'documents/drive_front.jpg').then(url =>  { this.user.driverFrontUrl = url; })
+            uploadUserFile(uid, this.documents.driverLicenseFront, 'documents/drive_front.jpg').then(url =>  { this.documents.driverLicenseFront = url; })
           );
         }
-        if (this.user.driverBackUrl instanceof File) {
+        if (this.documents.driverLicenseBack instanceof File) {
           uploadPromises.push(
-            uploadUserFile(uid, this.user.driverBackUrl, 'documents/driver_back.jpg').then(url =>  { this.user.driverBackUrl = url; })
+            uploadUserFile(uid, this.documents.driverLicenseBack, 'documents/driver_back.jpg').then(url =>  { this.documents.driverLicenseBack = url; })
           );
         }
 
@@ -305,7 +369,7 @@ export default {
         const userData = await this.prepareUserData();
 
         // 3. Guardar en Firestore
-        await this.profileStore.saveProfile(uid, userData);
+        await this.userStore.saveProfile(uid, userData);
         await completeOnboarding(uid);
         
         // 4. Redirección o feedback
@@ -427,50 +491,40 @@ export default {
         this.loading = false;
       }
     }
-  },
-  async created() {
-    subscribeToAuthState(async (user) => {
-      if (!user) {
-        // Redirige a login si no está autenticado
-        this.$router.push('/login');
-        return;
-      }
-      this.loggedUser = user || {};
-
-      if (user?.id) {
-        await this.loadUserData(user.id)
-      }
-    });
-  },
-  beforeUnmount() {
-    this.unsubscribeAuth?.();
   }
 };
 </script>
 
 <template>
-  <section class="flex max-w-[1200px] mx-auto gap-8 px-16 py-12 bg-deep-blue-900 rounded-[40px] text-white">
+  <section class="flex max-w-[1120px] max-h-[675px] h-full w-full mx-auto justify-between px-16 py-12 bg-deep-blue-900 rounded-[40px] text-white">
     <!-- Secciones al costado -->
-    <aside class="flex flex-col gap-4">
-      <div>
+    <aside class="flex flex-col gap-8 w-full max-w-[425px]">
+      <div class="flex flex-col gap-2">
         <Heading type="1" class="large text-white font-extrabold!">Onboarding</Heading>
-        <p class="text-sm">¡Bienvenido! Selecciona un método para ingresar a tu cuenta:</p>
+        <p class="text-sm max-w-[420px]">¡Bienvenido! Completa los siguientes datos para finalizar tu registro y acceder a todas las funcionalidades de la plataforma.</p>
       </div>
-      <div class="sections-sidebar">
-        <div
+      <ul class="sections-sidebar">
+        <li
           v-for="(section, index) in sections"
           :key="index"
           :class="{ active: currentStep === index }"
           class="section-item"
         >
-          {{ section.title }}
-          <LongArrow direction="right" class="hidden" color="#ffffff" :class="{ '!block': currentStep === index}"/>
-        </div>
-      </div>
+          <div class="flex items-center gap-4">
+            <component :is="section.icon" color="white" />
+            <Heading type="3" class="regular text-white">
+              {{ section.title }}
+            </Heading>
+          </div>
+          <span>
+            <LongArrow direction="right" class="hidden" color="#ffffff" :class="{ '!block': currentStep === index}"/>
+          </span>
+        </li>
+      </ul>
     </aside>
 
     <!-- Formulario dinámico -->
-      <form class="max-w-[426px] flex-1 flex flex-col gap-9" @submit.prevent="handleSubmit">
+      <form class="flex flex-col justify-center gap-8 grow w-full max-w-[425px]" @submit.prevent="handleSubmit">
         <div class="flex justify-end">
           <Reemo color="#FFFFFF" />
         </div>
@@ -484,11 +538,11 @@ export default {
           <div class="flex flex-col gap-5">
             <div class="flex gap-3">
               <label for="profile-picture">
-                <img v-if="profilePhotoPreview || user.profilePhotoPreview" 
-                  :src="profilePhotoPreview ? profilePhotoPreview : user.profilePhotoPreview" 
+                <img v-if="profilePhotoPreview || personalInfo.profilePhoto" 
+                  :src="profilePhotoPreview ? profilePhotoPreview : personalInfo.profilePhoto" 
                   alt="Foto de perfil" 
                   class="profile-picture" />
-                <img v-else src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="Foto de perfil por defecto" class="profile-picture cursor-pointer" />
+                <img v-else src="/src/assets/User.png" alt="Foto de perfil por defecto" class="profile-picture default cursor-pointer" />
               </label>
               <div class="flex flex-col gap-4">
                 <label for="profile-picture" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar foto de perfil</label>
@@ -497,13 +551,13 @@ export default {
               </div>
             </div>
             <input id="profile-picture" type="file" accept="image/*" @change="handleProfilePhoto" class="hidden" />
-          <Input v-model="user.username" type="text" placeholder="Nombre de usuario" :variant="'secondary'" :outline="false" required />
+          <Input v-model="personalInfo.username" type="text" placeholder="Nombre de usuario" :variant="'secondary'" :outline="false" required />
           <div class="flex gap-5">
-            <Input v-model="user.firstName" type="text" placeholder="Nombre" :variant="'secondary'" :outline="false" required />
-            <Input v-model="user.lastName" type="text" placeholder="Apellido" :variant="'secondary'" :outline="false" required />
+            <Input v-model="personalInfo.firstName" type="text" placeholder="Nombre" :variant="'secondary'" :outline="false" required />
+            <Input v-model="personalInfo.lastName" type="text" placeholder="Apellido" :variant="'secondary'" :outline="false" required />
           </div>
             
-          <Input v-model="user.phone" type="tel" placeholder="Número de teléfono" :variant="'secondary'" :outline="false" required />
+          <Input v-model="personalInfo.phone" type="tel" placeholder="Número de teléfono" :variant="'secondary'" :outline="false" required />
           <div class="flex gap-5">
             <Input
               type="select"
@@ -520,9 +574,9 @@ export default {
               variant="secondary"
               :outline="false"
               class="w-full cursor-pointer"
-              v-model="user.gender"
+              v-model="personalInfo.gender"
             />
-            <Input v-model="user.birthDate" type="date" placeholder="Fecha de nacimiento" :variant="'secondary'" :outline="false" required />
+            <Input v-model="personalInfo.birthDate" type="date" placeholder="Fecha de nacimiento" :variant="'secondary'" :outline="false" required />
           </div>
         </div>
         
@@ -536,11 +590,11 @@ export default {
           </div>
           <div class="flex flex-col gap-2">
 
-            <DropdownForm title="Documento de Identidad" :initialOpen="true" @dropdown-toggle="handleDropdownToggle">
+            <DropdownForm title="Documento de Identidad" :section-id="'section-1'" :dropdown-id="'doc-identidad'" @dropdown-toggle="handleDropdownToggle" :is-initial="true">
               <p class="text-sm font-medium">Para completar la verificación de identidad, sube una foto clara y ligible de tu DNI.</p>
               <div class="flex gap-3">
                 <label for="dni-front" class="cursor-pointer">
-                  <img v-if="user.dniFrontUrl || dniFrontUrl" :src="dniFrontUrl ? dniFrontUrl : user.dniFrontUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <img v-if="documents.dniFront || dniFrontUrl" :src="dniFrontUrl ? dniFrontUrl : documents.dniFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
                   <DNIFront v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
@@ -553,7 +607,7 @@ export default {
               </div>
               <div class="flex gap-3">
                 <label for="dni-back" class="cursor-pointer">
-                  <img v-if="user.dniBackUrl || dniBackUrl" :src="dniBackUrl ? dniBackUrl : user.dniBackUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
+                  <img v-if="documents.dniBack || dniBackUrl" :src="dniBackUrl ? dniBackUrl : documents.dniBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
                   <DNIBack v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
@@ -564,11 +618,11 @@ export default {
               </div>
             </DropdownForm>
             
-            <DropdownForm title="Registro de conducir" @dropdown-toggle="handleDropdownToggle">
+            <DropdownForm title="Registro de conducir" :dropdown-id="'doc-licencia'" :section-id="'section-1'" @dropdown-toggle="handleDropdownToggle">
               <p class="text-sm font-medium">Para poder alquilar en nuestra plataforma, es esencial que tengas vinculado tu registro de conducir. </p>
               <div class="flex gap-3">
                 <label for="driver-front" class="cursor-pointer">
-                  <img v-if="user.driverFrontUrl || driverFrontUrl" :src="driverFrontUrl ? driverFrontUrl : user.driverFrontUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <img v-if="documents.driverLicenseFront || driverFrontUrl" :src="driverFrontUrl ? driverFrontUrl : documents.driverLicenseFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
                   <DriverFront v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
@@ -579,7 +633,7 @@ export default {
               </div>
               <div class="flex gap-3">
                 <label for="driver-back" class="cursor-pointer">
-                  <img v-if="user.driverBackUrl || driverBackUrl" :src="driverBackUrl ? driverBackUrl : user.driverBackUrl" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <img v-if="documents.driverLicenseBack || driverBackUrl" :src="driverBackUrl ? driverBackUrl : documents.driverLicenseBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
                   <DriverBack v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
@@ -607,7 +661,7 @@ export default {
               id="provincia"
               placeholder="Provincia"
               :options="provincias.map(p => ({ value: p, label: p }))"
-              v-model="user.province"
+              v-model="address.province"
               @change="cargarCiudades"
               icon-position="right"
               variant="secondary"
@@ -622,8 +676,8 @@ export default {
               id="ciudad"
               placeholder="Ciudad/Localidad"
               :options="ciudades.map(c => ({ value: c, label: c }))"
-              v-model="user.city"
-              :disabled="!user.province"
+              v-model="address.city"
+              :disabled="!address.province"
               icon-position="right"
               variant="secondary"
               :outline="false"
@@ -635,7 +689,7 @@ export default {
               <Input
                 type="text"
                 placeholder="Calle y número"
-                v-model="user.street"
+                v-model="address.street"
                 :variant="'secondary'"
                 :outline="false"
               />
@@ -643,7 +697,7 @@ export default {
               <Input
                 type="text"
                 placeholder="Código Postal"
-                v-model="user.postalCode"
+                v-model="address.postalCode"
                 :variant="'secondary'"
                 :outline="false"
               />
@@ -654,7 +708,7 @@ export default {
               <Input
               type="text"
               placeholder="Piso"
-              v-model="user.floor"
+              v-model="address.floor"
               :variant="'secondary'"
               :outline="false"
             />
@@ -663,7 +717,7 @@ export default {
             <Input
               type="text"
               placeholder="Departamento"
-              v-model="user.apartment"
+              v-model="address.apartment"
               :variant="'secondary'"
               :outline="false"
               />
@@ -678,30 +732,8 @@ export default {
             <Loading v-if="loading" role="status" />
           </div>
           <div class="flex flex-col gap-5">
-
-            <DropdownForm title="Billetera Digital" @dropdown-toggle="() => selectedPaymentMethod = 'digital_wallet'" :isOpen="selectedPaymentMethod === 'digital_wallet'">
-              <Input 
-                type="select"
-                placeholder="Tipo de billetera"
-                :options="[
-                  {value: 'mercadopago', label: 'Mercado Pago'},
-                  {value: 'uala', label: 'Ualá'},
-                  {value: 'otra', label:'Otra'}
-                ]"
-                v-model="paymentMethods.digital_wallet.walletType"
-                variant="secondary"
-                :outline="false"
-                />
-              <Input
-                type="text"
-                placeholder="CVU o Alias"
-                v-model="paymentMethods.digital_wallet.walletId"
-                variant="secondary"
-                :outline="false"
-              />
-            </DropdownForm>
-            
-            <DropdownForm title="Tarjeta de crédito/débito" @dropdown-toggle="() => selectedPaymentMethod = 'credit_card'" :isOpen="selectedPaymentMethod === 'credit_card'">
+    
+            <DropdownForm title="Tarjeta de crédito/débito" :dropdown-id="'tarjeta'" :section-id="'section-3'" @dropdown-toggle="handleDropdownToggle" :is-initial="true">
               <Input 
                 type="text"
                 placeholder="Titular de tarjeta"
@@ -734,7 +766,29 @@ export default {
               </div>
             </DropdownForm>
 
-            <DropdownForm title="Paypal" @dropdown-toggle="() => selectedPaymentMethod = 'paypal'" :isOpen="selectedPaymentMethod === 'paypal'">
+            <DropdownForm title="Billetera Digital" :dropdown-id="'billetera'" :section-id="'section-3'"  @dropdown-toggle="handleDropdownToggle">
+              <Input 
+                type="select"
+                placeholder="Tipo de billetera"
+                :options="[
+                  {value: 'mercadopago', label: 'Mercado Pago'},
+                  {value: 'uala', label: 'Ualá'},
+                  {value: 'otra', label:'Otra'}
+                ]"
+                v-model="paymentMethods.digital_wallet.walletType"
+                variant="secondary"
+                :outline="false"
+                />
+              <Input
+                type="text"
+                placeholder="CVU o Alias"
+                v-model="paymentMethods.digital_wallet.walletId"
+                variant="secondary"
+                :outline="false"
+              />
+            </DropdownForm>
+
+            <DropdownForm title="Paypal" :dropdown-id="'paypal'" :section-id="'section-3'"  @dropdown-toggle="'handleDropdownToggle'">
               <Input 
                 type="email"
                 placeholder="Email de PayPal"
@@ -753,7 +807,7 @@ export default {
             <Loading v-if="loading" role="status" />
           </div>
           <div class="flex gap-2 items-center">
-            <Checkbox v-model="user.acceptedTerms" :disabled="user.acceptedTerms"/>
+            <Checkbox v-model="agreements.acceptedTerms" :disabled="agreements.acceptedTerms"/>
             <p class="text-sm font-medium">He leído y acepto los 
               <router-link
                 to="/terms-and-conditions"
@@ -765,7 +819,7 @@ export default {
           </div>
           <!-- Politicas de privacidad -->
           <div class="flex gap-2 items-center">
-            <Checkbox v-model="user.acceptedPrivacyPolicy" :disabled="user.acceptedPrivacyPolicy"/>
+            <Checkbox v-model="agreements.acceptedPrivacyPolicy" :disabled="agreements.acceptedPrivacyPolicy"/>
             <p class="text-sm font-medium">He leído y acepto las 
               <router-link
                 to="/privacy-policy"
@@ -777,7 +831,7 @@ export default {
           </div>
           <!-- Notificaciones -->
           <div class="flex gap-2 items-center">
-            <Checkbox v-model="user.acceptedNotifications" />
+            <Checkbox v-model="agreements.acceptedMarketing" />
             <p class="text-sm font-medium">Acepto recibir notificaciones y promociones por correo electrónico.</p>
           </div>
         </router-view>
@@ -816,13 +870,14 @@ export default {
   </section>
 </template>
 
-<style>
+<style scoped>
 .sections-sidebar {
-  width: 350px;
+  max-width: 420px;
+  width: 100%;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
-  gap: 40px
+  gap: 40px;
 }
 
 .section-item {
@@ -833,6 +888,17 @@ export default {
   justify-content: space-between;
   font-size: 20px;
   font-weight: 600;
+  align-items: center;
+  position: relative;
+}
+
+.section-item:not(:last-child)::after {
+  content: "----";
+  color: rgba(255, 255, 255, 0.5);
+  position: absolute;
+  bottom: -35px;
+  left: 10px;
+  transform: rotate(90deg)
 }
 
 .section-item.active {
@@ -851,5 +917,10 @@ export default {
   height: 95px;
   border-radius: 100%;
   object-fit: cover;
+  background-color: rgba(255, 255, 255, 0.5)
+}
+
+.default{
+  filter: brightness(7);
 }
 </style>
