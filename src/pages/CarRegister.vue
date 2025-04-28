@@ -2,7 +2,7 @@
 import { useAuthStore, useUserStore } from '@/stores'
 import { onMounted, onBeforeUnmount } from 'vue'
 import { saveUserData, completeOnboarding, getUserProfile } from '../services/user';
-import { subscribeToAuthState } from "../services/auth.js";
+// import { subscribeToAuthState } from "../services/auth.js";
 import { uploadUserFile } from '../services/storage/documents.js';
 import { addAlert } from "../services/alerts.js";
 
@@ -17,10 +17,15 @@ import DNIBack from '../components/atoms/DNIBack.vue';
 import DriverFront from '../components/atoms/DriverFront.vue';
 import DriverBack from '../components/atoms/DriverBack.vue';
 import Loading from '@icons/Loading.vue';
+import User from '@icons/User.vue';
+import Documentation from '@icons/Documentation.vue';
+import Location from '@icons/Location.vue';
+import Payment from '@icons/Payment.vue';
+import Clipboard from '@icons/Clipboard.vue';
 
 export default {
-  name: "CarRegister",
-  components: { Heading, Input, Checkbox, LongArrow, Reemo, DropdownForm, DNIFront, DNIBack, DriverFront, DriverBack, Loading },
+  name: "UserOnboarding",
+  components: { Heading, Input, Checkbox, LongArrow, Reemo, DropdownForm, DNIFront, DNIBack, DriverFront, DriverBack, Loading, User, Documentation, Location, Payment, Clipboard },
   data() {
     return {
       openDropdown: null,
@@ -51,11 +56,26 @@ export default {
       selectedPaymentMethod: 'credit_card',
       loading: false,
       sections: [
-        { title: "Información Personal" },
-        { title: "Documentación" },
-        { title: "Ubicación" },
-        { title: "Método de Pago" },
-        { title: "Términos y Condiciones" },
+        { 
+          title: "Información Personal",
+          icon: User
+        },
+        { 
+          title: "Documentación",
+          icon: Documentation
+        },
+        { 
+          title: "Ubicación",
+          icon: Location
+        },
+        { 
+          title: "Método de Pago",
+          icon: Payment
+        },
+        { 
+          title: "Términos y Condiciones",
+          icon: Clipboard
+        },
       ],
       loggedUser: {
         id: null
@@ -119,29 +139,24 @@ export default {
       },
     };
   },
-  async created() {
-    subscribeToAuthState((user) => {
-      this.loggedUser = user || {};
-    });
-  },
   setup() {
     const authStore = useAuthStore()
     const profileStore = useUserStore()
     
-    const handleBeforeUnload = (event) => {
+/*     const handleBeforeUnload = (event) => {
       const message = '¿Estás seguro de que quieres salir? Los cambios no guardados se perderán.';
       event.preventDefault();
       event.returnValue = message;
       return message;
-    };
+    }; */
     
     onMounted(() => {
       authStore.init() // Inicializa la escucha de auth
-      window.addEventListener('beforeunload', handleBeforeUnload);
+      // window.addEventListener('beforeunload', handleBeforeUnload);
     })
 
     onBeforeUnmount(() => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // window.removeEventListener('beforeunload', handleBeforeUnload);
     });
 
     return {
@@ -427,50 +442,40 @@ export default {
         this.loading = false;
       }
     }
-  },
-  async created() {
-    subscribeToAuthState(async (user) => {
-      if (!user) {
-        // Redirige a login si no está autenticado
-        this.$router.push('/login');
-        return;
-      }
-      this.loggedUser = user || {};
-
-      if (user?.id) {
-        await this.loadUserData(user.id)
-      }
-    });
-  },
-  beforeUnmount() {
-    this.unsubscribeAuth?.();
   }
 };
 </script>
 
 <template>
-  <section class="flex max-w-[1200px] mx-auto gap-8 px-16 py-12 bg-deep-blue-900 rounded-[40px] text-white">
+  <section class="flex max-w-[1120px] w-full mx-auto justify-between px-16 py-12 bg-deep-blue-900 rounded-[40px] text-white">
     <!-- Secciones al costado -->
-    <aside class="flex flex-col gap-4">
-      <div>
+    <aside class="flex flex-col gap-8 w-full max-w-[425px]">
+      <div class="flex flex-col gap-2">
         <Heading type="1" class="large text-white font-extrabold!">Onboarding</Heading>
-        <p class="text-sm">¡Bienvenido! Selecciona un método para ingresar a tu cuenta:</p>
+        <p class="text-sm max-w-[420px]">¡Bienvenido! Completa los siguientes datos para finalizar tu registro y acceder a todas las funcionalidades de la plataforma.</p>
       </div>
-      <div class="sections-sidebar">
-        <div
+      <ul class="sections-sidebar">
+        <li
           v-for="(section, index) in sections"
           :key="index"
           :class="{ active: currentStep === index }"
           class="section-item"
         >
-          {{ section.title }}
-          <LongArrow direction="right" class="hidden" color="#ffffff" :class="{ '!block': currentStep === index}"/>
-        </div>
-      </div>
+          <div class="flex items-center gap-4">
+            <component :is="section.icon" color="white" />
+            <Heading type="3" class="regular text-white">
+              {{ section.title }}
+            </Heading>
+          </div>
+          <span>
+            <LongArrow direction="right" class="hidden" color="#ffffff" :class="{ '!block': currentStep === index}"/>
+          </span>
+        </li>
+      </ul>
     </aside>
 
     <!-- Formulario dinámico -->
-      <form class="max-w-[426px] flex-1 flex flex-col gap-9" @submit.prevent="handleSubmit">
+      <form class="flex flex-col gap-9 grow w-full max-w-[425px]" @submit.prevent="handleSubmit">
         <div class="flex justify-end">
           <Reemo color="#FFFFFF" />
         </div>
@@ -488,7 +493,7 @@ export default {
                   :src="profilePhotoPreview ? profilePhotoPreview : user.profilePhotoPreview" 
                   alt="Foto de perfil" 
                   class="profile-picture" />
-                <img v-else src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png" alt="Foto de perfil por defecto" class="profile-picture cursor-pointer" />
+                <img v-else src="/src/assets/User.png" alt="Foto de perfil por defecto" class="profile-picture default cursor-pointer" />
               </label>
               <div class="flex flex-col gap-4">
                 <label for="profile-picture" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar foto de perfil</label>
@@ -816,13 +821,14 @@ export default {
   </section>
 </template>
 
-<style>
+<style scoped>
 .sections-sidebar {
-  width: 350px;
+  max-width: 420px;
+  width: 100%;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
-  gap: 40px
+  gap: 40px;
 }
 
 .section-item {
@@ -833,6 +839,17 @@ export default {
   justify-content: space-between;
   font-size: 20px;
   font-weight: 600;
+  align-items: center;
+  position: relative;
+}
+
+.section-item:not(:last-child)::after {
+  content: "----";
+  color: rgba(255, 255, 255, 0.5);
+  position: absolute;
+  bottom: -35px;
+  left: 10px;
+  transform: rotate(90deg)
 }
 
 .section-item.active {
@@ -851,5 +868,10 @@ export default {
   height: 95px;
   border-radius: 100%;
   object-fit: cover;
+  background-color: rgba(255, 255, 255, 0.5)
+}
+
+.default{
+  filter: brightness(7);
 }
 </style>

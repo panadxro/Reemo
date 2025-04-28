@@ -3,7 +3,7 @@ import {useUserStore, useAuthStore } from '@stores'
 import { computed } from "vue";
 
 import Heading from "@components/atoms/Heading.vue";
-import UserIcon from "@icons/UserIcon.vue";
+import User from "@icons/User.vue";
 import Credential from "../../icons/Credential.vue";
 import Car from "../../icons/Car.vue";
 import History from "../../icons/History.vue";
@@ -31,7 +31,7 @@ const profileData = computed(() => userStore.profileData)
     <ul class="flex flex-col gap-3 my-7 w-full">
       <li>
         <NavButton to="/profile" title="Mi perfil">
-          <UserIcon />
+          <User />
           <span>Mi perfil</span>
         </NavButton>
       </li>
