@@ -19,7 +19,7 @@ export default {
     },
     insuranceFee: {
       // Despues ver cuanto es el seguro
-      // Por ahora lo dejo en 500
+      // Por ahora lo dejo en 25000
       type: Number,
       default: 25000
     }
