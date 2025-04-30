@@ -55,9 +55,9 @@ export const useRentalStore = defineStore('rental', {
       if (this.currentStep === 1) {
         return !this.rentalData.rentedFromDate || !this.rentalData.rentedUntilDate || this.rented;
       } else if (this.currentStep === 3) {
-        return !this.rentalData.selectedPaymentMethod || !this.paymentMethods.length;
+        return !this.rentalData.selectedPaymentMethod;
       } else if (this.currentStep === 4) {
-        return !this.acceptTerms || !this.rentalData.selectedPaymentMethod;
+        return !this.rentalData.selectedPaymentMethod;
       }
       return false;
     },
@@ -111,24 +111,65 @@ export const useRentalStore = defineStore('rental', {
     
     totalPrice() {
       return this.basePrice + this.taxes + this.insurance;
+    },
+    
+    // Generar una clave única para este vehículo
+    storageKey() {
+      if (!this.car || !this.car.id) return 'rentalData';
+      return `rentalData_car_${this.car.id}`;
     }
   },
   
   actions: {
-    setInitialData(car, loggedUser, rented = false) {
+    setInitialData(car, loggedUser, isCarRented = false) {
       if (!loggedUser || !loggedUser.id) {
         console.error("Usuario no válido proporcionado:", loggedUser);
         throw new Error("Se requiere un usuario válido");
       }
   
+      // Guardar datos actuales si hay un coche diferente
+      this.saveCurrentDataIfNeeded(car);
+      
+      // Resetear datos si cambiamos de coche
+      if (this.car && car && this.car.id !== car.id) {
+        this.resetRentalData();
+      }
+      
       this.car = car;
       this.loggedUser = loggedUser;
-      this.rented = rented;
+      this.rented = isCarRented;
+      
+      // Cargar datos del nuevo coche
       this.loadSavedData();
     },
     
+    resetRentalData() {
+      this.rentalData = {
+        rentedFromDate: "",
+        rentedUntilDate: "",
+        selectedTime: "",
+        selectedUntilTime: "",
+        currentTotalPrice: 0,
+        selectedPaymentMethod: null
+      };
+      this.acceptTerms = false;
+    },
+    
+    saveCurrentDataIfNeeded(newCar) {
+      // Si teníamos un coche anterior y hay datos para guardar
+      if (this.car && this.car.id && 
+          (this.rentalData.rentedFromDate || this.rentalData.rentedUntilDate)) {
+        // Guardar los datos del coche anterior
+        this.saveCurrentData();
+      }
+    },
+    
     loadSavedData() {
-      const savedData = localStorage.getItem('rentalData');
+      if (!this.car || !this.car.id) return;
+      
+      const key = this.storageKey;
+      const savedData = localStorage.getItem(key);
+      
       if (savedData) {
         try {
           const parsedData = JSON.parse(savedData);
@@ -136,18 +177,33 @@ export const useRentalStore = defineStore('rental', {
             ...this.rentalData,
             ...parsedData
           };
+          console.log(`Datos cargados para el vehículo ${this.car.id}:`, this.rentalData);
         } catch (e) {
-          console.error("Error al cargar datos guardados:", e);
+          console.error(`Error al cargar datos guardados para el vehículo ${this.car.id}:`, e);
         }
+      } else {
+        console.log(`No hay datos guardados para el vehículo ${this.car.id}`);
+        // No hay datos guardados para este vehículo, resetear
+        this.resetRentalData();
       }
     },
     
     saveCurrentData() {
-      localStorage.setItem('rentalData', JSON.stringify(this.rentalData));
+      if (!this.car || !this.car.id) return;
+      
+      const key = this.storageKey;
+      // No guardar métodos de pago completos en localStorage por seguridad
+      const dataToSave = {
+        ...this.rentalData,
+        // Solo guardar el identificador del método de pago, no los datos completos
+        selectedPaymentMethod: this.rentalData.selectedPaymentMethod ? 
+          this.getPaymentMethodIdentifier(this.rentalData.selectedPaymentMethod) : null
+      };
+      localStorage.setItem(key, JSON.stringify(dataToSave));
+      console.log(`Datos guardados para el vehículo ${this.car.id}:`, dataToSave);
     },
     
     nextStep() {
-
       if (this.currentStep === 3 && !this.rentalData.selectedPaymentMethod) {
         addAlert('Por favor selecciona un método de pago', 'error');
         return;
@@ -178,6 +234,7 @@ export const useRentalStore = defineStore('rental', {
       this.rentalData.selectedUntilTime = data.rentedUntilHour;
       
       this.calculatePrice();
+      this.saveCurrentData();
     },
     
     calculatePrice() {
@@ -189,29 +246,40 @@ export const useRentalStore = defineStore('rental', {
     selectPaymentMethod(method) {
       this.rentalData.selectedPaymentMethod = method;
       this.showNewPaymentForm = false;
+      this.saveCurrentData();
     },
     
     async fetchPaymentMethods() {
-      console.log("Fetching payment methods for user:", this.loggedUser); // Agrega esto
-  if (!this.loggedUser || !this.loggedUser.id) {
-    console.error("Usuario no identificado"); // Agrega esto
-    this.errorMessage = "Usuario no identificado";
-    return;
-  }
+      console.log("Fetch a metodos de pago:", this.loggedUser);
+      if (!this.loggedUser || !this.loggedUser.id) {
+        console.error("Usuario no identificado");
+        this.errorMessage = "Usuario no identificado";
+        return [];
+      }
       
       this.loading = true;
       try {
         const methods = await getPaymentMethods(this.loggedUser.id);
-        console.log("Métodos de pago obtenidos:", methods);
+        console.log("Metodos de pago obtenidos:", methods);
         this.paymentMethods = methods;
         
-        // if (methods.length > 0 && !this.rentalData.selectedPaymentMethod && !this.initialPaymentMethodLoaded) {
-        //   this.rentalData.selectedPaymentMethod = methods[0];
-        //   this.initialPaymentMethodLoaded = true;
-        // }
+        // Si hay un método guardado previamente, intentar encontrarlo en los métodos actuales
+        if (this.rentalData.selectedPaymentMethod && typeof this.rentalData.selectedPaymentMethod === 'string') {
+          const savedMethodId = this.rentalData.selectedPaymentMethod;
+          const matchingMethod = methods.find(m => this.getPaymentMethodIdentifier(m) === savedMethodId);
+          if (matchingMethod) {
+            this.rentalData.selectedPaymentMethod = matchingMethod;
+          } else {
+            // Si no se encuentra el método guardado, seleccionar el primero disponible
+            this.rentalData.selectedPaymentMethod = methods.length > 0 ? methods[0] : null;
+          }
+        }
+        
+        return methods;
       } catch (error) {
         console.error("Error al obtener métodos de pago:", error);
         this.errorMessage = "Error al cargar métodos de pago";
+        return [];
       } finally {
         this.loading = false;
       }
@@ -220,7 +288,8 @@ export const useRentalStore = defineStore('rental', {
     toggleNewPaymentForm() {
       this.showNewPaymentForm = !this.showNewPaymentForm;
       if (this.showNewPaymentForm) {
-        this.rentalData.selectedPaymentMethod = null;
+        // No deseleccionar el método de pago al abrir el formulario
+        // Solo deseleccionar si se elige guardar el nuevo método
       }
     },
     
@@ -244,7 +313,7 @@ export const useRentalStore = defineStore('rental', {
 
         if (!isValid) {
           addAlert('Por favor completa todos los campos del método de pago', 'error');
-          return;
+          return false;
         }
 
         const newMethod = {
@@ -256,29 +325,47 @@ export const useRentalStore = defineStore('rental', {
         await savePaymentMethod(this.loggedUser.id, newMethod);
         await this.fetchPaymentMethods();
         
-        this.rentalData.selectedPaymentMethod = this.paymentMethods.find(m => 
+        // Buscar el método recién creado en la lista actualizada
+        const createdMethod = this.paymentMethods.find(m => 
           m.type === this.selectedPaymentMethodType && 
-          (m.walletId === paymentData.walletId || m.cardNumber === paymentData.cardNumber || m.email === paymentData.email)
+          ((m.walletId && m.walletId === paymentData.walletId) || 
+           (m.cardNumber && m.cardNumber === paymentData.cardNumber) || 
+           (m.email && m.email === paymentData.email))
         );
         
+        if (createdMethod) {
+          this.rentalData.selectedPaymentMethod = createdMethod;
+        }
+        
         this.showNewPaymentForm = false;
-        this.newPaymentMethod = {
-          digital_wallet: { type: 'digital_wallet', walletType: '', walletId: '' },
-          credit_card: { type: 'credit_card', cardholder: '', cardNumber: '', expiryDate: '', cvv: '' },
-          paypal: { type: 'paypal', email: '' }
-        };
+        this.resetNewPaymentMethodForm();
         
         addAlert('Método de pago guardado correctamente', 'success');
+        this.saveCurrentData();
+        return true;
       } catch (error) {
         console.error('Error al guardar método de pago:', error);
         addAlert('Error al guardar el método de pago', 'error');
+        return false;
       } finally {
         this.loading = false;
       }
     },
     
+    resetNewPaymentMethodForm() {
+      // Resetear los formularios de método de pago
+      this.newPaymentMethod = {
+        digital_wallet: { type: 'digital_wallet', walletType: '', walletId: '' },
+        credit_card: { type: 'credit_card', cardholder: '', cardNumber: '', expiryDate: '', cvv: '' },
+        paypal: { type: 'paypal', email: '' }
+      };
+    },
+    
     getPaymentMethodIdentifier(method) {
       if (!method) return null;
+      
+      // Si ya es un string (un ID guardado anteriormente), devolverlo directamente
+      if (typeof method === 'string') return method;
       
       switch(method.type) {
         case 'credit_card':
@@ -306,9 +393,11 @@ export const useRentalStore = defineStore('rental', {
     },
     
     formatRentalTime(hours) {
+      if (!hours) return '';
+      
       const days = Math.floor(hours / 24);
       const remainingHours = Math.floor(hours % 24);
-      const minutes = Math.floor((hours % 1) * 60);
+      const minutes = Math.round((hours % 1) * 60);
 
       let timeString = "";
 
@@ -316,15 +405,17 @@ export const useRentalStore = defineStore('rental', {
         timeString += `${days} día${days > 1 ? 's' : ''} `;
       }
 
-      if (remainingHours > 0) {
-        timeString += `${remainingHours} hora${remainingHours > 1 ? 's' : ''} `;
+      if (remainingHours > 0 || minutes > 0) {
+        if (minutes === 30) {
+          timeString += `${remainingHours}:30 hs`;
+        } else if (minutes > 0) {
+          timeString += `${remainingHours} hs ${minutes} min`;
+        } else {
+          timeString += `${remainingHours} hs`;
+        }
       }
 
-      if (minutes > 0) {
-        timeString += `${minutes} minuto${minutes > 1 ? 's' : ''}`;
-      }
-
-      return timeString.trim() || "0 horas";
+      return timeString.trim();
     },
     
     calculatePercentage(percentage) {
@@ -333,23 +424,35 @@ export const useRentalStore = defineStore('rental', {
     
     getPaymentMethodName(paymentMethod) {
       if (!paymentMethod) return 'No especificado';
+      
       const names = {
         credit_card: 'Tarjeta de crédito',
         paypal: 'PayPal',
         uala: 'Ualá',
         mercadopago: 'Mercado Pago'
       };
-      return paymentMethod.type === 'credit_card' 
-        ? `${names.credit_card} (**** ${paymentMethod.cardNumber.slice(-4)})` 
-        : names[paymentMethod.walletType || paymentMethod.type];
+      
+      if (paymentMethod.type === 'credit_card') {
+        return `${names.credit_card} (**** ${paymentMethod.cardNumber?.slice(-4) || 'XXXX'})`;
+      } else if (paymentMethod.type === 'digital_wallet') {
+        return names[paymentMethod.walletType] || 'Billetera digital';
+      } else {
+        return names[paymentMethod.type] || 'Otro método';
+      }
     },
     
     getPaymentDetails(paymentMethod) {
       if (!paymentMethod) return '';
+      
       if (paymentMethod.type === 'credit_card') {
         return `Titular: ${paymentMethod.cardholder} - Vence ${paymentMethod.expiryDate}`;
+      } else if (paymentMethod.type === 'paypal') {
+        return paymentMethod.email || '';
+      } else if (paymentMethod.type === 'digital_wallet') {
+        return paymentMethod.walletId || '';
       }
-      return paymentMethod.email || paymentMethod.walletId || '';
+      
+      return '';
     },
     
     prepareRentalData() {
@@ -369,23 +472,24 @@ export const useRentalStore = defineStore('rental', {
       try {
         if (!this.acceptTerms) {
           addAlert("Debes aceptar los términos y condiciones", "error");
-          return;
+          return false;
         }
 
         if (!this.rentalData.selectedPaymentMethod) {
           addAlert("Por favor selecciona un método de pago", "error");
-          return;
+          return false;
         }
 
         if (await isCarAlreadyRented(this.car.id)) {
           addAlert("Este auto ya está alquilado", "info");
-          return;
+          return false;
         }
         
         await submitRentalRequest(this.prepareRentalData());
         addAlert("¡Reserva completada con éxito!", "success");
         
-        localStorage.removeItem('rentalData');
+        // Limpiar solo los datos de este vehículo específico
+        localStorage.removeItem(this.storageKey);
         
         return true;
       } catch (error) {
@@ -393,6 +497,19 @@ export const useRentalStore = defineStore('rental', {
         addAlert("Error al procesar la reserva: " + (error.message || "Por favor intenta nuevamente"), "error");
         return false;
       }
+    },
+    
+    clearAllRentalData() {
+      // Buscar todas las claves que comienzan con 'rentalData_car_'
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('rentalData_car_')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      localStorage.removeItem('rentalData');
+      
+      this.resetRentalData();
     }
   }
 });

@@ -1,5 +1,7 @@
 <script>
 import Calendar from '../../atoms/Calendar.vue';
+import { useRentalStore } from '@/stores/rent.store.js';
+import { mapState, mapGetters } from 'pinia';
 
 export default {
   components: { Calendar },
@@ -8,7 +10,6 @@ export default {
       type: Boolean,
       default: false
     },
-    // Nuevos props para poder inicializar con valores
     initialFromDate: {
       type: String,
       default: ""
@@ -35,10 +36,19 @@ export default {
       rentedUntilDate: this.initialUntilDate || "",
       rentedUntilHour: this.initialUntilHour || "",
       availableHours: [],
-      availableUntilHours: []
+      availableUntilHours: [],
+      initialSync: false
     };
   },
+  computed: {
+    ...mapState(useRentalStore, ['rentalData', 'car']),
+    ...mapGetters(useRentalStore, ['storageKey'])
+  },
   methods: {
+    rentalStore() {
+      return useRentalStore();
+    },
+
     getTodayDate() {
       const today = new Date();
       const year = today.getFullYear();
@@ -64,31 +74,14 @@ export default {
     },
     
     updateAvailableHours() {
-      // Si está deshabilitado y tenemos valores iniciales, configurarlos manualmente
+      // Si está deshabilitado y tenemos valores iniciales, configurar con los datos del store
       if (this.disabled) {
         const allHours = this.generateTimeOptions();
         this.availableHours = allHours;
         this.availableUntilHours = allHours;
         
-        // Si hay datos almacenados en localStorage, usarlos
-        const savedData = localStorage.getItem('rentalData');
-        if (savedData) {
-          const data = JSON.parse(savedData);
-          this.rentedFromDate = data.rentedFromDate || this.rentedFromDate;
-          this.rentedUntilDate = data.rentedUntilDate || this.rentedUntilDate;
-          this.rentedFromHour = data.selectedTime || this.rentedFromHour;
-          this.rentedUntilHour = data.selectedUntilTime || this.rentedUntilHour;
-          
-          // Forzar que availableHours contenga estos valores
-          if (!this.availableHours.includes(this.rentedFromHour)) {
-            this.availableHours.push(this.rentedFromHour);
-          }
-          if (!this.availableUntilHours.includes(this.rentedUntilHour)) {
-            this.availableUntilHours.push(this.rentedUntilHour);
-          }
-          
-          this.emitDates();
-        }
+        // Sincronizar con los datos del store si estamos deshabilitados
+        this.syncFromStore();
         return;
       }
       
@@ -142,21 +135,61 @@ export default {
         ? this.rentedUntilHour
         : this.availableUntilHours[0] || "";
     },
-
+    
     updateInputs(values) {
-    this.rentedFromDate = values.rentedFromDate;
-    this.rentedUntilDate = values.rentedUntilDate;
-    this.rentedFromHour = values.rentedFromHour;
-    this.rentedUntilHour = values.rentedUntilHour;
-  },
+      this.rentedFromDate = values.rentedFromDate;
+      this.rentedUntilDate = values.rentedUntilDate;
+      this.rentedFromHour = values.rentedFromHour;
+      this.rentedUntilHour = values.rentedUntilHour;
+    },
     
     emitDates() {
-      this.$emit('update-dates', {
+      const dateData = {
         rentedFromDate: this.rentedFromDate,
         rentedUntilDate: this.rentedUntilDate,
         rentedFromHour: this.rentedFromHour,
         rentedUntilHour: this.rentedUntilHour
-      });
+      };
+      
+      // Emitir evento para el componente padre
+      this.$emit('update-dates', dateData);
+      
+      // Actualizar el store
+      this.rentalStore().handleDateUpdate(dateData);
+    },
+    
+    syncFromStore() {
+      // Solo sincronizar si tenemos un vehículo
+      if (this.car && this.car.id && this.rentalData) {
+        console.log(`Sincronizando datos del vehículo ${this.car.id} desde el store:`, this.rentalData);
+        
+        // Preparar todas las horas posibles
+        const allHours = this.generateTimeOptions();
+        this.availableHours = [...allHours];
+        this.availableUntilHours = [...allHours];
+        
+        // Actualizar fechas desde el store
+        if (this.rentalData.rentedFromDate) {
+          this.rentedFromDate = this.rentalData.rentedFromDate;
+        }
+        
+        if (this.rentalData.rentedUntilDate) {
+          this.rentedUntilDate = this.rentalData.rentedUntilDate;
+        }
+        
+        if (this.rentalData.selectedTime) {
+          this.rentedFromHour = this.rentalData.selectedTime;
+        }
+        
+        if (this.rentalData.selectedUntilTime) {
+          this.rentedUntilHour = this.rentalData.selectedUntilTime;
+        }
+
+        // Después de sincronizar, actualizar horas disponibles para respetar las reglas
+        this.updateAvailableUntilHours();
+      } else {
+        console.log('No hay datos o coche para sincronizar');
+      }
     }
   },
   watch: {
@@ -181,10 +214,24 @@ export default {
     },
     disabled(newVal) {
       this.updateAvailableHours();
+    },
+    // Observar cuando cambia el coche en el store para resetear y sincronizar los datos
+    'car.id': {
+      handler(newId, oldId) {
+        if (newId !== oldId) {
+          console.log(`Cambio de vehículo detectado: ${oldId} -> ${newId}`);
+          this.syncFromStore();
+        }
+      },
+      immediate: true
     }
   },
   mounted() {
-    this.updateAvailableHours();
+    // Sincronizar con el store al montar el componente
+    this.$nextTick(() => {
+      this.syncFromStore();
+      this.updateAvailableHours();
+    });
   }
 };
 </script>
