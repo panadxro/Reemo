@@ -37,7 +37,7 @@ export default {
       rentedUntilHour: this.initialUntilHour || "",
       availableHours: [],
       availableUntilHours: [],
-      initialSync: false
+      previousCarId: null // Agregamos un tracker para el ID del coche anterior
     };
   },
   computed: {
@@ -73,15 +73,44 @@ export default {
         : `${String(hours + 1).padStart(2, '0')}:00`;
     },
     
+syncWithStoreData() {
+  let dataWasLoaded = false;
+  
+  if (this.rentalData.rentedFromDate) {
+    this.rentedFromDate = this.rentalData.rentedFromDate;
+    dataWasLoaded = true;
+  }
+  
+  if (this.rentalData.rentedUntilDate) {
+    this.rentedUntilDate = this.rentalData.rentedUntilDate;
+    dataWasLoaded = true;
+  }
+  
+  if (this.rentalData.selectedTime) {
+    this.rentedFromHour = this.rentalData.selectedTime;
+    dataWasLoaded = true;
+  }
+  
+  if (this.rentalData.selectedUntilTime) {
+    this.rentedUntilHour = this.rentalData.selectedUntilTime;
+    dataWasLoaded = true;
+  }
+  
+  this.updateAvailableHours();
+  this.updateAvailableUntilHours();
+  
+  if (dataWasLoaded) {
+    console.log("Datos cargados del store, emitiendo actualización");
+    this.emitDates();
+  }
+},
+    
     updateAvailableHours() {
       // Si está deshabilitado y tenemos valores iniciales, configurar con los datos del store
       if (this.disabled) {
         const allHours = this.generateTimeOptions();
         this.availableHours = allHours;
         this.availableUntilHours = allHours;
-        
-        // Sincronizar con los datos del store si estamos deshabilitados
-        this.syncFromStore();
         return;
       }
       
@@ -158,38 +187,19 @@ export default {
       this.rentalStore().handleDateUpdate(dateData);
     },
     
-    syncFromStore() {
-      // Solo sincronizar si tenemos un vehículo
-      if (this.car && this.car.id && this.rentalData) {
-        console.log(`Sincronizando datos del vehículo ${this.car.id} desde el store:`, this.rentalData);
-        
-        // Preparar todas las horas posibles
-        const allHours = this.generateTimeOptions();
-        this.availableHours = [...allHours];
-        this.availableUntilHours = [...allHours];
-        
-        // Actualizar fechas desde el store
-        if (this.rentalData.rentedFromDate) {
-          this.rentedFromDate = this.rentalData.rentedFromDate;
-        }
-        
-        if (this.rentalData.rentedUntilDate) {
-          this.rentedUntilDate = this.rentalData.rentedUntilDate;
-        }
-        
-        if (this.rentalData.selectedTime) {
-          this.rentedFromHour = this.rentalData.selectedTime;
-        }
-        
-        if (this.rentalData.selectedUntilTime) {
-          this.rentedUntilHour = this.rentalData.selectedUntilTime;
-        }
-
-        // Después de sincronizar, actualizar horas disponibles para respetar las reglas
-        this.updateAvailableUntilHours();
-      } else {
-        console.log('No hay datos o coche para sincronizar');
-      }
+    resetDatetimeFields() {
+      // Reiniciar los campos a valores por defecto
+      const today = this.getTodayDate();
+      this.rentedFromDate = today;
+      this.rentedFromHour = "";
+      this.rentedUntilDate = "";
+      this.rentedUntilHour = "";
+      
+      // Actualizar horas disponibles
+      this.updateAvailableHours();
+      
+      // Emitir los cambios
+      this.emitDates();
     }
   },
   watch: {
@@ -216,25 +226,63 @@ export default {
       this.updateAvailableHours();
     },
     // Observar cuando cambia el coche en el store para resetear y sincronizar los datos
-    'car.id': {
-      handler(newId, oldId) {
-        if (newId !== oldId) {
-          console.log(`Cambio de vehículo detectado: ${oldId} -> ${newId}`);
-          this.syncFromStore();
+'car.id': {
+  handler(newId, oldId) {
+    if (newId !== oldId && newId !== undefined && newId !== null ) {
+      console.log(`Cambio de vehículo detectado: ${oldId} -> ${newId}`);
+      this.previousCarId = newId;
+      
+      this.resetDatetimeFields();
+      
+      this.$nextTick(() => {
+        if (this.rentalData.rentedFromDate) {
+          this.syncWithStoreData();
+        }
+      });
+    }
+  },
+  immediate: true
+},
+    // Observar cambios en rentalData para sincronizar cuando se cargan datos guardados
+    'rentalData': {
+      handler(newData, oldData) {
+        // Solo sincronizar si los datos son realmente diferentes
+        const hasChanged = 
+          newData.rentedFromDate !== oldData?.rentedFromDate ||
+          newData.rentedUntilDate !== oldData?.rentedUntilDate ||
+          newData.selectedTime !== oldData?.selectedTime ||
+          newData.selectedUntilTime !== oldData?.selectedUntilTime;
+          
+        if (hasChanged) {
+          this.syncWithStoreData();
         }
       },
+      deep: true,
       immediate: true
     }
   },
-  mounted() {
-    // Sincronizar con el store al montar el componente
-    this.$nextTick(() => {
-      this.syncFromStore();
-      this.updateAvailableHours();
-    });
-  }
+mounted() {
+  this.$nextTick(() => {
+    console.log("DateTime montado, inicializando con datos:", 
+      this.rentalData.rentedFromDate, 
+      this.rentalData.rentedUntilDate);
+    
+    this.syncWithStoreData();
+    
+    if (this.car && this.car.id) {
+      this.previousCarId = this.car.id;
+    }
+    
+    if (this.rentalStore().currentStep > 1 && 
+        (!this.rentedFromDate || !this.rentedUntilDate)) {
+      console.warn("Estado inconsistente detectado: en paso avanzado sin fechas");
+      setTimeout(() => this.syncWithStoreData(), 500);
+    }
+  });
+}
 };
 </script>
+
 
 <template>
   <div class="flex flex-col md:flex-row gap-4">
