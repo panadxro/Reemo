@@ -195,9 +195,6 @@ export async function createOverlayView( map, car, marker, content, vueInstance)
 // }
 
 // Filtramos los autos por la Ubicacion
-
-
-
 // export function updateCars(cars, searchLocation, map, filters = {}) {
 export function updateCars(cars, searchLocation, map ) {
   if (!searchLocation || !searchLocation.lat || !searchLocation.lng) {
