@@ -510,7 +510,7 @@ onMounted(async () => {
                   {{ store.rentalData.selectedTime }}</p>
               </div>
               <div>
-                <p class="text-sm text-gray-600">Devolución</p>
+                <p class="text-sm text-gray-400">Devolución</p>
                 <p class="font-medium">{{ store.formatDate(store.rentalData.rentedUntilDate) }}
                  a las {{ store.rentalData.selectedUntilTime }}</p>
               </div>
@@ -576,7 +576,7 @@ onMounted(async () => {
                 <p class="text-gray-500">No se ha seleccionado método de pago</p>
                 <button 
                   @click="store.goToStep(3)"
-                  class="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  class="mt-2 text-blue-600 hover:text-blue-800 text-sm font-medium cursor-pointer"
                 >
                   Seleccionar método de pago
                 </button>

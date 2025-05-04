@@ -59,38 +59,67 @@ export const useCarStore = defineStore('car', {
 
   actions: {
     async fetchCarById(carId) {
-      this.loading = true;
-      this.error = null;
-      
-      try {
-        const carData = await getCarById(carId);
-        this.car = carData;
+        this.resetState();
         
-        // Establecer imagen por defecto si es necesario
-        if (!this.car.user) {
-          this.car.user = {};
+        this.loading = true;
+        
+        try {
+          const carData = await getCarById(carId);
+          this.car = carData;
+          
+          if (!this.car.user) {
+            this.car.user = {};
+          }
+          
+          this.currentImage = this.carImages[0];
+          this.isRented = await checkIfCarIsRented(carId);
+          
+          return this.car;
+        } catch (error) {
+          this.error = "Hubo un error al obtener los detalles del auto. Volvé a intentar";
+          console.error("Error al obtener los detalles del auto:", error);
+          throw error;
+        } finally {
+          this.loading = false;
         }
-        
-        this.currentImage = this.carImages[0];
-        this.isRented = await checkIfCarIsRented(carId);
-        
-        return this.car;
-      } catch (error) {
-        this.error = "Hubo un error al obtener los detalles del auto. Volvé a intentar";
-        console.error("Error al obtener los detalles del auto:", error);
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
+      },
     
     setCurrentImage(image) {
       this.currentImage = image;
     },
     
     resetState() {
-      this.$reset();
-    },
+        this.car = {
+          id: null,
+          marca: '',
+          modelo: '',
+          precio: 0,
+          año: '',
+          chasis: '',
+          motor: '',
+          transmision: '',
+          combustible: '',
+          description: '',
+          accessories: [],
+          images: [],
+          coordenadas: {
+            lat: null,
+            lng: null
+          },
+          user: {
+            id: null,
+            name: '',
+            lastName: '',
+            photoURL: '',
+            userName: ''
+          },
+          user_id: null
+        };
+        this.currentImage = null;
+        this.isRented = false;
+        this.loading = false;
+        this.error = null;
+      },
     
     updateCarCoordinates(coordinates) {
       if (coordinates && coordinates.lat && coordinates.lng) {

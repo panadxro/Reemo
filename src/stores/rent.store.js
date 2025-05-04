@@ -47,7 +47,8 @@ export const useRentalStore = defineStore('rental', {
     initialPaymentMethodLoaded: false,
     loading: false,
     errorMessage: "",
-    acceptTerms: false
+    acceptTerms: false,
+    isStoreInitialized: false
   }),
   
   getters: {
@@ -92,7 +93,8 @@ export const useRentalStore = defineStore('rental', {
         const start = new Date(`${this.rentalData.rentedFromDate}T${this.rentalData.selectedTime || '00:00'}`);
         const end = new Date(`${this.rentalData.rentedUntilDate}T${this.rentalData.selectedUntilTime || '00:00'}`);
         return Math.max(0, (end - start) / (1000 * 60 * 60));
-      } catch {
+      } catch (e) {
+        console.error("Error calculando horas de alquiler:", e);
         return 0;
       }
     },
@@ -126,23 +128,41 @@ export const useRentalStore = defineStore('rental', {
         console.error("Usuario no válido proporcionado:", loggedUser);
         throw new Error("Se requiere un usuario válido");
       }
-  
-      // Guardar datos actuales si hay un coche diferente
-      this.saveCurrentDataIfNeeded(car);
       
-      // Resetear datos si cambiamos de coche
-      if (this.car && car && this.car.id !== car.id) {
-        this.resetRentalData();
-      }
+      // Si estamos cambiando de auto, reseteamos los datos
+      const isChangingCar = this.car && car && this.car.id !== car.id;
       
       this.car = car;
       this.loggedUser = loggedUser;
       this.rented = isCarRented;
       
-      // Cargar datos del nuevo coche
-      this.loadSavedData();
+      // Solo reseteamos datos si cambiamos de auto
+      if (isChangingCar) {
+        console.log(`Cambiando de auto ${this.car.id} a ${car.id}, reseteando datos`);
+        this.resetRentalData();
+        localStorage.removeItem(this.storageKey);
+        this.currentStep = 1;
+      } else {
+        // Si es el mismo auto o primera carga, intentamos cargar datos guardados
+        this.loadSavedData();
+      }
+      
+      // Calculamos el precio después de cargar los datos guardados
+      this.calculatePrice();
+      this.isStoreInitialized = true;
+      
+      console.log("Store inicializado con datos:", {
+        carId: this.car?.id,
+        userId: this.loggedUser?.id,
+        fechas: {
+          desde: this.rentalData.rentedFromDate,
+          hasta: this.rentalData.rentedUntilDate
+        },
+        precio: this.rentalData.currentTotalPrice,
+        paso: this.currentStep
+      });
     },
-    
+      
     resetRentalData() {
       this.rentalData = {
         rentedFromDate: "",
@@ -153,54 +173,79 @@ export const useRentalStore = defineStore('rental', {
         selectedPaymentMethod: null
       };
       this.acceptTerms = false;
-    },
-    
-    saveCurrentDataIfNeeded(newCar) {
-      // Si teníamos un coche anterior y hay datos para guardar
-      if (this.car && this.car.id && 
-          (this.rentalData.rentedFromDate || this.rentalData.rentedUntilDate)) {
-        // Guardar los datos del coche anterior
-        this.saveCurrentData();
+      
+      if (this.car && this.car.id) {
+        localStorage.removeItem(this.storageKey);
       }
     },
-    
-    loadSavedData() {
-      if (!this.car || !this.car.id) return;
       
-      const key = this.storageKey;
-      const savedData = localStorage.getItem(key);
-      
-      if (savedData) {
-        try {
-          const parsedData = JSON.parse(savedData);
-          this.rentalData = {
-            ...this.rentalData,
-            ...parsedData
-          };
-          console.log(`Datos cargados para el vehículo ${this.car.id}:`, this.rentalData);
-        } catch (e) {
-          console.error(`Error al cargar datos guardados para el vehículo ${this.car.id}:`, e);
-        }
-      } else {
-        console.log(`No hay datos guardados para el vehículo ${this.car.id}`);
-        // No hay datos guardados para este vehículo, resetear
-        this.resetRentalData();
-      }
-    },
-    
+    // Guardar datos de la reserva actual en localStorage
     saveCurrentData() {
-      if (!this.car || !this.car.id) return;
+      // if (!this.car || !this.car.id) {
+      //   console.warn("No se puede guardar datos sin un ID de auto");
+      //   return;
+      // }
       
-      const key = this.storageKey;
-      // No guardar métodos de pago completos en localStorage por seguridad
       const dataToSave = {
-        ...this.rentalData,
-        // Solo guardar el identificador del método de pago, no los datos completos
-        selectedPaymentMethod: this.rentalData.selectedPaymentMethod ? 
-          this.getPaymentMethodIdentifier(this.rentalData.selectedPaymentMethod) : null
+        currentStep: this.currentStep,
+        rentalData: {
+          ...this.rentalData,
+          // Asegurarnos de que el precio se guarde correctamente
+          currentTotalPrice: this.totalPrice
+        },
+        acceptTerms: this.acceptTerms
       };
-      localStorage.setItem(key, JSON.stringify(dataToSave));
-      console.log(`Datos guardados para el vehículo ${this.car.id}:`, dataToSave);
+      
+      try {
+        localStorage.setItem(this.storageKey, JSON.stringify(dataToSave));
+        // console.log("Datos guardados en localStorage:", dataToSave);
+      } catch (error) {
+        console.error("Error al guardar datos en localStorage:", error);
+      }
+    },
+    
+    // Cargar datos guardados desde localStorage
+    loadSavedData() {
+      if (!this.car || !this.car.id) {
+        console.warn("No se puede cargar datos sin un ID de auto");
+        return;
+      }
+      
+      try {
+        const savedData = localStorage.getItem(this.storageKey);
+        
+        if (savedData) {
+          const parsedData = JSON.parse(savedData);
+          
+          // Restaurar datos
+          if (parsedData.rentalData) {
+            // Asegurarse de que todos los campos necesarios existan
+            const completeRentalData = {
+              ...this.rentalData,
+              ...parsedData.rentalData
+            };
+            
+            this.rentalData = completeRentalData;
+          }
+          
+          if (typeof parsedData.currentStep === 'number') {
+            this.currentStep = parsedData.currentStep;
+          }
+          
+          if (typeof parsedData.acceptTerms === 'boolean') {
+            this.acceptTerms = parsedData.acceptTerms;
+          }
+          
+          console.log("Datos cargados desde localStorage:", parsedData);
+          
+          // Calculamos el precio después de cargar datos
+          this.calculatePrice();
+        } else {
+          console.log("No hay datos guardados para este auto");
+        }
+      } catch (error) {
+        console.error("Error al cargar datos desde localStorage:", error);
+      }
     },
     
     nextStep() {
@@ -211,42 +256,52 @@ export const useRentalStore = defineStore('rental', {
 
       if (this.currentStep < 4) {
         this.currentStep++;
-        this.saveCurrentData();
+        this.calculatePrice(); // Recalcular precio al avanzar
+        this.saveCurrentData(); // Guardar después de cambiar el paso
       }
     },
     
     prevStep() {
       if (this.currentStep > 1) {
         this.currentStep--;
+        this.saveCurrentData(); // Guardar después de cambiar el paso
       }
     },
     
     goToStep(step) {
       if (step >= 1 && step <= 4) {
         this.currentStep = step;
+        this.calculatePrice(); // Recalcular precio al cambiar de paso
+        this.saveCurrentData(); // Guardar después de cambiar el paso
       }
     },
     
     handleDateUpdate(data) {
-      this.rentalData.rentedFromDate = data.rentedFromDate;
-      this.rentalData.rentedUntilDate = data.rentedUntilDate;
-      this.rentalData.selectedTime = data.rentedFromHour;
-      this.rentalData.selectedUntilTime = data.rentedUntilHour;
+      // console.log("Actualizando fechas en el store:", data);
+      
+      this.rentalData.rentedFromDate = data.rentedFromDate || this.rentalData.rentedFromDate;
+      this.rentalData.rentedUntilDate = data.rentedUntilDate || this.rentalData.rentedUntilDate;
+      this.rentalData.selectedTime = data.rentedFromHour || this.rentalData.selectedTime;
+      this.rentalData.selectedUntilTime = data.rentedUntilHour || this.rentalData.selectedUntilTime;
       
       this.calculatePrice();
-      this.saveCurrentData();
+      this.saveCurrentData(); // Guardar después de actualizar fechas
     },
     
     calculatePrice() {
       if (this.car && this.rentalData.rentedFromDate && this.rentalData.rentedUntilDate) {
-        this.rentalData.currentTotalPrice = this.totalPrice;
+        const calculatedPrice = this.totalPrice;
+        this.rentalData.currentTotalPrice = calculatedPrice;
+        // console.log("Precio calculado:", calculatedPrice);
+        return calculatedPrice;
       }
+      return 0;
     },
     
     selectPaymentMethod(method) {
       this.rentalData.selectedPaymentMethod = method;
       this.showNewPaymentForm = false;
-      this.saveCurrentData();
+      this.saveCurrentData(); // Guardar después de seleccionar método de pago
     },
     
     async fetchPaymentMethods() {
@@ -263,16 +318,10 @@ export const useRentalStore = defineStore('rental', {
         console.log("Metodos de pago obtenidos:", methods);
         this.paymentMethods = methods;
         
-        // Si hay un método guardado previamente, intentar encontrarlo en los métodos actuales
-        if (this.rentalData.selectedPaymentMethod && typeof this.rentalData.selectedPaymentMethod === 'string') {
-          const savedMethodId = this.rentalData.selectedPaymentMethod;
-          const matchingMethod = methods.find(m => this.getPaymentMethodIdentifier(m) === savedMethodId);
-          if (matchingMethod) {
-            this.rentalData.selectedPaymentMethod = matchingMethod;
-          } else {
-            // Si no se encuentra el método guardado, seleccionar el primero disponible
-            this.rentalData.selectedPaymentMethod = methods.length > 0 ? methods[0] : null;
-          }
+        // Si hay métodos disponibles, seleccionar el primero (si no hay uno ya seleccionado)
+        if (methods.length > 0 && !this.rentalData.selectedPaymentMethod) {
+          this.rentalData.selectedPaymentMethod = methods[0];
+          this.saveCurrentData(); // Guardar después de cargar método de pago
         }
         
         return methods;
@@ -287,10 +336,6 @@ export const useRentalStore = defineStore('rental', {
 
     toggleNewPaymentForm() {
       this.showNewPaymentForm = !this.showNewPaymentForm;
-      if (this.showNewPaymentForm) {
-        // No deseleccionar el método de pago al abrir el formulario
-        // Solo deseleccionar si se elige guardar el nuevo método
-      }
     },
     
     async saveNewPaymentMethod() {
@@ -335,13 +380,13 @@ export const useRentalStore = defineStore('rental', {
         
         if (createdMethod) {
           this.rentalData.selectedPaymentMethod = createdMethod;
+          this.saveCurrentData(); // Guardar después de crear método de pago
         }
         
         this.showNewPaymentForm = false;
         this.resetNewPaymentMethodForm();
         
         addAlert('Método de pago guardado correctamente', 'success');
-        this.saveCurrentData();
         return true;
       } catch (error) {
         console.error('Error al guardar método de pago:', error);
@@ -480,6 +525,9 @@ export const useRentalStore = defineStore('rental', {
           return false;
         }
 
+        // Verificamos el precio final antes de enviar
+        this.calculatePrice();
+
         if (await isCarAlreadyRented(this.car.id)) {
           addAlert("Este auto ya está alquilado", "info");
           return false;
@@ -488,7 +536,8 @@ export const useRentalStore = defineStore('rental', {
         await submitRentalRequest(this.prepareRentalData());
         addAlert("¡Reserva completada con éxito!", "success");
         
-        // Limpiar solo los datos de este vehículo específico
+        // Limpiar datos y localStorage
+        this.resetRentalData();
         localStorage.removeItem(this.storageKey);
         
         return true;
@@ -499,17 +548,18 @@ export const useRentalStore = defineStore('rental', {
       }
     },
     
-    clearAllRentalData() {
-      // Buscar todas las claves que comienzan con 'rentalData_car_'
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('rentalData_car_')) {
-          localStorage.removeItem(key);
-        }
-      });
-      
-      localStorage.removeItem('rentalData');
-      
-      this.resetRentalData();
+    // Actualizar términos y condiciones
+    updateTermsAcceptance(accepted) {
+      this.acceptTerms = accepted;
+      this.saveCurrentData(); // Guardar después de actualizar aceptación de términos
+    },
+    
+    resetStore() {
+      // Método para resetear completamente el store y eliminar datos guardados
+      if (this.car && this.car.id) {
+        localStorage.removeItem(this.storageKey);
+      }
+      this.$reset();
     }
   }
 });

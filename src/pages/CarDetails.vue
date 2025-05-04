@@ -28,7 +28,6 @@ export default {
   data() {
     return {
       mapInitialized: false,
-      currentStep: 0,
     };
   },
   
@@ -44,6 +43,9 @@ export default {
     },
     car() {
       return this.carStore.car;
+    },
+    currentStep() {
+      return this.rentalStore.currentStep;
     },
     loading() {
       return this.carStore.loading;
@@ -64,6 +66,7 @@ export default {
   
   async created() {
   try {
+    this.carStore.loading = true;
     await this.carStore.fetchCarById(this.id);
 
     if (this.car.coordenadas?.lat && this.car.coordenadas?.lng) {
@@ -244,9 +247,9 @@ export default {
       </div>
     </article>
   </section>
-  <section v-else-if="loading" class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
-    <p>Cargando...</p>
-  </section>
+  <div v-else-if="carStore.loading" class="flex justify-center items-center h-64">
+    <Loading role="status" class="h-6 w-6 text-blue-500" />
+  </div>
   <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
     <p>{{ carStore.errorMessage }}</p>
   </section>
@@ -255,7 +258,7 @@ export default {
       <div 
         id="map"
         style="width: 100%; height: 300px; border-radius: 40px;"
-        v-show="currentStep === 0"
+        v-show="currentStep === 1"
       ></div>
     </div>
   
