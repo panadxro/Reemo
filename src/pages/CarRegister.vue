@@ -43,9 +43,9 @@ export default {
         },
         credit_card: {
           type: 'credit_card',
-          cardholder: '',
+          cardHolder: '',
           cardNumber: '',
-          expiryDate: '',
+          expirationDate: '',
           cvv: ''
         },
         paypal: {
@@ -256,7 +256,7 @@ export default {
 
       switch(this.selectedPaymentMethod) {
         case 'credit_card':
-          paymentValid = payment.cardholder && payment.cardNumber && payment.expiryDate && payment.cvv;
+          paymentValid = payment.cardHolder && payment.cardNumber && payment.expirationDate && payment.cvv;
           break;
         case 'digital_wallet':
           paymentValid = payment.walletType && payment.walletId;
@@ -416,9 +416,9 @@ export default {
           
           if (primaryPaymentMethod.type === 'credit_card') {
             this.paymentMethods.credit_card = {
-              cardholder: primaryPaymentMethod.cardholder || '',
+              cardHolder: primaryPaymentMethod.cardHolder || '',
               cardNumber: primaryPaymentMethod.cardNumber || '',
-              expiryDate: primaryPaymentMethod.expiryDate || '',
+              expirationDate: primaryPaymentMethod.expirationDate || '',
               cvv: paymentMethods.cvv ? '***' : '' // No cargamos el CVV por seguridad
             };
           }
@@ -710,7 +710,7 @@ export default {
               <Input 
                 type="text"
                 placeholder="Titular de tarjeta"
-                v-model="paymentMethods.credit_card.cardholder"
+                v-model="paymentMethods.credit_card.cardHolder"
                 :variant="'secondary'"
                 :outline="false"
                 />
@@ -725,7 +725,7 @@ export default {
                 <Input 
                   type="date"
                   placeholder="Fecha de vencimiento"
-                  v-model="paymentMethods.credit_card.expiryDate"
+                  v-model="paymentMethods.credit_card.expirationDate"
                   :variant="'secondary'"
                   :outline="false"
                 />

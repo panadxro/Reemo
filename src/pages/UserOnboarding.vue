@@ -1,10 +1,7 @@
-<script>
-import { ref, markRaw, watch } from 'vue';
-import { useAuthStore, useUserStore, useUiStore } from '@stores'
-import { onMounted, onBeforeUnmount, computed } from 'vue'
-import { saveUserData, completeOnboarding, getUserProfile } from '../services/user';
-// import { subscribeToAuthState } from "../services/auth.js";
-import { uploadUserFile } from '../services/storage/documents.js';
+<script setup>
+import { ref, markRaw, watch, onMounted, onBeforeUnmount, computed, reactive } from 'vue';
+import { useAuthStore, useUserStore, useGeoStore } from '@stores'
+import { useRouter } from "vue-router";
 import { addAlert } from "../services/alerts.js";
 
 import Heading from '../components/atoms/Heading.vue';
@@ -24,475 +21,145 @@ import Location from '@icons/Location.vue';
 import Payment from '@icons/Payment.vue';
 import Clipboard from '@icons/Clipboard.vue';
 
-export default {
-  name: "UserOnboarding",
-  components: { Heading, Input, Checkbox, LongArrow, Reemo, DropdownForm, DNIFront, DNIBack, DriverFront, DriverBack, Loading, User, Documentation, Location, Payment, Clipboard },
-  data() {
-    return {
-      openDropdown: null,
-      currentStep: 0, // Paso actual
-      profilePhotoPreview: null,
-      dniFrontUrl: null,
-      dniBackUrl: null,
-      driverFrontUrl: null,
-      driverBackUrl: null,
-      paymentMethods: {
-        digital_wallet: {
-          type: 'digital_wallet',
-          walletType: '',
-          walletId: ''
-        },
-        credit_card: {
-          type: 'credit_card',
-          cardholder: '',
-          cardNumber: '',
-          expiryDate: '',
-          cvv: ''
-        },
-        paypal: {
-          type: 'paypal',
-          email: ''
-        }
-      },
-      selectedPaymentMethod: 'credit_card',
-      loading: false,
-      sections: [
-        { 
-          title: "Información Personal",
-          icon: markRaw(User)
-        },
-        { 
-          title: "Documentación",
-          icon: markRaw(Documentation)
-        },
-        { 
-          title: "Ubicación",
-          icon: markRaw(Location)
-        },
-        { 
-          title: "Método de Pago",
-          icon: markRaw(Payment)
-        },
-        { 
-          title: "Términos y Condiciones",
-          icon: markRaw(Clipboard)
-        },
-      ],
-      loggedUser: {
-        id: null
-      },
-      user: {
-        profilePhoto: null,
-        username: "",
-        firstName: "",
-        lastName: "",
-        phone: "",
-        gender: "",
-        birthDate: "",
-        documentType: "",
-        documentNumber: "",
-        dniFrontUrl: null,
-        dniBackUrl: null,
-        licenseNumber: "",
-        driverFrontUrl: null,
-        driverBackUrl: null,
-        province: "",
-        city: "",
-        postalCode: "",
-        street: "",
-        floor: "",
-        apartment: "",
-        acceptedNotifications: false,
-        acceptedPrivacyPolicy: false,
-        paymentMethodType: 'credit_card' // Valor por defecto
-      },
-      provincias: [
-        "Buenos Aires",
-        "Catamarca",
-        "Chaco",
-        "Chubut",
-        "Córdoba",
-        "Corrientes",
-        "Entre Ríos",
-        "Formosa",
-        "Jujuy",
-        "La Pampa",
-        "La Rioja",
-        "Mendoza",
-        "Misiones",
-        "Neuquén",
-        "Río Negro",
-        "Salta",
-        "San Juan",
-        "San Luis",
-        "Santa Cruz",
-        "Santa Fe",
-        "Santiago del Estero",
-        "Tierra del Fuego",
-        "Tucumán",
-      ],
-      ciudades: [], // Se llena dinámicamente según la provincia seleccionada
-      ciudadesPorProvincia: {
-        "Buenos Aires": ["La Plata", "Mar del Plata", "Bahía Blanca"],
-        "Córdoba": ["Córdoba", "Villa María", "Río Cuarto"],
-        "Santa Fe": ["Rosario", "Santa Fe", "Rafaela"],
-        // Agrega más provincias y ciudades aquí
-      },
-    };
-  },
-  watch: {
-    currentStep(newStep) {
-      const sectionId = `section-${newStep + 1}`;
-      this.uiStore.openInitialDropdown(sectionId, this.getInitialDropdownId(newStep));
-    }
-  },
-  setup() {
-    const authStore = useAuthStore()
-    const userStore = useUserStore()
-    const uiStore = useUiStore()
-    
-    const loggedUserId = computed(() => {
-      return authStore.user?.id
-    }) 
+const authStore = useAuthStore();
+const userStore = useUserStore();
+const geoStore = useGeoStore();
+const router = useRouter();
 
-    const personalInfo = computed(() => {
-      return userStore.personalInfo
-    })
+const authSessionHistory = sessionStorage.getItem('auth_session_history');
+const authSession = JSON.parse(authSessionHistory);
 
-    const documents = computed(() => {
-      return userStore.documents
-    })
+const loggedUserId = computed(() => authStore.user?.id);
+const personalInfo = computed(() => userStore.personalInfo);
+const documents = computed(() => userStore.documents);
+const address = computed(() => userStore.address);
+const paymentMethods = computed(() => userStore.paymentMethods);
+const agreements = computed(() => userStore.agreements);
 
-    const address = computed(() => {
-      return userStore.address
-    })
+const currentStep = ref(0);
+const filePreviews = reactive({
+  profilePhoto: null,
+  profilePhotoFile: null,
+  dniFront: null,
+  dniFrontFile: null,
+  dniBack: null,
+  dniBackFile: null,
+  driverLicenseFront: null,
+  driverLicenseFrontFile: null,
+  driverLicenseBack: null,
+  driverLicenseBackFile: null,
+});
+const loading = ref(false)
+const sections = ref([
+  { title: 'Datos personales', icon: markRaw(User) },
+  { title: 'Documentación', icon: markRaw(Documentation) },
+  { title: 'Ubicación', icon: markRaw(Location) },
+  { title: 'Método de Pago', icon: markRaw(Payment) },
+  { title: 'Términos y Condiciones', icon: markRaw(Clipboard) }
+])
 
-    const payment = computed(() => {
-      return userStore.paymentMethods
-    })
-
-    const agreements = computed(() => {
-      return userStore.agreements
-    })
-/*     const handleBeforeUnload = (event) => {
-      const message = '¿Estás seguro de que quieres salir? Los cambios no guardados se perderán.';
-      event.preventDefault();
-      event.returnValue = message;
-      return message;
-    }; */
-
-    onMounted(async () => {
-      // authStore.init() // Inicializa la escucha de auth
-      // window.addEventListener('beforeunload', handleBeforeUnload);
-      await userStore.loadUserProfile(loggedUserId);
-
-
-    })
-
-    onBeforeUnmount(() => {
-      // window.removeEventListener('beforeunload', handleBeforeUnload);
-    });
-
-    return {
-      authStore,
-      userStore,
-      uiStore,
-      loggedUserId,
-      personalInfo,
-      documents,
-      address,
-      payment,
-      agreements
-    }
-  },
-  methods: {
-    async prepareUserData() {
-      const uid = loggedUserId; 
-      const paymentData = this.paymentMethods[this.selectedPaymentMethod];
-      this.loading = true;
-
-      return {
-        // Información Personal
-        personalInfo: {
-          profilePhoto: this.user.profilePhotoPreview || this.user.profilePhoto,
-          username: this.user.username,
-          firstName: this.user.firstName,
-          lastName: this.user.lastName,
-          phone: this.user.phone,
-          gender: this.user.gender,
-          birthDate: this.user.birthDate
-        },
-
-        // Documentación
-        documents: {
-          dniFront: this.user.dniFrontUrl,
-          dniBack: this.user.dniBackUrl,
-          driverLicenseFront: this.user.driverFrontUrl,
-          driverLicenseBack: this.user.driverBackUrl
-        },
-
-        //Ubicación
-        address: {
-          country: "Argentina",
-          province: this.user.province,
-          city: this.user.city,
-          postalCode: this.user.postalCode,
-          street: this.user.street,
-          floor: this.user.floor,
-          apartment: this.user.apartment
-        },
-
-        // Método de Pago
-        paymentMethods: [{
-          type: this.selectedPaymentMethod,
-          ...paymentData,
-          // Datos sensibles
-          ...(this.selectedPaymentMethod === 'credit_card' && {
-            cardNumber: paymentData.cardNumber.replace(/\d(?=\d{4})/g, "*")
-          })
-        }],
-
-        // Acuerdos
-        agreements: {
-          acceptedTerms: this.user.acceptedTerms,
-          acceptedPrivacyPolicy: this.user.acceptedPrivacyPolicy,
-          acceptedMarketing: this.user.acceptedNotifications,
-          acceptedAt: new Date()
-        },
-        
-        // Metadata importante
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-    },
-    handleDropdownToggle(dropdownInstance) {
-/*       if (this.openDropdown && this.openDropdown !== dropdownInstance) {
-        this.openDropdown.closeDropdown();
-      }
-      this.openDropdown = dropdownInstance.isOpen ? dropdownInstance : null; */
-      console.log('Dropdown toggled:', dropdownInstance)
-    },
-    getInitialDropdownId(step) {
-      const initialDropdowns = {
-        1: 'doc-identidad',
-        3: 'tarjeta'
-      };
-      return initialDropdowns[step];
-    },
-    nextStep() {
-      if (this.currentStep < this.sections.length - 1) {
-        this.currentStep++;
-      }
-    },
-    prevStep() {
-      if (this.currentStep > 0) {
-        this.currentStep--;
-      }
-    },
-    cargarCiudades() {
-      this.user.city = ""; // Reinicia la ciudad seleccionada
-      this.ciudades = this.ciudadesPorProvincia[this.user.province] || [];
-    },
-    async handleSubmit() {
-      // Validar paso de términos
-      if (!this.agreements.acceptedTerms || !this.agreements.acceptedPrivacyPolicy) {
-        console.log("Debes aceptar los términos y políticas");
-        addAlert('Debes aceptar los términos y políticas', 'error')
-        return
-      }
-/*       let paymentValid = false;
-      const payment = this.paymentMethods[this.selectedPaymentMethod];
-
-      switch(this.selectedPaymentMethod) {
-        case 'credit_card':
-          paymentValid = payment.cardholder && payment.cardNumber && payment.expiryDate && payment.cvv;
-          break;
-        case 'digital_wallet':
-          paymentValid = payment.walletType && payment.walletId;
-          break;
-        case 'paypal':
-          paymentValid = payment.email;
-          break;
-        default:
-          paymentValid = false;
-      }
-
-      if (!paymentValid) {
-        addAlert('Debes completar la información de pago', 'error')
-        console.error("Debes completar la información de pago");
-        this.currentStep = 3;
-        return;
-      } */
-
-      // Lógica para enviar el formulario
-      try {
-        this.loading = true;
-        const uid = this.loggedUserId;
-        // Validacion adicional
-        if (!uid) {
-          addAlert('No se pudo identificar al usuario', 'error')
-          return
-        }
-
-        // 1. Subir archivos primero
-        const uploadPromises = [];
-
-        if (this.personalInfo.profilePhoto instanceof File) {
-          uploadPromises.push(
-            uploadUserFile(uid, this.personalInfo.profilePhoto, 'profile/avatar.jpg').then(url =>  { this.personalInfo.profilePhoto = url; })
-          );
-        }
-        if (this.documents.dniFront instanceof File) {
-          uploadPromises.push(
-            uploadUserFile(uid, this.documents.dniFront, 'documents/dni_front.jpg').then(url =>  { this.documents.dniFront = url; })
-          );
-        }
-        if (this.documents.dniBack instanceof File) {
-          uploadPromises.push(
-            uploadUserFile(uid, this.documents.dniBack, 'documents/dni_back.jpg').then(url =>  { this.documents.dniBack = url; })
-          );
-        }
-        if (this.documents.driverLicenseFront instanceof File) {
-          uploadPromises.push(
-            uploadUserFile(uid, this.documents.driverLicenseFront, 'documents/drive_front.jpg').then(url =>  { this.documents.driverLicenseFront = url; })
-          );
-        }
-        if (this.documents.driverLicenseBack instanceof File) {
-          uploadPromises.push(
-            uploadUserFile(uid, this.documents.driverLicenseBack, 'documents/driver_back.jpg').then(url =>  { this.documents.driverLicenseBack = url; })
-          );
-        }
-
-        await Promise.all(uploadPromises);
-
-        // 2. Preparar datos con URLs de archivos
-        const userData = await this.prepareUserData();
-
-        // 3. Guardar en Firestore
-        await this.userStore.saveProfile(uid, userData);
-        await completeOnboarding(uid);
-        
-        // 4. Redirección o feedback
-        console.log("¡Onboarding completado con éxito!");
-        addAlert('Usuario completado con éxito!','success')
-        this.$router.push('/search');
-      } catch (error) {
-        console.error("Error en onboarding:", error);
-        addAlert('Error al cargar los datos de usuario', 'error');
-      } finally {
-        this.loading = false;
-      }
-    },
-    handleProfilePhoto(event) {
-      const file = event.target.files[0];
-      if (file) {
-        // Guardar el archivo para subir luego
-        this.user.profilePhoto = file;
-        // Crear URL temporal para previsualización
-        this.profilePhotoPreview = URL.createObjectURL(file);
-      }
-    },
-    handleDNIFront(event) {
-      const file = event.target.files[0];
-      if (file) {
-        this.user.dniFrontUrl = file;
-        this.dniFrontUrl = URL.createObjectURL(file)
-      }
-    },
-    handleDNIBack(event) {
-      const file = event.target.files[0];
-      if (file) {
-        this.user.dniBackUrl = file;
-        this.dniBackUrl = URL.createObjectURL(file)
-      }
-    },
-    handleDriverFront(event) {
-      const file = event.target.files[0];
-      if (file) {
-        this.user.driverFrontUrl = file;
-        this.driverFrontUrl = URL.createObjectURL(file)
-      }
-    },
-    handleDriverBack(event) {
-      const file = event.target.files[0];
-      if (file) {
-        this.user.driverBackUrl = file;
-        this.driverBackUrl = URL.createObjectURL(file)
-      }
-    },
-    async loadUserData(userId) {
-      this.loading = true;
-      try {
-        const userData = await getUserProfile(userId);
-        if(!userData || !userData.paymentMethods?.[0]) return;
-
-        const { personalInfo = {}, address = {}, documents = {}, paymentMethods = [], agreements = {} } = userData;
-        const primaryPaymentMethod = paymentMethods[0] || {};
-
-        // Mapeo de los datos de usuario
-        this.user = {
-          ...this.user,
-          // Información personal
-          profilePhotoPreview: personalInfo?.profilePhoto || null,
-          ...['username', 'firstName', 'lastName', 'phone', 'gender', 'birthDate']
-            .reduce((acc, key) => ({
-              ...acc,
-              [key]: personalInfo[key] || ''
-            }), {}),
-          // Documentación
-          dniFrontUrl: documents?.dniFront || null,
-          dniBackUrl: documents?.dniBack || null,
-          driverFrontUrl: documents?.driverLicenseFront || null,
-          driverBackUrl: documents?.driverLicenseBack || null,
-          documentNumber: documents?.documentNumber || '',
-
-          // Ubicación
-          ...['province', 'city', 'postalCode', 'street', 'floor', 'apartment']
-            .reduce((acc,key) => ({
-              ...acc,
-              [key]: address[key] || ''
-            }), {}),
-
-          // Términos
-          acceptedTerms: agreements.acceptedTerms || false,
-          acceptedPrivacyPolicy: agreements.acceptedPrivacyPolicy || false,
-          acceptedNotifications: agreements.acceptedMarketing || false
-        };
-
-        //  Método de pago
-        if (primaryPaymentMethod.type) {
-          this.selectedPaymentMethod = primaryPaymentMethod.type;
-          
-          if (primaryPaymentMethod.type === 'credit_card') {
-            this.paymentMethods.credit_card = {
-              cardholder: primaryPaymentMethod.cardholder || '',
-              cardNumber: primaryPaymentMethod.cardNumber || '',
-              expiryDate: primaryPaymentMethod.expiryDate || '',
-              cvv: paymentMethods.cvv ? '***' : '' // No cargamos el CVV por seguridad
-            };
-          }
-          else if (primaryPaymentMethod.type === 'digital_wallet') {
-            this.paymentMethods.digital_wallet = {
-              walletType: primaryPaymentMethod.walletType || '',
-              walletId: primaryPaymentMethod.walletId || ''
-            };
-          }
-          else if (primaryPaymentMethod.type === 'paypal') {
-            this.paymentMethods.paypal = {
-              email: primaryPaymentMethod.email || ''
-            };
-          }
-        }
-        if (this.user.province) this.cargarCiudades();
-      } catch (error) {
-        console.error("Error cargando datos del usuario:", error);
-        addAlert('Error al cargar los datos de usuario', 'error');
-      } finally {
-        this.loading = false;
-      }
-    }
+const handleFileChange = async (event, field) => {
+  const file = event.target.files[0];
+  if (file) {
+    // Creamos la previsualización
+    filePreviews[field] = URL.createObjectURL(file);
+    filePreviews[`${field}File`] = file;
   }
 };
+
+const nextStep = () => {
+  if (currentStep.value < sections.value.length - 1) {
+    currentStep.value++;
+  }
+};
+
+const prevStep = () => {
+  if (currentStep.value > 0) {
+    currentStep.value--;
+  }
+};
+
+const cargarCiudades = () => {
+  userStore.setCity(''); // Reinicia la ciudad seleccionada
+  userStore.setCities(geoStore.getCiudadesPorProvincia(address.value.province) || []);
+};
+
+const handleSubmit = async () => {
+  // Basic validation example
+  if (!agreements.value.acceptedTerms || !agreements.value.acceptedPrivacyPolicy) {
+    addAlert('Debes aceptar los términos y políticas', 'error')
+    return
+  }
+  loading.value = true
+    try {
+      // 1. Upload files
+      const uploadPromises = [];
+
+      console.log(filePreviews.profilePhotoFile instanceof File)
+      if (filePreviews.profilePhotoFile instanceof File) {
+        uploadPromises.push(
+          userStore.uploadFile(loggedUserId.value, filePreviews.profilePhotoFile, 'profile/avatar.jpg', 'profilePhoto')
+        );
+      }
+      if (filePreviews.dniFrontFile instanceof File) {
+        uploadPromises.push(
+          userStore.uploadFile(loggedUserId.value, filePreviews.dniFrontFile, 'documents/dni_front.jpg', 'dniFront')
+        );
+      }
+      if (filePreviews.dniBackFile instanceof File) {
+        uploadPromises.push(
+          userStore.uploadFile(loggedUserId.value, filePreviews.dniBackFile, 'documents/dni_back.jpg', 'dniBack')
+        );
+      }
+      if (filePreviews.driverLicenseFrontFile instanceof File) {
+        uploadPromises.push(
+          userStore.uploadFile(loggedUserId.value, filePreviews.driverLicenseFrontFile, 'documents/drive_front.jpg', 'driverLicenseFront')
+        );
+      }
+      if (filePreviews.driverLicenseBackFile instanceof File) {
+        uploadPromises.push(
+          userStore.uploadFile(loggedUserId.value, filePreviews.driverLicenseBackFile, 'documents/driver_back.jpg', 'driverLicenseBack')
+        );
+      }
+      console.log(uploadPromises)
+      await Promise.all(uploadPromises);
+
+      // Update profile
+      await userStore.updateProfile(loggedUserId.value, {
+        personalInfo: userStore.personalInfo,
+        documents: userStore.documents,
+        address: userStore.address,
+        paymentMethods: userStore.paymentMethods,
+        agreements: userStore.agreements
+      })
+
+      addAlert('!Usuario completado con éxito!', 'success');
+      router.push('/search');
+    } catch (error) {
+      console.error('Error en onboarding:', error);
+      addAlert('Error al cargar los datos de usuario.', 'error');
+    } finally {
+      loading.value = false
+    }
+};
+
+const handleBeforeUnload = (event) => {
+  const message = '¿Estás seguro de que quieres salir? Los cambios no guardados se perderán.';
+  event.preventDefault();
+  event.returnValue = message;
+  return message;
+};
+
+// Load initial data
+onMounted(async () => {
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  await userStore.loadUserProfile(authSession.user.id);
+  await geoStore.loadProvinciasYLocalidades();
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+});
 </script>
 
 <template>
@@ -524,22 +191,27 @@ export default {
     </aside>
 
     <!-- Formulario dinámico -->
-      <form class="flex flex-col justify-center gap-8 grow w-full max-w-[425px]" @submit.prevent="handleSubmit">
+    <div>
+      <form
+        class="flex flex-col justify-center gap-8 grow w-full max-w-[425px]"
+        @submit.prevent="handleSubmit"
+      >
         <div class="flex justify-end">
           <Reemo color="#FFFFFF" />
         </div>
+
         <!-- Paso 1: Información Personal -->
         <router-view v-if="currentStep === 0">
           <div class="flex gap-4 items-center">
             <Heading type="2" class="large !text-white !font-extrabold">Datos personales</Heading>
-            <Loading v-if="loading" role="status" />
+            <Loading v-if="!userStore.profileLoaded" role="status" />
           </div>
 
           <div class="flex flex-col gap-5">
             <div class="flex gap-3">
               <label for="profile-picture">
-                <img v-if="profilePhotoPreview || personalInfo.profilePhoto" 
-                  :src="profilePhotoPreview ? profilePhotoPreview : personalInfo.profilePhoto" 
+                <img v-if="filePreviews.profilePhoto || personalInfo.profilePhoto" 
+                  :src="filePreviews.profilePhoto ? filePreviews.profilePhoto : personalInfo.profilePhoto" 
                   alt="Foto de perfil" 
                   class="profile-picture" />
                 <img v-else src="/src/assets/User.png" alt="Foto de perfil por defecto" class="profile-picture default cursor-pointer" />
@@ -550,36 +222,36 @@ export default {
                   Se permite JPG o PNG y GIF</span>
               </div>
             </div>
-            <input id="profile-picture" type="file" accept="image/*" @change="handleProfilePhoto" class="hidden" />
-          <Input v-model="personalInfo.username" type="text" placeholder="Nombre de usuario" :variant="'secondary'" :outline="false" required />
-          <div class="flex gap-5">
-            <Input v-model="personalInfo.firstName" type="text" placeholder="Nombre" :variant="'secondary'" :outline="false" required />
-            <Input v-model="personalInfo.lastName" type="text" placeholder="Apellido" :variant="'secondary'" :outline="false" required />
-          </div>
+            <input id="profile-picture" type="file" accept="image/*" 
+            @change="(event) => handleFileChange(event, 'profilePhoto')" class="hidden" />            
+            <Input v-model="personalInfo.username" type="text" placeholder="Nombre de usuario" :variant="'secondary'" :outline="false" required />
+            <div class="flex gap-5">
+              <Input v-model="personalInfo.firstName" type="text" placeholder="Nombre" :variant="'secondary'" :outline="false" required />
+              <Input v-model="personalInfo.lastName" type="text" placeholder="Apellido" :variant="'secondary'" :outline="false" required />
+            </div>
             
-          <Input v-model="personalInfo.phone" type="tel" placeholder="Número de teléfono" :variant="'secondary'" :outline="false" required />
-          <div class="flex gap-5">
-            <Input
-              type="select"
-              name="gender"
-              id="gender"
-              placeholder="Genero"
-              :options="[
-                { value: 'male', label: 'Masculino' },
-                { value: 'female', label: 'Femenino' },
-                { value: 'other', label: 'Otro' },
-                { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
-              ]"
-              icon-position="right"
-              variant="secondary"
-              :outline="false"
-              class="w-full cursor-pointer"
-              v-model="personalInfo.gender"
-            />
-            <Input v-model="personalInfo.birthDate" type="date" placeholder="Fecha de nacimiento" :variant="'secondary'" :outline="false" required />
+            <Input v-model="personalInfo.phone" type="tel" placeholder="Número de teléfono" :variant="'secondary'" :outline="false" required />
+            <div class="flex gap-5">
+              <Input
+                type="select"
+                name="gender"
+                id="gender"
+                placeholder="Genero"
+                :options="[
+                  { value: 'male', label: 'Masculino' },
+                  { value: 'female', label: 'Femenino' },
+                  { value: 'other', label: 'Otro' },
+                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                ]"
+                icon-position="right"
+                variant="secondary"
+                :outline="false"
+                class="w-full cursor-pointer"
+                v-model="personalInfo.gender"
+              />
+              <Input v-model="personalInfo.birthDate" type="date" placeholder="Fecha de nacimiento" :variant="'secondary'" :outline="false" required />
+            </div>
           </div>
-        </div>
-        
         </router-view>
 
         <!-- Paso 2: Documentación -->
@@ -590,11 +262,11 @@ export default {
           </div>
           <div class="flex flex-col gap-2">
 
-            <DropdownForm title="Documento de Identidad" :section-id="'section-1'" :dropdown-id="'doc-identidad'" @dropdown-toggle="handleDropdownToggle" :is-initial="true">
+            <DropdownForm title="Documento de Identidad" :section-id="'section-1'" :dropdown-id="'doc-identidad'" :is-initial="true">
               <p class="text-sm font-medium">Para completar la verificación de identidad, sube una foto clara y ligible de tu DNI.</p>
               <div class="flex gap-3">
                 <label for="dni-front" class="cursor-pointer">
-                  <img v-if="documents.dniFront || dniFrontUrl" :src="dniFrontUrl ? dniFrontUrl : documents.dniFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <img v-if="documents.dniFront || filePreviews.dniFront" :src="filePreviews.dniFront ? filePreviews.dniFront : documents.dniFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
                   <DNIFront v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
@@ -603,44 +275,49 @@ export default {
                     Parte frontal de tu Documento Nacional de Identidad.
                   </span>
                 </div>
-                <input id="dni-front" type="file" accept="image/*" @change="handleDNIFront" class="hidden" />
+                <input id="dni-front" type="file" accept="image/*" @change="(event) => handleFileChange(event, 'dniFront')" class="hidden" />
               </div>
               <div class="flex gap-3">
                 <label for="dni-back" class="cursor-pointer">
-                  <img v-if="documents.dniBack || dniBackUrl" :src="dniBackUrl ? dniBackUrl : documents.dniBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
+                  <img v-if="documents.dniBack || filePreviews.dniBack" :src="filePreviews.dniBack ? filePreviews.dniBack : documents.dniBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
                   <DNIBack v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
                   <label for="dni-back" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del DNI</label>
                   <span class="text-xs text-start">Parte trasera de tu Documento Nacional de Identidad.</span>
                 </div>
-                <input id="dni-back" type="file" accept="image/*" @change="handleDNIBack" class="hidden" />
+                <input id="dni-back" type="file" accept="image/*"
+                @change="(event) => handleFileChange(event, 'dniBack')" class="hidden" />
               </div>
             </DropdownForm>
             
-            <DropdownForm title="Registro de conducir" :dropdown-id="'doc-licencia'" :section-id="'section-1'" @dropdown-toggle="handleDropdownToggle">
+            <DropdownForm title="Registro de conducir" :dropdown-id="'doc-licencia'" :section-id="'section-1'">
               <p class="text-sm font-medium">Para poder alquilar en nuestra plataforma, es esencial que tengas vinculado tu registro de conducir. </p>
               <div class="flex gap-3">
                 <label for="driver-front" class="cursor-pointer">
-                  <img v-if="documents.driverLicenseFront || driverFrontUrl" :src="driverFrontUrl ? driverFrontUrl : documents.driverLicenseFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <img v-if="documents.driverLicenseFront || filePreviews.driverLicenseFront" :src="filePreviews.driverLicenseFront ? filePreviews.driverLicenseFront : documents.driverLicenseFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
                   <DriverFront v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
                   <label for="driver-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
                   <span class="text-xs text-start">Parte trasera de tu Licencia de Conducir.</span>
                 </div>
-                <input id="driver-front" type="file" accept="image/*" @change="handleDriverFront" class="hidden" />
+                <input id="driver-front" type="file" accept="image/*"
+                @change="(event) => handleFileChange(event, 'driverLicenseFront')"
+                class="hidden" />
               </div>
               <div class="flex gap-3">
                 <label for="driver-back" class="cursor-pointer">
-                  <img v-if="documents.driverLicenseBack || driverBackUrl" :src="driverBackUrl ? driverBackUrl : documents.driverLicenseBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <img v-if="documents.driverLicenseBack || filePreviews.driverLicenseBack" :src="filePreviews.driverLicenseBack ? filePreviews.driverLicenseBack : documents.driverLicenseBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
                   <DriverBack v-else/>
                 </label>
                 <div class="flex flex-col gap-4">
                   <label for="driver-back" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
                   <span class="text-xs text-start">Parte trasera de tu Licencia de Conducir.</span>
                 </div>
-                <input id="driver-back" type="file" accept="image/*" @change="handleDriverBack" class="hidden" />
+                <input id="driver-back" type="file" accept="image/*"
+                @change="(event) => handleFileChange(event, 'driverLicenseBack')"
+                class="hidden" />
               </div>
             </DropdownForm>
           </div>
@@ -660,7 +337,7 @@ export default {
               name="provincia"
               id="provincia"
               placeholder="Provincia"
-              :options="provincias.map(p => ({ value: p, label: p }))"
+              :options="geoStore.provincias.map(p => ({ value: p, label: p }))"
               v-model="address.province"
               @change="cargarCiudades"
               icon-position="right"
@@ -675,7 +352,7 @@ export default {
               name="ciudad"
               id="ciudad"
               placeholder="Ciudad/Localidad"
-              :options="ciudades.map(c => ({ value: c, label: c }))"
+              :options="(address.province ? geoStore.getCiudadesPorProvincia(address.province) : []).map(c => ({ value: c, label: c }))"
               v-model="address.city"
               :disabled="!address.province"
               icon-position="right"
@@ -733,15 +410,15 @@ export default {
           </div>
           <div class="flex flex-col gap-5">
     
-            <DropdownForm title="Tarjeta de crédito/débito" :dropdown-id="'tarjeta'" :section-id="'section-3'" @dropdown-toggle="handleDropdownToggle" :is-initial="true">
+            <DropdownForm title="Tarjeta de crédito/débito" :dropdown-id="'tarjeta'" :section-id="'section-3'" :is-initial="true">
               <Input 
                 type="text"
                 placeholder="Titular de tarjeta"
-                v-model="paymentMethods.credit_card.cardholder"
+                v-model="paymentMethods.credit_card.cardHolder"
                 :variant="'secondary'"
                 :outline="false"
                 />
-                <Input 
+                <Input
                   type="text"
                   placeholder="Número de tarjeta"
                   v-model="paymentMethods.credit_card.cardNumber"
@@ -752,7 +429,7 @@ export default {
                 <Input 
                   type="date"
                   placeholder="Fecha de vencimiento"
-                  v-model="paymentMethods.credit_card.expiryDate"
+                  v-model="paymentMethods.credit_card.expirationDate"
                   :variant="'secondary'"
                   :outline="false"
                 />
@@ -766,7 +443,7 @@ export default {
               </div>
             </DropdownForm>
 
-            <DropdownForm title="Billetera Digital" :dropdown-id="'billetera'" :section-id="'section-3'"  @dropdown-toggle="handleDropdownToggle">
+            <DropdownForm title="Billetera Digital" :dropdown-id="'billetera'" :section-id="'section-3'" >
               <Input 
                 type="select"
                 placeholder="Tipo de billetera"
@@ -867,6 +544,7 @@ export default {
           />
         </div>
       </form>
+    </div>
   </section>
 </template>
 

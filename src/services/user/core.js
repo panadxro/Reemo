@@ -12,10 +12,38 @@ export async function createUserProfile( uid, email ) {
       profilePhoto: '/src/assets/User.png',
       username: 'Desconocido'
     },
-    documents: {},
-    address: {},
-    paymentMethods: [],
-    agreements: {},
+    documents: {
+      dniFront: '',
+      dniBack: '',
+      driverLicenseFront: '',
+      driverLicenseBack: ''
+    },
+    address: {
+      street: '',
+      number: '',
+      city: '',
+      province: '',
+      postalCode: ''
+    },
+    paymentMethods: {
+      credit_card: {
+        cardNumber: '',
+        cardHolder: '',
+        expirationDate: '',
+        cvv: ''
+      },
+      paypal: {
+        email: ''
+      },
+      digital_wallet: {
+        walletId: '',
+        walletType: ''
+      }
+    },
+    agreements: {
+      acceptedTerms: false,
+      acceptedPrivacyPolicy: false
+    },
     email: email,
     role: 'user'
   }
@@ -32,6 +60,14 @@ export async function createUserProfile( uid, email ) {
 };
 
 export async function getUserProfile(uid) {
+  if (!uid) {
+    console.error("userId is null or undefined");
+    return;
+  }
+  if (typeof uid !== 'string') {
+    console.error("userId is not a string");
+    return;
+  }
   try {
     const userRef = doc(db, 'users', uid);
     const userSnapshot = await getDoc(userRef);

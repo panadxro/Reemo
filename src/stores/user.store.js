@@ -8,24 +8,26 @@ import {
   addPaymentMethod,
   acceptedTerms
 } from '../services/user'
+import { uploadUserFile } from '../services/storage/documents'
 import { useAuthStore } from '@stores'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
     profileData: {
       personalInfo: {
-        firstName: '',
-        lastName: '',
-        email: '',
-        profilePhoto: '',
-        userName: ''
+        firstName: null,
+        lastName: null,
+        email: null,
+        profilePhoto: null,
+        userName: null
       },
-      documents: {},
+      documents: null,
       address: {},
-      paymentMethods: [],
+      paymentMethods: {},
       agreements: {},
       role: 'user'
     },
+    profileLoaded: false,
     visitedProfileData: null,
     visitedRole: null,
     posts: [],
@@ -46,14 +48,14 @@ export const useUserStore = defineStore('user', {
     resetProfile() {
       this.profileData = {
         personalInfo: {
-          firstName: '',
-          lastName: '',
-          email: '',
-          profilePhoto: '',
-          username: ''
+          firstName: null,
+          lastName: null,
+          email: null,
+          profilePhoto: null,
+          username: null
         },
-        documents: {},
-        address: {},
+        documents: null,
+        address: null,
         paymentMethods: [],
         agreements: {},
         role: 'user'
@@ -76,19 +78,17 @@ export const useUserStore = defineStore('user', {
           this.profileData = {
             ...userProfile,
            personalInfo: {
-             ...userProfile?.personalInfo,
-             email: userProfile?.email || '',
-             emailVerified: userProfile?.emailVerified || false,
+             ...userProfile?.personalInfo
            },
            role: userProfile?.role || 'user'
          };
+          this.profileLoaded = true
+
         } else {
           this.visitedProfileData = {
             ...userProfile,
             personalInfo: {
-              ...userProfile?.personalInfo,
-              email: userProfile?.email || '',
-              emailVerified: userProfile?.emailVerified || false,
+              ...userProfile?.personalInfo
             },
           };
           this.visitedRole = userProfile?.role || 'user';
@@ -98,56 +98,65 @@ export const useUserStore = defineStore('user', {
         throw error;
       } finally {
         this.loading = false
-      }
+      }   
     },
-    async saveProfile(uid, profileData) {
+    async updateProfile(uid, profileData) {
       this.loading = true
       try {
-        await saveUserData(uid, profileData)
-        // Actualiza los datos locales con los nuevos datos
-        this.profileData = {
-          ...this.profileData,
-          ...profileData
+        const {personalInfo, documents, address, paymentMethods, agreements} = profileData;
+        if(personalInfo ) {
+          await updatePersonalInfo(uid, personalInfo);
+        }
+        if(documents) {
+           await updateUserDocuments(uid, documents);
+        }
+        if(address) {
+           await updateUserAddress(uid, address);
+        }
+        if(paymentMethods) {
+           await addPaymentMethod(uid, paymentMethods);
+        }
+        if(agreements) {
+           await acceptedTerms(uid, agreements);
         }
       } catch (error) {
         this.error = error.message || 'Error al guardar'
         throw error
       } finally {
         this.loading = false
-      }
-    },
-    async completeOnboarding(userData) {
-      const { uid, profile, documents, address, agreements } = userData
-      this.loading = true
-      try {
-        if(profile) {
-          await updatePersonalInfo(uid, profile)
+        this.profileData = {
+          ...this.profileData,
+          ...profileData
         }
-        if(documents){
-          await updateUserDocuments(uid, documents)
-        }
-        if(address){
-          await updateUserAddress(uid, address)
-        }
-        if(payment){
-          await addPaymentMethod(uid, payment)
-        }
-        if(agreements){
-          await acceptedTerms(uid, agreements)
-        }
-      } catch (error) {
-        this.error = error.message || 'Error al guardar el onboarding'
-        throw error
-      } finally {
-        this.loading = false
       }
     },
     // Queda añadir más acciones especificas
-    async updateProfilePhoto(file) {
-      // Logica para actualizar foto de perfil
+    async uploadFile(userId, file, path, field){
+        return uploadUserFile(userId, file, path).then(url => {
+          switch (field) {
+            case 'profilePhoto':
+              this.profileData.personalInfo.profilePhoto = url;
+              break;
+            case 'dniFront':
+              this.profileData.documents.dniFront = url;
+              break;
+            case 'dniBack':
+              this.profileData.documents.dniBack = url;
+              break;
+            case 'driverLicenseFront':
+              this.profileData.documents.driverLicenseFront = url;
+              break;
+            case 'driverLicenseBack':
+              this.profileData.documents.driverLicenseBack = url;
+              break;
+            default:
+              break;
+          }
+        });
     }
   },
   getters: {
+    isProfileLoaded: (state) => state.profileLoaded,
     user: (state) => state.profileData,
     personalInfo: (state) => state.profileData?.personalInfo || {},
     documents: (state) =>  state.profileData?.documents || {},
