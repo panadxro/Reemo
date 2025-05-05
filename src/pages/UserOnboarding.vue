@@ -1,5 +1,5 @@
 <script setup>
-import { ref, markRaw, watch, onMounted, onBeforeUnmount, computed, reactive } from 'vue';
+import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive } from 'vue';
 import { useAuthStore, useUserStore, useGeoStore } from '@stores'
 import { useRouter } from "vue-router";
 import { addAlert } from "../services/alerts.js";
@@ -163,7 +163,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="flex max-w-[1120px] max-h-[675px] h-full w-full mx-auto justify-between px-16 py-12 bg-deep-blue-900 rounded-[40px] text-white">
+  <section class="flex max-w-[1120px] max-h-[675px] h-full w-full mx-auto justify-between px-16 py-12 bg-deep-blue-900 rounded-[40px] text-white overflow-hidden">
     <!-- Secciones al costado -->
     <aside class="flex flex-col gap-8 w-full max-w-[425px]">
       <div class="flex flex-col gap-2">
@@ -191,7 +191,7 @@ onBeforeUnmount(() => {
     </aside>
 
     <!-- Formulario dinámico -->
-    <div>
+    <section class="max-h-[568px]">
       <form
         class="flex flex-col justify-center gap-8 grow w-full max-w-[425px]"
         @submit.prevent="handleSubmit"
@@ -544,7 +544,7 @@ onBeforeUnmount(() => {
           />
         </div>
       </form>
-    </div>
+    </section>
   </section>
 </template>
 
