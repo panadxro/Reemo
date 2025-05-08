@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 import { addAlert } from '@/services/alerts';
 import { useAuthStore } from '@stores/auth.store';
 import { useCarStore } from '@stores/car.store.js';
+import { usePaymentStore } from '@stores/payment.store.js';
 
 import RentalHeader from '@/components/organisms/rental/RentalHeader.vue';
 import DateTime from '@/components/organisms/rental/DateTime.vue';
@@ -21,6 +22,7 @@ import CreditCard from '@/icons/CreditCard.vue';
 
 const authStore = useAuthStore();
 const carStore = useCarStore();
+const paymentStore = usePaymentStore();
 
 const props = defineProps({
   carId: {
@@ -60,11 +62,11 @@ function formatPrice(price) {
 }
 
 function getPaymentMethodName(method) {
-  return store.getPaymentMethodName(method);
+  return paymentStore.getPaymentMethodName(method);
 }
 
 function getPaymentDetails(method) {
-  return store.getPaymentDetails(method);
+  return paymentStore.getPaymentDetails(method);
 }
 
 function getPaymentIcon(method) {
@@ -116,25 +118,25 @@ onMounted(async () => {
   store.setInitialData(carStore.car, authStore.user, carStore.isCarRented);
   
   watch(() => store.currentStep, async (newStep) => {
-    console.log("Nuevo Paso:", newStep);
-    if (newStep === 3) {
-      console.log("Fetch a los métodos de pago..."); 
-      await store.fetchPaymentMethods();
-      console.log("Métodos de pago:", store.paymentMethods);
-      
-      if (store.rentalData.selectedPaymentMethod && 
-          !store.paymentMethods.some(m => 
-            store.getPaymentMethodIdentifier(m) === 
-            store.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod)
-          )) {
-        store.rentalData.selectedPaymentMethod = store.paymentMethods[0] || null;
-      }
+  console.log("Nuevo Paso:", newStep);
+  if (newStep === 3) {
+    console.log("Fetch a los métodos de pago..."); 
+    await store.fetchPaymentMethods();
+    console.log("Métodos de pago:", paymentStore.paymentMethods);
+    
+    if (store.rentalData.selectedPaymentMethod && 
+        !paymentStore.paymentMethods.some(m => 
+          paymentStore.getPaymentMethodIdentifier(m) === 
+          paymentStore.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod)
+        )) {
+      store.rentalData.selectedPaymentMethod = paymentStore.paymentMethods[0] || null;
     }
-  });
+  }
+});
 
   watch(() => store.rentalData.selectedPaymentMethod, (newMethod) => {
-    if (newMethod && store.showNewPaymentForm) {
-      store.showNewPaymentForm = false;
+    if (newMethod && paymentStore.showNewPaymentForm) {
+      paymentStore.showNewPaymentForm = false;
     }
   }, { immediate: true });
 
@@ -311,15 +313,15 @@ onMounted(async () => {
             </div>
           </div>
           
-          <div v-if="!store.loading && store.paymentMethods.length > 0" class="space-y-3">
+          <div v-if="!store.loading && paymentStore.paymentMethods.length > 0" class="space-y-3">
             <div 
-              v-for="(method, index) in store.paymentMethods" 
+              v-for="(method, index) in paymentStore.paymentMethods" 
               :key="index"
               @click="store.selectPaymentMethod(method)"
               class="border rounded-xl p-4 cursor-pointer transition-all"
               :class="{
-                'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': store.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) === store.getPaymentMethodIdentifier(method), 
-                'border-gray-600 hover:border-vibrant-light-900': store.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) !== store.getPaymentMethodIdentifier(method)
+                'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': paymentStore.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) === paymentStore.getPaymentMethodIdentifier(method), 
+                'border-gray-600 hover:border-vibrant-light-900': paymentStore.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) !== paymentStore.getPaymentMethodIdentifier(method)
               }"
             >
               <div class="flex items-center justify-between">
@@ -340,8 +342,10 @@ onMounted(async () => {
                             : method.walletType === 'uala' 
                               ? 'Ualá' 
                               : method.walletType === 'mercadopago' 
-                                ? 'Mercado Pago' 
-                                : method.walletType || 'Otro método'
+                                ? 'Mercado Pago'
+                                  : method.walletType === 'otra' 
+                                  ? 'Otra' 
+                                    : method.walletType || 'Otro método'
                       }}
                     </p>
                     <p class="text-sm text-gray-300">
@@ -353,11 +357,11 @@ onMounted(async () => {
                 <div 
                   class="w-6 h-6 rounded-full border flex items-center justify-center"
                   :class="{
-                    'bg-vibrant-light-900 border-vibrant-light-900': store.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) === store.getPaymentMethodIdentifier(method), 
-                    'border-gray-300': store.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) !== store.getPaymentMethodIdentifier(method)
+                    'bg-vibrant-light-900 border-vibrant-light-900': paymentStore.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) === paymentStore.getPaymentMethodIdentifier(method), 
+                    'border-gray-300': paymentStore.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) !== paymentStore.getPaymentMethodIdentifier(method)
                   }"
                 >
-                  <svg v-if="store.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) === store.getPaymentMethodIdentifier(method)" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                  <svg v-if="paymentStore.getPaymentMethodIdentifier(store.rentalData.selectedPaymentMethod) === paymentStore.getPaymentMethodIdentifier(method)" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                   </svg>
                 </div>
@@ -365,13 +369,13 @@ onMounted(async () => {
             </div>
           </div>
           
-          <div v-else-if="!store.loading && store.paymentMethods.length === 0" class="text-center py-4 text-gray-300">
+          <div v-else-if="!store.loading && paymentStore.paymentMethods.length === 0" class="text-center py-4 text-gray-300">
             <p>No tenés métodos de pago guardados</p>
           </div>
           
           <div 
-            v-if="!store.showNewPaymentForm"
-            @click="store.toggleNewPaymentForm" 
+            v-if="!paymentStore.showNewPaymentForm"
+            @click="paymentStore.toggleNewPaymentForm" 
             class="border border-dashed border-gray-600 rounded-xl p-4 cursor-pointer hover:border-vibrant-light-900 transition-all flex items-center justify-center"
           >
             <div class="flex items-center gap-2 text-vibrant-light-900">
@@ -382,93 +386,93 @@ onMounted(async () => {
             </div>
           </div>
           
-          <div v-if="store.showNewPaymentForm" class="mt-6">
+          <div v-if="paymentStore.showNewPaymentForm" class="mt-6">
             <Heading :type="4" class="text-white py-4">Nuevo método de pago</Heading>
             
             <div class="flex gap-4 mb-6">
               <div 
-                @click="store.selectedPaymentMethodType = 'credit_card'" 
+                @click="paymentStore.selectedPaymentMethodTypee = 'credit_card'" 
                 class="flex-1 p-3 border rounded-xl cursor-pointer text-center transition-all text-white"
-                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': store.selectedPaymentMethodType === 'credit_card', 'border-gray-600': store.selectedPaymentMethodType !== 'credit_card'}"
+                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': paymentStore.selectedPaymentMethodTypee === 'credit_card', 'border-gray-600': paymentStore.selectedPaymentMethodTypee !== 'credit_card'}"
               >
                 Tarjeta
               </div>
               <div 
-                @click="store.selectedPaymentMethodType = 'digital_wallet'" 
+                @click="paymentStore.selectedPaymentMethodTypee = 'digital_wallet'" 
                 class="flex-1 p-3 border rounded-xl cursor-pointer text-center transition-all text-white"
-                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': store.selectedPaymentMethodType === 'digital_wallet', 'border-gray-600': store.selectedPaymentMethodType !== 'digital_wallet'}"
+                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': paymentStore.selectedPaymentMethodTypee === 'digital_wallet', 'border-gray-600': paymentStore.selectedPaymentMethodTypee !== 'digital_wallet'}"
               >
                 Billetera Virtual
               </div>
               <div 
-                @click="store.selectedPaymentMethodType = 'paypal'" 
+                @click="paymentStore.selectedPaymentMethodTypee = 'paypal'" 
                 class="flex-1 p-3 border rounded-xl cursor-pointer text-center transition-all text-white"
-                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': store.selectedPaymentMethodType === 'paypal', 'border-gray-600': store.selectedPaymentMethodType !== 'paypal'}"
+                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': paymentStore.selectedPaymentMethodTypee === 'paypal', 'border-gray-600': paymentStore.selectedPaymentMethodTypee !== 'paypal'}"
               >
                 PayPal
               </div>
             </div>
             
-            <div v-if="store.selectedPaymentMethodType === 'credit_card'" class="space-y-4">
+            <div v-if="paymentStore.selectedPaymentMethodTypee === 'credit_card'" class="space-y-4">
               <Input 
                 type="text"
                 placeholder="Titular de tarjeta"
-                v-model="store.newPaymentMethod.credit_card.cardholder"
+                v-model="paymentStore.newPaymentMethod.credit_card.cardholder"
                 :variant="'secondary'"
                 :outline="false"
               />
               <Input 
                 type="text"
                 placeholder="Número de tarjeta"
-                v-model="store.newPaymentMethod.credit_card.cardNumber"
+                v-model="paymentStore.newPaymentMethod.credit_card.cardNumber"
                 :variant="'secondary'"
                 :outline="false"
               />
               <div class="flex gap-5">
                 <Input 
-                  type="text"
+                  type="month"
                   placeholder="MM/AA"
-                  v-model="store.newPaymentMethod.credit_card.expiryDate"
+                  v-model="paymentStore.newPaymentMethod.credit_card.expiryDate"
                   :variant="'secondary'"
                   :outline="false"
                 />
                 <Input
                   type="password"
                   placeholder="CVV"
-                  v-model="store.newPaymentMethod.credit_card.cvv"
+                  v-model="paymentStore.newPaymentMethod.credit_card.cvv"
                   :variant="'secondary'"
                   :outline="false"
                 />
               </div>
             </div>
             
-            <div v-if="store.selectedPaymentMethodType === 'digital_wallet'" class="space-y-4">
+            <div v-if="paymentStore.selectedPaymentMethodTypee === 'digital_wallet'" class="space-y-4">
+              <!-- {value: 'otra', label:'Otra'} -->
               <Input 
                 type="select"
                 placeholder="Tipo de billetera"
                 :options="[
                   {value: 'mercadopago', label: 'Mercado Pago'},
                   {value: 'uala', label: 'Ualá'},
-                  {value: 'otra', label:'Otra'}
-                ]"
-                v-model="store.newPaymentMethod.digital_wallet.walletType"
+                  ]"
+                v-model="paymentStore.newPaymentMethod.digital_wallet.walletType"
                 variant="secondary"
                 :outline="false"
               />
               <Input
                 type="text"
                 placeholder="CVU o Alias"
-                v-model="store.newPaymentMethod.digital_wallet.walletId"
+                v-model="paymentStore.newPaymentMethod.digital_wallet.walletId"
                 variant="secondary"
                 :outline="false"
               />
             </div>
             
-            <div v-if="store.selectedPaymentMethodType === 'paypal'" class="space-y-4">
+            <div v-if="paymentStore.selectedPaymentMethodTypee === 'paypal'" class="space-y-4">
               <Input 
                 type="email"
                 placeholder="Email de PayPal"
-                v-model="store.newPaymentMethod.paypal.email"
+                v-model="paymentStore.newPaymentMethod.paypal.email"
                 :variant="'secondary'"
                 :outline="false"
               />
@@ -482,8 +486,8 @@ onMounted(async () => {
                 Cancelar
               </button>
               <button 
-                @click="store.saveNewPaymentMethod" 
-                :disabled="!store.isFormValid || store.loading"
+                @click="paymentStore.saveNewPaymentMethod" 
+                :disabled="!paymentStore.isFormValid || store.loading"
                 class="flex-1 py-3 px-4 bg-vibrant-light-900 text-deep-blue-900 rounded-xl font-medium hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
               >
                 {{ store.loading ? 'Guardando...' : 'Guardar' }}

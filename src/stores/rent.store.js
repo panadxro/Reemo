@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { isCarAlreadyRented, submitRentalRequest } from "@services/rentedCarService";
-import { savePaymentMethod, getPaymentMethods } from "@services/payment/payment.js";
 import { addAlert } from "@/services/alerts";
+import { usePaymentStore } from "@/stores/payment.store.js";
 
 export const useRentalStore = defineStore('rental', {
   state: () => ({
@@ -23,31 +23,9 @@ export const useRentalStore = defineStore('rental', {
       currentTotalPrice: 0,
       selectedPaymentMethod: null
     },
-    paymentMethods: [],
-    newPaymentMethod: {
-      digital_wallet: {
-        type: 'digital_wallet',
-        walletType: '',
-        walletId: ''
-      },
-      credit_card: {
-        type: 'credit_card',
-        cardholder: '',
-        cardNumber: '',
-        expiryDate: '',
-        cvv: ''
-      },
-      paypal: {
-        type: 'paypal',
-        email: ''
-      }
-    },
-    selectedPaymentMethodType: 'credit_card', 
-    showNewPaymentForm: false,
-    initialPaymentMethodLoaded: false,
+    acceptTerms: false,
     loading: false,
     errorMessage: "",
-    acceptTerms: false,
     isStoreInitialized: false
   }),
   
@@ -61,21 +39,6 @@ export const useRentalStore = defineStore('rental', {
         return !this.rentalData.selectedPaymentMethod;
       }
       return false;
-    },
-    
-    isFormValid() {
-      const paymentData = this.newPaymentMethod[this.selectedPaymentMethodType];
-      
-      switch(this.selectedPaymentMethodType) {
-        case 'credit_card':
-          return paymentData.cardholder && paymentData.cardNumber && paymentData.expiryDate && paymentData.cvv;
-        case 'digital_wallet':
-          return paymentData.walletType && paymentData.walletId;
-        case 'paypal':
-          return paymentData.email;
-        default:
-          return false;
-      }
     },
     
     paymentMethod() {
@@ -181,11 +144,6 @@ export const useRentalStore = defineStore('rental', {
       
     // Guardar datos de la reserva actual en localStorage
     saveCurrentData() {
-      // if (!this.car || !this.car.id) {
-      //   console.warn("No se puede guardar datos sin un ID de auto");
-      //   return;
-      // }
-      
       const dataToSave = {
         currentStep: this.currentStep,
         rentalData: {
@@ -198,7 +156,6 @@ export const useRentalStore = defineStore('rental', {
       
       try {
         localStorage.setItem(this.storageKey, JSON.stringify(dataToSave));
-        // console.log("Datos guardados en localStorage:", dataToSave);
       } catch (error) {
         console.error("Error al guardar datos en localStorage:", error);
       }
@@ -277,8 +234,6 @@ export const useRentalStore = defineStore('rental', {
     },
     
     handleDateUpdate(data) {
-      // console.log("Actualizando fechas en el store:", data);
-      
       this.rentalData.rentedFromDate = data.rentedFromDate || this.rentalData.rentedFromDate;
       this.rentalData.rentedUntilDate = data.rentedUntilDate || this.rentalData.rentedUntilDate;
       this.rentalData.selectedTime = data.rentedFromHour || this.rentalData.selectedTime;
@@ -292,7 +247,6 @@ export const useRentalStore = defineStore('rental', {
       if (this.car && this.rentalData.rentedFromDate && this.rentalData.rentedUntilDate) {
         const calculatedPrice = this.totalPrice;
         this.rentalData.currentTotalPrice = calculatedPrice;
-        // console.log("Precio calculado:", calculatedPrice);
         return calculatedPrice;
       }
       return 0;
@@ -300,12 +254,12 @@ export const useRentalStore = defineStore('rental', {
     
     selectPaymentMethod(method) {
       this.rentalData.selectedPaymentMethod = method;
-      this.showNewPaymentForm = false;
+      const paymentStore = usePaymentStore();
+      paymentStore.showNewPaymentForm = false;
       this.saveCurrentData(); // Guardar después de seleccionar método de pago
     },
     
     async fetchPaymentMethods() {
-      console.log("Fetch a metodos de pago:", this.loggedUser);
       if (!this.loggedUser || !this.loggedUser.id) {
         console.error("Usuario no identificado");
         this.errorMessage = "Usuario no identificado";
@@ -314,14 +268,13 @@ export const useRentalStore = defineStore('rental', {
       
       this.loading = true;
       try {
-        const methods = await getPaymentMethods(this.loggedUser.id);
-        console.log("Metodos de pago obtenidos:", methods);
-        this.paymentMethods = methods;
+        const paymentStore = usePaymentStore();
+        const methods = await paymentStore.fetchPaymentMethods(this.loggedUser.id);
         
         // Si hay métodos disponibles, seleccionar el primero (si no hay uno ya seleccionado)
         if (methods.length > 0 && !this.rentalData.selectedPaymentMethod) {
           this.rentalData.selectedPaymentMethod = methods[0];
-          this.saveCurrentData(); // Guardar después de cargar método de pago
+          this.saveCurrentData();
         }
         
         return methods;
@@ -333,95 +286,21 @@ export const useRentalStore = defineStore('rental', {
         this.loading = false;
       }
     },
-
-    toggleNewPaymentForm() {
-      this.showNewPaymentForm = !this.showNewPaymentForm;
-    },
     
     async saveNewPaymentMethod() {
-      this.loading = true;
-      try {
-        const paymentData = this.newPaymentMethod[this.selectedPaymentMethodType];
-        
-        let isValid = false;
-        switch(this.selectedPaymentMethodType) {
-          case 'credit_card':
-            isValid = paymentData.cardholder && paymentData.cardNumber && paymentData.expiryDate && paymentData.cvv;
-            break;
-          case 'digital_wallet':
-            isValid = paymentData.walletType && paymentData.walletId;
-            break;
-          case 'paypal':
-            isValid = paymentData.email;
-            break;
-        }
-
-        if (!isValid) {
-          addAlert('Por favor completa todos los campos del método de pago', 'error');
-          return false;
-        }
-
-        const newMethod = {
-          type: this.selectedPaymentMethodType,
-          ...paymentData,
-          createdAt: new Date()
-        };
-
-        await savePaymentMethod(this.loggedUser.id, newMethod);
-        await this.fetchPaymentMethods();
-        
-        // Buscar el método recién creado en la lista actualizada
-        const createdMethod = this.paymentMethods.find(m => 
-          m.type === this.selectedPaymentMethodType && 
-          ((m.walletId && m.walletId === paymentData.walletId) || 
-           (m.cardNumber && m.cardNumber === paymentData.cardNumber) || 
-           (m.email && m.email === paymentData.email))
-        );
-        
-        if (createdMethod) {
-          this.rentalData.selectedPaymentMethod = createdMethod;
-          this.saveCurrentData(); // Guardar después de crear método de pago
-        }
-        
-        this.showNewPaymentForm = false;
-        this.resetNewPaymentMethodForm();
-        
-        addAlert('Método de pago guardado correctamente', 'success');
-        return true;
-      } catch (error) {
-        console.error('Error al guardar método de pago:', error);
-        addAlert('Error al guardar el método de pago', 'error');
-        return false;
-      } finally {
-        this.loading = false;
+      const paymentStore = usePaymentStore();
+      const newMethod = await paymentStore.saveNewPaymentMethod(this.loggedUser.id);
+      
+      if (newMethod) {
+        this.rentalData.selectedPaymentMethod = newMethod;
+        this.saveCurrentData();
       }
+      
+      return !!newMethod;
     },
     
-    resetNewPaymentMethodForm() {
-      // Resetear los formularios de método de pago
-      this.newPaymentMethod = {
-        digital_wallet: { type: 'digital_wallet', walletType: '', walletId: '' },
-        credit_card: { type: 'credit_card', cardholder: '', cardNumber: '', expiryDate: '', cvv: '' },
-        paypal: { type: 'paypal', email: '' }
-      };
-    },
-    
-    getPaymentMethodIdentifier(method) {
-      if (!method) return null;
-      
-      // Si ya es un string (un ID guardado anteriormente), devolverlo directamente
-      if (typeof method === 'string') return method;
-      
-      switch(method.type) {
-        case 'credit_card':
-          return `card-${method.cardNumber}`;
-        case 'digital_wallet':
-          return `wallet-${method.walletType}-${method.walletId}`;
-        case 'paypal':
-          return `paypal-${method.email}`;
-        default:
-          return null;
-      }
+    calculatePercentage(percentage) {
+      return this.rentalData.currentTotalPrice * (percentage / 100);
     },
     
     formatDate(dateString) {
@@ -463,44 +342,8 @@ export const useRentalStore = defineStore('rental', {
       return timeString.trim();
     },
     
-    calculatePercentage(percentage) {
-      return this.rentalData.currentTotalPrice * (percentage / 100);
-    },
-    
-    getPaymentMethodName(paymentMethod) {
-      if (!paymentMethod) return 'No especificado';
-      
-      const names = {
-        credit_card: 'Tarjeta de crédito',
-        paypal: 'PayPal',
-        uala: 'Ualá',
-        mercadopago: 'Mercado Pago'
-      };
-      
-      if (paymentMethod.type === 'credit_card') {
-        return `${names.credit_card} (**** ${paymentMethod.cardNumber?.slice(-4) || 'XXXX'})`;
-      } else if (paymentMethod.type === 'digital_wallet') {
-        return names[paymentMethod.walletType] || 'Billetera digital';
-      } else {
-        return names[paymentMethod.type] || 'Otro método';
-      }
-    },
-    
-    getPaymentDetails(paymentMethod) {
-      if (!paymentMethod) return '';
-      
-      if (paymentMethod.type === 'credit_card') {
-        return `Titular: ${paymentMethod.cardholder} - Vence ${paymentMethod.expiryDate}`;
-      } else if (paymentMethod.type === 'paypal') {
-        return paymentMethod.email || '';
-      } else if (paymentMethod.type === 'digital_wallet') {
-        return paymentMethod.walletId || '';
-      }
-      
-      return '';
-    },
-    
     prepareRentalData() {
+      const paymentStore = usePaymentStore();
       return {
         car_id: this.car.id,
         owner_id: this.car.user_id,
@@ -509,7 +352,7 @@ export const useRentalStore = defineStore('rental', {
         rented_until: `${this.rentalData.rentedUntilDate}T${this.rentalData.selectedUntilTime}:00`,
         status: "pendiente",
         rental_price: this.rentalData.currentTotalPrice,
-        payment_method: this.getPaymentMethodName(this.rentalData.selectedPaymentMethod)
+        payment_method: paymentStore.getPaymentMethodName(this.rentalData.selectedPaymentMethod)
       };
     },
     
