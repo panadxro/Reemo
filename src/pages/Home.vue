@@ -140,20 +140,25 @@ export default {
     </div>
 
     <div class="flex flex-col gap-5">
-      <article class=" py-11 w-full rounded-[40px] shadow-custom flex flex-row">
-        <div class="flex flex-col justify-between flex-1">
-          <div>
-            <Heading :type="3">Contactáte inmediatamente<br/> con el dueño</Heading>
-          <p class="w-96 text-slate-600">Con Reemo podés hablar por medio de chat con el dueño del auto luego de haber reservado el mismo para ultimar detalles del alquiler</p>
-          </div>
-
-          <a href="" class="flex items-center justify-between py-2 px-5 rounded-xl bg-secondary-900 text-white w-36">
-            <span>Ver autos</span>
-            <LongArrow color="#FFFFFF" direction="right"/>
-          </a>
+      <article class="py-6 md:py-11 w-full rounded-[20px] md:rounded-[40px] shadow-custom flex flex-col lg:flex-row px-4 lg:px-0">
+        <div class="flex flex-col justify-between flex-1 gap-8">
+            <div>
+                <Heading :type="3">Contactáte inmediatamente<br class="hidden md:block"/> con el dueño</Heading>
+                <p class="w-full md:w-3/4 text-slate-600 pt-2">
+                    Con Reemo podés hablar por medio de chat con el dueño del auto luego de haber reservado el mismo para ultimar detalles del alquiler
+                </p>
+            </div>
+    
+            <a href="" class="flex items-center justify-between py-2 px-5 rounded-xl bg-secondary-900 text-white w-36 mt-6 md:mt-0">
+                <span>Ver autos</span>
+                <LongArrow color="#FFFFFF" direction="right"/>
+            </a>
         </div>
-         <RentsExpress class="flex flex-1 mr-16"/>
-      </article>
+        
+        <div class="flex justify-center lg:justify-end mt-8 md:mt-0 md:mr-16">
+            <RentsExpress class="w-full max-w-[300px] md:max-w-md md:w-auto" />
+        </div>
+    </article>
       <div class="flex flex-col flex-1 items-center justify-center xl:flex-row gap-4">
         <article class="bg-secondary-100 pl-9 py-11 flex flex-col rounded-[40px] w-full group relative">
           <Heading :type="3">Viví momentos <br/>inolvidables</Heading>
@@ -202,8 +207,8 @@ export default {
           </article>
         </div>
 
-        <article class="bg-secondary-100 pl-9 py-11 flex flex-col flex-1 rounded-[40px] w-full group relative overflow-hidden">
-          <Heading :type="3">Todas las marcas <br/>y todos los modelos</Heading>
+        <article class="bg-secondary-100 pl-9 py-11 flex flex-col flex-1 rounded-[40px] w-full group relative overflow-hidden ">
+          <Heading :type="3" class="z-100">Todas las marcas <br/>y todos los modelos</Heading>
           <div class="flex flex-row-reverse">
             <Brands class="-m-20"/>
           </div>
@@ -214,7 +219,7 @@ export default {
 
   <section class="flex flex-col gap-5 items-center mx-4">
     <Heading :type="2" class="text-center">Preguntas frecuentes</Heading>
-    <div class="flex flex-col sm:gap-4 w-10/12 m-auto">
+    <div class="flex flex-col gap-4 w-10/12 m-auto">
       <Dropdown class="flex flex-col bg-secondary-100 px-8 py-5 rounded-3xl">
         <template #title>
           <Heading type="5">¿Qué necesito para abrir una cuenta en Reemo?</Heading>
