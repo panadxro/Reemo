@@ -28,10 +28,10 @@ export default {
 </script>
 
 <template>
-  <div class="w-11/12 sm:w-10/12 m-auto bg-white rounded-3xl px-8 flex flex-col gap-32 mb-32">
-    <section class="flex flex-col items-center justify-between sm:flex-row 2xl:justify-center gap-16">
+  <div class="w-11/12 sm:w-10/12 m-auto bg-white rounded-3xl flex flex-col gap-32 mb-32">
+    <section class="flex flex-col items-center justify-between xl:flex-row xl:justify-center gap-16 mx-4">
       <div class="flex flex-col gap-4">
-        <h1 class="font-medium leading-tight text-5xl block mb-4 sm:text-6xl w-[95%] sm:w-full text-pretty text-center sm:text-start"><b>Conectando autos,</b><br/> impulsando<br/> oportunidades</h1>
+        <h1 class="font-medium leading-tight text-5xl block mb-4 sm:text-6xl w-[95%] sm:w-full text-pretty text-center xl:text-start pt-4 xl:pt-0"><b>Conectando autos,</b><br/> impulsando<br/> oportunidades</h1>
         <div class="sm:flex gap-2 hidden">
           <div class="group">
             <a href="#">
@@ -48,7 +48,7 @@ export default {
       <ConectingCars/>
     </section>
 
-    <section class="flex flex-col items-center gap-8 sm:gap-12 sm:w-10/12 m-auto">
+    <section class="flex flex-col items-center gap-8 sm:gap-12 sm:w-10/12 m-auto mx-4">
       <ZurichxReemo/>
       <article class="flex flex-col items-center gap-3">
         <Heading :type="2" class="text-center">Seguros contra todo riesgo Zurich</Heading>
@@ -58,7 +58,7 @@ export default {
           <span class="font-semibold">Atención 24hs - 11 1122 3344</span>
         </a>
       </article>
-      <div class="sm:flex gap-4">
+      <div class="sm:flex flex-wrap justify-center gap-4">
         <div class="sm:w-[310px] shadow-custom px-6 py-12 flex flex-col gap-16 rounded-[36px]">
           <article class="flex flex-col gap-2 text-pretty">
             <Heading :type="3">¿Cómo funciona Reemo?</Heading>
@@ -100,13 +100,13 @@ export default {
       </div>
     </section>
 
-    <section class="flex flex-col gap-16">
+    <section class="flex flex-col gap-16 mx-4">
     <Heading :type="2" class="text-center">Con Reemo,<br>tranquilo a todos lados</Heading>
-    <div class="flex flex-col items-center justify-center sm:flex-row gap-4">
+    <div class="flex flex-col items-center justify-center [@media(min-width:1100px)]:flex-row gap-4">
       <article class="bg-primary-900 pl-9 py-11 flex flex-col gap-16 rounded-[40px] w-full group relative">
         <div class="flex flex-col gap-4 w-96">
           <Heading :type="3" class="text-white">Publicá tu vehículo</Heading>
-          <p class="text-lg font-regular leading-tight text-slate-600">Registrá tu auto en menos de 10 minutos y dejálo listo para ser alquilado.</p>
+          <p class="text-lg font-regular leading-tight text-slate-400">Registrá tu auto en menos de 10 minutos y dejálo listo para ser alquilado.</p>
         </div>
         <div class="flex flex-row-reverse">
           <PublishYourCar />
@@ -132,7 +132,7 @@ export default {
     </div>
   </section>
 
-  <section class="flex flex-col gap-16">
+  <section class="flex flex-col gap-16 mx-4">
     <div class="flex flex-col items-center gap-4">
       <Heading :type="2" class="text-center ">🚙<br/>Alquileres express</Heading>
       <p class="inline">Rápidos, seguros y confiables</p>
@@ -140,7 +140,7 @@ export default {
     </div>
 
     <div class="flex flex-col gap-5">
-      <article class="px-9 py-11 w-full rounded-[40px] shadow-custom flex flex-row">
+      <article class=" py-11 w-full rounded-[40px] shadow-custom flex flex-row">
         <div class="flex flex-col justify-between flex-1">
           <div>
             <Heading :type="3">Contactáte inmediatamente<br/> con el dueño</Heading>
@@ -154,7 +154,7 @@ export default {
         </div>
          <RentsExpress class="flex flex-1 mr-16"/>
       </article>
-      <div class="flex flex-col flex-1 items-center justify-center sm:flex-row gap-4">
+      <div class="flex flex-col flex-1 items-center justify-center xl:flex-row gap-4">
         <article class="bg-secondary-100 pl-9 py-11 flex flex-col rounded-[40px] w-full group relative">
           <Heading :type="3">Viví momentos <br/>inolvidables</Heading>
           <div class="flex flex-row-reverse">
@@ -171,15 +171,15 @@ export default {
     </div>
   </section>
 
-  <section class="flex flex-col gap-16">
+  <section class="flex flex-col gap-16 mx-4">
     <div class="flex flex-col items-center gap-4">
       <Heading :type="2" class="text-center ">🚙<br/>Gran variedad</Heading>
       <p class="inline">Conseguí un auto que se adapte a tus necesidades</p>
     </div>
 
-    <div class="flex flex-col gap-5">
-      <div class="flex flex-col flex-1 items-center justify-center sm:flex-row gap-4">
-        <div class="flex flex-col flex-1 gap-4">
+    <div class="flex flex-col gap-5 w-full">
+      <div class="flex flex-col flex-1 items-center justify-center [@media(min-width:1200px)]:flex-row gap-4 w-full">
+        <div class="flex flex-col flex-1 gap-4 w-full">
           <article class="bg-primary-900 px-9 py-11 flex flex-row justify-between items-center rounded-[40px] w-full">
             <div class="flex flex-col gap-16">
               <Heading :type="3" class="text-white">Viví momentos <br/>inolvidables</Heading>
@@ -212,7 +212,7 @@ export default {
     </div>
   </section>
 
-  <section class="flex flex-col gap-5 items-center">
+  <section class="flex flex-col gap-5 items-center mx-4">
     <Heading :type="2" class="text-center">Preguntas frecuentes</Heading>
     <div class="flex flex-col sm:gap-4 w-10/12 m-auto">
       <Dropdown class="flex flex-col bg-secondary-100 px-8 py-5 rounded-3xl">
