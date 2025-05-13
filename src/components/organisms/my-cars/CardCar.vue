@@ -41,9 +41,10 @@ export default {
     setDefaultImage(event) {
       event.target.src = this.defaultCarImage;
     },
-    handleLike() {
-      console.log('Like');
-    }
+    handleLike(event) {
+      event.preventDefault();
+      this.$emit('like', this.car.id);
+    },
 
 /*     async handleDelete(id) {
   this.loading = true;
@@ -98,37 +99,60 @@ export default {
 </script>
 
 <template>
-  <div class="relative flex flex-col border-2 rounded-3xl border-secondary-100 p-4">
+  <div class="relative flex flex-col overflow-hidden border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 bg-white">
     <button
       @click.stop="handleLike"
-      class="absolute top-4 right-4 z-10 p-2 rounded-full"
+      class="absolute top-3 right-3 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-all duration-300"
+      aria-label="Añadir a favoritos"
     >
       <Like />
     </button>
 
     <router-link 
       :to="{ name: 'CarDetails', params: { id: car.id } }" 
-      class="flex flex-col"
+      class="flex flex-col h-full"
     >
-      <div class="flex flex-row gap-2">
-        <Status :status="car.isAvailable ? 'validated' : 'not-validated'" />
-      </div>
-      <div class="flex justify-end">
-        <figure class="aspect-[21/9] h-24 overflow-hidden"> 
+      <div class="relative w-full overflow-hidden">
+        <div class="absolute top-3 left-3 z-10">
+          <Status :status="car.isAvailable ? 'validated' : 'not-validated'" />
+        </div>
+        
+        <div class="w-full aspect-[16/9] overflow-hidden">
           <img
-            class="rounded-xl object-center object-cover w-full h-full"
+            class="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
             :src="car.images && car.images.length > 0 ? car.images[0] : defaultCarImage" 
             @error="setDefaultImage"
             :alt="car.marca + ' ' + car.modelo" 
           />
-        </figure>
+        </div>
       </div>
-      <div class="flex flex-1 flex-row justify-between items-end">
-        <article class="flex flex-col align-end justify-between">
-          <p class="text-sm text-gray-500">{{ car.marca }}</p>
-          <Heading :type="4">{{ car.modelo }}</Heading>
-        </article>
-        <Heading :type="4">${{ car.precio }}/ hr</Heading>
+
+      <div class="flex flex-col p-4 flex-1">
+        <div class="mb-2">
+          <p class="text-sm font-medium text-primary-500">{{ car.marca }}</p>
+          <Heading :type="4" class="text-gray-900 font-bold line-clamp-1">{{ car.modelo }}</Heading>
+        </div>
+        
+        <div class="flex gap-3 mt-1 mb-3">
+          <div class="flex items-center text-xs text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            {{ car.transmision || "Automático" }}
+          </div>
+          <div class="flex items-center text-xs text-gray-500">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            {{ car.year || "2023" }}
+          </div>
+        </div>
+        
+        <div class="flex justify-between items-center mt-auto pt-2 border-t border-gray-100">
+          <div class="flex items-center">
+            <Heading :type="4" class="text-primary-600 font-bold">${{ car.precio }}<span class="text-xs font-normal">/hr</span></Heading>
+          </div>
+        </div>
       </div>
     </router-link>
   </div>
