@@ -14,12 +14,13 @@ import AddIcon from "@icons/AddIcon.vue";
 import Loading from "@icons/Loading.vue";
 import Input from "../components/molecules/Input.vue";
 import Arrow from '@icons/Arrow.vue'
+import FilterIcon from '@icons/FilterIcon.vue'
 import PriceRange from "../components/molecules/PriceRange.vue";
 import Checkbox from "../components/atoms/Checkbox.vue";
 
 export default {
   name: "Search",
-  components: { Heading, CardCar, AddIcon, Loading, AddressInput, Input, Arrow, PriceRange, Checkbox },
+  components: { Heading, CardCar, AddIcon, Loading, AddressInput, Input, Arrow, PriceRange, Checkbox, FilterIcon },
   data() {
     return {
       loggedUser: {
@@ -118,7 +119,9 @@ export default {
       localStorage.removeItem('filters');
     },
     toggleFilters() {
-      this.showFilters = !this.showFilters;
+      if (window.innerWidth < 1024) {
+        this.showFilters = !this.showFilters;
+      }
     },
   },
   async mounted() {
@@ -139,18 +142,16 @@ export default {
       this.cars = newCars;
     });
     
-    // Establecer el estado de los filtros según el tamaño de pantalla
-    this.showFilters = window.innerWidth >= 1000;
-    
-    // Listener para cambios de ventana
+    this.showFilters = window.innerWidth >= 1024;
+
     window.addEventListener('resize', () => {
-      this.showFilters = window.innerWidth >= 1000;
+      this.showFilters = window.innerWidth >= 1024;
     });
   },
   watch: {
     'filters.brand'(newBrand, oldBrand) {
       if (newBrand !== oldBrand) {
-        this.filters.model = ""; // Reset
+        this.filters.model = "";
       }
     }
   },
@@ -159,36 +160,21 @@ export default {
 
 <template>
   <section class="w-full h-full relative">
-    <!-- Botón para mostrar/ocultar filtros en móvil -->
     <button 
       @click="toggleFilters" 
-      class="md:hidden fixed bottom-5 right-5 bg-primary-500 text-white p-3 rounded-full shadow-lg z-50"
+      class="lg:hidden fixed bottom-5 right-5 bg-primary-500 text-white p-3 rounded-full shadow-lg z-50"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-      </svg>
+      <FilterIcon/>
     </button>
 
     <div class="flex flex-col md:flex-row w-full h-full">
       <div 
         :class="[
           'transition-all duration-300 overflow-y-auto',
-          showFilters ? 'fixed md:relative inset-0 z-40 bg-white/95 md:bg-transparent' : 'hidden md:block',
-          'md:w-1/4 lg:w-1/4 xl:w-1/5 md:min-w-[300px] p-4'
+          showFilters ? 'fixed lg:relative inset-0 z-40 bg-white/95 lg:bg-transparent' : 'hidden lg:block',
+          'lg:w-1/4 xl:w-1/5 lg:min-w-[300px] p-4'
         ]"
       >
-        <!-- <button 
-          @click="toggleFilters" 
-          class="absolute top-4 right-4 md:hidden text-gray-600 hover:text-gray-900"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button> -->
-
-        
-
-        <!-- Panel de filtros -->
         <div class="bg-white border-secondary-100 border-2 rounded-2xl p-4 w-full h-auto">
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold">Filtros</h2>
@@ -290,21 +276,23 @@ export default {
         </div>
       </div>
 
-      <!-- Buscador -->
-      <div class="bg-white/70 rounded-full flex items-center px-4 py-2 w-full border border-gray-300 focus-within:ring-2 focus-within:ring-primary-500 mb-2">
-        <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-          stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M21 21l-4.35-4.35m1.85-4.65a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input type="text" id="searchInput" placeholder="Buscar un auto..."
-          class="bg-transparent outline-none text-gray-700 w-full pl-2 placeholder-gray-400">
-      </div>
-      <section class="w-full md:w-3/4 lg:w-3/4 xl:w-4/5 p-4 overflow-hidden flex flex-col h-full">
-        <div class="flex justify-between items-center mb-4">
-          <Heading :type="1" class="text-xl md:text-2xl">Autos disponibles</Heading>
-        </div>
-
+      <div class="w-full lg:w-3/4 xl:w-4/5 p-4 overflow-hidden flex flex-col h-full">
+        
+        <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4">
+          
+          <div class="bg-white/70 rounded-full flex items-center px-4 py-2 border border-gray-300 focus-within:ring-2 focus-within:ring-primary-500 w-full lg:w-2/4 lg:order-1 mb-2">
+            <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-4.35-4.35m1.85-4.65a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" id="searchInput" placeholder="Buscar un auto..."
+              class="bg-transparent outline-none text-gray-700 w-full pl-2 placeholder-gray-400">
+          </div>
+          <Heading :type="1" class="text-xl lg:text-2xl text-start lg:mt-0">Autos disponibles</Heading>
+          
+          </div>
+  
         <p v-if="filteredCars.length == 0 && !loading" class="text-lg text-red-700 font-bold pt-4">
           No se encontraron autos con esas características
         </p>
@@ -325,7 +313,7 @@ export default {
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   </section>
 </template>
