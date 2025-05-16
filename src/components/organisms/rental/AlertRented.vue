@@ -75,7 +75,7 @@ export default {
   <button 
     type="button" 
     data-dropdown-toggle="notification-dropdown" 
-    class="flex items-center justify-center p-2 rounded-full transition-colors duration-300 cursor-pointer hover:bg-vibrant-light-800"
+    class="flex items-center justify-center mr-2 rounded-full transition-colors duration-300 cursor-pointer hover:bg-vibrant-light-800"
     active-class="bg-vibrant-light-800 hover:bg-vibrant-light-800" 
     >
     <!-- Icono de campana -->

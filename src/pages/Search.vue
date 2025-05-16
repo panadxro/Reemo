@@ -162,7 +162,7 @@ export default {
   <section class="w-full h-full relative">
     <button 
       @click="toggleFilters" 
-      class="lg:hidden fixed bottom-5 right-5 bg-primary-500 text-white p-3 rounded-full shadow-lg z-50"
+      class="lg:hidden fixed bottom-5 right-5 bg-primary-500 text-white p-3 rounded-full shadow-lg z-40"
     >
       <FilterIcon/>
     </button>
@@ -171,7 +171,7 @@ export default {
       <div 
         :class="[
           'transition-all duration-300 overflow-y-auto',
-          showFilters ? 'fixed lg:relative inset-0 z-40 bg-white/95 lg:bg-transparent' : 'hidden lg:block',
+          showFilters ? 'fixed lg:relative inset-0 z-39 bg-white/95 lg:bg-transparent' : 'hidden lg:block',
           'lg:w-1/4 xl:w-1/5 lg:min-w-[300px] p-4'
         ]"
       >
@@ -279,7 +279,7 @@ export default {
         
         <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4">
           
-          <div class="bg-white/70 rounded-full flex items-center px-4 py-2 border border-gray-300 focus-within:ring-2 focus-within:ring-primary-500 w-full lg:w-2/4 lg:order-1 mb-4">
+          <div class="bg-white/70 rounded-full flex items-center px-4 py-2 border border-gray-300 focus-within:ring-2 focus-within:ring-primary-500 w-full lg:w-2/4 lg:order-1 mb-4 lg:mb-0">
             <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
