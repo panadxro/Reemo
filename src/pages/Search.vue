@@ -16,11 +16,11 @@ import Input from "../components/molecules/Input.vue";
 import Arrow from '@icons/Arrow.vue'
 import FilterIcon from '@icons/FilterIcon.vue'
 import PriceRange from "../components/molecules/PriceRange.vue";
-import Checkbox from "../components/atoms/Checkbox.vue";
+import CheckboxFilter from "../components/atoms/CheckboxFilter.vue";
 
 export default {
   name: "Search",
-  components: { Heading, CardCar, AddIcon, Loading, AddressInput, Input, Arrow, PriceRange, Checkbox, FilterIcon },
+  components: { Heading, CardCar, AddIcon, Loading, AddressInput, Input, Arrow, PriceRange, CheckboxFilter, FilterIcon },
   data() {
     return {
       loggedUser: {
@@ -176,20 +176,12 @@ export default {
         ]"
       >
         <div class="bg-white border-secondary-100 border-2 rounded-2xl p-4 w-full h-auto">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold">Filtros</h2>
-            <div class="flex gap-2">
-              <button class="text-sm text-[#0ba5ec] hover:underline cursor-pointer" @click="resetFilters">Reset</button>
-              <button class="text-sm bg-[#0ba5ec] text-white px-4 py-1.5 rounded-full shadow-sm hover:bg-[#0998d2] transition-all cursor-pointer" @click="applyFilters">
-                Guardar
-              </button>
-            </div>
-          </div>
+            <h2 class="text-xl font-bold">Filtrar vehículo</h2>
 
           <!-- rango de precio -->
-          <div class="mb-4">
+          <div class="my-4">
             <Heading :type="3" class="small">Rango de precio</Heading>
-            <div class="mt-2">
+            <div class="mt-2 lg:ms-2 lg:me-1">
               <PriceRange :min="20000" :max="100000" v-model="filters" />
             </div>
           </div>
@@ -197,8 +189,8 @@ export default {
           <!-- chasis -->
           <div class="flex flex-col gap-2 mt-5">
             <Heading :type="3" class="small">Chasis</Heading>
-            <div class="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-2 mt-2 text-sm">
-              <Checkbox 
+            <div class="flex flex-wrap 2 gap-2 mt-2 text-sm">
+              <CheckboxFilter 
                 v-for="chassis in chassisTypes" 
                 :key="chassis" 
                 :id="chassis.toLowerCase()"
@@ -246,14 +238,14 @@ export default {
 
           <!-- transmisión -->
           <div class="flex flex-col gap-2 mt-5">
-            <label class="text-sm font-medium">Transmisión</label>
+            <Heading :type="3" class="small">Transmisión</Heading>
             <div class="flex flex-wrap gap-2 mt-2">
               <button 
                 v-for="option in optionsTransmission" 
                 :key="option" 
                 @click="filters.transmission = option === 'Ambos' ? '' : option" 
                 :class="[
-                  'cursor-pointer px-3 py-1 text-sm rounded-full border',
+                  'cursor-pointer px-3 py-[6px] text-sm rounded-xl border font-medium transition-all duration-200',
                   filters.transmission === (option === 'Ambos' ? '' : option)
                     ? 'bg-[#e6faff] border-[#0ba5ec] text-[#0ba5ec]'
                     : 'bg-white border-gray-300 text-black'
@@ -265,22 +257,29 @@ export default {
           </div>
 
           <!-- Mostrar disponibles -->
-          <div class="flex items-center justify-between mt-5">
+          <!-- <div class="flex items-center justify-between mt-5">
             <span class="font-medium">Mostrar sólo disponibles</span>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" value="" class="sr-only peer">
               <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-600"></div>
               <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition peer-checked:translate-x-5"></div>
             </label>
+          </div> -->
+          <div class="flex gap-2 mt-4">
+            <button class="text-sm bg-[#0ba5ec] text-white px-4 py-1.5 rounded-lg shadow-sm hover:bg-[#0998d2] transition-all cursor-pointer" @click="applyFilters">
+              Guardar
+            </button>
+            <button class="text-sm text-[#0ba5ec] hover:underline cursor-pointer" @click="resetFilters">Limpiar Filtros</button>
           </div>
         </div>
+
       </div>
 
       <div class="w-full lg:w-3/4 xl:w-4/5 p-4 overflow-hidden flex flex-col h-full">
         
         <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4">
           
-          <div class="bg-white/70 rounded-full flex items-center px-4 py-2 border border-gray-300 focus-within:ring-2 focus-within:ring-primary-500 w-full lg:w-2/4 lg:order-1 mb-2">
+          <div class="bg-white/70 rounded-full flex items-center px-4 py-2 border border-gray-300 focus-within:ring-2 focus-within:ring-primary-500 w-full lg:w-2/4 lg:order-1 mb-4">
             <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
