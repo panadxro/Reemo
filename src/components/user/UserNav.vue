@@ -16,38 +16,44 @@ const profileData = computed(() => userStore.profileData)
 </script>
 
 <template>
-  <aside class="bg-vibrant-light-600 m-2.5 py-12 px-5 flex flex-col items-center gap-2 rounded-[40px] min-w-[250px]">
-    <img 
-      v-if="profileData.personalInfo.profilePhoto" 
-      class="w-20 aspect-square rounded-full bg-vibrant-light-800" 
-      :src="`${profileData.personalInfo.profilePhoto}`"
-      :alt="`Perfil de ${profileData.personalInfo.username}`" 
-    />
-    <Heading :type="1" class="regular text-center">{{ profileData.personalInfo.firstName }} {{ profileData.personalInfo.lastName }}</Heading>
-    <p class="text-sm text-gray-500">
-      @{{ profileData.personalInfo.username }}
-    </p>
-    <!-- <button type="button" @click="openUserEdit">Editar</button> -->
-    <ul class="flex flex-col gap-3 my-7 w-full">
-      <li>
+  <aside class="bg-vibrant-light-600 m-2.5 py-6 md:py-12 px-5 flex flex-col items-center gap-2 rounded-[40px] w-full md:min-w-[250px]">
+    <!-- Profile info -->
+    <div class="w-full flex flex-row md:flex-col items-center gap-4 md:gap-2">
+      <img 
+        v-if="profileData.personalInfo.profilePhoto" 
+        class="w-16 md:w-20 aspect-square rounded-full bg-vibrant-light-800 md:mx-auto" 
+        :src="`${profileData.personalInfo.profilePhoto}`"
+        :alt="`Perfil de ${profileData.personalInfo.username}`" 
+      />
+      <div class="md:text-center">
+        <Heading :type="2" class="regular">{{ profileData.personalInfo.firstName }} {{ profileData.personalInfo.lastName }}</Heading>
+        <p class="text-sm text-gray-500">
+          @{{ profileData.personalInfo.username }}
+        </p>
+      </div>
+    </div>
+    
+    <!-- Navigation -->
+    <ul class="flex flex-row md:flex-col flex-wrap justify-center gap-3 my-4 md:my-7 w-full">
+      <li class="flex-1 min-w-[120px]">
         <NavButton to="/profile" title="Mi perfil">
           <UserIcon />
           <span>Mi perfil</span>
         </NavButton>
       </li>
-      <li>
+      <li class="flex-1 min-w-[120px]">
         <NavButton to="/profile" title="Documentación">
           <Credential />
           <span>Documentación</span>
         </NavButton>
       </li>
-      <li>
+      <li class="flex-1 min-w-[120px]">
         <NavButton to="/profile" title="Mis autos">
           <Car />
           <span>Mis autos</span>
         </NavButton>
       </li>
-      <li>
+      <li class="flex-1 min-w-[120px]">
         <NavButton to="/profile" title="Historial">
           <History />
           <span>Historial</span>
