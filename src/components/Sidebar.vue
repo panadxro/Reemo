@@ -100,8 +100,7 @@ const handleLogout = () => {
         <button 
           @click="handleLogout"
           title="Logout"
-          class="flex items-center justify-center p-2 rounded-full transition-colors duration-300 cursor-pointer hover:bg-vibrant-light-800"
-          active-class="bg-vibrant-light-800hover:cursor-pointer hover:bg-vibrant-light-800"
+          class="flex items-center justify-center p-2 rounded-full transition-colors duration-300 cursor-pointer hover:bg-white/50"
         >
           <Logout />
           <span class="sr-only">Logout</span>

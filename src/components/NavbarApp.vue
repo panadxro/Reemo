@@ -177,7 +177,7 @@ onBeforeUnmount(() => {
         <button 
           @click="handleLogout"
           title="Logout"
-          class="flex items-center justify-start p-2 rounded-full transition-colors duration-300 cursor-pointer hover:bg-vibrant-light-800 w-full"
+          class="flex items-center justify-start p-2 rounded-full transition-colors duration-300 cursor-pointer w-full"
         >
           <Logout class="mr-2" />
           <span class="font-semibold">Cerrar Sesión</span>
