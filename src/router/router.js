@@ -54,6 +54,7 @@ const routes = [
     name: "CarDetails",
     component: CarDetails,
     props: true,
+    meta: { needsAuth: true },
   },
   {
     path: "/user/:id",
