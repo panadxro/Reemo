@@ -1,7 +1,8 @@
 <script>
-import { useUserStore, useAuthStore } from '@stores'
+import { useUserStore, useAuthStore  } from '@stores'
 import { onMounted, ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { usePaymentStore } from '@/stores/payment.store.js'
 
 import Heading from "@components/atoms/Heading.vue";
 import CardCar from "@components/organisms/my-cars/CardCar.vue";
@@ -11,10 +12,14 @@ import Loading from "@icons/Loading.vue";
 import UserCar from "@components/organisms/my-cars/UserCar.vue";
 import Arrow from "../icons/Arrow.vue";
 import BackButton from "@components/atoms/BackButton.vue";
+import MercadoPago from "@icons/MercadoPago.vue";
+import Uala from "@icons/Uala.vue";
+import PayPal from "@icons/PayPal.vue";
+import CreditCard from "@icons/CreditCard.vue";
 
 export default {
   name: "UserProfile",
-  components: { Heading, CardCar, UserNav, RentedCar, Loading, UserCar, Arrow, BackButton },
+  components: { Heading, CardCar, UserNav, RentedCar, Loading, UserCar, Arrow, BackButton, MercadoPago, Uala, PayPal, CreditCard },
   props: {
     id: {
       type: String,
@@ -32,6 +37,7 @@ export default {
   setup() {
     const userStore = useUserStore();
     const authStore = useAuthStore();
+    const paymentStore = usePaymentStore();
     const route = useRoute();
     const router = useRouter();
 
@@ -64,6 +70,7 @@ export default {
         if(!userStore.profileData.profileCompleted){
           router.push('/onboarding')
         }
+        await paymentStore.fetchPaymentMethods(loggedUserId.value);
       }
     });
     
@@ -72,7 +79,9 @@ export default {
       isOwnProfile,
       posts: userStore.posts,
       rentedCars: userStore.rentedCars,
-      showProfile
+      showProfile,
+      paymentStore,
+      userIdFromRoute
     };
   }
 }
@@ -252,14 +261,72 @@ export default {
       </div>
       
       <div class="md:flex gap-4">
-        <!-- Historial (condicional según si es perfil propio o visitado) -->
+        <div class="bg-secondary-100 rounded-[40px] p-6 mt-4 xl:mt-0">
+          <div class="flex items-center justify-between mb-4 gap-8">
+            <Heading :type="1" class="text-primary-900">Datos Personales</Heading>
+            <!-- <router-link :to="`/user/${userIdFromRoute}/details`">
+              <span class="text-primary-900 hover:underline hover:decoration-primary-900 transition-all duration-300 pt-1">
+                Ver todos
+              </span>
+            </router-link> -->
+          </div>
         
-        <div
-          v-if="!$route.matched.some(route => route.name === 'PrivateChat')"
-          class="bg-blue-800/20">
-          <div class="section-header">
-            <Heading :type="1">{{ isOwnProfile ? "Mis datos" : "Usuario" }}</Heading>
-            <a href="" class="section-link">Ver más</a>
+          <div v-if="!userStore.loading" class="space-y-4">            
+            <!-- Métodos de pago -->
+            <div v-if="isOwnProfile && paymentStore.paymentMethods.length > 0">
+              <Heading :type="5" class="text-primary-900 mb-2">Métodos de pago</Heading>
+              <div class="space-y-2">
+                <div 
+                  v-for="(method, index) in paymentStore.paymentMethods.slice(0, 2)" 
+                  :key="index" 
+                  class="flex items-center gap-3 p-2 bg-white rounded-lg"
+                >
+                  <div class="w-8 h-8 flex items-center justify-center p-1 rounded-xl bg-vibrant-light-600">
+                    <MercadoPago v-if="method.walletType === 'mercadopago'"/>
+                    <CreditCard v-if="method.type === 'credit_card'"/>
+                    <Uala v-if="method.walletType === 'uala'"/>
+                    <PayPal v-if="method.type === 'paypal'"/>
+                  </div>
+                  <div>
+                    <p class="font-medium text-primary-900">
+                      {{ method.type === 'credit_card' ? 'Tarjeta terminada en ' + method.cardNumber.slice(-4) : 
+                         method.type === 'paypal' ? 'PayPal' : 
+                         method.walletType === 'uala' ? 'Ualá' : 
+                         method.walletType === 'mercadopago' ? 'Mercado Pago' : 
+                         method.walletType === 'otra' ? 'Otra' : 
+                         method.walletType || 'Otro método' }}
+                    </p>
+                    <p class="text-xs text-background-600">
+                      {{ method.type === 'credit_card' ? method.cardholder : 
+                         method.type === 'digital_wallet' ? method.walletId : 
+                         method.email }}
+                    </p>
+                  </div>
+                </div>
+                
+                <p v-if="paymentStore.paymentMethods.length > 2" class="text-sm text-primary-800">
+                  Y {{ paymentStore.paymentMethods.length - 2 }} método(s) más...
+                </p>
+              </div>
+            </div>
+        
+            <!-- Dirección -->
+            <div v-if="showProfile.address && Object.keys(showProfile.address).length > 0" class="mb-4">
+              <Heading :type="5" class="text-primary-900 mb-2">Dirección</Heading>
+              <p class="text-background-600">
+                {{ showProfile.address.street || '' }} 
+                {{ showProfile.address.number || '' }}
+                {{ showProfile.address.city ? ', ' + showProfile.address.city : '' }}
+              </p>
+            </div>
+        
+            <div v-if="!isOwnProfile || (!paymentStore.paymentMethods.length && (!showProfile.address || Object.keys(showProfile.address).length === 0))" class="flex flex-col items-center py-4">
+              <p class="text-background-600 text-center">No hay datos adicionales para mostrar</p>
+            </div>
+          </div>
+        
+          <div v-else class="flex justify-center py-6">
+            <Loading class="w-8 h-8 text-primary-900" />
           </div>
         </div>
 
