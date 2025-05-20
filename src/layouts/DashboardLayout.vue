@@ -8,7 +8,7 @@ import NavbarApp from '@/components/NavbarApp.vue';
     <main class="flex flex-row min-h-screen max-h-screen p-2.5 snap-start relative bg-white 2xl:rounded-[40px]">
       <Sidebar />      
       <NavbarApp />
-      <div class="mt-16 md:mt-0 md:ml-14 w-full">
+      <div class="mt-16 md:mt-0 w-full">
         <slot />
       </div>
     </main>
