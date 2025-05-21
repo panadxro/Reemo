@@ -1,8 +1,11 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
-  modelValue: [String, Number],
+  modelValue: {
+    type: [String, Number],
+    default: ''
+  },
   type: {
     type: String,
     default: 'text'
@@ -34,13 +37,13 @@ const emit = defineEmits(['update:modelValue']);
 const selectRef = ref(null);
 
 // Clases computadas según el modo y variante
-const buttonClasses = computed(() => {
+const inputClasses = computed(() => {
   const baseClasses = 'flex flex-1 items-center justify-center rounded-2xl py-2.5 px-5 gap-2 border-[2px] font-semibold';
   const colorClasses = props.variant === 'primary' 
     ? (
         props.outline 
         ? 'border-deep-blue-600 text-deep-blue-600 bg-white' 
-        : 'bg-deep-blue-600 text-white border-transparent hover:bg-deep-blue-700 focus:opacity-80'
+        : 'bg-deep-blue-900 text-white border-transparent hover:bg-deep-blue-700 focus:opacity-80'
     ) 
     : (
       props.outline 
@@ -51,17 +54,15 @@ const buttonClasses = computed(() => {
   return `${baseClasses} ${colorClasses}`;
 });
 
-// Método para enfocar el <select> cuando se hace clic en el <label>
-  const focusSelect = () => {
-  if (props.type === 'select' && selectRef.value) {
-    selectRef.value.focus();
-  }
-};
+// Clases solo para el label (cuando no es select)
+const labelClasses = computed(() => {
+  return props.type === 'select' ? '' : inputClasses.value;
+});
 
-const removeFocus = (event) => {
-  event.target.blur();
-};
-
+// Clases para el input/select
+const elementClasses = computed(() => {
+  return props.type === 'select' ? inputClasses.value : 'w-full bg-transparent border-none outline-none';
+});
 </script>
 
 <template>
@@ -69,8 +70,7 @@ const removeFocus = (event) => {
   <label 
     v-if="type !== 'button' && type !== 'submit'" 
     :for="id" 
-    :class="buttonClasses"
-    @click="focusSelect"
+    :class="labelClasses"
   >
     <slot v-if="iconPosition === 'left'" name="icon"></slot>
 
@@ -84,7 +84,7 @@ const removeFocus = (event) => {
       @input="$emit('update:modelValue', $event.target.value)"
       :value="modelValue"
       autocomplete="off"
-      class="w-full bg-transparent border-none outline-none"
+      :class="elementClasses"
       :aria-label="placeholder"
     />
 
@@ -95,15 +95,18 @@ const removeFocus = (event) => {
       :name="name"
       @change="$emit('update:modelValue', $event.target.value)"
       :value="modelValue"
-      class="flex w-full bg-transparent border-none outline-none"
       :aria-label="placeholder"
+      :class="[
+        elementClasses
+      ]"   
       ref="selectRef"
     >
       <option 
         v-if="placeholder" 
         value="" 
         disabled 
-        selected
+        :selected="!modelValue"
+        class="text-background-600"
         >
         {{ placeholder }}
       </option>
@@ -111,6 +114,7 @@ const removeFocus = (event) => {
         v-for="(option, index) in options" 
         :key="index" 
         :value="option.value"
+        :selected="option.value"
         >
         {{ option.label }}
       </option>
@@ -123,8 +127,7 @@ const removeFocus = (event) => {
   <button 
     v-else 
     :type="type"
-    :class="buttonClasses"
-    @mouseup="removeFocus"
+    :class="inputClasses"
   >
     <slot v-if="iconPosition === 'left'" name="icon"></slot>
     {{ text }}
@@ -133,7 +136,22 @@ const removeFocus = (event) => {
 </template>
 
 <style scoped>
-input {
+/* Estilos específicos para el select */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1.5em;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Estilos para inputs normales */
+input:not([type='select']) {
   border: none;
   outline: none;
   flex: 1;

@@ -10,16 +10,16 @@ import Checkbox from '../components/atoms/Checkbox.vue';
 import LongArrow from '../icons/LongArrow.vue';
 import Reemo from '../icons/Reemo.vue';
 import DropdownForm from '../components/molecules/DropdownForm.vue';
-import DNIFront from '../components/atoms/DNIFront.vue';
-import DNIBack from '../components/atoms/DNIBack.vue';
 import DriverFront from '../components/atoms/DriverFront.vue';
-import DriverBack from '../components/atoms/DriverBack.vue';
 import Loading from '@icons/Loading.vue';
-import User from '@icons/User.vue';
-import Documentation from '@icons/Documentation.vue';
-import Location from '@icons/Location.vue';
-import Payment from '@icons/Payment.vue';
-import Clipboard from '@icons/Clipboard.vue';
+import Car from "@icons/Car.vue";
+import Velocimetre from "@icons/Velocimetre.vue";
+import Equipment from "@icons/Equipment.vue";
+import Locate from "@icons/Locate.vue";
+import History from "@icons/History.vue";
+import Images from "@icons/Images.vue";
+import Secure from "@icons/Secure.vue";
+import Search from "@icons/Search.vue"
 
 const authStore = useAuthStore();
 const userStore = useUserStore();
@@ -52,11 +52,13 @@ const filePreviews = reactive({
 
 const loading = ref(false)
 const sections = ref([
-  { title: 'Datos personales', icon: markRaw(User) },
-  { title: 'Documentación', icon: markRaw(Documentation) },
-  { title: 'Ubicación', icon: markRaw(Location) },
-  { title: 'Método de Pago', icon: markRaw(Payment) },
-  { title: 'Términos y Condiciones', icon: markRaw(Clipboard) }
+  { title: 'Información básica', icon: markRaw(Car) },
+  { title: 'Especificaciones técnicas', icon: markRaw(Velocimetre) },
+  { title: 'Equipamiento y características', icon: markRaw(Equipment) },
+  { title: 'Ubicación y disponibilidad', icon: markRaw(Locate) },
+  { title: 'Políticas y tarifas', icon: markRaw(History) },
+  { title: 'Fotos del vehículo', icon: markRaw(Images) },
+  { title: 'Información de seguro', icon: markRaw(Secure) },
 ])
 
 const handleFileChange = async (event, field) => {
@@ -84,6 +86,19 @@ const cargarCiudades = () => {
   userStore.setCity(''); // Reinicia la ciudad seleccionada
   userStore.setCities(geoStore.getCiudadesPorProvincia(address.value.province) || []);
 };
+
+const days = [
+  { label: 'L', value: 'monday' },
+  { label: 'M', value: 'tuesday' },
+  { label: 'X', value: 'wednesday' },
+  { label: 'J', value: 'thursday' },
+  { label: 'V', value: 'friday' },
+  { label: 'S', value: 'saturday' },
+  { label: 'D', value: 'sunday' }
+];
+
+// Días seleccionados (solo para demostración visual)
+const selectedDays = ref(['monday', 'tuesday', 'wednesday', 'thursday', 'friday']);
 
 const handleSubmit = async () => {
   // Basic validation example
@@ -168,8 +183,8 @@ onBeforeUnmount(() => {
     <!-- Secciones al costado -->
     <aside class="flex flex-col gap-8 w-full max-w-[425px]">
       <div class="flex flex-col gap-2">
-        <Heading type="1" class="large text-deep-blue-900 font-extrabold!">Onboarding</Heading>
-        <p class="text-sm max-w-[420px]">¡Bienvenido! Completa los siguientes datos para finalizar tu registro y acceder a todas las funcionalidades de la plataforma.</p>
+        <Heading type="1" class="large text-deep-blue-900 font-extrabold!">Registrar vehículo</Heading>
+        <p class="text-sm max-w-[420px]">Subscribí tu vehículo a la plataforma y haz que trabaje por vos.</p>
       </div>
       <ul class="sections-sidebar">
         <li
@@ -194,36 +209,161 @@ onBeforeUnmount(() => {
     <!-- Formulario dinámico -->
     <section class="max-h-[568px]">
       <form
-        class="flex flex-col justify-center gap-8 grow w-full max-w-[425px]"
+        class="flex flex-col justify-center gap-9 grow w-full max-w-[425px]"
         @submit.prevent="handleSubmit"
       >
         <div class="flex justify-end">
           <Reemo />
         </div>
 
-        <!-- Paso 1: Información Personal -->
+        <!-- Paso 1: Información básica -->
         <router-view v-if="currentStep === 0">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Datos personales</Heading>
+            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Información básica</Heading>
             <Loading v-if="!userStore.profileLoaded" role="status" />
           </div>
+          <p class="text-sm font-medium">Ingresá los datos principales del vehículo. Esta información ayuda a identificar correctamente el auto y mostrarlo a los usuarios interesados.</p>
 
-          <div class="flex flex-col gap-5">
-            <input id="profile-picture" type="file" accept="image/*" 
-            @change="(event) => handleFileChange(event, 'profilePhoto')" class="hidden" />            
-            <Input type="text" placeholder="Nombre de usuario" :variant="'secondary'" :outline="true" required />
-            <div class="flex gap-5">
-              <Input type="text" placeholder="Nombre" :variant="'secondary'" :outline="true" required />
-              <Input type="text" placeholder="Apellido" :variant="'secondary'" :outline="true" required />
-            </div>
-            
-            <Input type="tel" placeholder="Número de teléfono" :variant="'secondary'" :outline="true" required />
+          <div class="flex flex-col gap-5">      
             <div class="flex gap-5">
               <Input
                 type="select"
                 name="gender"
                 id="gender"
-                placeholder="Genero"
+                placeholder="Marca"
+                :options="[
+                  { value: 'male', label: 'Masculino' },
+                  { value: 'female', label: 'Femenino' },
+                  { value: 'other', label: 'Otro' },
+                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                ]"
+                icon-position="right"
+                variant="secondary"
+                :outline="true"
+                class="w-full"
+              />
+              <Input
+                type="select"
+                name="gender"
+                id="gender"
+                placeholder="Modelo"
+                :options="[
+                  { value: 'male', label: 'Masculino' },
+                  { value: 'female', label: 'Femenino' },
+                  { value: 'other', label: 'Otro' },
+                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                ]"
+                icon-position="right"
+                variant="secondary"
+                :outline="true"
+                class="w-full"
+              />            
+            </div>
+            <div class="flex gap-5">
+              <Input
+                type="select"
+                name="gender"
+                id="gender"
+                placeholder="Año"
+                :options="Array.from({ length: new Date().getFullYear() - 2009 }, (_, i) => ({
+                  value: 2010 + i,
+                  label: (2010 + i).toString()
+                }))"
+                icon-position="right"
+                variant="secondary"
+                :outline="true"
+                class="flex !flex-25"
+              />
+              <Input
+                type="select"
+                name="gender"
+                id="gender"
+                placeholder="Tipo de chasis"
+                :options="[
+                  { value: 'male', label: 'Masculino' },
+                  { value: 'female', label: 'Femenino' },
+                  { value: 'other', label: 'Otro' },
+                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                ]"
+                icon-position="right"
+                variant="secondary"
+                :outline="true"
+                class="flex !flex-45"
+              /> 
+              <Input
+                type="select"
+                name="gender"
+                id="gender"
+                placeholder="Color"
+                :options="[
+                  { value: 'male', label: 'Masculino' },
+                  { value: 'female', label: 'Femenino' },
+                  { value: 'other', label: 'Otro' },
+                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                ]"
+                icon-position="right"
+                variant="secondary"
+                :outline="true"
+                class="flex !flex-30"
+              /> 
+            </div>  
+            <div class="flex gap-5">
+              <Input type="text" placeholder="Patente" :variant="'secondary'" :outline="true" required />
+              <Input type="text" placeholder="Kilometraje" :variant="'secondary'" :outline="true" required />
+            </div>           
+          </div>
+        </router-view>
+
+        <!-- Paso 2: Especificaciones técnicas -->
+        <router-view v-if="currentStep === 1">
+          <div class="flex gap-4 items-center">
+            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Especificaciones técnicas</Heading>
+            <Loading v-if="loading" role="status" />
+          </div>
+          <p class="text-sm font-medium">Completá las características técnicas del vehículo. Las opciones se adaptan según la marca y el modelo del vehículo, para que puedas seleccionar solo lo que corresponde a tu modelo.</p>
+
+          <div class="flex flex-col gap-5">
+            <div class="flex gap-5">
+              <Input
+                type="select"
+                name="gender"
+                id="gender"
+                placeholder="Motor"
+                :options="[
+                  { value: 'male', label: 'Masculino' },
+                  { value: 'female', label: 'Femenino' },
+                  { value: 'other', label: 'Otro' },
+                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                ]"
+                icon-position="right"
+                variant="secondary"
+                :outline="true"
+                class="w-full"
+              />
+              <Input
+                type="select"
+                name="gender"
+                id="gender"
+                placeholder="Transmisión"
+                v-model="selectedTransmission"
+                :options="[
+                  { value: 'male', label: 'Masculino' },
+                  { value: 'female', label: 'Femenino' },
+                  { value: 'other', label: 'Otro' },
+                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                ]"
+                icon-position="right"
+                variant="secondary"
+                :outline="true"
+                class="w-full"
+              /> 
+            </div>
+            <div class="flex gap-5">
+              <Input
+                type="select"
+                name="gender"
+                id="gender"
+                placeholder="Combustible"
                 :options="[
                   { value: 'male', label: 'Masculino' },
                   { value: 'female', label: 'Femenino' },
@@ -239,7 +379,7 @@ onBeforeUnmount(() => {
                 type="select"
                 name="gender"
                 id="gender"
-                placeholder="Genero"
+                placeholder="Tracción"
                 :options="[
                   { value: 'male', label: 'Masculino' },
                   { value: 'female', label: 'Femenino' },
@@ -251,253 +391,274 @@ onBeforeUnmount(() => {
                 :outline="true"
                 class="w-full cursor-pointer"
               />            
+            </div> 
+            <div class="flex gap-5">
+              <Input type="text" placeholder="Consumo" :variant="'secondary'" :outline="true" required />
+              <Input type="text" placeholder="Puertas" :variant="'secondary'" :outline="true" required />
+              <Input type="text" placeholder="Asientos" :variant="'secondary'" :outline="true" required />
             </div>
           </div>
         </router-view>
 
-        <!-- Paso 2: Documentación -->
-        <router-view v-if="currentStep === 1">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Documentación</Heading>
-            <Loading v-if="loading" role="status" />
-          </div>
-          <div class="flex flex-col gap-2">
-
-            <DropdownForm title="Documento de Identidad" :section-id="'section-1'" :dropdown-id="'doc-identidad'" :is-initial="true">
-              <p class="text-sm font-medium">Para completar la verificación de identidad, sube una foto clara y ligible de tu DNI.</p>
-              <div class="flex gap-3">
-                <label for="dni-front" class="cursor-pointer">
-                  <img v-if="documents.dniFront || filePreviews.dniFront" :src="filePreviews.dniFront ? filePreviews.dniFront : documents.dniFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
-                  <DNIFront v-else/>
-                </label>
-                <div class="flex flex-col gap-4">
-                  <label for="dni-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar frente del DNI</label>
-                  <span class="text-xs text-start">
-                    Parte frontal de tu Documento Nacional de Identidad.
-                  </span>
-                </div>
-                <input id="dni-front" type="file" accept="image/*" @change="(event) => handleFileChange(event, 'dniFront')" class="hidden" />
-              </div>
-              <div class="flex gap-3">
-                <label for="dni-back" class="cursor-pointer">
-                  <img v-if="documents.dniBack || filePreviews.dniBack" :src="filePreviews.dniBack ? filePreviews.dniBack : documents.dniBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
-                  <DNIBack v-else/>
-                </label>
-                <div class="flex flex-col gap-4">
-                  <label for="dni-back" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del DNI</label>
-                  <span class="text-xs text-start">Parte trasera de tu Documento Nacional de Identidad.</span>
-                </div>
-                <input id="dni-back" type="file" accept="image/*"
-                @change="(event) => handleFileChange(event, 'dniBack')" class="hidden" />
-              </div>
-            </DropdownForm>
-            
-            <DropdownForm title="Registro de conducir" :dropdown-id="'doc-licencia'" :section-id="'section-1'">
-              <p class="text-sm font-medium">Para poder alquilar en nuestra plataforma, es esencial que tengas vinculado tu registro de conducir. </p>
-              <div class="flex gap-3">
-                <label for="driver-front" class="cursor-pointer">
-                  <img v-if="documents.driverLicenseFront || filePreviews.driverLicenseFront" :src="filePreviews.driverLicenseFront ? filePreviews.driverLicenseFront : documents.driverLicenseFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
-                  <DriverFront v-else/>
-                </label>
-                <div class="flex flex-col gap-4">
-                  <label for="driver-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
-                  <span class="text-xs text-start">Parte trasera de tu Licencia de Conducir.</span>
-                </div>
-                <input id="driver-front" type="file" accept="image/*"
-                @change="(event) => handleFileChange(event, 'driverLicenseFront')"
-                class="hidden" />
-              </div>
-              <div class="flex gap-3">
-                <label for="driver-back" class="cursor-pointer">
-                  <img v-if="documents.driverLicenseBack || filePreviews.driverLicenseBack" :src="filePreviews.driverLicenseBack ? filePreviews.driverLicenseBack : documents.driverLicenseBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
-                  <DriverBack v-else/>
-                </label>
-                <div class="flex flex-col gap-4">
-                  <label for="driver-back" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
-                  <span class="text-xs text-start">Parte trasera de tu Licencia de Conducir.</span>
-                </div>
-                <input id="driver-back" type="file" accept="image/*"
-                @change="(event) => handleFileChange(event, 'driverLicenseBack')"
-                class="hidden" />
-              </div>
-            </DropdownForm>
-          </div>
-        </router-view>
-
-        <!-- Paso 3: Ubicación -->
+        <!-- Paso 3: Equipamiento y características -->
         <router-view v-if="currentStep === 2">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Ubicación</Heading>
+            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Equipamiento y características</Heading>
             <Loading v-if="loading" role="status" />
           </div>
-          <p class="text-sm font-medium">Para garantizar que nuestros servicios estén disponibles en tu área, necesitamos confirmar tu ubicación en Argentina.</p>
           <div class="flex flex-col gap-5">
-            <!-- Provincia -->
             <Input
               type="select"
-              name="provincia"
-              id="provincia"
-              placeholder="Provincia"
-              :options="geoStore.provincias.map(p => ({ value: p, label: p }))"
-              @change="cargarCiudades"
+              name="tecnologia-conectividad"
+              id="tecnologia-conectividad"
+              placeholder="Buscar características"
+              :options="[
+                { value: 'male', label: 'Pantalla táctil' },
+                { value: 'female', label: 'Apple CarPlay/Android Auto' },
+                { value: 'other', label: 'Bluetooth' },
+                { value: 'other', label: 'GPS' },
+                { value: 'other', label: 'Sonido premium' },
+                { value: 'other', label: 'Asistente virtual integrado' },
+                { value: 'other', label: 'Sensores de estacionamiento 360°' }
+              ]"
               icon-position="right"
               variant="secondary"
               :outline="true"
               class="w-full cursor-pointer"
-            />
-
-            <!-- Ciudad/Localidad -->
-            <Input
-              type="select"
-              name="ciudad"
-              id="ciudad"
-              placeholder="Ciudad/Localidad"
-              :options="(address.province ? geoStore.getCiudadesPorProvincia(address.province) : []).map(c => ({ value: c, label: c }))"
-              :disabled="!address.province"
-              icon-position="right"
-              variant="secondary"
-              :outline="true"
-              class="w-full cursor-pointer"
-            />
-
-            <div class="flex gap-5">
-              <!-- Calle y número -->
-              <Input
-                type="text"
-                placeholder="Calle y número"
-                :variant="'secondary'"
-                :outline="true"
-              />
-              <!-- Código Postal -->
-              <Input
-                type="text"
-                placeholder="Código Postal"
-                :variant="'secondary'"
-                :outline="true"
-              />
-            </div>
-            
-            <div class="flex gap-5">
-              <!-- Piso (opcional) -->
-              <Input
-              type="text"
-              placeholder="Piso"
-              :variant="'secondary'"
-              :outline="true"
-            />
-
-            <!-- Departamento (opcional) -->
-            <Input
-              type="text"
-              placeholder="Departamento"
-              :variant="'secondary'"
-              :outline="true"
-              />
-            </div>
+            />   
+            <DropdownForm title="Tecnología y conectividad" :section-id="'section-1'" :dropdown-id="'tecnologia-conectividad'" :is-initial="true">
+        
+            </DropdownForm>
+            <DropdownForm title="Seguridad y Asistencia" :section-id="'section-1'" :dropdown-id="'seguridad-asistencia'">
+                  
+            </DropdownForm>
+            <DropdownForm title="Performance" :section-id="'section-1'" :dropdown-id="'performance'">
+                 
+            </DropdownForm>
+            <DropdownForm title="Confort" :section-id="'section-1'" :dropdown-id="'confort'">
+                
+            </DropdownForm>
           </div>
         </router-view>
  
-        <!-- Paso 4: Método de Pago -->
+        <!-- Paso 4: Ubicación y disponibilidad -->
         <router-view v-if="currentStep === 3" class="step">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Método de Pago</Heading>
+            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Ubicación y disponibilidad</Heading>
             <Loading v-if="loading" role="status" />
           </div>
           <div class="flex flex-col gap-5">
-    
-            <DropdownForm title="Tarjeta de crédito/débito" :dropdown-id="'tarjeta'" :section-id="'section-3'" :is-initial="true">
-              <Input 
-                type="text"
-                placeholder="Titular de tarjeta"
-                :variant="'secondary'"
-                :outline="true"
-                />
-                <Input
-                  type="text"
-                  placeholder="Número de tarjeta"
-                  :variant="'secondary'"
-                  :outline="true"
-                />
-              <div class="flex gap-5">
-                <Input 
-                  type="date"
-                  placeholder="Fecha de vencimiento"
-                  :variant="'secondary'"
-                  :outline="true"
-                />
-                <Input
-                  type="password"
-                  placeholder="CVV"
-                  :variant="'secondary'"
-                  :outline="true"
-                />
+            <Input type="text" placeholder="Direccion" :variant="'secondary'" :outline="true" iconPosition="right" required>
+              <template #icon>
+                <Search color="#7b7b7b"/>
+              </template>
+            </Input>
+
+            <div class="w-full h-[120px] bg-background-700 flex flex-col items-center justify-center text-background-600 rounded-[23px]">
+              <h4 class="font-semibold">Mapa</h4>
+              <p>Esto hacelo vos Yoel</p>
+            </div>
+
+            <div class="w-full h-full bg-vibrant-light-700 flex flex-col items-center justify-center rounded-[23px] p-4">
+              <Heading type="5" class="mb-6">Días activo</Heading>
+              
+              <!-- Selector de días -->
+              <div class="flex gap-4 mb-8">
+                <div 
+                  v-for="(day, index) in days" 
+                  :key="index"
+                  class="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-deep-blue-900 font-semibold"
+                  :class="selectedDays.includes(day.value) ? 'bg-vibrant-light-900' : ''"
+                >
+                  {{ day.label }}
+                </div>
               </div>
-            </DropdownForm>
+              
+              <!-- Selector de horario -->
+              <div class="flex w-full max-w-xs gap-4 font-bold">
+                <div class="flex-1 flex flex-col items-center">
+                  <label for="desde">Desde</label>
+                  <div id="desde">08:00 AM</div>
+                </div>
+                <div class="flex-1 flex flex-col items-center">
+                  <label for="hasta">Hasta</label>
+                  <div id="hasta">05:00 PM</div>
+                </div>
+              </div>
+            </div>
 
-            <DropdownForm title="Billetera Digital" :dropdown-id="'billetera'" :section-id="'section-3'" >
-              <Input 
-                type="select"
-                placeholder="Tipo de billetera"
-                :options="[
-                  {value: 'mercadopago', label: 'Mercado Pago'},
-                  {value: 'uala', label: 'Ualá'},
-                  {value: 'otra', label:'Otra'}
-                ]"
-                variant="secondary"
-                :outline="true"
-                />
-              <Input
-                type="text"
-                placeholder="CVU o Alias"
-                variant="secondary"
-                :outline="true"
-              />
-            </DropdownForm>
-
-            <DropdownForm title="Paypal" :dropdown-id="'paypal'" :section-id="'section-3'"  @dropdown-toggle="'handleDropdownToggle'">
-              <Input 
-                type="email"
-                placeholder="Email de PayPal"
-                :variant="'secondary'"
-                :outline="true"
-                />
-            </DropdownForm>
           </div>
         </router-view>
 
-        <!-- Paso 5: Términos y Condiciones -->
+        <!-- Paso 5: Políticas y tarifas -->
         <router-view v-if="currentStep === 4" class="step">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Términos y Condiciones</Heading>
+            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Políticas y tarifas</Heading>
             <Loading v-if="loading" role="status" />
           </div>
-          <div class="flex gap-2 items-center">
-            <Checkbox :disabled="agreements.acceptedTerms"/>
-            <p class="text-sm font-medium">He leído y acepto los 
-              <router-link
-                to="/terms-and-conditions"
-                class="text-primary text-background-900 font-bold"
-                >
-                <span class="hover:underline">Términos y Condiciones</span>
-              </router-link>.
-            </p>
-          </div>
-          <!-- Politicas de privacidad -->
-          <div class="flex gap-2 items-center">
-            <Checkbox :disabled="agreements.acceptedPrivacyPolicy"/>
-            <p class="text-sm font-medium">He leído y acepto las 
-              <router-link
-                to="/privacy-policy"
-                class="text-primary text-background-900 font-bold"
-                >
-                <span class="hover:underline">Políticas de Privacidad</span>
-              </router-link>.
-            </p>
-          </div>
-          <!-- Notificaciones -->
-          <div class="flex gap-2 items-center">
+          <p class="text-sm font-medium">Establecé la tarifa diaria para alquilar tu vehículo. Configurá los kilómetros incluidos, el precio por KM extra y el depósito de seguridad sugerido. Esto permite definir claramente las condiciones para el arrendatario.</p>
+          <DropdownForm title="Tarifa base" :section-id="'section-2'" :dropdown-id="'tarifa'" :is-initial="true">
+            <div class="flex gap-5">
+              <Input type="text" placeholder="Diaria" :variant="'secondary'" :outline="true" required />
+              <Input type="text" placeholder="Semanal" :variant="'secondary'" :outline="true" required />
+              <Input type="text" placeholder="Mensual" :variant="'secondary'" :outline="true" required />
+            </div>
+            <div class="flex gap-2 items-center">
             <Checkbox />
-            <p class="text-sm font-medium">Acepto recibir notificaciones y promociones por correo electrónico.</p>
+            <p class="text-sm font-medium">Sugerencia automática</p>
+          </div>
+          </DropdownForm>
+          <DropdownForm title="Política de kilometraje" :section-id="'section-2'" :dropdown-id="'kilometraje'">
+            <div class="flex gap-5">
+              <Input
+                type="select"
+                name="km-incluidos"
+                id="km-incluidos"
+                placeholder="KM incluidos/día"
+                :options="[
+                  { value: 'male', label: 'Climatizador automático' },
+                  { value: 'female', label: 'Asientos calefaccionados/ventilados' },
+                  { value: 'other', label: 'Asientos con memoria' },
+                  { value: 'other', label: 'Tapizado premium' },
+                  { value: 'other', label: 'Limpiaparabrisas automáticos' },
+                  { value: 'other', label: 'Maletero automático' },
+                  { value: 'other', label: 'Espejos inteligentes' },
+                  { value: 'other', label: 'Insonorización premium' },
+                  { value: 'other', label: 'Organizador de maletero' }
+                ]"
+                icon-position="right"
+                variant="secondary"
+                :outline="true"
+                class="flex !flex-50"
+              />  
+              <Input type="number" placeholder="Precio por KM extra" :variant="'secondary'" :outline="true" class="flex !flex-40"/>
+            </div>
+          </DropdownForm>
+          <DropdownForm title="Depósito de seguridad" :section-id="'section-2'" :dropdown-id="'seguridad'">
+              <Input type="number" placeholder="Monto total del depósito" :variant="'secondary'" :outline="true" required />
+          </DropdownForm>
+        </router-view>
+
+         <!-- Paso 5: Fotos del vehículo -->
+        <router-view v-if="currentStep === 5" class="step">
+          <div class="flex gap-4 items-center">
+            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Fotos del vehículo</Heading>
+            <Loading v-if="loading" role="status" />
+          </div>
+          <p class="text-sm font-medium">Subí imágenes claras y atractivas de tu auto para generar confianza en los posibles clientes. Las fotos deben mostrar el estado real del vehículo, incluyendo el exterior y interior.</p>
+          <div class="flex gap-3">
+            <label for="dni-front" class="cursor-pointer">
+              <img src="" class="w-[250px] h-[150px] object-cover rounded-sm">
+            </label>
+            <div class="flex flex-col gap-4">
+              <label for="dni-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Editar imagen</label>
+              <span class="text-xs text-start">
+                Las imagenes del vehículo aumentan tu reservas un 40%.
+              </span>
+            </div>
+            <input id="dni-front" type="file" accept="image/*" class="hidden" />
+          </div>
+          
+          <!-- Sección para las 4 imágenes cuadradas -->
+          <div class="flex gap-4">
+            <!-- Imagen 1 -->
+            <div class="flex flex-col items-center gap-2">
+              <label for="image-1" class="cursor-pointer">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition">
+                  <span class="text-gray-500 text-sm" v-if="!true">+ Agregar imagen</span>
+                  <img v-else src="../assets/Car-Img.png" class="w-full h-full object-cover rounded-lg" alt="Imagen 1">
+                </div>
+              </label>
+              <input id="image-1" type="file" accept="image/*" class="hidden" />
+            </div>
+            
+            <!-- Imagen 2 -->
+            <div class="flex flex-col items-center gap-2">
+              <label for="image-2" class="cursor-pointer">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition">
+                  <span class="text-gray-500 text-sm" v-if="!true">+ Agregar imagen</span>
+                  <img v-else src="../assets/Car-Img.png" class="w-full h-full object-cover rounded-lg" alt="Imagen 2">
+                </div>
+              </label>
+              <input id="image-2" type="file" accept="image/*" class="hidden" />
+            </div>
+            
+            <!-- Imagen 3 -->
+            <div class="flex flex-col items-center gap-2">
+              <label for="image-3" class="cursor-pointer">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition">
+                  <span class="text-gray-500 text-sm" v-if="!true">+ Agregar imagen</span>
+                  <img v-else src="../assets/Car-Img.png" class="w-full h-full object-cover rounded-lg" alt="Imagen 3">
+                </div>
+              </label>
+              <input id="image-3" type="file" accept="image/*" class="hidden" />
+            </div>
+            
+            <!-- Imagen 4 -->
+            <div class="flex flex-col items-center gap-2">
+              <label for="image-4" class="cursor-pointer">
+                <div class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition">
+                  <span class="text-gray-500 text-sm" v-if="!true">+ Agregar imagen</span>
+                  <img v-else src="../assets/Car-Img.png" class="w-full h-full object-cover rounded-lg" alt="Imagen 4">
+                </div>
+              </label>
+              <input id="image-4" type="file" accept="image/*" class="hidden" />
+            </div>
+          </div>
+        </router-view>
+
+        <!-- Paso 6: Información de seguro -->
+        <router-view v-if="currentStep === 6" class="step">
+          <div class="flex gap-4 items-center">
+            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Información de seguro</Heading>
+            <Loading v-if="loading" role="status" />
+          </div>
+          <p class="text-sm font-medium">Indicá el tipo de cobertura, la compañía aseguradora y la vigencia del contrato. Además, cargá una imagen de la cédula verde para validar que la póliza está activa y cumple con los requisitos legales.</p>
+          <div class="flex flex-col gap-5">
+            <Input
+              type="select"
+              name="confort"
+              id="confort"
+              placeholder="Tipo de cobertura"
+              :options="[
+                { value: 'male', label: 'Climatizador automático' },
+                { value: 'female', label: 'Asientos calefaccionados/ventilados' },
+                { value: 'other', label: 'Asientos con memoria' }
+              ]"
+              icon-position="right"
+              variant="secondary"
+              :outline="true"
+              class="w-full cursor-pointer"
+            />
+            <Input
+              type="select"
+              name="confort"
+              id="confort"
+              placeholder="Compañia aseguradora"
+              :options="[
+                { value: 'male', label: 'Climatizador automático' },
+                { value: 'female', label: 'Asientos calefaccionados/ventilados' },
+                { value: 'other', label: 'Asientos con memoria' }
+              ]"
+              icon-position="right"
+              variant="secondary"
+              :outline="true"
+              class="w-full cursor-pointer"
+            />
+            <Input type="date" placeholder="Vencimiento de póliza" :variant="'secondary'" :outline="true" required />
+            <div class="flex gap-3">
+              <label for="driver-front" class="cursor-pointer">
+                <img v-if="documents.driverLicenseFront || filePreviews.driverLicenseFront" :src="filePreviews.driverLicenseFront ? filePreviews.driverLicenseFront : documents.driverLicenseFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                <DriverFront v-else/>
+              </label>
+              <div class="flex flex-col gap-4">
+                <label for="driver-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
+                <span class="text-xs text-start">Parte trasera de tu Licencia de Conducir.</span>
+              </div>
+              <input id="driver-front" type="file" accept="image/*"
+              @change="(event) => handleFileChange(event, 'driverLicenseFront')"
+              class="hidden" />
+            </div>
           </div>
         </router-view>
 
@@ -505,7 +666,7 @@ onBeforeUnmount(() => {
         <div class="flex justify-between items-center gap-32">
           <button 
             type="button" 
-            class="bg-background-900/15 p-2 flex items-center h-fit rounded-full disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:not-disabled:bg-background-900/35" 
+            class="bg-vibrant-light-800 p-2 flex items-center h-fit rounded-full disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:not-disabled:bg-background-900/35" 
             @click="prevStep" 
             :disabled="currentStep === 0"
           >
@@ -525,7 +686,7 @@ onBeforeUnmount(() => {
             type="submit"
             :text="loading ? 'Procesando...' : 'Finalizar'"
             variant="primary"
-            :class="loading ? 'cursor-not-allowed bg-deep-blue-700' : 'cursor-pointer'"
+            :class="loading ? 'cursor-not-allowed bg-deep-blue-900' : 'cursor-pointer'"
             :disabled="loading"
             v-if="currentStep === sections.length - 1"
             class="cursor-pointer"
@@ -590,3 +751,62 @@ onBeforeUnmount(() => {
   filter: brightness(7);
 }
 </style>
+
+<!--  <DropdownForm title="Documento de Identidad" :section-id="'section-1'" :dropdown-id="'doc-identidad'" :is-initial="true">
+              <p class="text-sm font-medium">Para completar la verificación de identidad, sube una foto clara y ligible de tu DNI.</p>
+              <div class="flex gap-3">
+                <label for="dni-front" class="cursor-pointer">
+                  <img v-if="documents.dniFront || filePreviews.dniFront" :src="filePreviews.dniFront ? filePreviews.dniFront : documents.dniFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <DNIFront v-else/>
+                </label>
+                <div class="flex flex-col gap-4">
+                  <label for="dni-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar frente del DNI</label>
+                  <span class="text-xs text-start">
+                    Parte frontal de tu Documento Nacional de Identidad.
+                  </span>
+                </div>
+                <input id="dni-front" type="file" accept="image/*" @change="(event) => handleFileChange(event, 'dniFront')" class="hidden" />
+              </div>
+              <div class="flex gap-3">
+                <label for="dni-back" class="cursor-pointer">
+                  <img v-if="documents.dniBack || filePreviews.dniBack" :src="filePreviews.dniBack ? filePreviews.dniBack : documents.dniBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
+                  <DNIBack v-else/>
+                </label>
+                <div class="flex flex-col gap-4">
+                  <label for="dni-back" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del DNI</label>
+                  <span class="text-xs text-start">Parte trasera de tu Documento Nacional de Identidad.</span>
+                </div>
+                <input id="dni-back" type="file" accept="image/*"
+                @change="(event) => handleFileChange(event, 'dniBack')" class="hidden" />
+              </div>
+            </DropdownForm>
+            
+            <DropdownForm title="Registro de conducir" :dropdown-id="'doc-licencia'" :section-id="'section-1'">
+              <p class="text-sm font-medium">Para poder alquilar en nuestra plataforma, es esencial que tengas vinculado tu registro de conducir. </p>
+              <div class="flex gap-3">
+                <label for="driver-front" class="cursor-pointer">
+                  <img v-if="documents.driverLicenseFront || filePreviews.driverLicenseFront" :src="filePreviews.driverLicenseFront ? filePreviews.driverLicenseFront : documents.driverLicenseFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                  <DriverFront v-else/>
+                </label>
+                <div class="flex flex-col gap-4">
+                  <label for="driver-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
+                  <span class="text-xs text-start">Parte trasera de tu Licencia de Conducir.</span>
+                </div>
+                <input id="driver-front" type="file" accept="image/*"
+                @change="(event) => handleFileChange(event, 'driverLicenseFront')"
+                class="hidden" />
+              </div>
+              <div class="flex gap-3">
+                <label for="driver-back" class="cursor-pointer">
+                  <img v-if="documents.driverLicenseBack || filePreviews.driverLicenseBack" :src="filePreviews.driverLicenseBack ? filePreviews.driverLicenseBack : documents.driverLicenseBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
+                  <DriverBack v-else/>
+                </label>
+                <div class="flex flex-col gap-4">
+                  <label for="driver-back" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
+                  <span class="text-xs text-start">Parte trasera de tu Licencia de Conducir.</span>
+                </div>
+                <input id="driver-back" type="file" accept="image/*"
+                @change="(event) => handleFileChange(event, 'driverLicenseBack')"
+                class="hidden" />
+              </div>
+            </DropdownForm> -->

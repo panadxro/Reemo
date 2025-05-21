@@ -24,6 +24,10 @@ export default {
     sectionId: {
       type: [String, Number],
       required: true
+    },
+    color: {
+      type: String,
+      default: "#010440"
     }
   },
   setup(props, { emit }) {
@@ -57,14 +61,18 @@ export default {
 </script>
 
 <template>
-  <div class="dropdown-form">
+  <div 
+    class="dropdown-form"
+    :class="isOpen ? 'gap-5' : ''"
+    >
     <button 
       type="button"
-      class="dropdown-button" 
+      class="dropdown-button"
+      :class="!`text-${color}`" 
       @click="toggleDropdown"
     >
       {{ title }}
-      <Arrow color="#FFFFFF" :direction="isOpen ? 'up' : 'down'" />
+      <Arrow :color="color" :direction="isOpen ? 'up' : 'down'" />
     </button>
     <div class="dropdown-content" :style="contentStyle">
       <slot></slot>
@@ -76,14 +84,11 @@ export default {
 .dropdown-form {
   display: flex;
   flex-direction: column;
-  gap: 5px;
 }
 
 .dropdown-button {
   display: flex;
   justify-content: space-between;
-  padding-block: 10px;
-  color: white;
   font-weight: 600;
   border: none;
   cursor: pointer;

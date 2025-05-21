@@ -1,5 +1,87 @@
-import { collection, doc, getDoc, addDoc, serverTimestamp, query, where, getDocs, updateDoc, onSnapshot, orderBy} from "firebase/firestore";
+import { collection, doc, getDoc, setDoc, addDoc, serverTimestamp, query, where, getDocs, updateDoc, onSnapshot, orderBy } from "firebase/firestore";
 import { db } from "./firebase.js";
+
+export async function createCarData( uid ) {
+  const carRef = doc(db, 'cars', uid);
+  const initialData = {
+    basicInfo: {
+      brand: '',
+      model: '',
+      year: '',
+      type: '',
+      color: '',
+      licensePlate: ''
+    },
+    specifications: {
+      engine: '',
+      horsepower: '',
+      transmision: '',
+      drivetrain: '',
+      fuelType: '',
+      passengerCapacity: 0,
+      trunkCapacity: '',
+      currentMileage: 0
+    },
+    status: {
+      current: '',
+      currentLocation: {
+        address: '',
+        city: '',
+        country: '',
+        coordinates: ''
+      },
+      trimesRented: 0
+    },
+    features: {
+      interior: [],
+      exterior: [],
+      safety: [],
+      additional: [],
+      restrictions: {
+        minimumDriverAge: 0,
+        requiresValidLicense: false,
+        smokingAllowed: false,
+        petsAllowed: true
+      },
+      hasInsurance: true,
+      insuranceDetails: ""
+    },
+    pricing: {
+      rates: {
+        daily: 0,
+        weekly: 0,
+        monthly: 0
+      },
+      mileagePolicy: {
+        includedPerDay: 0,
+        extraPricePerKm: 0
+      },
+      securityDeposit: 0,
+      cancellationPolicy: ''
+    },
+    photos: [],
+    availability: {
+      schedule: {
+        monday: false,
+        tuesday: false,
+        wednesday: false,
+        thursday: false,
+        friday: false,
+        saturday: false,
+        sunday: false
+      },
+      blockedDates: [],
+      nextAvailableDate: ''
+    }
+  }
+  await setDoc(carRef, {
+    ...initialData,
+    cid,
+    ownerId: uid,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  });
+};
 
 // Obtener auto por ID
 export async function getCarById(carId) {
