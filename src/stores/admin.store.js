@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { getUsers, updateUserRole } from '@/services/user/admin';
+import { getUsers, updateUserRole } from '@/services/user';
 
 export const useAdminStore = defineStore('adminUser', {
   state: () => ({
