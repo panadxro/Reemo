@@ -20,6 +20,8 @@ import { collection, doc, getDoc, addDoc, serverTimestamp, query, where, getDocs
   }
 
   //Es la que estaba en CarDetails
+  // Cambiar a rents
+  
   export async function checkIfCarIsRented(carId) {
     const rentalQuery = query(
       collection(db, "rental_requests"),

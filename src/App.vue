@@ -30,6 +30,7 @@ const layoutMap = {
   '/search': 'dashboard',
   '/map': 'dashboard',
   '/car': 'dashboard',
+  '/notification': 'dashboard',
   
   // Por defecto (con navbar y footer)
   '/404': 'default',

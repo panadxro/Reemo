@@ -11,10 +11,11 @@ import Loading from "@icons/Loading.vue";
 import UserCar from "@components/organisms/my-cars/UserCar.vue";
 import Arrow from "../icons/Arrow.vue";
 import BackButton from "@components/atoms/BackButton.vue";
+import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
 
 export default {
   name: "UserProfile",
-  components: { Heading, CardCar, UserNav, RentedCar, Loading, UserCar, Arrow, BackButton },
+  components: { Heading, CardCar, UserNav, RentedCar, Loading, UserCar, Arrow, BackButton, RentStatusDetails },
   props: {
     id: {
       type: String,
@@ -148,7 +149,7 @@ export default {
       v-if="!$route.matched.some(route => route.name === 'PrivateChat')"
       :class="isOwnProfile ? 'div-my-user' : 'div-user'"
       class="div1 bg-gray-100 rounded-[40px]">
-      <p>Usuario</p>
+      <!-- <p>Usuario</p> -->
     </div>  
 
     <!-- Historial (solo para el usuario logueado) -->
@@ -157,15 +158,16 @@ export default {
         <Heading :type="1" class="text-white">Historial</Heading>
         <a href="" class="text-white">Ver más</a>
       </div>
-      <div v-if="rentedCars.length">
-        <RentedCar v-for="rental in rentedCars" :key="rental.id" :car="rental.car" />
-      </div>
-      <div v-else class="flex flex-col justify-center items-center h-full text-white">
+      <!-- <div v-if="rentedCars.length"> -->
+        <RentStatusDetails />
+        <!-- <RentedCar v-for="rental in rentedCars" :key="rental.id" :car="rental.car" /> -->
+      <!-- </div> -->
+      <!-- <div v-else class="flex flex-col justify-center items-center h-full text-white">
         <p class="text-pretty font-semibold opacity-50">Aún no has alquilado ningún auto.</p>
         <router-link to="/search" class="font-semibold opacity-50 hover:opacity-100">
           <span class="hover:underline">Alquilá un auto</span>
         </router-link>
-      </div>
+      </div> -->
     </div>
     <div v-else 
       class="history bg-primary-900 rounded-[40px] px-5 py-7" 

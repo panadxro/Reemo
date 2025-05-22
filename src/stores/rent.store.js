@@ -345,14 +345,22 @@ export const useRentalStore = defineStore('rental', {
     prepareRentalData() {
       const paymentStore = usePaymentStore();
       return {
-        car_id: this.car.id,
+        vehicle_id: this.car.id,
         owner_id: this.car.user_id,
-        user_id: this.loggedUser.id,
-        rented_from: `${this.rentalData.rentedFromDate}T${this.rentalData.selectedTime}:00`,
-        rented_until: `${this.rentalData.rentedUntilDate}T${this.rentalData.selectedUntilTime}:00`,
-        status: "pendiente",
-        rental_price: this.rentalData.currentTotalPrice,
-        payment_method: paymentStore.getPaymentMethodName(this.rentalData.selectedPaymentMethod)
+        driver_id: this.loggedUser.id,
+        start_location: null,
+        end_location: null,
+        start_time: `${this.rentalData.rentedFromDate}T${this.rentalData.selectedTime}:00`,
+        end_time: `${this.rentalData.rentedUntilDate}T${this.rentalData.selectedUntilTime}:00`,
+        status: "pending",
+        total_price: this.rentalData.currentTotalPrice,
+        payments: {
+          transaction_id: null,
+          amount: this.rentalData.currentTotalPrice,
+          payment_method: paymentStore.getPaymentMethodName(this.rentalData.selectedPaymentMethod),
+          status: 'pendiente',
+          timestamp: new Date().toISOString()
+        },
       };
     },
     
@@ -368,9 +376,6 @@ export const useRentalStore = defineStore('rental', {
           return false;
         }
 
-        // Verificamos el precio final antes de enviar
-        this.calculatePrice();
-
         if (await isCarAlreadyRented(this.car.id)) {
           addAlert("Este auto ya está alquilado", "info");
           return false;
@@ -379,17 +384,49 @@ export const useRentalStore = defineStore('rental', {
         await submitRentalRequest(this.prepareRentalData());
         addAlert("¡Reserva completada con éxito!", "success");
         
-        // Limpiar datos y localStorage
-        this.resetRentalData();
+        // Limpiar solo los datos de este vehículo específico
         localStorage.removeItem(this.storageKey);
-        
         return true;
+
+
+        // const newRentId = await submitRentalRequest(this.prepareRentalData());
+        
+        // if(newRentId){
+        //   // si se guarda bien crea la notificacion
+        //   await createRentalRequestNotification(
+        //     newRentId,
+        //     this.loggedUser.id, // sender id
+        //     this.car.user_id, // receiver id
+        //   )
+        //   addAlert("¡Reserva completada con éxito!", "success");
+        //   localStorage.removeItem(this.storageKey);
+        //   return true;
+        // }else {
+        //   addAlert("Error al procesar la reserva", "error")
+        //   return false;
+        // }
+        
+
       } catch (error) {
         console.error("Error:", error);
         addAlert("Error al procesar la reserva: " + (error.message || "Por favor intenta nuevamente"), "error");
         return false;
       }
     },
+
+    clearAllRentalData() {
+      // Buscar todas las claves que comienzan con 'rentalData_car_'
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('rentalData_car_')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      localStorage.removeItem('rentalData');
+      
+      this.resetRentalData();
+    },
+
     
     // Actualizar términos y condiciones
     updateTermsAcceptance(accepted) {
@@ -403,6 +440,6 @@ export const useRentalStore = defineStore('rental', {
         localStorage.removeItem(this.storageKey);
       }
       this.$reset();
-    }
+    },
   }
 });
