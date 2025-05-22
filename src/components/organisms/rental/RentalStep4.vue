@@ -118,14 +118,22 @@ export default {
     
     prepareRentalData() {
       return {
-        car_id: this.car.id,
+        vehicle_id: this.car.id,
         owner_id: this.car.user_id,
-        user_id: this.loggedUser.id,
-        rented_from: `${this.rentalData.rentedFromDate}T${this.rentalData.selectedTime}:00`,
-        rented_until: `${this.rentalData.rentedUntilDate}T${this.rentalData.selectedUntilTime}:00`,
+        driver_id: this.loggedUser.id,
+        start_location: null,
+        end_location: null,
+        start_time: `${this.rentalData.rentedFromDate}T${this.rentalData.selectedTime}:00`,
+        end_time: `${this.rentalData.rentedUntilDate}T${this.rentalData.selectedUntilTime}:00`,
         status: "pendiente",
-        rental_price: this.rentalData.currentTotalPrice,
-        payment_method: this.getPaymentMethodName(this.rentalData.selectedPaymentMethod)
+        total_price: this.rentalData.currentTotalPrice,
+        payments: {
+          transaction_id: null,
+          amount: this.rentalData.currentTotalPrice,
+          payment_method: this.getPaymentMethodName(this.rentalData.selectedPaymentMethod),
+          status: 'pendiente',
+          timestamp: new Date().toISOString()
+        },
       };
     },
 
