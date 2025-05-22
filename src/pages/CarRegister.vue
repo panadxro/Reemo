@@ -687,7 +687,7 @@ export default {
                   {value: 'mercadopago', label: 'Mercado Pago'},
                   {value: 'uala', label: 'Ualá'},
                   {value: 'otra', label:'Otra'}
-                ]"
+                  ]"
                 v-model="paymentMethods.digital_wallet.walletType"
                 variant="secondary"
                 :outline="false"

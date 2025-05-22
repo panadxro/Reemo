@@ -39,8 +39,6 @@ export default {
       event.target.src = this.defaultCarImage;
     },
 
-
-
   },
   mounted() {
     unsubscribeAuth = subscribeToAuthState((newUserData) => {
@@ -75,7 +73,7 @@ export default {
       >
         <span class="sr-only">Ver Detalles</span>
         <Arrow direction="right" class="hover:text-secondary-900"/>
-      </button>        
+      </button>       
     </div>
   </div>
 </template>
