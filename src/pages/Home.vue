@@ -32,7 +32,7 @@ export default {
     <section class="flex flex-col items-center justify-between xl:flex-row xl:justify-center gap-16 mx-4">
       <div class="flex flex-col gap-4">
         <h1 class="font-medium leading-tight text-5xl block mb-4 sm:text-6xl w-[95%] sm:w-full text-pretty text-center xl:text-start pt-4 xl:pt-0"><b>Conectando autos,</b><br/> impulsando<br/> oportunidades</h1>
-        <div class="sm:flex gap-2 hidden">
+        <div class="sm:flex gap-2 hidden justify-center xl:justify-start">
           <div class="group">
             <a href="#">
               <GooglePlayLg />

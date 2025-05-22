@@ -16,13 +16,14 @@ import MercadoPago from "@icons/MercadoPago.vue";
 import Uala from "@icons/Uala.vue";
 import PayPal from "@icons/PayPal.vue";
 import CreditCard from "@icons/CreditCard.vue";
-
+import Input from "@components/molecules/Input.vue";
 import Trash from "@icons/Trash.vue";
 import Plus from "@icons/Plus.vue";
+import DeletePaymentModal from '@/components/user/DeletePaymentModal.vue';
 
 export default {
   name: "UserProfile",
-  components: { Heading, CardCar, UserNav, RentedCar, Loading, UserCar, Arrow, BackButton, MercadoPago, Uala, PayPal, CreditCard, Trash, Plus },
+  components: { Heading, CardCar, UserNav, RentedCar, Loading, UserCar, Arrow, BackButton, MercadoPago, Uala, PayPal, CreditCard, Trash, Plus, Input, DeletePaymentModal },
   props: {
     id: {
       type: String,
@@ -45,6 +46,8 @@ export default {
     const router = useRouter();
     const showAllPaymentMethods = ref(false);
     const showNewPaymentForm = ref(false);
+    const showDeleteModal = ref(false);
+    const paymentMethodToDelete = ref(null);    
 
     const loggedUserId = computed(() => {
       return authStore.user?.id
@@ -90,10 +93,22 @@ const toggleNewPaymentForm = () => {
   }
 };
 
-const removePaymentMethod = async (index) => {
-  if (confirm('¿Estás seguro de que querés eliminar este método de pago?')) {
-    const actualIndex = showAllPaymentMethods.value ? index : index;
-    await paymentStore.removePaymentMethod(loggedUserId.value, actualIndex);
+const removePaymentMethod = (index) => {
+  paymentMethodToDelete.value = {
+    index: index,
+    method: paymentStore.paymentMethods[index]
+  };
+  showDeleteModal.value = true;
+};
+
+const confirmDeletePaymentMethod = async () => {
+  if (paymentMethodToDelete.value !== null) {
+    await paymentStore.removePaymentMethod(
+      loggedUserId.value, 
+      paymentMethodToDelete.value.index
+    );
+    showDeleteModal.value = false;
+    paymentMethodToDelete.value = null;
   }
 };
 
@@ -130,7 +145,10 @@ const saveNewPaymentMethod = async () => {
       toggleShowAllMethods,
       toggleNewPaymentForm,
       removePaymentMethod,
-      saveNewPaymentMethod
+      saveNewPaymentMethod,
+      showDeleteModal,
+      paymentMethodToDelete,
+      confirmDeletePaymentMethod,
     };
   }
 }
@@ -309,189 +327,310 @@ const saveNewPaymentMethod = async () => {
         <!-- Placeholder de usuario (solo si no es chat privado) -->
       </div>
       
-      <div class="md:flex gap-4">
-        <div v-if="isOwnProfile">
-          <div class="flex items-center justify-between mb-3">
-            <Heading :type="5" class="text-primary-900">Métodos de pago</Heading>
-            <button 
-              @click="toggleNewPaymentForm"
-              class="flex items-center gap-1 text-primary-800 hover:text-primary-900 transition-colors"
-            >
-              <Plus class="w-4 h-4" />
-              <span class="text-sm">Agregar</span>
-            </button>
+      <div class="xl:flex gap-4 mb-4">
+        <div class="bg-primary-900 p-6 mt-4 xl:mt-0 rounded-[40px] xl:w-[60%] max-h-[400px] overflow-y-auto">
+          <Heading :type="1" class="text-white pb-4">Información Personal</Heading>
+          
+          <!-- Datos Personales -->
+          <div class="mb-6">
+            <Heading :type="5" class="text-white mb-3">Datos Básicos</Heading>
+            <div class="space-y-2">
+              <div class="flex justify-between text-white">
+                <span class="text-sm text-white/80">Nombre:</span>
+                <span class="text-sm">{{ showProfile?.personalInfo?.firstName || 'No especificado' }}</span>
+              </div>
+              <div class="flex justify-between text-white">
+                <span class="text-sm text-white/80">Apellido:</span>
+                <span class="text-sm">{{ showProfile?.personalInfo?.lastName || 'No especificado' }}</span>
+              </div>
+              <div class="flex justify-between text-white">
+                <span class="text-sm text-white/80">Email:</span>
+                <span class="text-sm">{{ showProfile?.personalInfo?.email || 'No especificado' }}</span>
+              </div>
+              <div class="flex justify-between text-white">
+                <span class="text-sm text-white/80">Usuario:</span>
+                <span class="text-sm">{{ showProfile?.personalInfo?.username || 'No especificado' }}</span>
+              </div>
+              <div class="flex justify-between text-white">
+                <span class="text-sm text-white/80">Email verificado:</span>
+                <span class="text-sm" :class="showProfile?.personalInfo?.emailVerified ? 'text-green-400' : 'text-red-400'">
+                  {{ showProfile?.personalInfo?.emailVerified ? 'Sí' : 'No' }}
+                </span>
+              </div>
+            </div>
           </div>
         
-          <!-- Lista de métodos de pago -->
-          <div v-if="paymentStore.paymentMethods.length > 0" class="space-y-2 mb-3">
-            <div 
-              v-for="(method, index) in displayedPaymentMethods" 
-              :key="index" 
-              class="flex items-center justify-between p-3 bg-white rounded-lg border"
-            >
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 flex items-center justify-center p-1 rounded-xl bg-vibrant-light-600">
-                  <MercadoPago v-if="method.walletType === 'mercadopago'"/>
-                  <CreditCard v-if="method.type === 'credit_card'"/>
-                  <Uala v-if="method.walletType === 'uala'"/>
-                  <PayPal v-if="method.type === 'paypal'"/>
-                </div>
-                <div class="flex-1">
-                  <p class="font-medium text-primary-900 text-sm">
-                    {{ method.type === 'credit_card' ? 'Tarjeta terminada en ' + method.cardNumber.slice(-4) : 
-                       method.type === 'paypal' ? 'PayPal' : 
-                       method.walletType === 'uala' ? 'Ualá' : 
-                       method.walletType === 'mercadopago' ? 'Mercado Pago' : 
-                       method.walletType === 'otra' ? 'Otra' : 
-                       method.walletType || 'Otro método' }}
-                  </p>
-                  <p class="text-xs text-background-600">
-                    {{ method.type === 'credit_card' ? method.cardholder : 
-                       method.type === 'digital_wallet' ? method.walletId : 
-                       method.email }}
-                  </p>
-                </div>
+          <!-- Dirección -->
+          <div class="mb-6" v-if="showProfile?.address && Object.keys(showProfile.address).length > 0">
+            <Heading :type="5" class="text-white mb-3">Dirección</Heading>
+            <div class="space-y-2">
+              <div class="flex justify-between text-white" v-if="showProfile.address.street">
+                <span class="text-sm text-white/80">Calle:</span>
+                <span class="text-sm">{{ showProfile.address.street }}</span>
               </div>
-              <button 
-                @click="removePaymentMethod(index)"
-                class="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-                title="Eliminar método de pago"
-              >
-                <Trash class="w-4 h-4" />
-              </button>
+              <div class="flex justify-between text-white" v-if="showProfile.address.city">
+                <span class="text-sm text-white/80">Ciudad:</span>
+                <span class="text-sm">{{ showProfile.address.city }}</span>
+              </div>
+              <div class="flex justify-between text-white" v-if="showProfile.address.state">
+                <span class="text-sm text-white/80">Provincia:</span>
+                <span class="text-sm">{{ showProfile.address.state }}</span>
+              </div>
+              <div class="flex justify-between text-white" v-if="showProfile.address.zipCode">
+                <span class="text-sm text-white/80">Código Postal:</span>
+                <span class="text-sm">{{ showProfile.address.zipCode }}</span>
+              </div>
+              <div class="flex justify-between text-white" v-if="showProfile.address.country">
+                <span class="text-sm text-white/80">País:</span>
+                <span class="text-sm">{{ showProfile.address.country }}</span>
+              </div>
+            </div>
+          </div>
+        
+        <!-- Documentos -->
+        <div class="mb-6" v-if="showProfile?.documents">
+          <Heading :type="5" class="text-white mb-3">Documentos</Heading>
+          <div class="grid grid-cols-2 gap-4">
+            <!-- DNI - Frente -->
+            <div v-if="showProfile.documents.dniFront" class="text-center">
+              <img 
+                :src="showProfile.documents.dniFront" 
+                alt="DNI - Frente"
+                class="h-20 w-[95%] object-cover rounded-lg border border-white/20"
+              />
+              <p class="text-xs text-white/80 mt-1">DNI - Frente</p>
             </div>
             
-            <!-- Botón mostrar más -->
-            <button 
-              v-if="hasMoreMethods"
-              @click="toggleShowAllMethods"
-              class="w-full text-sm text-primary-800 hover:text-primary-900 py-2 hover:bg-primary-50 rounded transition-colors"
-            >
-              {{ showAllPaymentMethods ? 'Mostrar menos' : `Mostrar ${paymentStore.paymentMethods.length - 2} método(s) más` }}
-            </button>
+            <!-- DNI - Dorso -->
+            <div v-if="showProfile.documents.dniBack" class="text-center">
+              <img 
+                :src="showProfile.documents.dniBack" 
+                alt="DNI - Dorso"
+                class="h-20 w-[95%] object-cover rounded-lg border border-white/20"
+              />
+              <p class="text-xs text-white/80 mt-1">DNI - Dorso</p>
+            </div>
+            
+            <!-- Licencia de Conducir - Frente -->
+            <div v-if="showProfile.documents.driverLicenseFront" class="text-center">
+              <img 
+                :src="showProfile.documents.driverLicenseFront" 
+                alt="Licencia de Conducir - Frente"
+                class="h-20 w-[95%] object-cover rounded-lg border border-white/20"
+              />
+              <p class="text-xs text-white/80 mt-1">Licencia - Frente</p>
+            </div>
+            
+            <!-- Licencia de Conducir - Dorso -->
+            <div v-if="showProfile.documents.driverLicenseBack" class="text-center">
+              <img 
+                :src="showProfile.documents.driverLicenseBack" 
+                alt="Licencia de Conducir - Dorso"
+                class="h-20 w-[95%] object-cover rounded-lg border border-white/20"
+              />
+              <p class="text-xs text-white/80 mt-1">Licencia - Dorso</p>
+            </div>
           </div>
+        </div>
         
-          <!-- Mensaje cuando no hay métodos -->
-          <div v-else class="text-center py-4">
-            <p class="text-background-600 text-sm mb-2">No tenés métodos de pago guardados</p>
-          </div>
-        
-          <!-- Formulario para agregar nuevo método -->
-          <div v-if="showNewPaymentForm" class="mt-4 p-4 bg-background-50 rounded-lg border">
-            <div class="flex items-center justify-between mb-4">
-              <Heading :type="6" class="text-primary-900">Nuevo método de pago</Heading>
+          <!-- Métodos de pago -->
+          <div class="mb-3">
+            <div class="flex items-center justify-between mb-3 gap-8 text-white">
+              <Heading :type="5" class="text-white">Métodos de pago</Heading>
               <button 
                 @click="toggleNewPaymentForm"
-                class="text-background-600 hover:text-primary-900"
+                class="flex items-center gap-1 border-b-[0.5px] border-transparent hover:border-white transition duration-200 hover:cursor-pointer"
               >
-                ✕
+                <Plus class="w-4 h-4" />
+                <span class="text-sm pb-0.5">Agregar</span>
               </button>
             </div>
-            
-            <!-- Selector de tipo de método -->
-            <div class="flex gap-2 mb-4">
-              <button 
-                @click="paymentStore.selectedPaymentMethodType = 'credit_card'" 
-                class="flex-1 p-2 text-xs border rounded-lg cursor-pointer text-center transition-all"
-                :class="{'border-primary-800 bg-primary-800 text-white': paymentStore.selectedPaymentMethodType === 'credit_card', 
-                        'border-background-300 text-background-600 hover:border-primary-800': paymentStore.selectedPaymentMethodType !== 'credit_card'}"
+          
+            <!-- Lista de métodos de pago -->
+            <div v-if="paymentStore.paymentMethods.length > 0" class="space-y-2 mb-3">
+              <div 
+                v-for="(method, index) in displayedPaymentMethods" 
+                :key="index" 
+                class="flex items-center justify-between p-3 bg-white rounded-lg"
               >
-                Tarjeta
-              </button>
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 flex items-center justify-center p-1 rounded-xl bg-vibrant-light-600">
+                    <MercadoPago v-if="method.walletType === 'mercadopago'"/>
+                    <CreditCard v-if="method.type === 'credit_card'"/>
+                    <Uala v-if="method.walletType === 'uala'"/>
+                    <PayPal v-if="method.type === 'paypal'"/>
+                  </div>
+                  <div class="flex-1">
+                    <p class="font-medium text-primary-900 text-sm">
+                      {{ method.type === 'credit_card' ? 'Tarjeta terminada en ' + method.cardNumber.slice(-4) : 
+                         method.type === 'paypal' ? 'PayPal' : 
+                         method.walletType === 'uala' ? 'Ualá' : 
+                         method.walletType === 'mercadopago' ? 'Mercado Pago' : 
+                         method.walletType === 'otra' ? 'Otra' : 
+                         method.walletType || 'Otro método' }}
+                    </p>
+                    <p class="text-xs text-background-600">
+                      {{ method.type === 'credit_card' ? method.cardholder : 
+                         method.type === 'digital_wallet' ? method.walletId : 
+                         method.email }}
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  @click="removePaymentMethod(index)"
+                  class="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors hover:cursor-pointer"
+                  title="Eliminar método de pago"
+                >
+                  <Trash class="w-6 h-6" />
+                </button>
+              </div>
+              
+              <!-- Botón mostrar más/menos -->
               <button 
-                @click="paymentStore.selectedPaymentMethodType = 'digital_wallet'" 
-                class="flex-1 p-2 text-xs border rounded-lg cursor-pointer text-center transition-all"
-                :class="{'border-primary-800 bg-primary-800 text-white': paymentStore.selectedPaymentMethodType === 'digital_wallet', 
-                        'border-background-300 text-background-600 hover:border-primary-800': paymentStore.selectedPaymentMethodType !== 'digital_wallet'}"
+                v-if="hasMoreMethods"
+                @click="toggleShowAllMethods"
+                class="w-full text-sm text-primary-200 hover:text-primary-400 py-2 hover:bg-primary-50 rounded transition-colors"
               >
-                Billetera
-              </button>
-              <button 
-                @click="paymentStore.selectedPaymentMethodType = 'paypal'" 
-                class="flex-1 p-2 text-xs border rounded-lg cursor-pointer text-center transition-all"
-                :class="{'border-primary-800 bg-primary-800 text-white': paymentStore.selectedPaymentMethodType === 'paypal', 
-                        'border-background-300 text-background-600 hover:border-primary-800': paymentStore.selectedPaymentMethodType !== 'paypal'}"
-              >
-                PayPal
+                {{ showAllPaymentMethods ? 'Mostrar menos' : `Mostrar ${paymentStore.paymentMethods.length - 2} método(s) más` }}
               </button>
             </div>
-            
-            <!-- Formularios específicos por tipo -->
-            <div class="space-y-3 mb-4">
-              <!-- Tarjeta de crédito -->
-              <div v-if="paymentStore.selectedPaymentMethodType === 'credit_card'" class="space-y-3">
-                <input 
-                  type="text"
-                  placeholder="Titular de tarjeta"
-                  v-model="paymentStore.newPaymentMethod.credit_card.cardholder"
-                  class="w-full p-2 border border-background-300 rounded-lg text-sm focus:border-primary-800 focus:outline-none"
-                />
-                <input 
-                  type="text"
-                  placeholder="Número de tarjeta"
-                  v-model="paymentStore.newPaymentMethod.credit_card.cardNumber"
-                  class="w-full p-2 border border-background-300 rounded-lg text-sm focus:border-primary-800 focus:outline-none"
-                />
-                <div class="flex gap-2">
-                  <input 
-                    type="month"
-                    placeholder="MM/AA"
-                    v-model="paymentStore.newPaymentMethod.credit_card.expiryDate"
-                    class="flex-1 p-2 border border-background-300 rounded-lg text-sm focus:border-primary-800 focus:outline-none"
+          
+            <!-- Mensaje cuando no hay métodos -->
+            <div v-else class="text-center py-4">
+              <p class="text-white/80 text-sm mb-2">No tenés métodos de pago guardados</p>
+            </div>
+          
+            <!-- Formulario para agregar nuevo método -->
+            <div v-if="showNewPaymentForm" class="mt-4 p-4 rounded-lg border-secondary-100 border-2">
+              <div class="flex items-center justify-between mb-4">
+                <Heading :type="6" class="text-white">Nuevo método de pago</Heading>
+                <button 
+                  @click="toggleNewPaymentForm"
+                  class="hover:text-background-800 text-white hover:cursor-pointer transition duration-200"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <!-- Selector de tipo de método -->
+              <div class="flex gap-2 mb-4">
+                <button 
+                  @click="paymentStore.selectedPaymentMethodType = 'credit_card'" 
+                  class="flex-1 p-2 text-xs border rounded-lg cursor-pointer text-center transition-all"
+                  :class="{
+                    'border-secondary-100 bg-secondary-100 text-primary-900': paymentStore.selectedPaymentMethodType === 'credit_card', 
+                    'border-background-300 text-white hover:bg-secondary-100/20': paymentStore.selectedPaymentMethodType !== 'credit_card'
+                  }"
+                >
+                  Tarjeta
+                </button>
+                <button 
+                  @click="paymentStore.selectedPaymentMethodType = 'digital_wallet'" 
+                  class="flex-1 p-2 text-xs border rounded-lg cursor-pointer text-center transition-all"
+                  :class="{
+                    'border-secondary-100 bg-secondary-100 text-primary-900': paymentStore.selectedPaymentMethodType === 'digital_wallet', 
+                    'border-background-300 text-white hover:bg-secondary-100/20': paymentStore.selectedPaymentMethodType !== 'digital_wallet'
+                  }"
+                >
+                  Billetera Virtual
+                </button>
+                <button 
+                  @click="paymentStore.selectedPaymentMethodType = 'paypal'" 
+                  class="flex-1 p-2 text-xs border rounded-lg cursor-pointer text-center transition-all"
+                  :class="{
+                    'border-secondary-100 bg-secondary-100 text-primary-900': paymentStore.selectedPaymentMethodType === 'paypal', 
+                    'border-background-300 text-white hover:bg-secondary-100/20': paymentStore.selectedPaymentMethodType !== 'paypal'
+                  }"
+                >
+                  PayPal
+                </button>
+              </div>
+              
+              <!-- Formularios específicos por tipo -->
+              <div class="space-y-3 mb-4">
+                <div v-if="paymentStore.selectedPaymentMethodType === 'credit_card'" class="space-y-3">
+                  <Input 
+                    type="text"
+                    placeholder="Titular de tarjeta"
+                    v-model="paymentStore.newPaymentMethod.credit_card.cardholder"
+                    :variant="'secondary'"
+                    :outline="false"
                   />
-                  <input
-                    type="password"
-                    placeholder="CVV"
-                    v-model="paymentStore.newPaymentMethod.credit_card.cvv"
-                    class="w-20 p-2 border border-background-300 rounded-lg text-sm focus:border-primary-800 focus:outline-none"
+                  <Input 
+                    type="text"
+                    placeholder="Número de tarjeta"
+                    v-model="paymentStore.newPaymentMethod.credit_card.cardNumber"
+                    :variant="'secondary'"
+                    :outline="false"
+                  />
+                  <div class="flex gap-2">
+                    <Input 
+                      type="month"
+                      placeholder="MM/AA"
+                      v-model="paymentStore.newPaymentMethod.credit_card.expiryDate"
+                      :variant="'secondary'"
+                      :outline="false"
+                    />
+                    <Input
+                      type="password"
+                      placeholder="CVV"
+                      v-model="paymentStore.newPaymentMethod.credit_card.cvv"
+                      :variant="'secondary'"
+                      :outline="false"
+                    />
+                  </div>
+                </div>
+                
+                <!-- Billetera digital -->
+                <div v-if="paymentStore.selectedPaymentMethodType === 'digital_wallet'" class="space-y-3">
+                  <Input 
+                    type="select"
+                    placeholder="Tipo de billetera"
+                    :options="[
+                      {value: 'mercadopago', label: 'Mercado Pago'},
+                      {value: 'uala', label: 'Ualá'},
+                    ]"
+                    v-model="paymentStore.newPaymentMethod.digital_wallet.walletType"
+                    variant="secondary"
+                    :outline="false"
+                  />
+                  <Input
+                    type="text"
+                    placeholder="CVU o Alias"
+                    v-model="paymentStore.newPaymentMethod.digital_wallet.walletId"
+                    variant="secondary"
+                    :outline="false"
+                  />
+                </div>
+                
+                <!-- PayPal -->
+                <div v-if="paymentStore.selectedPaymentMethodType === 'paypal'" class="space-y-3">
+                  <Input 
+                    type="email"
+                    placeholder="Email de PayPal"
+                    v-model="paymentStore.newPaymentMethod.paypal.email"
+                    :variant="'secondary'"
+                    :outline="false"
                   />
                 </div>
               </div>
               
-              <!-- Billetera digital -->
-              <div v-if="paymentStore.selectedPaymentMethodType === 'digital_wallet'" class="space-y-3">
-                <select 
-                  v-model="paymentStore.newPaymentMethod.digital_wallet.walletType"
-                  class="w-full p-2 border border-background-300 rounded-lg text-sm focus:border-primary-800 focus:outline-none"
+              <!-- Botones de acción -->
+              <div class="flex gap-2">
+                <button 
+                  @click="toggleNewPaymentForm" 
+                  class="flex-1 py-3 px-4 border border-gray-600 rounded-xl hover:border-gray-400 transition-all text-white hover:cursor-pointer"
                 >
-                  <option value="">Seleccionar tipo</option>
-                  <option value="mercadopago">Mercado Pago</option>
-                  <option value="uala">Ualá</option>
-                </select>
-                <input
-                  type="text"
-                  placeholder="CVU o Alias"
-                  v-model="paymentStore.newPaymentMethod.digital_wallet.walletId"
-                  class="w-full p-2 border border-background-300 rounded-lg text-sm focus:border-primary-800 focus:outline-none"
-                />
+                  Cancelar
+                </button>
+                <button 
+                  @click="saveNewPaymentMethod" 
+                  :disabled="!paymentStore.isFormValid || paymentStore.loading"
+                  class="flex-1 py-3 px-4 bg-vibrant-light-900 text-deep-blue-900 rounded-xl font-medium hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer hover:opacity-80"
+                >
+                  {{ paymentStore.loading ? 'Guardando...' : 'Guardar' }}
+                </button>
               </div>
-              
-              <!-- PayPal -->
-              <div v-if="paymentStore.selectedPaymentMethodType === 'paypal'" class="space-y-3">
-                <input 
-                  type="email"
-                  placeholder="Email de PayPal"
-                  v-model="paymentStore.newPaymentMethod.paypal.email"
-                  class="w-full p-2 border border-background-300 rounded-lg text-sm focus:border-primary-800 focus:outline-none"
-                />
-              </div>
-            </div>
-            
-            <!-- Botones de acción -->
-            <div class="flex gap-2">
-              <button 
-                @click="toggleNewPaymentForm" 
-                class="flex-1 py-2 px-3 border border-background-300 rounded-lg hover:border-background-400 transition-all text-sm text-background-600 hover:text-primary-900"
-              >
-                Cancelar
-              </button>
-              <button 
-                @click="saveNewPaymentMethod" 
-                :disabled="!paymentStore.isFormValid || paymentStore.loading"
-                class="flex-1 py-2 px-3 bg-primary-800 text-white rounded-lg font-medium hover:bg-primary-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-              >
-                {{ paymentStore.loading ? 'Guardando...' : 'Guardar' }}
-              </button>
             </div>
           </div>
         </div>
