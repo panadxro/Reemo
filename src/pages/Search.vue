@@ -3,7 +3,7 @@ import { getAvailableCars, addCar } from "../services/car-service.js";
 import { subscribeToAuthState } from "../services/auth.js";
 import { subscribeToNewPublication } from "../services/publication.js";
 
-import { updateCars, initAutocomplete, loadGoogleMaps } from "../services/google-maps.js";
+import { updateCars, initAutocomplete, loadGoogleMaps,getCurrentLocation } from "../services/google-maps.js";
 import { filterByPreferences } from "../services/filterService.js";
 import {reactive} from 'vue';
 
@@ -82,6 +82,10 @@ export default {
       this.applyFilters();
     },
 
+    useMyLocation(){
+      getCurrentLocation(this.handlePlaceSelected);
+    },
+
     applyFilters() {
       let carsToFilter = [];
 
@@ -134,6 +138,11 @@ export default {
     
     await loadGoogleMaps();
     initAutocomplete('searchInput', this.handlePlaceSelected);
+
+    // getCurrentLocation((location) => {
+    //   this.searchLocation = location;
+    //   this.applyFilters()
+    // })
 
     const savedFilters = localStorage.getItem("filters");
     if(savedFilters){
