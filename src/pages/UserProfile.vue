@@ -659,10 +659,21 @@ const saveNewPaymentMethod = async () => {
           </div>
         </div>
       </div>
+      <DeletePaymentModal
+      :isOpen="showDeleteModal"
+      :paymentMethod="paymentMethodToDelete?.method"
+      title="Eliminar método de pago"
+      message="¿Estás seguro de que querés eliminar este método de pago? Esta acción no se puede deshacer."
+      confirmText="Eliminar"
+      cancelText="Cancelar"
+      @close="() => { showDeleteModal = false; paymentMethodToDelete = null; }"
+      @confirm="confirmDeletePaymentMethod"
+    />
       
       <!-- <router-view></router-view> -->
     </section>
   </section>
+
 
   <section class="flex flex-col md:flex-row" v-else>
     <UserNav class="max-w-[95%] mx-auto md:mx-4"/>
