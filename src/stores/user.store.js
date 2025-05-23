@@ -103,7 +103,7 @@ export const useUserStore = defineStore('user', {
     async updateProfile(uid, profileData) {
       this.loading = true
       try {
-        const {personalInfo, documents, address, paymentMethods, agreements} = profileData;
+        const { personalInfo, documents, address, paymentMethods, agreements } = profileData;
         if(personalInfo ) {
           await updatePersonalInfo(uid, personalInfo);
         }

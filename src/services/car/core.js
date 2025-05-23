@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, setDoc, addDoc, serverTimestamp, query, where, getDocs, updateDoc, onSnapshot, orderBy } from "firebase/firestore";
+import { collection, doc, getDoc, setDoc, serverTimestamp, query, where, getDocs, updateDoc, onSnapshot } from "firebase/firestore";
 import { db } from "./firebase.js";
 
 export async function createCarData( uid ) {
@@ -85,20 +85,43 @@ export async function createCarData( uid ) {
 
 // Obtener auto por ID
 export async function getCarById(carId) {
-  const carDoc = doc(db, "cars", carId);
-  const carSnapshot = await getDoc(carDoc);
-  if (carSnapshot.exists()) {
-    const carData = carSnapshot.data();
-    const userDoc = doc(db, "users", carData.user_id);
-    const userSnapshot = await getDoc(userDoc);
-    if (userSnapshot.exists()) {
-      const userData = userSnapshot.data();
-      return { id: carSnapshot.id, ...carData, user: userData };
-    }
-    return { id: carSnapshot.id, ...carData, user: null };
+  try {
+    const carDoc = doc(db, "cars", carId);
+    const carSnapshot = await getDoc(carDoc);
+    return carSnapshot.exists()
+    ? carSnapshot.data()
+    : new Error("Auto no encontrado");
+  } catch (error) {
+    console.error("Error al obtener el auto:", error);
+    throw error;
   }
-  throw new Error("Auto no encontrado.");
+};
+
+export async function editCar(carId, data) {
+  const carRef = doc(db, "cars", carId);
+  await updateDoc(carRef, { 
+    ...data,
+    updatedAt: serverTimestamp()
+  });
 }
+
+
+
+export async function saveCarData(carId, data) {
+  try {
+    if (!carId) throw new Error("No se proporcionó un ID de auto")
+
+    const carRef = doc(db, "cars", carId)
+
+    await setDoc(carRef, {
+      ...data,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  } catch (error) {
+    console.error("Error al guardar los datos del auto:", error);
+    throw error;
+  }
+};
 
 // Chekea si el auto esta rentado (Cambiar o eliminar)
 export async function checkIfCarIsRented(carId) {
@@ -166,14 +189,4 @@ export async function getAvailableCars(loggedUserId) {
         car.user_id !== loggedUserId && // El auto no pertenece al usuario actual
         !rentedCars.includes(car.id) // El auto no tiene una solicitud "aceptado"
     );
-}
-
-// Registrar vehículo
-export async function addCar(newCar) {
-  const carsCollection = collection(db, "cars");
-  const docRef = await addDoc(carsCollection, {
-    ...newCar,
-    created_at: serverTimestamp(),
-  });
-  return { id: docRef.id, ...newCar };
 }
