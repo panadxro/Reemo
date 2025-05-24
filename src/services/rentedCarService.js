@@ -3,7 +3,7 @@ import { db } from "../services/firebase.js";
 import { createRentalRequestNotification } from "../services/car/notifyRented.js";
 import {addAlert} from './alerts.js'
 
-// Vista del Conductor esto lo podemos convertir en el historial
+// Esto lo podemos convertir en el historial
 // export async function fetchUserRentalHistory(userId) {
 //   try {
 //     const rentsCollection = collection(db, "rents");
@@ -171,12 +171,6 @@ export async function submitRentalRequest(rentalRequest) {
       await updateDoc(rentalRequestRef, { order_id: rentalRequestRef.id });
       console.log('Documento actualizado con order_id:', rentalRequestRef.id);
 
-      // const userRef = doc(db, 'users', rentalRequest.owner_id);
-      // const userSnap = await getDoc(userRef);
-        // if(userSnap.exists()){
-          // const userData = userSnap.data();
-          // const rentMessage = `Nueva solicitud de alquiler de ${userData.name} para las fechas ${rentalRequest.start_time } a ${rentalRequest.end_time }.`;
-        // }
 
       const rentMessage = rentalRequest.status === 'pending' 
       ? `Nueva solicitud de alquiler`
@@ -195,100 +189,6 @@ export async function submitRentalRequest(rentalRequest) {
     }
 }
 
-
-// Vista del Propietario
-export async function fetchRentalRequests(userId, callback) {
-  try {
-    if (!userId) {
-      console.warn("El userId es inválido o no está definido");
-      return () => {};
-    }
-
-    const rentsCollection = collection(db, 'rents');
-    const q = query(
-      rentsCollection,
-      where("owner_id", "==", userId),
-      where("status", "in", ["pending", "confirmed"]) // Solo cargar solicitudes pendientes o aceptadas
-    );
-    
-    // Escuchar cambios en tiempo real
-    const unsubscribe = onSnapshot(q, async (snapshot) => {
-      try {
-        const rentalRequests = await Promise.all(
-          snapshot.docs.map(async (docSnap) => {
-            const request = { id: docSnap.id, ...docSnap.data() };
-
-            // Verificar si la fecha de devolución ha pasado
-            const rentedUntil = new Date(request.end_time);
-            const currentDate = new Date();
-
-            // Lógica para pasar a 'completed' si la fecha de finalización ha pasado
-            // y el estado actual es uno que precede a la finalización.
-            if (rentedUntil < currentDate && 
-                (request.status === "confirmed" || request.status === "in_progress")) {
-              await updateRentalStatus(request.id, "completed");
-              request.status = "completed";
-            }
-
-            // Obtener datos del usuario que solicita el alquiler
-            const userRef = doc(db, 'users', request.driver_id);
-            const userSnap = await getDoc(userRef);
-
-            // Obtener datos del auto
-            let carData = null;
-            let carSnapId = null;
-            if (request.vehicle_id) {
-              const carRef = doc(db, 'cars', request.vehicle_id);
-              const carSnap = await getDoc(carRef);
-              if (carSnap.exists()) {
-                carData = carSnap.data();
-                carSnapId = carSnap.id;
-              }
-            }
-
-            const userData = userSnap.exists() ? userSnap.data() : null;
-            return {
-              ...request,
-              photoURL: userData?.photoURL || null,
-              name: userData?.name || 'Usuario Desconocido',
-              carMarca: carData?.marca || "Marca Desconocida",
-              carModelo: carData?.modelo || "Modelo Desconocido",
-              carId: carSnapId,
-            };
-            
-
-            // if (userSnap.exists() && carSnap.exists()) {
-            //   const userData = userSnap.data();
-            //   const carData = carSnap.data();
-            //   return {
-            //     ...request,
-            //     photoURL: userData.photoURL || null,
-            //     name: userData.name || null,
-            //     carMarca: carData.marca || "Marca desconocida",
-            //     carModelo: carData.modelo || "Modelo desconocida",
-            //     carId: carSnap.id,
-            //   };
-            // } else {
-            //   console.error(`El usuario o el auto no fueron encontrados`);
-            //   return request;
-            // }
-          })
-        );
-
-        callback(rentalRequests);
-      } catch (error) {
-        console.error("Error al obtener las solicitudes de alquiler:", error);
-        callback([]);
-      }
-    });
-
-    // Retornar la función para desuscribirse
-    return unsubscribe;
-  } catch (error) {
-    console.error("Error al obtener las solicitudes de alquiler:", error);
-    return () => {};
-  }
-}
 
 // Vista del Conductor
 export function fetchUserNotification(userId, callback){
@@ -310,55 +210,83 @@ export function fetchUserNotification(userId, callback){
     );
 
     const unsubscribe = onSnapshot(q, async (querySnapshot) => {
-      const notifications = [];
-      for (const notificationsDoc of querySnapshot.docs){
-        const notificationData = { id: notificationsDoc.id, ...notificationsDoc.data() };
-
-        // Enriquecer con detalles adicionales según el tipo de notificación
-        // Esta lógica es similar a la que ya tenías
-        if (notificationData.type === 'rent_request' || notificationData.type === 'rent_response' && notificationData.rent_id){
-          const rentRef = doc(db, 'rents', notificationData.rent_id);
-          const rentSnap = await getDoc(rentRef);
-
-          if(rentSnap.exists()){
-            notificationData.rentDetails = { id: rentSnap.id, ...rentSnap.data() };
-
-            // obtenemos detalles del vehículo
-            if (notificationData.rentDetails.vehicle_id){
-              const vehicleRef = doc(db, 'cars', notificationData.rentDetails.vehicle_id);
-              const vehicleSnap = await getDoc(vehicleRef);
-
-              if(vehicleSnap.exists()){
-                notificationData.vehicleDetails = { id: vehicleSnap.id, ...vehicleSnap.data() };
-              } else {
-                console.warn(`[fetchUserNotification] Vehículo con ID ${notificationData.rentDetails.vehicle_id} no encontrado.`);
-              }
-            }
-          }else{
-            console.warn(`[fetchUserNotification] Renta ${notificationData.rent_id} no tiene vehicle_id.`);
-          }
-        }else{
-          console.warn(`[fetchUserNotification] Renta con ID ${notificationData.rent_id} no encontrada.`);
+      const rawNotifications = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+     
+      if (rawNotifications.length === 0) {
+        if (typeof callback === 'function') {
+          callback([]);
         }
-
-        // obtenemos los detalles del remitente
-        if(notificationData.sender_id){
-          const senderRef = doc(db, 'users', notificationData.sender_id );
-          const senderSnap = await getDoc(senderRef);
-
-          if(senderSnap.exists()) {
-            const senderData = senderSnap.data();
-            notificationData.senderDetails = { 
-              id: senderSnap.id, 
-              name: senderData.personalInfo?.username || senderData.email, // Ajusta según tu estructura de datos de usuario
-              photoURL: senderData.personalInfo?.profilePhoto || null // Ajusta según tu estructura
-            };
-          }else{
-            console.warn(`[fetchUserNotification] Remitente con ID ${notificationData.sender_id} no encontrado.`);
-          }
-        }
-        notifications.push(notificationData);
+        return;
       }
+
+      // 1. Recopilar todos los IDs necesarios
+      const senderIds = new Set();
+      const rentIds = new Set();
+      rawNotifications.forEach(n => {
+        if (n.sender_id) senderIds.add(n.sender_id);
+        if ((n.type === 'rent_request' || n.type === 'rent_response') && n.rent_id) {
+          rentIds.add(n.rent_id);
+        }
+      });
+
+      // 2. Obtener todos los datos de remitentes y rentas en paralelo
+      const [sendersSnapshots, rentsSnapshots] = await Promise.all([
+        Promise.all(Array.from(senderIds).map(id => getDoc(doc(db, 'users', id)))),
+        Promise.all(Array.from(rentIds).map(id => getDoc(doc(db, 'rents', id))))
+      ]);
+
+      const sendersMap = new Map();
+      sendersSnapshots.forEach(snap => {
+        if (snap.exists()) {
+          const senderData = snap.data();
+          sendersMap.set(snap.id, {
+            id: snap.id,
+            name: senderData.personalInfo?.username || senderData.email,
+            photoURL: senderData.personalInfo?.profilePhoto || null
+          });
+        }
+      });
+
+      const rentsMap = new Map();
+      const vehicleIdsFromRents = new Set();
+      rentsSnapshots.forEach(snap => {
+        if (snap.exists()) {
+          const rentData = { id: snap.id, ...snap.data() };
+          rentsMap.set(snap.id, rentData);
+          if (rentData.vehicle_id) {
+            vehicleIdsFromRents.add(rentData.vehicle_id);
+          }
+        }
+      });
+
+      // 3. Obtener detalles de vehículos si hay alguno
+      let vehiclesMap = new Map();
+      if (vehicleIdsFromRents.size > 0) {
+        const vehiclesSnapshots = await Promise.all(
+          Array.from(vehicleIdsFromRents).map(id => getDoc(doc(db, 'cars', id)))
+        );
+        vehiclesSnapshots.forEach(snap => {
+          if (snap.exists()) {
+            vehiclesMap.set(snap.id, { id: snap.id, ...snap.data() });
+          }
+        });
+      }
+
+      // 4. Ensamblar las notificaciones con todos los detalles
+      const notifications = rawNotifications.map(n => {
+        const notificationData = { ...n };
+        if (n.sender_id) {
+          notificationData.senderDetails = sendersMap.get(n.sender_id) || null;
+        }
+        if ((n.type === 'rent_request' || n.type === 'rent_response') && n.rent_id) {
+          notificationData.rentDetails = rentsMap.get(n.rent_id) || null;
+          if (notificationData.rentDetails && notificationData.rentDetails.vehicle_id) {
+            notificationData.vehicleDetails = vehiclesMap.get(notificationData.rentDetails.vehicle_id) || null;
+          }
+        }
+        return notificationData;
+      });
+
       // Llamar al callback una vez que todas las notificaciones han sido procesadas
       if (typeof callback === 'function') {
          callback(notifications);
@@ -373,76 +301,3 @@ export function fetchUserNotification(userId, callback){
   }
 
 }
-
-
-
-
-
-// export async function fetchUserNotification(userId){
-//   if(!userId){
-//     console.warn("[fetchUserNotification] El userId es inválido o no está definido. Retornando array vacío.");
-//     return [];
-//   }
-
-//   try {
-//     const notificationsCol = collection(db, 'notifications');
-//     // filtramos por receiver_id y ordenamos por fecha de creacion
-//     const q = query(
-//       notificationsCol, 
-//       where('receiver_id', '==', userId),
-//       orderBy('created_at', 'desc')
-//     );
-
-//     const querySnapshot = await getDocs(q);
-//     const notifications = [];
-
-//     for (const notificationsDoc of querySnapshot.docs){
-//       const notificationData = { id: notificationsDoc.id, ...notificationsDoc.data() };
-
-//       if(notificationData.type === 'rent_request' && notificationData.rent_id){
-//         // obtenemos detelles del alquiler
-//         const rentRef = doc(db, 'rents', notificationData.rent_id);
-//         const rentSnap = await getDoc(rentRef);
-
-//         if(rentSnap.exists()) {
-//           notificationData.rentDetails = { id: rentSnap.id, ...rentSnap.data() };
-
-//           // obtenemos detalles del solicitante
-//           if(notificationData.rentDetails.vehicle_id){
-//             const vehicleRef = doc(db, 'cars', notificationData.rentDetails.vehicle_id);
-//             const vehicleSnap = await getDoc(vehicleRef);
-
-//             if(vehicleSnap.exists()){
-//               notificationData.vehicleDetails = { id: vehicleSnap.id, ...vehicleSnap.data() };
-//             } else {
-//               console.warn(`[fetchUserNotification] Vehículo con ID ${notificationData.rentDetails.vehicle_id} no encontrado.`);
-//             }
-//           }
-//         } else {
-//           console.warn(`[fetchUserNotification] Renta con ID ${notificationData.rent_id} no encontrada.`);
-//         }
-
-//         // obtenemos los detalles del remitente
-//         if(notificationData.sender_id){
-//           const senderRef = doc(db, 'users', notificationData.sender_id );
-//           const senderSnap = await getDoc(senderRef);
-//           if(senderSnap.exists()){
-//             notificationData.senderDetails = { id: senderSnap.id, ...senderSnap.data() };
-//           } else {
-//             console.warn(`[fetchUserNotification] Remitente con ID ${notificationData.sender_id} no encontrado.`);
-//           }
-//         }
-//       }
-
-//       // TODO aca se pueden agregar logica para otras notificaciones para el futuro...
-//       notifications.push(notificationData);
-//     }
-
-//     return notifications
-
-//   } catch (error) {
-//     console.error("Error al obtener las notificaciones: ", error);
-//     throw error;
-//   }
-
-// }
