@@ -3,6 +3,7 @@ import { useUserStore, useAuthStore  } from '@stores'
 import { onMounted, ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { usePaymentStore } from '@/stores/payment.store.js'
+import { useCarStore } from '@/stores/car.store.js' 
 
 import Heading from "@components/atoms/Heading.vue";
 import CardCar from "@components/organisms/my-cars/CardCar.vue";
@@ -48,6 +49,7 @@ export default {
     const showNewPaymentForm = ref(false);
     const showDeleteModal = ref(false);
     const paymentMethodToDelete = ref(null);    
+    const carStore = useCarStore();
 
     const loggedUserId = computed(() => {
       return authStore.user?.id
@@ -60,6 +62,11 @@ export default {
     const isOwnProfile = computed(() => {
       return loggedUserId.value === userIdFromRoute.value;
     });
+
+    // PAra verificare si es el usuario logueado o un usuario visitado, y le asignamos los autos correspondientes
+    const userCars = computed(() => {
+  return isOwnProfile.value ? carStore.getUserCars : carStore.getVisitedUserCars;
+});
 
     const displayedPaymentMethods = computed(() => {
       if (!paymentStore.paymentMethods.length) return [];
@@ -122,6 +129,9 @@ const saveNewPaymentMethod = async () => {
     onMounted(async () => {
       await userStore.loadUserProfile(userIdFromRoute.value);
 
+      // Fetch a los autos del usuaroi
+      await carStore.loadUserCars(userIdFromRoute.value);
+
       if(loggedUserId.value && isOwnProfile.value){
         if(!userStore.profileData.profileCompleted){
           router.push('/onboarding')
@@ -149,6 +159,8 @@ const saveNewPaymentMethod = async () => {
       showDeleteModal,
       paymentMethodToDelete,
       confirmDeletePaymentMethod,
+      carStore,
+      userCars
     };
   }
 }
@@ -247,6 +259,7 @@ const saveNewPaymentMethod = async () => {
   </div>  -->
 <template>
   <section class="flex flex-col md:flex-row" v-if="isOwnProfile">
+    <BackButton class="md:hidden w-fit mt-1 ml-2" />
     <UserNav class="max-w-[95%] mx-auto md:mx-4"/>
 
     <section class="max-w-[95%] mx-auto md:mx-0">
@@ -352,9 +365,10 @@ const saveNewPaymentMethod = async () => {
                 <span class="text-sm">{{ showProfile?.personalInfo?.username || 'No especificado' }}</span>
               </div>
               <div class="flex justify-between text-white">
-                <span class="text-sm text-white/80">Email verificado:</span>
-                <span class="text-sm" :class="showProfile?.personalInfo?.emailVerified ? 'text-green-400' : 'text-red-400'">
-                  {{ showProfile?.personalInfo?.emailVerified ? 'Sí' : 'No' }}
+                <!-- Copie lo que estaba en admin, no es que el usuario este verificado sino que completo todos los pasos del onboarding, que practicamente es lo mismo -->
+                <span class="text-sm text-white/80">Usuario verificado:</span>
+                <span class="text-sm" :class="userStore.profileData.profileCompleted ? 'text-green-400' : 'text-red-400'">
+                  {{ userStore.profileData.profileCompleted == true ? 'Verificado' : 'No Verificado'}}
                 </span>
               </div>
             </div>
@@ -636,43 +650,162 @@ const saveNewPaymentMethod = async () => {
         </div>
 
         <!-- Sección de autos -->
-        <div class="bg-blue-900/40">
-          <div class="section-header">
-            <Heading :type="1">{{ isOwnProfile ? "Mis autos" : "Vehículos" }}</Heading>
-            <a href="" class="section-link">Ver más</a>
+        <div class="bg-secondary-100 rounded-[40px] p-6 mt-4 xl:mt-0 max-h-[400px] overflow-y-auto">
+          <div class="flex items-center justify-between mb-4">
+            <Heading :type="1" class="text-primary-900">
+              {{ isOwnProfile ? "Mis autos" : "Vehículos" }}
+            </Heading>
+            <!-- Mostrar en caso de que se haga la pagina -->
+            <!-- <router-link 
+              v-if="isOwnProfile && userCars.length > 0" 
+              to="/my-cars" 
+              class="text-primary-800 text-sm hover:text-primary-600 transition-colors"
+            >
+              Ver todos
+            </router-link> -->
           </div>
-          
-          <div v-if="posts && posts.length" class="cars-content">
-            <UserCar 
-              v-for="post in posts" 
-              :key="post.id" 
-              :car="post"
+        
+          <div v-if="carStore.loadingUserCars" class="flex justify-center py-8">
+            <Loading class="w-8 h-8 text-primary-800" />
+          </div>
+        
+          <div v-else-if="userCars.length > 0" class="space-y-4">
+            <div 
+              v-for="car in userCars.slice(0, 4)" 
+              :key="car.id"
+              :class="[
+                'bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer',
+                userCars.length === 1 ? 'p-6' : 'p-4'
+              ]"
+              @click="$router.push(`/car/${car.id}`)"
+            >
+              <div :class="['flex', userCars.length === 1 ? 'gap-6' : 'gap-4']">
+                <div class="relative flex-shrink-0">
+                  <img 
+                    :src="car.images?.[0] || carStore.defaultCarImage" 
+                    :alt="car.marca + ' ' + car.modelo"
+                    :class="[
+                      'object-cover rounded-xl',
+                      userCars.length === 1 ? 'w-32 h-28 sm:w-36 sm:h-32' : 'w-24 h-20 sm:w-28 sm:h-24'
+                    ]"
+                    @error="carStore.handleImageError"
+                  />
+                  <div 
+                    :class="[
+                      'absolute -top-1 -right-1 rounded-full font-medium',
+                      userCars.length === 1 ? 'px-3 py-1.5 text-sm' : 'px-2 py-1 text-xs',
+                      car.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    ]"
+                  >
+                    {{ car.isAvailable ? 'Disponible' : 'No disponible' }}
+                  </div>
+                </div>
+        
+                <div :class="['flex-1', userCars.length === 1 ? 'space-y-3' : 'space-y-2']">
+                  <div class="flex justify-between items-start">
+                    <h3 :class="[
+                      'font-bold text-primary-900 leading-tight',
+                      userCars.length === 1 ? 'text-xl' : 'text-lg'
+                    ]">
+                      {{ car.marca }} {{ car.modelo }}
+                    </h3>
+                    <span :class="[
+                      'text-primary-800 font-bold flex-shrink-0 ml-2',
+                      userCars.length === 1 ? 'text-base' : 'text-sm'
+                    ]">
+                      ${{ car.precio }}/día
+                    </span>
+                  </div>
+                  
+                  <p :class="[
+                    'text-background-600',
+                    userCars.length === 1 ? 'text-base' : 'text-sm'
+                  ]">
+                    {{ car.año }} • {{ car.combustible }} • {{ car.transmision }}
+                  </p>
+        
+                  <!-- Cambiar info como queiran -->
+                  <div class="flex gap-2 flex-wrap">
+                    <span :class="[
+                      'bg-vibrant-light-600 text-primary-900 px-2 py-1 rounded-lg',
+                      userCars.length === 1 ? 'text-sm' : 'text-xs'
+                    ]">
+                      {{ car.asientos }} asientos
+                    </span>
+                  </div>
+        
+                  <!-- Agregar despues -->
+                  <!-- <div v-if="car.rating" class="flex items-center gap-1">
+                    <span class="text-yellow-500">★</span>
+                    <span class="text-sm text-primary-900 font-medium">{{ car.rating }}</span>
+                    <span class="text-xs text-background-600">({{ car.reviewCount || 0 }} reseñas)</span>
+                  </div> -->
+                </div>
+              </div>
+            </div>
+            <router-link 
+          v-if="isOwnProfile" 
+          to="/car/register" 
+          class="inline-flex items-center gap-2 px-4 py-2 bg-primary-800 text-white rounded-lg hover:bg-primary-900 transition-colors font-medium"
+        >
+          <Plus class="w-4 h-4" />
+          Registrar auto
+        </router-link>
+          </div>
+        
+          <div v-else class="text-center py-8">
+            <img 
+              src="@/assets/no-cars.png" 
+              alt="No cars" 
+              class="max-w-[120px] mx-auto mb-4 opacity-50"
             />
-          </div>
-          <div v-else class="">
-            <p class="empty-message">
-              {{ isOwnProfile ? "Aún no tienes autos registrados." : "Este usuario no tiene autos registrados." }}
+            <Heading :type="3" class="text-background-600 mb-2">
+              {{ isOwnProfile ? "Aún no tenés autos registrados" : "Este usuario no tiene autos registrados" }}
+            </Heading>
+            <p class="text-sm text-background-500 mb-4">
+              {{ isOwnProfile ? "Registrá tu primer vehículo y comenzá a generar ingresos" : "" }}
             </p>
-            <router-link v-if="isOwnProfile" to="/" class="action-link">
-              <span>Registra un auto</span>
+            <router-link 
+              v-if="isOwnProfile" 
+              to="/car/register" 
+              class="inline-flex items-center gap-2 px-4 py-2 bg-primary-800 text-white rounded-lg hover:bg-primary-900 transition-colors font-medium"
+            >
+              <Plus class="w-4 h-4" />
+              Registrar auto
             </router-link>
           </div>
+        
+          <!-- se deberia mostrar en caso de que haya mas de 4 autos pero es dificcil que pase y ademas la apgina no existe -->
+          <!-- <div v-if="userCars.length > 4" class="mt-4 text-center">
+            <router-link 
+              to="/my-cars" 
+              class="text-primary-800 hover:text-primary-600 text-sm font-medium"
+            >
+              Ver los {{ userCars.length - 4 }} autos restantes →
+            </router-link>
+          </div> -->
         </div>
       </div>
-      <DeletePaymentModal
-      :isOpen="showDeleteModal"
-      :paymentMethod="paymentMethodToDelete?.method"
-      title="Eliminar método de pago"
-      message="¿Estás seguro de que querés eliminar este método de pago? Esta acción no se puede deshacer."
-      confirmText="Eliminar"
-      cancelText="Cancelar"
-      @close="() => { showDeleteModal = false; paymentMethodToDelete = null; }"
-      @confirm="confirmDeletePaymentMethod"
-    />
+
       
       <!-- <router-view></router-view> -->
     </section>
+    <DeletePaymentModal
+    :isOpen="showDeleteModal"
+    :paymentMethod="paymentMethodToDelete?.method"
+    title="Eliminar método de pago"
+    message="¿Estás seguro de que querés eliminar este método de pago? Esta acción no se puede deshacer."
+    confirmText="Eliminar"
+    cancelText="Cancelar"
+    @close="() => { showDeleteModal = false; paymentMethodToDelete = null; }"
+    @confirm="confirmDeletePaymentMethod"
+  />
   </section>
+
+
+
+
+
 
 
   <section class="flex flex-col md:flex-row" v-else>

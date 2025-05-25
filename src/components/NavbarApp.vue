@@ -125,31 +125,31 @@ onBeforeUnmount(() => {
       <li>
         <IconNavButton to="/" title="Home" @click="toggleMobileMenu">
           <Home class="mr-2" />
-          <span class="font-semibold">Home</span>
+          <span class="font-semibold">Inicio</span>
         </IconNavButton>
       </li>
       <li>
         <IconNavButton to="/search" title="Search" @click="toggleMobileMenu">
           <Search class="mr-2" />
-          <span class="font-semibold">Search</span>
+          <span class="font-semibold">Buscar</span>
         </IconNavButton>
       </li>
       <li>
         <IconNavButton to="/admin/cars" title="Admin cars" @click="toggleMobileMenu">
           <Cars class="mr-2" />
-          <span class="font-semibold">Admin cars</span>
+          <span class="font-semibold">Administrar autos</span>
         </IconNavButton>
       </li>
       <li>
         <IconNavButton to="/admin/users" title="Admin users" @click="toggleMobileMenu">
           <People class="mr-2" />
-          <span class="font-semibold">Admin users</span>
+          <span class="font-semibold">Administrar usuarios</span>
         </IconNavButton>
       </li>
       <li>
         <IconNavButton :to="'/user/' + authStore?.user.id" title="Profile" @click="toggleMobileMenu">
           <UserIcon class="mr-2" />
-          <span class="font-semibold">Profile</span>
+          <span class="font-semibold">Perfil</span>
         </IconNavButton>
       </li>
     </ul>
