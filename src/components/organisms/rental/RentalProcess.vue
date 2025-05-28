@@ -391,29 +391,29 @@ onMounted(async () => {
             
             <div class="flex gap-4 mb-6">
               <div 
-                @click="paymentStore.selectedPaymentMethodTypee = 'credit_card'" 
+                @click="paymentStore.selectedPaymentMethodType = 'credit_card'" 
                 class="flex-1 p-3 border rounded-xl cursor-pointer text-center transition-all text-white"
-                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': paymentStore.selectedPaymentMethodTypee === 'credit_card', 'border-gray-600': paymentStore.selectedPaymentMethodTypee !== 'credit_card'}"
+                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': paymentStore.selectedPaymentMethodType === 'credit_card', 'border-gray-600': paymentStore.selectedPaymentMethodType !== 'credit_card'}"
               >
                 Tarjeta
               </div>
               <div 
-                @click="paymentStore.selectedPaymentMethodTypee = 'digital_wallet'" 
+                @click="paymentStore.selectedPaymentMethodType = 'digital_wallet'" 
                 class="flex-1 p-3 border rounded-xl cursor-pointer text-center transition-all text-white"
-                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': paymentStore.selectedPaymentMethodTypee === 'digital_wallet', 'border-gray-600': paymentStore.selectedPaymentMethodTypee !== 'digital_wallet'}"
+                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': paymentStore.selectedPaymentMethodType === 'digital_wallet', 'border-gray-600': paymentStore.selectedPaymentMethodType !== 'digital_wallet'}"
               >
                 Billetera Virtual
               </div>
               <div 
-                @click="paymentStore.selectedPaymentMethodTypee = 'paypal'" 
+                @click="paymentStore.selectedPaymentMethodType = 'paypal'" 
                 class="flex-1 p-3 border rounded-xl cursor-pointer text-center transition-all text-white"
-                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': paymentStore.selectedPaymentMethodTypee === 'paypal', 'border-gray-600': paymentStore.selectedPaymentMethodTypee !== 'paypal'}"
+                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': paymentStore.selectedPaymentMethodType === 'paypal', 'border-gray-600': paymentStore.selectedPaymentMethodType !== 'paypal'}"
               >
                 PayPal
               </div>
             </div>
             
-            <div v-if="paymentStore.selectedPaymentMethodTypee === 'credit_card'" class="space-y-4">
+            <div v-if="paymentStore.selectedPaymentMethodType === 'credit_card'" class="space-y-4">
               <Input 
                 type="text"
                 placeholder="Titular de tarjeta"
@@ -446,7 +446,7 @@ onMounted(async () => {
               </div>
             </div>
             
-            <div v-if="paymentStore.selectedPaymentMethodTypee === 'digital_wallet'" class="space-y-4">
+            <div v-if="paymentStore.selectedPaymentMethodType === 'digital_wallet'" class="space-y-4">
               <!-- {value: 'otra', label:'Otra'} -->
               <Input 
                 type="select"
@@ -468,7 +468,7 @@ onMounted(async () => {
               />
             </div>
             
-            <div v-if="paymentStore.selectedPaymentMethodTypee === 'paypal'" class="space-y-4">
+            <div v-if="paymentStore.selectedPaymentMethodType === 'paypal'" class="space-y-4">
               <Input 
                 type="email"
                 placeholder="Email de PayPal"
@@ -480,13 +480,13 @@ onMounted(async () => {
             
             <div class="flex gap-4 mt-6">
               <button 
-                @click="store.toggleNewPaymentForm" 
+                @click="paymentStore.toggleNewPaymentForm" 
                 class="flex-1 py-3 px-4 border border-gray-600 rounded-xl hover:border-gray-400 transition-all text-white hover:cursor-pointer"
               >
                 Cancelar
               </button>
               <button 
-                @click="paymentStore.saveNewPaymentMethod" 
+                @click="paymentStore.saveNewPaymentMethod(userId)" 
                 :disabled="!paymentStore.isFormValid || store.loading"
                 class="flex-1 py-3 px-4 bg-vibrant-light-900 text-deep-blue-900 rounded-xl font-medium hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
               >

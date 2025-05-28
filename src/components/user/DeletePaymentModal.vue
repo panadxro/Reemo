@@ -71,6 +71,10 @@ import CreditCard from "@icons/CreditCard.vue";
             </button>
           </div>
 
+          <div class="mb-6">
+            <p class="text-background-800">{{ message }}</p>
+          </div>
+
           <div v-if="paymentMethod" class="mb-4 p-3 bg-white/10 rounded-lg">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 flex items-center justify-center p-1 rounded-xl bg-vibrant-light-600">
@@ -90,10 +94,6 @@ import CreditCard from "@icons/CreditCard.vue";
                 </p>
               </div>
             </div>
-          </div>
-          
-          <div class="mb-6">
-            <p class="text-background-800">{{ message }}</p>
           </div>
           
           <div class="flex gap-3 justify-center">
