@@ -52,7 +52,6 @@ import {addAlert} from './alerts.js'
 
 
 // Vista del Conductor donde obtenemos los datos de la ultima solicitud
-
 export async function fetchRentedCars(userId) {
   try {
     const rentsCollection = collection(db, "rents");
@@ -100,6 +99,72 @@ export async function fetchRentedCars(userId) {
   }
 }
 
+/**
+ * Se suscribe a los cambios en tiempo real de un documento de alquiler específico
+ * y enriquece los datos con detalles del vehículo, propietario y conductor.
+ * @param {string} rentalId - El ID del documento de alquiler.
+ * @param {function} callback - Función a llamar con los detalles del alquiler actualizados.
+ * @returns {function} - Función para desuscribirse del listener.
+ */
+export function subscribeToRentalDetails(rentalId, callback) {
+  if (!rentalId) {
+    console.warn("[subscribeToRentalDetails] rentalId no proporcionado.");
+    if (typeof callback === 'function') callback(null, "ID de alquiler no proporcionado.");
+    return () => {};
+  }
+
+  const rentalRef = doc(db, 'rents', rentalId);
+
+  const unsubscribe = onSnapshot(rentalRef, async (docSnap) => {
+    if (docSnap.exists()) {
+      const data = { id: docSnap.id, ...docSnap.data() };
+      let enrichedData = { ...data };
+
+      try {
+        if (data.vehicle_id && (!data.vehicleData || typeof data.vehicleData !== 'object')) {
+          const vehicleSnap = await getDoc(doc(db, 'cars', data.vehicle_id));
+          if (vehicleSnap.exists()) enrichedData.vehicleData = { id: vehicleSnap.id, ...vehicleSnap.data() };
+        }
+
+        if (data.owner_id && (!data.ownerData || typeof data.ownerData !== 'object')) {
+          const ownerSnap = await getDoc(doc(db, 'users', data.owner_id));
+          if (ownerSnap.exists()) {
+            const uData = ownerSnap.data();
+            enrichedData.ownerData = { id: ownerSnap.id, name: uData.personalInfo?.firstName , photoURL: uData.personalInfo?.profilePhoto, lastname: uData.personalInfo?.lastName, username: uData.personalInfo?.username || uData.email  };
+          }
+        }
+
+        if (data.driver_id && (!data.driverData || typeof data.driverData !== 'object')) {
+          const driverSnap = await getDoc(doc(db, 'users', data.driver_id));
+          if (driverSnap.exists()) {
+            const uData = driverSnap.data();
+            enrichedData.driverData = { id: driverSnap.id, name: uData.personalInfo?.firstName, lastname: uData.personalInfo?.lastName, photoURL: uData.personalInfo?.profilePhoto };
+          }
+        }
+        if (typeof callback === 'function') callback(enrichedData, null);
+      } catch (enrichError) {
+        console.error("Error al enriquecer detalles del alquiler:", enrichError);
+        if (typeof callback === 'function') callback(data, "Error al enriquecer datos."); // Devolver datos básicos si falla el enriquecimiento
+      }
+    } else {
+      if (typeof callback === 'function') callback(null, "No se encontraron detalles para este alquiler.");
+    }
+  }, (error) => {
+    console.error("Error en listener de onSnapshot para el alquiler:", error);
+    if (typeof callback === 'function') callback(null, "Ocurrió un error al escuchar los cambios del alquiler.");
+  });
+
+  return unsubscribe;
+}
+
+// Marca un alquiler como 'in_progress' y registra el timestamp de recogida.
+export async function markRentalAsPickedUp(rentalId) {
+  const rentalRef = doc(db, 'rents', rentalId);
+  await updateDoc(rentalRef, {
+    status: 'in_progress',
+    // pickup_timestamp: Timestamp.now()
+  });
+}
 
 // verificar si el auto ya está alquilado
 export async function isCarAlreadyRented(carId) {
@@ -187,6 +252,85 @@ export async function submitRentalRequest(rentalRequest) {
         console.error('Error al enviar la solicitud de alquiler:', error);
         throw error;
     }
+}
+
+
+// Vista del Propietario
+export async function fetchRentalRequests(userId, callback) {
+  try {
+    if (!userId) {
+      console.warn("El userId es inválido o no está definido");
+      return () => {};
+    }
+
+    const rentsCollection = collection(db, 'rents');
+    const q = query(
+      rentsCollection,
+      where("owner_id", "==", userId),
+      where("status", "in", ["pending", "confirmed"]) // Solo cargar solicitudes pendientes o aceptadas
+    );
+    
+    // Escuchar cambios en tiempo real
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      try {
+        const rentalRequests = await Promise.all(
+          snapshot.docs.map(async (docSnap) => {
+            const request = { id: docSnap.id, ...docSnap.data() };
+
+            // Verificar si la fecha de devolución ha pasado
+            const rentedUntil = new Date(request.end_time);
+            const currentDate = new Date();
+
+            // Lógica para pasar a 'completed' si la fecha de finalización ha pasado
+            // y el estado actual es uno que precede a la finalización.
+            if (rentedUntil < currentDate && 
+                (request.status === "confirmed" || request.status === "in_progress")) {
+              await updateRentalStatus(request.id, "completed");
+              request.status = "completed";
+            }
+
+            // Obtener datos del usuario que solicita el alquiler
+            const userRef = doc(db, 'users', request.driver_id);
+            const userSnap = await getDoc(userRef);
+
+            // Obtener datos del auto
+            let carData = null;
+            let carSnapId = null;
+            if (request.vehicle_id) {
+              const carRef = doc(db, 'cars', request.vehicle_id);
+              const carSnap = await getDoc(carRef);
+              if (carSnap.exists()) {
+                carData = carSnap.data();
+                carSnapId = carSnap.id;
+              }
+            }
+
+            const userData = userSnap.exists() ? userSnap.data() : null;
+            return {
+              ...request,
+              photoURL: userData?.photoURL || null,
+              name: userData?.name || 'Usuario Desconocido',
+              carMarca: carData?.marca || "Marca Desconocida",
+              carModelo: carData?.modelo || "Modelo Desconocido",
+              carId: carSnapId,
+            };
+            
+          })
+        );
+
+        callback(rentalRequests);
+      } catch (error) {
+        console.error("Error al obtener las solicitudes de alquiler:", error);
+        callback([]);
+      }
+    });
+
+    // Retornar la función para desuscribirse
+    return unsubscribe;
+  } catch (error) {
+    console.error("Error al obtener las solicitudes de alquiler:", error);
+    return () => {};
+  }
 }
 
 
@@ -298,6 +442,58 @@ export function fetchUserNotification(userId, callback){
   } catch (error) {
     console.error("Error al obtener las notificaciones: ", error);
     return () => {};
+  }
+
+}
+
+
+// Vista del Propietario: Obtener el último alquiler activo/pendiente de uno de sus vehículos
+export async function fetchLatestActiveOwnedRental(ownerId){
+  try {
+    const rentsCollection = collection(db, "rents");
+    const q = query(
+      rentsCollection,
+      where("owner_id", "==", ownerId),
+      where("status", "in", ["pending", "confirmed", "in_progress"]),
+      orderBy("timestamp", "desc"), // Usar timestamp de creación de la solicitud para "más reciente"
+      limit(1)
+    );
+
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      return null; // No hay alquileres activos/pendientes para los vehículos de este propietario
+    }
+
+    const rentalDoc = querySnapshot.docs[0];
+    const rentalData = { id: rentalDoc.id, ...rentalDoc.data() };
+
+    // Enriquecer con detalles del vehículo
+    let vehicleDetails = null;
+    if (rentalData.vehicle_id) {
+      const carRef = doc(db, 'cars', rentalData.vehicle_id);
+      const carSnap = await getDoc(carRef);
+      vehicleDetails = carSnap.exists() ? { id: carSnap.id, ...carSnap.data() } : null;
+    }
+
+    // Enriquecer con detalles del conductor (inquilino)
+    let driverDetails = null;
+    if (rentalData.driver_id) {
+      const driverRef = doc(db, 'users', rentalData.driver_id);
+      const driverSnap = await getDoc(driverRef);
+      if (driverSnap.exists()) {
+        const dData = driverSnap.data();
+        // Asegúrate de que la ruta a personalInfo y sus campos sea correcta
+        driverDetails = {
+          id: driverSnap.id,
+          name: dData.personalInfo?.username || dData.email || 'Conductor Desconocido',
+          photoURL: dData.personalInfo?.profilePhoto || null
+        };
+      }
+    }
+    return { ...rentalData, vehicleDetails, driverDetails };
+  } catch (error) {
+    console.error("Error al obtener el último alquiler activo del propietario:", error);
+    throw error;
   }
 
 }
