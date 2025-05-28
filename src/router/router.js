@@ -15,6 +15,7 @@ import PrivateChat from "../pages/PrivateChat.vue";
 import UserProfile from "../pages/UserProfile.vue";
 import NotFound from "../pages/NotFound.vue";
 import Notification from "../pages/Notification.vue";
+import RentalDetailsView from '../pages/RentalDetailsView.vue';
  
 const routes = [
   { path: "/", component: Home, name: "Home" },
@@ -80,6 +81,13 @@ const routes = [
         meta: { needsAuth: true },
       },
     ],
+  },
+  {
+    path: '/rental-details/:id',
+    name: 'RentalDetailsView',
+    component: RentalDetailsView,
+    props: true,
+    meta: { needsAuth: true },
   },
   {
     path: "/admin",
