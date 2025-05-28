@@ -31,6 +31,7 @@ const layoutMap = {
   '/map': 'dashboard',
   '/car': 'dashboard',
   '/notification': 'dashboard',
+  '/rental-details': 'dashboard',
   
   // Por defecto (con navbar y footer)
   '/404': 'default',
