@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import { getCarById, checkIfCarIsRented } from "../services/car-service.js";
+import { getCarById } from "../services/car-service.js";
+import { isCarAlreadyRented } from "@/services/rentedCarService";
 import { useAuthStore } from '@stores';
 
 export const useCarStore = defineStore('car', {
@@ -72,7 +73,7 @@ export const useCarStore = defineStore('car', {
           }
           
           this.currentImage = this.carImages[0];
-          this.isRented = await checkIfCarIsRented(carId);
+          this.isRented = await isCarAlreadyRented(carId);
           
           return this.car;
         } catch (error) {
@@ -133,7 +134,7 @@ export const useCarStore = defineStore('car', {
     async checkRentalStatus() {
       if (this.car.id) {
         try {
-          this.isRented = await checkIfCarIsRented(this.car.id);
+          this.isRented = await isCarAlreadyRented(this.car.id);
           return this.isRented;
         } catch (error) {
           console.error("Error al verificar estado de alquiler:", error);
