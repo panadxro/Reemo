@@ -47,17 +47,10 @@ const loadNotifications = async () => {
           console.error('Error en el listener de notificaciones (desde el componente): ', err);
           errorLoading.value = 'Error al recibir actualizaciones de notificaciones.';
           // notifications.value = []; // Opcional: limpiar notificaciones en error
-          isLoading.value = false; // Asegurarse de que no se quede cargando
+          isLoading.value = false;
           addAlert(errorLoading.value, "error");
           return;
         }
-
-        // const unreadExists = updatedNotifications.some(notification => !notification.read);
-        // authStore.setUnreadNotifications(unreadExists);
-
-        // auth.store.js ahora maneja la actualización de unreadNotifications globalmente.
-        // const unreadExists = updatedNotifications.some(notification => !notification.read);
-        // authStore.setUnreadNotifications(unreadExists); // Ya no es necesario aquí
 
         notifications.value = updatedNotifications;
         isLoading.value = false; 
