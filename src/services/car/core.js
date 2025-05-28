@@ -18,16 +18,6 @@ export async function getCarById(carId) {
   throw new Error("Auto no encontrado.");
 }
 
-// Chekea si el auto esta rentado (Cambiar o eliminar)
-export async function checkIfCarIsRented(carId) {
-  const rentalQuery = query(
-    collection(db, "rental_requests"),
-    where("car_id", "==", carId)
-  );
-  const querySnapshot = await getDocs(rentalQuery);
-  return !querySnapshot.empty && querySnapshot.docs[0].data().rented;
-}
-
 // Obtener autos del Usuario por ID
 export function getUserCars(userId) {
   return new Promise((resolve, reject) => {
