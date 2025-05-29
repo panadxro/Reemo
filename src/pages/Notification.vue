@@ -3,89 +3,41 @@
 import Heading from '@/components/atoms/Heading.vue';
 import Loading from '@/icons/Loading.vue';
 
-
 import { useAuthStore } from '@/stores';
-import { fetchUserNotification } from '@/services/rentedCarService';
-import { updateRentalStatus } from '@/services/rentedCarService';
-import { createRentalRequestNotification, readNotification, markNotificationAsRead } from '@/services/car/notifyRented';
+import { useNotificationStore } from '@/stores/notification.store';
 import { addAlert } from '@/services/alerts';
 
-import { ref, computed, onMounted, onUnmounted  } from 'vue';
+import { computed, onMounted } from 'vue';
 
-const notifications = ref([]);
-const isLoading = ref(true);
-const errorLoading = ref(null);
-
-let unsubscribeNotifications = null;
 const authStore = useAuthStore();
+const notificationStore = useNotificationStore(); // Usar el store
 const currentUser = computed(() => authStore.user); 
 
-const loadNotifications = async () => {
-  console.log("[Notification.vue] Intentando cargar notificaciones para currentUser:", JSON.parse(JSON.stringify(currentUser.value)));
-  console.log("[Notification.vue] Notificaciones antes de cargar:", notifications.value); // Para depurar
-  if (!currentUser.value || !currentUser.value.id) {
-    errorLoading.value = "Usuario no autenticado. No se pueden cargar notificaciones.";
-    isLoading.value = false;
-    console.warn("[Notification.vue] Usuario no autenticado o sin ID:", currentUser.value);
-    return;
+// Acceder a los datos del store
+const notifications = computed(() => notificationStore.sortedNotifications); // Usar el getter para ordenarlas
+const isLoading = computed(() => notificationStore.isLoading);
+const errorLoading = computed(() => notificationStore.error);
+
+onMounted(() => {
+  // El listener ya debería estar inicializado por App.vue o un watcher global.
+  // Si por alguna razón no se ha cargado y el usuario está aquí, podemos intentar iniciarlo.
+  if (currentUser.value && currentUser.value.id && !notificationStore.hasLoadedOnce) {
+    console.log("[Notification.vue onMounted] El store no ha cargado, intentando iniciar listener.");
+    notificationStore.initListenerForUser(currentUser.value.id);
+  } else if (!currentUser.value || !currentUser.value.id) {
+     // Si no hay usuario, el store debería estar limpio, pero podemos asegurarlo.
+    if (notificationStore.notifications.length > 0 || notificationStore.isLoading) {
+        notificationStore.clearListenerAndData();
+    }
+    console.warn("[Notification.vue onMounted] No hay usuario autenticado.");
   }
-
-  isLoading.value = true; // Asegurarse de que isLoading se establece antes de la llamada
-  errorLoading.value = null; // Limpiar errores previos
-
-  // Detener cualquier listener anterior si existe
-  if (unsubscribeNotifications) {
-    unsubscribeNotifications();
-    unsubscribeNotifications = null;
-  }
-
-  try {
-    unsubscribeNotifications = fetchUserNotification(
-      currentUser.value.id,
-      (updatedNotifications, err) => { // El callback ahora puede recibir un error
-        if (err) {
-          console.error('Error en el listener de notificaciones (desde el componente): ', err);
-          errorLoading.value = 'Error al recibir actualizaciones de notificaciones.';
-          // notifications.value = []; // Opcional: limpiar notificaciones en error
-          isLoading.value = false;
-          addAlert(errorLoading.value, "error");
-          return;
-        }
-
-        notifications.value = updatedNotifications;
-        isLoading.value = false; 
-        errorLoading.value = null; 
-      }
-    );
-  } catch (error) {
-    console.error("[Notification.vue] Error al llamar a fetchUserNotification:", error);
-    errorLoading.value = "No se pudo iniciar la escucha de notificaciones.";
-    isLoading.value = false;
-  }
-};
+});
 
 const handleRentalAction = async (rentId, newStatus, senderId, vehicleOwnerId) => {
   try {
-    await updateRentalStatus(rentId, newStatus);
+    await notificationStore.handleRentalAction({ rentId, newStatus, senderId, vehicleOwnerId });
     addAlert(`Solicitud ${newStatus === 'confirmed' ? 'aceptada' : 'rechazada'} correctamente.`, 'success');
-
-    const notifIndex = notifications.value.findIndex(noti => noti.rent_id === rentId);
-    if (notifIndex !== -1 && notifications.value[notifIndex].rentDetails) { 
-      notifications.value[notifIndex].rentDetails.status = newStatus;
-    }
-
-    const feedbackMessage = newStatus === 'confirmed'
-      ? `Tu solicitud de alquiler para el vehiculo ha sido aceptada.`
-      : `Tu solicitud de alquiler para el vehiculo ha sido rechazada.`;
-
-    await createRentalRequestNotification(
-      rentId,
-      vehicleOwnerId,
-      senderId,
-      feedbackMessage,
-      "rent_response"
-    );
-
+    // El store se encarga de la lógica de actualizar el estado y enviar notificaciones de feedback.
   } catch (error) {
     console.error("Error al procesar la solicitud de alquiler:", error);
     addAlert("Error al procesar la accion", "error");
@@ -104,7 +56,7 @@ const formatDate = (timestamp) => {
 const handleNotificationClick = async (notification) => {
   if(!notification.read){
     try {
-      await markNotificationAsRead(notification.id)
+      await notificationStore.markNotificationAsRead(notification.id);
       // No es estrictamente necesario actualizar localmente `notification.read = true` aquí,
       // ya que onSnapshot debería recoger el cambio y actualizar la lista `notifications`.
       // Si la actualización de onSnapshot es muy rápida, el cambio local es redundante.
@@ -116,128 +68,18 @@ const handleNotificationClick = async (notification) => {
       console.error("Error al marcar la notificación como leída:", error);
     }
   }
-  // Aquí podrías añadir lógica adicional si hacer clic en una notificación debe llevar a algún sitio,
-  // por ejemplo, a los detalles de un alquiler.
+  // Lógica de navegación si es necesario (ej. ir a RentalDetailsView)
+  // if (notification.type === 'rent_response' && notification.rent_id) {
+  //   router.push(`/rental-details/${notification.rent_id}`);
+  // }
 }
-
-onMounted(() => {
-  loadNotifications();
-});
-
-onUnmounted(() => {
-  if (unsubscribeNotifications) {
-    console.log("[Notification.vue] Desuscribiéndose de las notificaciones.");
-    unsubscribeNotifications();
-  }
-});
 
 </script> 
 
 
 <template>
-  <!-- <div class="layout-content-container flex flex-col max-w-[960px] flex-1">
-    <div class="flex flex-wrap justify-between gap-3 p-4">
-      <Heading :type="1" class="text-start px-4 pb-2 pt-4">Notificaciones</Heading>
-    </div>
-    <div class="flex gap-4 bg-white px-4 py-3 justify-between">
-      <div class="flex items-start gap-4">
-        <div class="text-[#111418] flex items-center justify-center rounded-lg bg-[#f0f2f4] shrink-0 size-12"
-          data-icon="Bell" data-size="24px" data-weight="regular">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" viewBox="0 0 256 256">
-            <path
-              d="M221.8,175.94C216.25,166.38,208,139.33,208,104a80,80,0,1,0-160,0c0,35.34-8.26,62.38-13.81,71.94A16,16,0,0,0,48,200H88.81a40,40,0,0,0,78.38,0H208a16,16,0,0,0,13.8-24.06ZM128,216a24,24,0,0,1-22.62-16h45.24A24,24,0,0,1,128,216ZM48,184c7.7-13.24,16-43.92,16-80a64,64,0,1,1,128,0c0,36.05,8.28,66.73,16,80Z">
-            </path>
-          </svg>
-        </div>
-        <div class="flex flex-1 flex-col justify-center">
-          <p class="text-[#111418] text-base font-medium leading-normal">Aún no tienes notificaciones</p>
-          <p class="text-[#637588] text-sm font-normal leading-normal">Cuando alguien te siga en Reemo, lo verás aquí.
-          </p>
-        </div>
-      </div>
-      <div class="shrink-0">
-        <button
-          class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-8 px-4 bg-[#f0f2f4] text-[#111418] text-sm font-medium leading-normal w-fit">
-          <span class="truncate">Edite su configuración de notificaciones</span>
-        </button>
-      </div>
-    </div>
 
-    <div v-if="isLoading" class="flex justify-center items-center p-10">
-      <Loading class="h-12 w-12 text-secondary-500" />
-      <p class="ml-4 text-gray-600">Cargando notificaciones...</p>
-    </div>
-
-    <div v-if="!isLoading && errorLoading" class="text-center p-10 text-red-500">
-      {{ errorLoading }}
-    </div>
-
-    <div v-if="!isLoading && !notifications.length && !errorLoading" class="text-center p-10 text-gray-500">
-      Aún no tienes notificaciones.
-    </div>
-
-    <div v-if="!isLoading && notifications.length > 0" class="space-y-4 p-4">
-      <h3 class="text-[#111418] text-lg font-bold leading-tight tracking-[-0.015em] px-4 pb-2 pt-4">Más reciente</h3>
-      <div v-for="notification in notifications" :key="notification.id"
-        class="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow">
-        <div class="flex items-start gap-4">
-          <img v-if="notification.senderDetails?.photoURL"
-            :src="notification.senderDetails.photoURL" alt="Avatar solicitante"
-            class="h-12 w-12 rounded-full object-cover">
-          <div v-else
-            class="h-12 w-12 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
-            {{ notification.senderDetails?.name ? notification.senderDetails.name.charAt(0).toUpperCase() : 'R' }}
-          </div>
-
-          <div class="flex-1">
-            <p class="text-gray-800 font-semibold">
-              {{ notification.type === 'rent_request' && notification.senderDetails?.name ?
-              notification.senderDetails.name : 'Reemo Bot' }}
-            </p>
-            <p class="text-sm text-gray-600">{{ notification.message }}</p>
-            <p class="text-xs text-gray-400 mt-1">{{ formatDate(notification.created_at) }}</p>
-
-            <div v-if="notification.type === 'rent_request' && notification.rentDetails"
-              class="mt-3 bg-gray-50 p-3 rounded">
-              <p class="text-sm font-medium text-gray-700">
-                Vehículo: {{ notification.vehicleDetails?.marca || 'N/A' }} {{ notification.vehicleDetails?.modelo ||
-                'N/A' }}
-              </p>
-              <p class="text-xs text-gray-500">
-                Desde: {{ formatDate(notification.rentDetails.start_time) }}
-              </p>
-              <p class="text-xs text-gray-500">
-                Hasta: {{ formatDate(notification.rentDetails.end_time) }}
-              </p>
-              <p class="text-xs text-gray-500">
-                Precio Total: ${{ notification.rentDetails.total_price?.toFixed(2) || 'N/A' }}
-              </p>
-              <p class="text-xs font-semibold"
-                :class="notification.rentDetails.status === 'pending' ? 'text-yellow-600' : notification.rentDetails.status === 'confirmed' ? 'text-green-600' : 'text-red-600'">
-                Estado: {{ notification.rentDetails.status }}
-              </p>
-
-              <div v-if="notification.rentDetails.status === 'pending'" class="mt-3 space-x-2">
-                <button
-                  @click="handleRentalAction(notification.rent_id, 'confirmed', notification.sender_id, notification.receiver_id, notification.rentDetails.vehicle_id)"
-                  class="px-3 py-1 text-xs bg-green-500 text-white rounded hover:bg-green-600">Aceptar</button>
-                <button
-                  @click="handleRentalAction(notification.rent_id, 'rejected', notification.sender_id, notification.receiver_id, notification.rentDetails.vehicle_id)"
-                  class="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600">Rechazar</button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    </div>
-  </div> -->
-
-
-
-
-
-  <div class="w-full mx-auto bg-white rounded-lg shadow p-4">
+  <div class="w-full mx-auto bg-white rounded-lg shadow p-4 overflow-y-hidden">
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
       <Heading :type="1" class="text-start pb-2 pt-4">Notificaciones</Heading>
@@ -263,7 +105,7 @@ onUnmounted(() => {
     </div>
 
     <!-- Notifications -->
-    <div v-if="!isLoading && notifications.length > 0" class=""> 
+    <div v-if="!isLoading && notifications.length > 0" class="overflow-y-auto max-h-screen"> 
       <div v-for="noti in notifications" :key="noti.id" 
         class="overflow-y-auto p-6 border-b last:border-b-0 hover:bg-gray-200 rounded-xl"
         @click="handleNotificationClick(noti)">
