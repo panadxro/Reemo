@@ -176,7 +176,6 @@ watch(currentUser, (newUser, oldUser) => {
     <div v-else class="space-y-6">
     <!-- Sección: Alquileres como Conductor -->
     <div v-if="driverRentalDetail" class="bg-white text-black w-full max-w-md flex flex-col rounded-xl shadow-lg p-4 mx-auto">
-      <h3 class="text-lg font-semibold mb-3 text-center text-primary-700">Mi Alquiler Actual (Como Conductor)</h3>
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
           <div class="rounded-full w-4 h-4 border border-purple-500"></div>
