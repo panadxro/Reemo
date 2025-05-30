@@ -19,16 +19,6 @@ import { collection, doc, getDoc, addDoc, serverTimestamp, query, where, getDocs
     throw new Error("Auto no encontrado.");
   }
 
-  //Es la que estaba en CarDetails
-  export async function checkIfCarIsRented(carId) {
-    const rentalQuery = query(
-      collection(db, "rental_requests"),
-      where("car_id", "==", carId)
-    );
-    const querySnapshot = await getDocs(rentalQuery);
-    return !querySnapshot.empty && querySnapshot.docs[0].data().rented;
-  }
-
   //Es la que estaba en Profile
   export function getUserCars(userId) {
     return new Promise((resolve, reject) => {
@@ -56,9 +46,9 @@ import { collection, doc, getDoc, addDoc, serverTimestamp, query, where, getDocs
   }
 
   // Es la que estaba en Püblications
-  export async function getAvailableCars(loggedUserId) {
+  export async function getAvailableCars(userId) {
     const carsCollection = collection(db, "cars");
-    const rentedCollection = collection(db, "rental_requests");
+    const rentedCollection = collection(db, "rents");
   
     // Consulta para obtener autos disponibles y validados
     const carsQuery = query(
@@ -69,21 +59,21 @@ import { collection, doc, getDoc, addDoc, serverTimestamp, query, where, getDocs
     const carsSnapshot = await getDocs(carsQuery);
   
     // Consulta para obtener solicitudes de alquiler con estado "aceptado"
-    const rentedQuery = query(
+    const activeRentsQuery  = query(
       rentedCollection,
-      where("status", "==", "aceptado")
+      where("status", "in", ['confirmed', 'in_progress'])
     );
-    const rentedSnapshot = await getDocs(rentedQuery);
+    const activeRentsSnapshot  = await getDocs(activeRentsQuery );
   
     // Obtener los IDs de los autos con solicitudes "aceptado"
-    const rentedCars = rentedSnapshot.docs.map((doc) => doc.data().car_id);
+    const rentedVehicleIds  = new Set(activeRentsSnapshot.docs.map((doc) => doc.data().vehicle_id));
   
     return carsSnapshot.docs
       .map((doc) => ({ id: doc.id, ...doc.data() }))
       .filter(
         (car) =>
-          car.user_id !== loggedUserId && // El auto no pertenece al usuario actual
-          !rentedCars.includes(car.id) // El auto no tiene una solicitud "aceptado"
+          car.user_id !== userId && // El auto no pertenece al usuario actual
+          !rentedVehicleIds.has(car.id) // El auto no está en la lista de IDs de vehículos activamente alquilados
       );
   }
   

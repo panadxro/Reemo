@@ -14,6 +14,7 @@ import RentalFooter from '@/components/organisms/rental/RentalFooter.vue';
 import Heading from '@/components/atoms/Heading.vue';
 import Loading from '@/icons/Loading.vue';
 import Input from '@/components/molecules/Input.vue';
+import RentalSuccess from '@/components/organisms/rental/RentalSuccess.vue';
 
 import MercadoPago from '@/icons/MercadoPago.vue';
 import Uala from '@/icons/Uala.vue';
@@ -43,6 +44,8 @@ const store = useRentalStore();
 const router = useRouter();
 
 const submitting = ref(false);
+const showSuccess = ref(false);
+
 
 const dateTimeValues = computed(() => ({
   rentedFromDate: store.rentalData.rentedFromDate,
@@ -104,7 +107,9 @@ async function handleSubmit() {
   try {
     const success = await store.submitRental();
     if (success) {
-      router.push({ name: 'rental-success', params: { id: store.car.id } });
+      // router.push({ name: 'Rental-Success', params: { id: store.car.id } });
+      showSuccess.value = true;
+      store.clearAllRentalData();
     }
   } catch (error) {
     console.error('Error al procesar la reserva:', error);
@@ -112,6 +117,16 @@ async function handleSubmit() {
   } finally {
     submitting.value = false;
   }
+}
+
+function handleCloseSuccessModal() {
+  showSuccess.value = false;
+  router.push({ name: 'CarDetails', params: { id: carStore.car.id} });  
+}
+
+function handleViewAlert() {
+  showSuccess.value = false;
+  router.push({ name: 'UserProfile', params: { id: authStore.user.id } }); 
 }
 
 onMounted(async () => {    
@@ -623,5 +638,13 @@ onMounted(async () => {
         @confirm="handleSubmit"
       />
     </div>
+
+      <RentalSuccess
+        v-if="showSuccess"
+        :rental-id="store.car?.id"
+        @close-modal="handleCloseSuccessModal"
+        @view-profile="handleViewAlert"
+      />
+
   </div>
 </template>

@@ -1,16 +1,16 @@
 <script setup>
 import { useAuthStore, useUserStore } from "../stores";
-import Home from '@icons/Home.vue';
-import Search from '@icons/Search.vue';
-import Map from '@icons/Map.vue';
-import UserIcon from '@icons/UserIcon.vue';
-import AlertRented from '@components/organisms/rental/AlertRented.vue';
-import QA from '@icons/QA.vue';
-import Settings from '@icons/Settings.vue';
+import Home from '@icons/Home.vue'
+import Search from '@icons/Search.vue'
+import Map from '@icons/Map.vue'
+import UserIcon from '@icons/UserIcon.vue'
+import Notification from '@icons/Notification.vue'
+import QA from '@icons/QA.vue'
+import Settings from '@icons/Settings.vue'
 import Logout from '@icons/Logout.vue';
 import Cars from '@icons/Cars.vue';
 import People from '@icons/People.vue';
-import Login from "../icons/Login.vue";
+import Login from "@/icons/Login.vue";
 import IconNavButton from './molecules/IconNavButton.vue';
 
 const authStore = useAuthStore();
@@ -81,10 +81,15 @@ const handleLogout = () => {
     </ul>
 
     <ul class="flex flex-col gap-2 items-center">
-      <li>
-        <IconNavButton to="/Notifications" title="Questions & Answers">
-          <AlertRented />
+      <li title="Notifications" class="relative">
+        <IconNavButton to="/notification" title="Notification">
+          <Notification/>
         </IconNavButton>
+        <span
+          v-if="authStore.unreadNotifications"
+          class="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-secondary-100"
+          aria-hidden="true"
+        ></span>
       </li>
       <li v-if="userStore.profileData.role === 'user'">
         <IconNavButton to="/" title="Questions & Answers">
