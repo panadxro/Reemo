@@ -177,7 +177,7 @@ export default {
 
         <!-- Miniaturas debajo de la imagen principal -->
         <div class="flex justify-between gap-2.5">
-          <img v-for="(image, index) in carStore.carImages" :key="index" :src="image" @click="setCurrentImage(image)"
+          <img v-for="(image, index) in carStore.car.images" :key="index" :src="image" @click="setCurrentImage(image)"
             @error="setDefaultImage" :class="{ active: image === currentImage }"
             class="max-h-20 object-center w-full flex-1 h-full border-2 object-cover cursor-pointer rounded-2xl hover:opacity-90 focus:border-vibrant-light-900"
             alt="" />
