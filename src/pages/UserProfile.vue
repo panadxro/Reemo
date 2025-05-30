@@ -341,19 +341,11 @@ const saveNewPaymentMethod = async () => {
             <Heading :type="1" class="text-white">Historial</Heading>
             <a v-if="rentedCars && rentedCars.length" href="" class=" text-white">Ver todo</a>
           </div>
+          <RentStatusDetails />
 
-            <div v-if="rentedCars && rentedCars.length">
-              <RentedCar v-for="rental in rentedCars" :key="rental.id" :car="rental.car" />
-            </div>
-            <div v-else class="text-white flex flex-col items-center justify-center">
-              <img src="@/assets/car-history.png" alt="History Car" class="max-w-[150px] mx-auto mb-4" />
-              <Heading :type="3" class="text-white text-center">No hay registros de alquileres.</Heading>
-              <!-- <p class="text-sm text-white/70 mb-4 mt-2 text-center">Explora vehículos disponibles.</p> -->
-              <router-link to="/search" class="mt-4 px-4 py-2 rounded-lg text-primary-900 bg-secondary-300 hover:bg-primary-700 hover:text-white transition-all duration-300 w-fit font-black">
-                <span class="font-bold">Alquilá un auto</span>
-              </router-link>
-            </div>
           </div>
+
+
 
   
       </div>
@@ -519,12 +511,10 @@ const saveNewPaymentMethod = async () => {
               </button>
             </div>
           
-            <!-- Mensaje cuando no hay métodos -->
             <div v-else class="text-center py-4">
               <p class="text-white/80 text-sm mb-2">No tenés métodos de pago guardados</p>
             </div>
           
-            <!-- Formulario para agregar nuevo método -->
             <div v-if="showNewPaymentForm" class="mt-4 p-4 rounded-lg border-secondary-100 border-2">
               <div class="flex items-center justify-between mb-4">
                 <Heading :type="6" class="text-white">Nuevo método de pago</Heading>
@@ -536,7 +526,6 @@ const saveNewPaymentMethod = async () => {
                 </button>
               </div>
               
-              <!-- Selector de tipo de método -->
               <div class="flex gap-2 mb-4">
                 <button 
                   @click="paymentStore.selectedPaymentMethodType = 'credit_card'" 
@@ -570,7 +559,6 @@ const saveNewPaymentMethod = async () => {
                 </button>
               </div>
               
-              <!-- Formularios específicos por tipo -->
               <div class="space-y-3 mb-4">
                 <div v-if="paymentStore.selectedPaymentMethodType === 'credit_card'" class="space-y-3">
                   <Input 
@@ -605,7 +593,6 @@ const saveNewPaymentMethod = async () => {
                   </div>
                 </div>
                 
-                <!-- Billetera digital -->
                 <div v-if="paymentStore.selectedPaymentMethodType === 'digital_wallet'" class="space-y-3">
                   <Input 
                     type="select"
@@ -627,7 +614,6 @@ const saveNewPaymentMethod = async () => {
                   />
                 </div>
                 
-                <!-- PayPal -->
                 <div v-if="paymentStore.selectedPaymentMethodType === 'paypal'" class="space-y-3">
                   <Input 
                     type="email"
@@ -639,7 +625,6 @@ const saveNewPaymentMethod = async () => {
                 </div>
               </div>
               
-              <!-- Botones de acción -->
               <div class="flex gap-2">
                 <button 
                   @click="toggleNewPaymentForm" 
@@ -815,23 +800,7 @@ const saveNewPaymentMethod = async () => {
       <!-- <p>Usuario</p> -->
     </div>  
 
-    <!-- Historial (solo para el usuario logueado) -->
-    <div v-if="isOwnProfile" class="my-history bg-primary-900 rounded-[40px] px-5 py-7">
-      <div class="flex items-center justify-between">
-        <Heading :type="1" class="text-white">Historial</Heading>
-        <a href="" class="text-white">Ver más</a>
-      </div>
-      <!-- <div v-if="rentedCars.length"> -->
-        <RentStatusDetails />
-        <!-- <RentedCar v-for="rental in rentedCars" :key="rental.id" :car="rental.car" /> -->
-      <!-- </div> -->
-      <!-- <div v-else class="flex flex-col justify-center items-center h-full text-white">
-        <p class="text-pretty font-semibold opacity-50">Aún no has alquilado ningún auto.</p>
-        <router-link to="/search" class="font-semibold opacity-50 hover:opacity-100">
-          <span class="hover:underline">Alquilá un auto</span>
-        </router-link>
-      </div> -->
-    </div>
+    
     <div v-else 
       class="history bg-primary-900 rounded-[40px] px-5 py-7" 
       v-if="!$route.matched.some(route => route.name === 'PrivateChat')" >
@@ -1015,7 +984,14 @@ const saveNewPaymentMethod = async () => {
               </div>
             
               <div v-else-if="userCars.length === 0" class="text-center py-8">
-                <p class="text-primary-900">Este usuario no tiene vehículos registrados</p>
+                  <img 
+                    src="@/assets/no-cars.png" 
+                    alt="No cars" 
+                    class="max-w-[120px] mx-auto mb-4 opacity-50"
+                  />
+                  <Heading :type="3" class="text-background-600 mb-2">
+                   Este usuario no tiene autos registrados
+                  </Heading>
               </div>
             
               <div v-else class="space-y-4">
