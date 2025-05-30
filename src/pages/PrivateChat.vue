@@ -1,9 +1,9 @@
 <script>
-import { getUserProfile } from '../services/user';
-import { subscribeToAuthState } from '../services/auth';
+import { onMounted, ref, computed, nextTick, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { useUserStore, useAuthStore } from '@stores';
 import { savePrivateChatMessage, subscribeToPrivateChatMessages } from '../services/private-chat';
 import { formatDateHour } from '../libraries/date';
-// import { addAlert } from "@/services/alerts";
 
 import Heading from '../components/atoms/Heading.vue';
 import Loading from '@icons/Loading.vue';
@@ -11,83 +11,138 @@ import BackButton from "@components/atoms/BackButton.vue";
 import Arrow from '../icons/Arrow.vue';
 import Send from '../icons/Send.vue';
 
-let unsubscribeAuth = () => { };
-
 export default {
   name: "PrivateChat",
   components: { Heading, Loading, BackButton, Arrow, Send },
-  props: ["id"],     
-  data() {
-    return {
-      ownerUser: {
-        id: null,
-        email: null,
-        photoURL: null,
-        userName: null,
-        name: null,
-        lastName: null,
-      },
-      loggedUser: {
-        id: null,
-        email: null,
-        photoURL: null,
-        userName: null,
-        name: null,
-        lastName: null,
-      },
-      loadingUser:false,
-      loadingMessage:false,
-      messages: [],
+  
+  setup() {
+    const userStore = useUserStore();
+    const authStore = useAuthStore();
+    const route = useRoute();
+    
+    const loadingMessage = ref(false);
+    const messages = ref([]);
+    const newMessage = ref({
+      text: "",
+    });
+    // Referencia al contenedor de mensajes para hacer scroll
+    // y mantener la posición al enviar o recibir mensajes, maso conmo wpp
+    // porque antes cuando enviabas un mensaje y ya exisitian muchos (con scroll)
+    // se quedaba en la parte de arriba y no se veía el mensaje enviado
+    const messagesContainer = ref(null);
 
-      newMessage: {
-        text: "",
+    const userIdFromRoute = computed(() => {
+      return route.params.id;
+    });
+
+    const loggedUserId = computed(() => {
+      return authStore.user?.id;
+    });
+
+    
+    const ownerUser = computed(() => {
+      if (userStore.visitedProfileData) {
+        return {
+          // Estos sonm los datos del usuario al que chateamos, 
+          // el usernam lo uso en el alt de la img
+          id: userIdFromRoute.value,
+          photoURL: userStore.visitedProfileData.personalInfo?.profilePhoto || '',
+          userName: userStore.visitedProfileData.personalInfo?.userName || '',
+          name: userStore.visitedProfileData.personalInfo?.firstName || '',
+          lastName: userStore.visitedProfileData.personalInfo?.lastName || '',
+        };
       }
-    };
-  },
-  methods:{   
-    async handleSubmit(){
+      return {
+        id: null,
+        photoURL: '',
+        userName: '',
+        name: '',
+        lastName: '',
+      };
+    });
+
+    const loadingUser = computed(() => {
+      return userStore.loading;
+    });
+
+    const handleSubmit = async () => {
       try {
-        savePrivateChatMessage(
-          this.loggedUser.id,
-          this.$route.params.id,
-          this.newMessage.text
-        )
-        this.newMessage.text = "";
+        await savePrivateChatMessage(
+          loggedUserId.value,
+          userIdFromRoute.value,
+          newMessage.value.text
+        );
+        newMessage.value.text = "";
+        // Scroll automático después de enviar mensaje
+        // NextTick es una funcion de Vue que espera a que el DOM se actualice
+        // antes de ejecutar la función, asegurando que 
+        // el scroll (en este caso) se aplique correctamente
+        await nextTick();
+        scrollToBottom();
       } catch (error) {
         console.error("Error al enviar el mensaje:", error);
       }
-    },
-    formatDateHour(timestamp) {
+    };
+
+    // funcion paar que haga scroll al final del contenedor de mensajes.
+    // Se usa en handleSubmit y en el subscribeToPrivateChatMessages por si 
+    // cuando cargan los mensajes, y complentan el alto, que ytabien vaya al final
+    // del contenedor de mensajes En el watch tambien para que se vaya actualizando
+    // cuando cambian los mensajes
+    const scrollToBottom = () => {
+      if (messagesContainer.value) {
+        messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
+      }
+    };
+
+    const formatDateHourHelper = (timestamp) => {
       if (!timestamp) return "Enviando...";
       return formatDateHour(timestamp);
-    }
-  },  
-  async mounted() {
-    unsubscribeAuth = subscribeToAuthState((newUserData) => {
-      this.loggedUser = newUserData;
-    });
+    };
 
-    this.loadingUser = true;
-    
-    getUserProfile(this.$route.params.id).then((userProfile) => {
-      this.ownerUser = userProfile;
-      this.loadingUser = false;
-    });
-
-    this.loadingMessage = true;
-
-    subscribeToPrivateChatMessages(
-      this.loggedUser.id,
-      this.$route.params.id,
-      (newMessages) => {
-        this.messages = newMessages;
-        this.loadingMessage = false;
+    onMounted(async () => {
+      try {
+        await userStore.loadUserProfile(userIdFromRoute.value);
+      } catch (error) {
+        console.error("Error al cargar el perfil del usuario:", error);
       }
-    )
-  },
-  unmounted() {
-    unsubscribeAuth();
-  },
+
+      loadingMessage.value = true;
+
+      subscribeToPrivateChatMessages(
+        loggedUserId.value,
+        userIdFromRoute.value,
+        (newMessages) => {
+          messages.value = newMessages;
+          loadingMessage.value = false;
+          // Scroll automático cuando llegan nuevos mensajes
+          nextTick(() => {
+            scrollToBottom();
+          });
+        }
+      );
+    });
+
+    watch(messages, () => {
+      nextTick(() => {
+        scrollToBottom();
+      });
+    }, { deep: true });
+
+    return {
+      userStore,
+      ownerUser,
+      loadingUser,
+      loadingMessage,
+      messages,
+      newMessage,
+      loggedUserId,
+      handleSubmit,
+      formatDateHour: formatDateHourHelper,
+      messagesContainer,
+      scrollToBottom
+    };
+  }
 }
 </script>
 
@@ -111,8 +166,11 @@ export default {
       </div>
     </div>
     
-    <div class="flex-1 mx-4 xl:mx-0 mb-4 xl:mb-0 border rounded-[20px] bg-vibrant-light-600 overflow-hidden flex flex-col">
-      <ul class="flex-1 flex flex-col items-start gap-4 overflow-y-auto p-4 xl:max-h-[600px]">
+    <div class="flex-1 mx-4 xl:mx-0 mb-4 xl:mb-0 border rounded-[20px] bg-vibrant-light-600 overflow-hidden flex flex-col xl:h-[610px]">
+      <ul 
+        ref="messagesContainer"
+        class="flex-1 flex flex-col items-start gap-4 overflow-y-auto p-4 xl:max-h-[600px] scroll-smooth"
+      >
         <li v-if="loadingMessage" class="w-full flex justify-center py-8">
           <Loading class="w-6 h-6" />
         </li>
@@ -121,9 +179,9 @@ export default {
           v-for="message in messages"
           :key="message.id"
           :class="{
-              'bg-deep-blue-900 text-white rounded-bl-xs': message.user_id !== loggedUser.id,
-              'bg-background-900 text-primary-900 rounded-br-xs': message.user_id === loggedUser.id,
-              'self-end': message.user_id === loggedUser.id,
+              'bg-deep-blue-900 text-white rounded-bl-xs': message.user_id !== loggedUserId,
+              'bg-background-900 text-primary-900 rounded-br-xs': message.user_id === loggedUserId,
+              'self-end': message.user_id === loggedUserId,
           }"
           class="p-4 rounded-xl max-w-[80%] w-auto"
         >

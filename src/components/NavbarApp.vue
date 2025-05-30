@@ -8,7 +8,6 @@ import Home from '@icons/Home.vue';
 import Search from '@icons/Search.vue';
 import Map from '@icons/Map.vue';
 import UserIcon from '@icons/UserIcon.vue';
-import AlertRented from '@components/organisms/rental/AlertRented.vue';
 import QA from '@icons/QA.vue';
 import Settings from '@icons/Settings.vue';
 import Logout from '@icons/Logout.vue';
@@ -157,7 +156,6 @@ onBeforeUnmount(() => {
     <ul class="flex flex-col gap-4">
       <li class="w-full">
         <IconNavButton to="/" title="Notifications" @click="toggleMobileMenu">
-          <AlertRented  />
           <span class="font-semibold">Notificaciones</span>
         </IconNavButton>
       </li>
