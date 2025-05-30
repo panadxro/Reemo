@@ -55,31 +55,6 @@ const loadRentalData = async () => {
   }
 };
 
-// const loadRentalData = async () => {
-//   console.log('[RentStatusDetails] loadRentalData llamado.');
-//   if (!currentUser.value || !currentUser.value.id) {
-//     console.warn('[RentStatusDetails] Usuario no encontrado o sin ID. currentUser:', currentUser.value);
-//     errorLoading.value = "Usuario no encontrado";
-//     driverRentalDetail.value = null;
-//     ownerRentalDetail.value = null;
-//     isLoading.value = false;
-//     return;
-//   }
-//   console.log('[RentStatusDetails] Estableciendo isLoading a true. Usuario ID:', currentUser.value.id);
-//   isLoading.value = true;
-//   errorLoading.value = null;
-
-//   try {
-//     console.log('[RentStatusDetails] id de currentUser:', currentUser.value.id);
-//     rentalApplications.value = await fetchRentedCars(currentUser.value.id);
-//     console.log('[RentStatusDetails] fetchRentedCars completado. Resultado:', JSON.parse(JSON.stringify(rentalApplications.value)));
-//   } catch (error) {
-//     console.error('[RentStatusDetails.vue] Error al cargar solicitudes de alquiler: ', error);
-//     errorLoading.value = 'No se pudieron cargar las solicitudes de alquiler';
-//   } finally {
-//     isLoading.value = false;
-//   }
-// };
 
 const cancelDriverApplication = async (rentalId) => {
   if (!confirm("¿Estás seguro de que quieres cancelar esta solicitud?")) {
@@ -211,7 +186,7 @@ watch(currentUser, (newUser, oldUser) => {
           </div>
         </div>
         <button
-          v-if="driverRentalDetail.status === 'confirmed' || driverRentalDetail.status === 'in_progress'"
+          v-if="driverRentalDetail.status === 'confirmed' || driverRentalDetail.status === 'in_progress' || driverRentalDetail.status === 'completed'"
           @click="navigateToRentalDetails(driverRentalDetail.id)"
           class="mt-4 w-full bg-secondary-500 hover:bg-secondary-600 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out"
         >
@@ -253,7 +228,7 @@ watch(currentUser, (newUser, oldUser) => {
           </div>
         </div>
         <button
-          v-if="ownerRentalDetail.status === 'confirmed' || ownerRentalDetail.status === 'in_progress'"
+          v-if="ownerRentalDetail.status === 'confirmed' || ownerRentalDetail.status === 'in_progress' || ownerRentalDetail.status === 'completed'"
           @click="navigateToRentalDetails(ownerRentalDetail.id)"
           class="mt-4 w-full bg-secondary-500 hover:bg-secondary-600 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out"
         >
