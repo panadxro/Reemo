@@ -6,6 +6,7 @@ import { useRouter } from 'vue-router';
 import { fetchRentedCars, fetchLatestActiveOwnedRental, updateRentalStatus } from '@/services/rentedCarService';
 import { addAlert } from '@/services/alerts';
 import Loading from '@/icons/Loading.vue';
+import Heading from '@/components/atoms/Heading.vue';
 
 const authStore = useAuthStore();
 // const rentalApplications = ref([]);
@@ -145,7 +146,13 @@ watch(currentUser, (newUser, oldUser) => {
     {{ errorLoading }}
   </div>
   <div v-else-if="!driverRentalDetail && !ownerRentalDetail" class="text-center text-gray-500 p-4">
-    <p>No tienes alquileres activos o pendientes en este momento.</p>
+    <div class="text-white flex flex-col items-center justify-center">
+      <img src="@/assets/car-history.png" alt="History Car" class="max-w-[150px] mx-auto mb-4" />
+      <Heading :type="3" class="text-white text-center">No hay registros de alquileres.</Heading>
+      <router-link to="/search" class="mt-4 px-4 py-2 rounded-lg text-primary-900 bg-secondary-300 hover:bg-primary-700 hover:text-white transition-all duration-300 w-fit font-black">
+        <span class="font-bold">Alquilá un auto</span>
+      </router-link>
+    </div>
   </div>
 
     <div v-else class="space-y-6">

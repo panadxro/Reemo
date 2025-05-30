@@ -1,17 +1,17 @@
 <script setup>
 import { useAuthStore, useUserStore } from "../stores";
 
-import Home from '@icons/Home.vue';
-import Search from '@icons/Search.vue';
-import Map from '@icons/Map.vue';
-import UserIcon from '@icons/UserIcon.vue';
+import Home from '@icons/Home.vue'
+import Search from '@icons/Search.vue'
+import Map from '@icons/Map.vue'
+import UserIcon from '@icons/UserIcon.vue'
 import Notification from '@icons/Notification.vue'
-import QA from '@icons/QA.vue';
-import Settings from '@icons/Settings.vue';
+import QA from '@icons/QA.vue'
+import Settings from '@icons/Settings.vue'
 import Logout from '@icons/Logout.vue';
 import Cars from '@icons/Cars.vue';
 import People from '@icons/People.vue';
-import Login from "../icons/Login.vue";
+import Login from "@/icons/Login.vue";
 import IconNavButton from './molecules/IconNavButton.vue';
 
 const authStore = useAuthStore();
@@ -82,7 +82,6 @@ const handleLogout = () => {
     </ul>
 
     <ul class="flex flex-col gap-2 items-center">
-      
       <li title="Notifications" class="relative">
         <IconNavButton to="/notification" title="Notification">
           <Notification/>
