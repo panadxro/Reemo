@@ -23,10 +23,12 @@ import Plus from "@icons/Plus.vue";
 import Cross from "@icons/Cross.vue";
 import Check from "@icons/Check.vue";
 import DeletePaymentModal from '@/components/user/DeletePaymentModal.vue';
+import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
 
 export default {
   name: "UserProfile",
-  components: { Heading, CardCar, UserNav, RentedCar, Loading, UserCar, Arrow, BackButton, MercadoPago, Uala, PayPal, CreditCard, Trash, Plus, Input, DeletePaymentModal, Cross, Check },
+  components: { Heading, CardCar, UserNav, RentedCar, Loading, UserCar, Arrow, BackButton, MercadoPago, Uala, PayPal, CreditCard, Trash, Plus, Input, DeletePaymentModal, Cross, Check, RentStatusDetails },
+
   props: {
     id: {
       type: String,
@@ -792,6 +794,7 @@ const saveNewPaymentMethod = async () => {
         </div>
       </div>
 
+
       
       <!-- <router-view></router-view> -->
     </section>
@@ -805,6 +808,42 @@ const saveNewPaymentMethod = async () => {
     @close="() => { showDeleteModal = false; paymentMethodToDelete = null; }"
     @confirm="confirmDeletePaymentMethod"
   />
+    <div
+      v-if="!$route.matched.some(route => route.name === 'PrivateChat')"
+      :class="isOwnProfile ? 'div-my-user' : 'div-user'"
+      class="div1 bg-gray-100 rounded-[40px]">
+      <!-- <p>Usuario</p> -->
+    </div>  
+
+    <!-- Historial (solo para el usuario logueado) -->
+    <div v-if="isOwnProfile" class="my-history bg-primary-900 rounded-[40px] px-5 py-7">
+      <div class="flex items-center justify-between">
+        <Heading :type="1" class="text-white">Historial</Heading>
+        <a href="" class="text-white">Ver más</a>
+      </div>
+      <!-- <div v-if="rentedCars.length"> -->
+        <RentStatusDetails />
+        <!-- <RentedCar v-for="rental in rentedCars" :key="rental.id" :car="rental.car" /> -->
+      <!-- </div> -->
+      <!-- <div v-else class="flex flex-col justify-center items-center h-full text-white">
+        <p class="text-pretty font-semibold opacity-50">Aún no has alquilado ningún auto.</p>
+        <router-link to="/search" class="font-semibold opacity-50 hover:opacity-100">
+          <span class="hover:underline">Alquilá un auto</span>
+        </router-link>
+      </div> -->
+    </div>
+    <div v-else 
+      class="history bg-primary-900 rounded-[40px] px-5 py-7" 
+      v-if="!$route.matched.some(route => route.name === 'PrivateChat')" >
+      <div class="flex items-center justify-between">
+        <Heading :type="1" class="text-white">Historial</Heading>
+        <a href="" class="text-white">Ver más</a>
+      </div>
+      <div class="flex flex-col justify-center items-center h-full text-white">
+        <p class=" text-pretty font-semibold opacity-50">Historial no disponible</p>
+      </div>
+    </div>
+    <router-view></router-view>
   </section>
 
 

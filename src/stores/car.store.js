@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
-import { getCarById, checkIfCarIsRented } from "../services/car-service.js";
+import { getCarById } from "../services/car-service.js";
+import { isCarAlreadyRented } from "@/services/rentedCarService";
 import { useAuthStore } from '@stores';
 import { getUserCars } from '@/services/car/core.js'
 
@@ -78,7 +79,7 @@ export const useCarStore = defineStore('car', {
         }
         return cars;
       } catch (error) {
-        this.error = error.message || "Error al cargar autos del usuario";  message
+        this.error = error.message || "Error al cargar autos del usuario";
         console.error("Error al cargar autos del usuario:", error);
         throw error;
       } finally {
@@ -114,7 +115,8 @@ export const useCarStore = defineStore('car', {
         
         this.currentImage = this.carImages[0];
         
-        this.isRented = await checkIfCarIsRented(carId);
+        // Cambia checkIfCarIsRented por isCarAlreadyRented
+        this.isRented = await isCarAlreadyRented(carId);
         
         return this.car;
       } catch (error) {
@@ -125,6 +127,7 @@ export const useCarStore = defineStore('car', {
         this.loading = false;
       }
     },
+
     
     setCurrentImage(image) {
       this.currentImage = image || this.defaultCarImage; 
@@ -175,17 +178,14 @@ export const useCarStore = defineStore('car', {
     },
     
     async checkRentalStatus() {
-      if (!this.car?.id) { 
-        console.warn("No hay ID de auto para verificar estado de alquiler");
-        return false;
-      }
-      
-      try {
-        this.isRented = await checkIfCarIsRented(this.car.id);
-        return this.isRented;
-      } catch (error) {
-        console.error("Error al verificar estado de alquiler:", error);
-        return false;
+      if (this.car.id) {
+        try {
+          this.isRented = await isCarAlreadyRented(this.car.id);
+          return this.isRented;
+        } catch (error) {
+          console.error("Error al verificar estado de alquiler:", error);
+          return false;
+        }
       }
     },
     

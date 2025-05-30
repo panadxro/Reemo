@@ -4,7 +4,7 @@ import { Loader } from "@googlemaps/js-api-loader";
 export async function loadGoogleMaps(){
   const loader = new Loader({
     apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries: ["places", "geometry"], // 
+    libraries: ["places", "geometry"], 
   });
 
   try {
@@ -194,11 +194,10 @@ export async function createOverlayView( map, car, marker, content, vueInstance)
 //   return new CustomMarker(map, car);
 // }
 
+
+
+
 // Filtramos los autos por la Ubicacion
-
-
-
-// export function updateCars(cars, searchLocation, map, filters = {}) {
 export function updateCars(cars, searchLocation, map ) {
   if (!searchLocation || !searchLocation.lat || !searchLocation.lng) {
     console.error("searchLocation no es válido");
@@ -286,6 +285,59 @@ export function initAutocomplete(inputId, onPlaceSelected) {
   });
 
 }
+
+// Funcion para obtener la ubicacion del usuario
+export function getCurrentLocation(callback) {
+  if (!navigator.geolocation) {
+    console.error("La geolocalización no está disponible.");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const location = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      };
+
+      const geocoder = new google.maps.Geocoder();
+
+      geocoder.geocode({ location }, (results, status) => {
+        if (status === "OK" && results[0]) {
+          callback({
+            formattedAddress: results[0].formatted_address,
+            location
+          });
+        } else {
+          console.error("No se pudo obtener la dirección desde las coordenadas.");
+        }
+      });
+    },
+    (error) => {
+      console.error("Error al obtener la ubicación:", error);
+    }
+  );
+}
+
+
+// export function getCurrentLocation(callback){
+//   if(navigator.geolocation){
+//     navigator.geolocation.getCurrentPosition(
+//       (position) => {
+//         const location = {
+//           lat: position.coords.latitude,
+//           lng: position.coords.longitude,
+//         };
+//         callback(location)
+//       },
+//       (error) => {
+//         console.error("Error obteniendo la geolocalizacion", error)
+//       }
+//     );
+//   }else{
+//     console.warn('La geolocalizacion no esta soportada por este navegador')
+//   }
+// }
 
 // Funcion para actualizar y mostrar los marcadores en el mapa de Google Maps
 export async function updateMapMarkers(map, filteredCars, markers, comentarioIcon, vueInstance){
