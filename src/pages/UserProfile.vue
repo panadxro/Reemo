@@ -14,7 +14,6 @@ import UserCar from "@components/organisms/my-cars/UserCar.vue";
 import Arrow from "../icons/Arrow.vue";
 import BackButton from "@components/atoms/BackButton.vue";
 
-import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
 import MercadoPago from "@icons/MercadoPago.vue";
 import Uala from "@icons/Uala.vue";
 import PayPal from "@icons/PayPal.vue";
@@ -25,6 +24,7 @@ import Plus from "@icons/Plus.vue";
 import Cross from "@icons/Cross.vue";
 import Check from "@icons/Check.vue";
 import DeletePaymentModal from '@/components/user/DeletePaymentModal.vue';
+import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
 
 export default {
   name: "UserProfile",
@@ -364,7 +364,6 @@ const saveNewPaymentMethod = async () => {
           </div>
         </div>
 
-
       </div>
 
       <div class="xl:flex gap-4 mb-4">
@@ -508,13 +507,11 @@ const saveNewPaymentMethod = async () => {
                 método(s) más` }}
               </button>
             </div>
-
-            <!-- Mensaje cuando no hay métodos -->
+          
             <div v-else class="text-center py-4">
               <p class="text-white/80 text-sm mb-2">No tenés métodos de pago guardados</p>
             </div>
-
-            <!-- Formulario para agregar nuevo método -->
+          
             <div v-if="showNewPaymentForm" class="mt-4 p-4 rounded-lg border-secondary-100 border-2">
               <div class="flex items-center justify-between mb-4">
                 <Heading :type="6" class="text-white">Nuevo método de pago</Heading>
@@ -524,7 +521,6 @@ const saveNewPaymentMethod = async () => {
                 </button>
               </div>
 
-              <!-- Selector de tipo de método -->
               <div class="flex gap-2 mb-4">
                 <button @click="paymentStore.selectedPaymentMethodType = 'credit_card'"
                   class="flex-1 p-2 text-xs border rounded-lg cursor-pointer text-center transition-all" :class="{
@@ -549,7 +545,6 @@ const saveNewPaymentMethod = async () => {
                 </button>
               </div>
 
-              <!-- Formularios específicos por tipo -->
               <div class="space-y-3 mb-4">
                 <div v-if="paymentStore.selectedPaymentMethodType === 'credit_card'" class="space-y-3">
                   <Input type="text" placeholder="Titular de tarjeta"
@@ -567,7 +562,6 @@ const saveNewPaymentMethod = async () => {
                   </div>
                 </div>
 
-                <!-- Billetera digital -->
                 <div v-if="paymentStore.selectedPaymentMethodType === 'digital_wallet'" class="space-y-3">
                   <Input type="select" placeholder="Tipo de billetera" :options="[
                       {value: 'mercadopago', label: 'Mercado Pago'},
@@ -579,14 +573,12 @@ const saveNewPaymentMethod = async () => {
                     :outline="false" />
                 </div>
 
-                <!-- PayPal -->
                 <div v-if="paymentStore.selectedPaymentMethodType === 'paypal'" class="space-y-3">
                   <Input type="email" placeholder="Email de PayPal" v-model="paymentStore.newPaymentMethod.paypal.email"
                     :variant="'secondary'" :outline="false" />
                 </div>
               </div>
 
-              <!-- Botones de acción -->
               <div class="flex gap-2">
                 <button @click="toggleNewPaymentForm"
                   class="flex-1 py-3 px-4 border border-gray-600 rounded-xl hover:border-gray-400 transition-all text-white hover:cursor-pointer">
@@ -714,13 +706,39 @@ const saveNewPaymentMethod = async () => {
         </div>
       </div>
 
-  <!-- <router-view></router-view> -->
+      
+      <!-- <router-view></router-view> -->
     </section>
-    <DeletePaymentModal :isOpen="showDeleteModal" :paymentMethod="paymentMethodToDelete?.method"
-      title="Eliminar método de pago"
-      message="¿Estás seguro de que querés eliminar este método de pago? Esta acción no se puede deshacer."
-      confirmText="Eliminar" cancelText="Cancelar"
-      @close="() => { showDeleteModal = false; paymentMethodToDelete = null; }" @confirm="confirmDeletePaymentMethod" />
+    <DeletePaymentModal
+    :isOpen="showDeleteModal"
+    :paymentMethod="paymentMethodToDelete?.method"
+    title="Eliminar método de pago"
+    message="¿Estás seguro de que querés eliminar este método de pago? Esta acción no se puede deshacer."
+    confirmText="Eliminar"
+    cancelText="Cancelar"
+    @close="() => { showDeleteModal = false; paymentMethodToDelete = null; }"
+    @confirm="confirmDeletePaymentMethod"
+  />
+    <div
+      v-if="!$route.matched.some(route => route.name === 'PrivateChat')"
+      :class="isOwnProfile ? 'div-my-user' : 'div-user'"
+      class="div1 bg-gray-100 rounded-[40px]">
+      <!-- <p>Usuario</p> -->
+    </div>  
+
+    
+    <div v-else 
+      class="history bg-primary-900 rounded-[40px] px-5 py-7" 
+      v-if="!$route.matched.some(route => route.name === 'PrivateChat')" >
+      <div class="flex items-center justify-between">
+        <Heading :type="1" class="text-white">Historial</Heading>
+        <a href="" class="text-white">Ver más</a>
+      </div>
+      <div class="flex flex-col justify-center items-center h-full text-white">
+        <p class=" text-pretty font-semibold opacity-50">Historial no disponible</p>
+      </div>
+    </div>
+    <router-view></router-view>
   </section>
 
 
@@ -892,7 +910,14 @@ const saveNewPaymentMethod = async () => {
               </div>
 
               <div v-else-if="userCars.length === 0" class="text-center py-8">
-                <p class="text-primary-900">Este usuario no tiene vehículos registrados</p>
+                  <img 
+                    src="@/assets/no-cars.png" 
+                    alt="No cars" 
+                    class="max-w-[120px] mx-auto mb-4 opacity-50"
+                  />
+                  <Heading :type="3" class="text-background-600 mb-2">
+                   Este usuario no tiene autos registrados
+                  </Heading>
               </div>
 
               <div v-else class="space-y-4">

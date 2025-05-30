@@ -70,32 +70,16 @@ export const useCarStore = defineStore('car', {
       this.loadingUserCars = true;
       try {
         const cars = await getUserCars(userId);
-        
 
-        this.loading = true;
-        
-        try {
-          const carData = await getCarById(carId);
-          this.car = carData;
-          
-          if (!this.car.user) {
-            this.car.user = {};
-          }
-          
-          this.currentImage = this.carImages[0];
-          this.isRented = await isCarAlreadyRented(carId);
-          
-          return this.car;
-        } catch (error) {
-          this.error = "Hubo un error al obtener los detalles del auto. Volvé a intentar";
-          console.error("Error al obtener los detalles del auto:", error);
-          throw error;
-        } finally {
-          this.loading = false;
+        const authStore = useAuthStore();
+        if (userId === authStore.user?.id) { 
+          this.userCars = cars || [];  
+        } else {
+          this.visitedUserCars = cars || [];  
         }
         return cars;
       } catch (error) {
-        this.error = error.message || "Error al cargar autos del usuario";  message
+        this.error = error.message || "Error al cargar autos del usuario";
         console.error("Error al cargar autos del usuario:", error);
         throw error;
       } finally {
@@ -131,7 +115,8 @@ export const useCarStore = defineStore('car', {
         
         this.currentImage = this.carImages[0];
         
-        this.isRented = await checkIfCarIsRented(carId);
+        // Cambia checkIfCarIsRented por isCarAlreadyRented
+        this.isRented = await isCarAlreadyRented(carId);
         
         return this.car;
       } catch (error) {
@@ -142,6 +127,7 @@ export const useCarStore = defineStore('car', {
         this.loading = false;
       }
     },
+
     
     setCurrentImage(image) {
       this.currentImage = image || this.defaultCarImage; 
