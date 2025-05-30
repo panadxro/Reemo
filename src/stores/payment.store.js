@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { savePaymentMethod, getPaymentMethods } from "@services/payment/payment.js";
+import { savePaymentMethod, getPaymentMethods, removePaymentMethod as removePaymentMethodAPI, setDefaultPaymentMethod as setDefaultPaymentMethodAPI } from "@services/payment/payment.js";
 import { addAlert } from "@/services/alerts";
 
 export const usePaymentStore = defineStore('payment', {
@@ -27,6 +27,8 @@ export const usePaymentStore = defineStore('payment', {
     showNewPaymentForm: false,
     loading: false,
     errorMessage: "",
+    showDeleteModal: false,
+    paymentToDeleteIndex: null,
   }),
   
   getters: {
@@ -257,6 +259,60 @@ export const usePaymentStore = defineStore('payment', {
       }
       
       return '';
+    },
+    
+    confirmDeletePaymentMethod(index) {
+      this.showDeleteModal = true;
+      this.paymentToDeleteIndex = index;
+    },
+    
+    cancelDeletePaymentMethod() {
+      this.showDeleteModal = false;
+      this.paymentToDeleteIndex = null;
+    },
+    
+    async removePaymentMethod(userId, index) {
+      if (!userId) {
+        addAlert('Usuario no identificado', 'error');
+        return false;
+      }
+      
+      this.loading = true;
+      try {
+        const updatedMethods = await removePaymentMethodAPI(userId, index);
+        this.paymentMethods = updatedMethods;
+        this.showDeleteModal = false;
+        this.paymentToDeleteIndex = null;
+        addAlert('Método de pago eliminado correctamente', 'success');
+        return true;
+      } catch (error) {
+        console.error('Error al eliminar método de pago:', error);
+        addAlert('Error al eliminar el método de pago', 'error');
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+    
+    async setDefaultPaymentMethod(userId, index) {
+      if (!userId) {
+        addAlert('Usuario no identificado', 'error');
+        return false;
+      }
+      
+      this.loading = true;
+      try {
+        const updatedMethods = await setDefaultPaymentMethodAPI(userId, index);
+        this.paymentMethods = updatedMethods;
+        addAlert('Método de pago predeterminado actualizado', 'success');
+        return true;
+      } catch (error) {
+        console.error('Error al establecer método predeterminado:', error);
+        addAlert('Error al actualizar método predeterminado', 'error');
+        return false;
+      } finally {
+        this.loading = false;
+      }
     }
   }
 });

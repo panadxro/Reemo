@@ -22,6 +22,12 @@ export default {
     toggleDropdown() {
       if (window.innerWidth <= 768) { 
         this.isOpen = !this.isOpen;
+        // Forzar actualización del DOM antes de calcular la altura.
+        // Porque sin esto, no se listan todos los elementos (por lo menos el footer)
+        // ya que tienen varios li
+        this.$nextTick(() => {
+          this.updateHeight();
+        });
       }
     },
     handleResize() {
