@@ -1,19 +1,20 @@
 <script setup>
 
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@stores';
 import { addAlert } from '@/services/alerts';
 import { updateRentalStatus, subscribeToRentalDetails, markRentalAsPickedUp } from '@/services/rentedCarService';
+import { createRentalRequestNotification } from '@/services/car/notifyRented.js';
 
 import Heading from "@components/atoms/Heading.vue";
 import BackButton from "@components/atoms/BackButton.vue";
 import Loading from '@icons/Loading.vue';
 
 const route = useRoute();
+const router = useRouter();
 const rentalId = ref(route.params.id);
 const authStore = useAuthStore();
-
 const rentalDetails = ref(null);
 const actionInProgress = ref(false);
 const isLoading = ref(true);
@@ -55,6 +56,14 @@ const canMarkAsPickedUp = computed(() => {
   return isOwner.value && rentalDetails.value?.status === 'confirmed';
 });
 
+const canMarkAsReturned_Driver = computed(() => {
+  return isDriver.value && rentalDetails.value?.status === 'in_progress';
+});
+
+const canFinalize_Owner = computed(() => {
+  return isOwner.value && rentalDetails.value?.status === 'returned_by_driver';
+});
+
 async function handleMarkAsPickedUp() {
   if(!canMarkAsPickedUp.value || !rentalDetails.value) return;
   actionInProgress.value = true;
@@ -82,6 +91,54 @@ const canCancelRental = computed(() => {
   return false; // No se puede cancelar si está 'pending', 'in_progress', 'completed', etc. desde esta vista.
 });
 
+async function handleMarkAsReturned() {
+  if (!canMarkAsReturned_Driver.value || !rentalDetails.value) return;
+  actionInProgress.value = true;
+  try {
+    await updateRentalStatus(rentalId.value, 'returned_by_driver');
+    // Notificar al propietario
+    if (rentalDetails.value.owner_id && rentalDetails.value.driver_id) {
+      await createRentalRequestNotification(
+        rentalId.value,
+        rentalDetails.value.driver_id,
+        rentalDetails.value.owner_id,
+        `El conductor ${rentalDetails.value.driverData?.name || 'el conductor'} ha marcado el vehículo ${rentalDetails.value.vehicleData?.marca || ''} ${rentalDetails.value.vehicleData?.modelo || ''} como devuelto. Por favor, confirma la devolución.`,
+        'rental_update' // Tipo de notificación para actualizaciones generales del alquiler
+      );
+    }
+    addAlert('Vehículo marcado como devuelto. El propietario debe confirmar.', 'success');
+  } catch (error) {
+    console.error('Error al marcar como devuelto:', error);
+    addAlert('Error al marcar como devuelto.', 'error');
+  } finally {
+    actionInProgress.value = false;
+  }
+}
+
+async function handleFinalizeRental() {
+  if (!canFinalize_Owner.value || !rentalDetails.value) return;
+  actionInProgress.value = true;
+  try {
+    await updateRentalStatus(rentalId.value, 'completed');
+    // Notificar al conductor
+    if (rentalDetails.value.driver_id && rentalDetails.value.owner_id) {
+      await createRentalRequestNotification(
+        rentalId.value,
+        rentalDetails.value.owner_id,
+        rentalDetails.value.driver_id,
+        `El propietario ${rentalDetails.value.ownerData?.name || 'el propietario'} ha confirmado la devolución del vehículo ${rentalDetails.value.vehicleData?.marca || ''} ${rentalDetails.value.vehicleData?.modelo || ''}. El alquiler ha finalizado.`,
+        'rental_completed'
+      );
+    }
+    addAlert('Alquiler finalizado con éxito.', 'success');
+  } catch (error) {
+    console.error('Error al finalizar el alquiler:', error);  
+    addAlert('Error al finalizar el alquiler.', 'error');
+  } finally {
+    actionInProgress.value = false;
+  }
+}
+
 async function handleCancelRental() {
   if (!canCancelRental.value || !rentalDetails.value) return;
   actionInProgress.value = true;
@@ -97,6 +154,10 @@ async function handleCancelRental() {
     actionInProgress.value = false;
   }
 }
+
+const showCompletedView = computed(() => {
+  return rentalDetails.value?.status === 'completed';
+});
 
 const formatDate = (timestampInput) => {
   if (!timestampInput) return 'N/A';
@@ -125,7 +186,7 @@ onUnmounted(() => {
   <div v-else-if="rentalDetails" class="min-h-screen flex p-4 gap-4">
     
     <!-- Panel lateral -->
-    <div class="w-80 bg-white rounded-3xl p-4 shadow-md flex flex-col gap-4">
+    <div class="w-96 bg-white rounded-3xl p-6 shadow-xl flex flex-col gap-4">
       <div class="flex items-center gap-2">
         <BackButton />
         <Heading :type="1" class="medium">Detalles del Alquiler</Heading>
@@ -134,7 +195,15 @@ onUnmounted(() => {
       <div class="bg-[#0D0D3C] text-white rounded-2xl p-4 flex flex-col gap-2">
         <div class="flex justify-between items-center">
           <span>Orden ID: <strong>#{{ rentalDetails.id.slice(0, 8) }}</strong></span>
-          <span class="bg-yellow-400 text-[#0D0D3C] px-2 py-1 rounded-lg text-xs">{{ rentalDetails.status.replace('_', ' ') }}</span>
+          <span 
+            class="px-2 py-1 rounded-lg text-xs font-semibold capitalize"
+            :class="{
+              'bg-yellow-400 text-[#0D0D3C]': rentalDetails.status === 'pending' || rentalDetails.status === 'returned_by_driver',
+              'bg-blue-500 text-white': rentalDetails.status === 'confirmed' || rentalDetails.status === 'in_progress',
+              'bg-green-500 text-white': rentalDetails.status === 'completed',
+              'bg-red-500 text-white': rentalDetails.status === 'cancelled_by_user' || rentalDetails.status === 'cancelled_by_owner' || rentalDetails.status === 'rejected' || rentalDetails.status === 'expired',
+            }">{{ rentalDetails.status.replace(/_/g, ' ') }}</span>
+
         </div>
         <div class="border-t border-white/20 my-2"></div>
         <div class="text-sm flex flex-col gap-1">
@@ -173,32 +242,69 @@ onUnmounted(() => {
       </div>
 
        <!-- Acciones -->
-      <div class="pt-6 border-t border-primary-700 space-y-4">
+      <div v-if="!showCompletedView" class="pt-6 border-t border-gray-200 space-y-3">
         <button
           v-if="canMarkAsPickedUp"
           @click="handleMarkAsPickedUp"
           :disabled="actionInProgress"
-          class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center"
+          class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center"
         >
           <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
           Marcar como Auto Retirado
         </button>
 
         <button
+          v-if="canMarkAsReturned_Driver"
+          @click="handleMarkAsReturned"
+          :disabled="actionInProgress"
+          class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center"
+        >
+          <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
+          Marcar Vehículo como Devuelto
+        </button>
+
+        <button
+          v-if="canFinalize_Owner"
+          @click="handleFinalizeRental"
+          :disabled="actionInProgress"
+          class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center"
+        >
+          <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
+          Confirmar Devolución y Finalizar
+        </button>
+
+        <button
           v-if="canCancelRental"
           @click="handleCancelRental"
           :disabled="actionInProgress"
-          class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center"
+          class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center"
         >
           <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
           Cancelar Alquiler
+        </button>
+      </div>
+      <div v-else class="pt-6 border-t border-gray-200 space-y-4 text-center">
+        <p class="text-xl font-semibold text-green-600">¡Alquiler Completado!</p>
+        <div class="my-4 p-3 bg-gray-100 rounded-lg">
+          <p class="text-sm text-gray-700">Próximamente podrás calificar esta experiencia.</p>
+          <button 
+            class="mt-2 text-sm text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline" 
+            disabled>
+            Calificar Alquiler (Próximamente)
+          </button>
+        </div>
+        <button @click="router.push('/')" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
+          Volver a Inicio
+        </button>
+        <button @click="router.push(`/user/${loggedUser?.id}`)" class="mt-2 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
+          Ver Mi Perfil
         </button>
       </div>
 
     </div>
 
     <!-- Panel principal -->
-    <div class="flex-1 flex flex-col gap-4 relative">
+    <div v-if="!showCompletedView" class="flex-1 flex flex-col gap-4 relative">
 
       <!-- Datos del viaje -->
       <div class="grid grid-cols-4 gap-4">
@@ -250,6 +356,19 @@ onUnmounted(() => {
         </div>
 
       </div>
+    </div>
+    <div v-else class="flex-1 flex flex-col items-center justify-center bg-gray-50 rounded-3xl p-8 shadow-inner">
+        <Heading :type="2" class="text-gray-800 mb-6">Resumen del Alquiler Finalizado</Heading>
+        <div class="bg-white shadow-xl rounded-xl p-6 w-full max-w-md text-gray-700 space-y-3">
+            <p><strong>Vehículo:</strong> {{ rentalDetails.vehicleData?.marca }} {{ rentalDetails.vehicleData?.modelo }}</p>
+            <p><strong>Propietario:</strong> {{ rentalDetails.ownerData?.name || rentalDetails.owner_id }}</p>
+            <p><strong>Conductor:</strong> {{ rentalDetails.driverData?.name || rentalDetails.driver_id }}</p>
+            <div class="border-t border-gray-200 pt-3 mt-3">
+              <p><strong>Desde:</strong> {{ formatDate(rentalDetails.start_time) }}</p>
+              <p><strong>Hasta:</strong> {{ formatDate(rentalDetails.end_time) }}</p>
+            </div>
+            <p class="text-xl font-bold pt-3 border-t border-gray-200 mt-3"><strong>Total Pagado:</strong> ARS ${{ rentalDetails.total_price?.toFixed(2) || 'N/A' }}</p>
+        </div>
 
     </div>
 

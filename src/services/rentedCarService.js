@@ -4,51 +4,51 @@ import { createRentalRequestNotification } from "../services/car/notifyRented.js
 import {addAlert} from './alerts.js'
 
 // Esto lo podemos convertir en el historial
-// export async function fetchUserRentalHistory(userId) {
-//   try {
-//     const rentsCollection = collection(db, "rents");
-//     const q = query(
-//       rentsCollection,
-//       where("driver_id", "==", userId),
-//       // Ordenar por fecha de inicio, las más recientes primero
-//       // where("status", "in", ["confirmed", "in_progress"])
-//       orderBy("start_time", "desc"),
-//     );
+export async function fetchUserRentalHistory(userId) {
+  try {
+    const rentsCollection = collection(db, "rents");
+    const q = query(
+      rentsCollection,
+      where("driver_id", "==", userId),
+      // Ordenar por fecha de inicio, las más recientes primero
+      where("status", "in", ["completed"]),
+      orderBy("start_time", "desc"),
+    );
 
-//     const querySnapshot = await getDocs(q);
-//     const applicationsData = querySnapshot.docs.map((doc) => ({
-//       id: doc.id,
-//       ...doc.data(),
-//     }));
+    const querySnapshot = await getDocs(q);
+    const applicationsData = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
 
-//     // Enriquecer con detalles del vehículo
-//     const carsData = await Promise.all(
-//       applicationsData.map(async (app) => {
-//         if (!app.vehicle_id) {
-//           console.warn(`Solicitud ${app.id} no tiene vehicle_id.`);
-//           return { ...app, vehicleDetails: null, ownerDetails: null };
-//         }
-//         const carRef = doc(db, "cars", app.vehicle_id);
-//         const carSnap = await getDoc(carRef);
-//         const vehicleDetails = carSnap.exists() ? { id: carSnap.id, ...carSnap.data() } : null;
+    // Enriquecer con detalles del vehículo
+    const carsData = await Promise.all(
+      applicationsData.map(async (app) => {
+        if (!app.vehicle_id) {
+          console.warn(`Solicitud ${app.id} no tiene vehicle_id.`);
+          return { ...app, vehicleDetails: null, ownerDetails: null };
+        }
+        const carRef = doc(db, "cars", app.vehicle_id);
+        const carSnap = await getDoc(carRef);
+        const vehicleDetails = carSnap.exists() ? { id: carSnap.id, ...carSnap.data() } : null;
 
-//         let ownerDetails = null;
-//         if (vehicleDetails && vehicleDetails.user_id) {
-//           const ownerRef = doc(db, "users", vehicleDetails.user_id);
-//           const ownerSnap = await getDoc(ownerRef);
-//           ownerDetails = ownerSnap.exists() ? { id: ownerSnap.id, name: ownerSnap.data().name, photoURL: ownerSnap.data().photoURL } : null;
-//         }
+        let ownerDetails = null;
+        if (vehicleDetails && vehicleDetails.user_id) {
+          const ownerRef = doc(db, "users", vehicleDetails.user_id);
+          const ownerSnap = await getDoc(ownerRef);
+          ownerDetails = ownerSnap.exists() ? { id: ownerSnap.id, name: ownerSnap.data().name, photoURL: ownerSnap.data().photoURL } : null;
+        }
 
-//         return { ...app, vehicleDetails, ownerDetails };
-//       })
-//     );
+        return { ...app, vehicleDetails, ownerDetails };
+      })
+    );
 
-//     return carsData;
-//   } catch (error) {
-//     console.error("Error al obtener las solicitudes de alquiler del conductor:", error);
-//     throw error;
-//   }
-// }
+    return carsData;
+  } catch (error) {
+    console.error("Error al obtener las solicitudes de alquiler del conductor:", error);
+    throw error;
+  }
+}
 
 
 // Vista del Conductor donde obtenemos los datos de la ultima solicitud
@@ -196,7 +196,7 @@ export async function updateRentalStatus(reqId, newStatus) {
       // Actualizar la disponibilidad del auto
       if(carId){
         const carRef = doc(db, 'cars', carId);
-        if(newStatus === 'confirmed' || newStatus === 'in_progress'){
+        if(newStatus === 'confirmed' || newStatus === 'in_progress' || newStatus === 'returned_by_driver'){
           await updateDoc(carRef, { isAvailable: false });
         }else if (
           newStatus === 'completed' ||
@@ -454,7 +454,7 @@ export async function fetchLatestActiveOwnedRental(ownerId){
     const q = query(
       rentsCollection,
       where("owner_id", "==", ownerId),
-      where("status", "in", ["pending", "confirmed", "in_progress"]),
+      where("status", "in", ["pending", "confirmed", "in_progress", "completed"]),
       orderBy("timestamp", "desc"), // Usar timestamp de creación de la solicitud para "más reciente"
       limit(1)
     );
