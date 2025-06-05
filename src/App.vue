@@ -25,6 +25,7 @@ const layoutMap = {
   '/car/register': 'simple',
   
   // Rutas con layout de dashboard (con sidebar)
+  '/dashboard': 'dashboard',
   '/user': 'dashboard',
   '/admin': 'dashboard',
   '/search': 'dashboard',

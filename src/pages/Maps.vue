@@ -113,10 +113,8 @@ export default {
 
 <template>
   <section class="w-full h-full overflow-hidden m-2.5">
-    <!-- <Heading :type="1" class="m-6 text-start">Alquilá autos por tu zona</Heading> -->
 
-    <!-- Input de busqueda con places de google Maps -->
-    <!-- <div class="absolute top-10 left-1/2 transform -translate-x-1/3 bg-white/70 backdrop-blur-md shadow-md rounded-full flex items-center px-4 py-2 w-80 border border-gray-300 focus-within:ring-2 focus-within:ring-primary-500 z-50">
+    <div class="absolute top-20 left-1/2 transform -translate-x-1/3 bg-white/70 backdrop-blur-md shadow-md rounded-full flex items-center px-4 py-2 w-80 border border-gray-300 focus-within:ring-2 focus-within:ring-primary-500 z-48">
       <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
         stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -124,14 +122,14 @@ export default {
       </svg>
       <input type="text" id="searchInput" placeholder="Buscar un auto..."
         class="bg-transparent outline-none text-gray-700 w-full pl-2 placeholder-gray-400">
-    </div> -->
+    </div>
 
     <div
-  class="absolute top-10 left-1/2 transform -translate-x-1/3 w-80 z-50"
-  @click.away="showSuggestions = false"
->
+      class="absolute top-10 left-1/2 transform -translate-x-1/3 w-80 z-50"
+      @click.away="showSuggestions = false"
+    >
   <!-- Input + ícono -->
-  <div
+  <!-- <div
     class="bg-white/70 backdrop-blur-md shadow-md rounded-full flex items-center px-4 py-2 border border-gray-300 focus-within:ring-2 focus-within:ring-primary-500"
     @focusin="showSuggestions = true"
   >
@@ -146,7 +144,7 @@ export default {
       placeholder="¿Dónde necesitas un coche?"
       class="bg-transparent outline-none text-gray-700 w-full pl-2 placeholder-gray-400"
     />
-  </div>
+  </div> -->
 
   <!-- Dropdown de sugerencias -->
   <div

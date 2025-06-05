@@ -1,5 +1,5 @@
 import { collection, doc, getDoc, addDoc, serverTimestamp, query, where, getDocs, updateDoc, onSnapshot, orderBy} from "firebase/firestore";
-import { db } from "./firebase.js";
+import { db } from "../firebase.js";
 
 // Obtener auto por ID
 export async function getCarById(carId) {

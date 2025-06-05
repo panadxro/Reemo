@@ -4,7 +4,9 @@ import { createUserProfile } from '../services/user';
 import { readNotification } from '@/services/car/notifyRented'
 import { addAlert } from '@services/alerts';
 import router from '@router/router';
-import { useUserStore } from '@stores'
+import { useUserStore } from '@stores';
+import { useNotificationStore } from '@stores/notification.store'
+
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -32,7 +34,7 @@ export const useAuthStore = defineStore('auth', {
 
       // limpiar listener anterior
       if(this.unsubscribeReadNotification){
-        this.unsubscribeReadNotification();
+        // this.unsubscribeReadNotification();
         this.unsubscribeReadNotification = null;
       }
 
@@ -68,7 +70,7 @@ export const useAuthStore = defineStore('auth', {
           // userStore.resetProfile();
           // Detener el listener de notificaciones si el usuario se desloguea
           if(this.unsubscribeReadNotification){
-            this.unsubscribeReadNotification();
+            // this.unsubscribeReadNotification();
             this.unsubscribeReadNotification = null;
           }
         }
@@ -159,10 +161,13 @@ export const useAuthStore = defineStore('auth', {
       try {
         await logout()
         this.updateAuthSessionHistory(localStorage.getItem('auth_session') || '');
+        const notificationStore = useNotificationStore();
+        notificationStore.clearListenerAndData();
+
         if(this.unsubscribeReadNotification){
-            this.unsubscribeReadNotification();
             this.unsubscribeReadNotification = null;
         }
+
         this.$reset()
         router.push("/");
       } catch (error) {
