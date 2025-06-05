@@ -29,7 +29,7 @@ const handleLogout = () => {
       class="flex flex-col gap-2 items-center"
     >
       <li>
-        <IconNavButton to="/" title="Home">
+        <IconNavButton :to="'/dashboard/'+ authStore?.user.id" title="Dashboard">
           <Home />
         </IconNavButton>
       </li>
@@ -55,7 +55,7 @@ const handleLogout = () => {
       class="flex flex-col gap-2 items-center"
     >
       <li>
-        <IconNavButton to="/" title="Home">
+        <IconNavButton :to="'/dashboard/'+ authStore?.user.id" title="Dashboard">
           <Home />
         </IconNavButton>
       </li>

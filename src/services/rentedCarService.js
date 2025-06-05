@@ -7,19 +7,54 @@ import {addAlert} from './alerts.js'
 export async function fetchUserRentalHistory(userId) {
   try {
     const rentsCollection = collection(db, "rents");
-    const q = query(
+    
+    const driverQuery = query(
       rentsCollection,
       where("driver_id", "==", userId),
-      // Ordenar por fecha de inicio, las más recientes primero
       where("status", "in", ["completed"]),
       orderBy("start_time", "desc"),
     );
 
-    const querySnapshot = await getDocs(q);
-    const applicationsData = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const ownerQuery = query(
+      rentsCollection,
+      where("owner_id", "==", userId),
+      where("status", "in", ["completed"]),
+      orderBy("start_time", "desc")
+    );
+
+    const [driverSnapshot, ownerSnapshot] = await Promise.all([
+      getDocs(driverQuery),
+      getDocs(ownerQuery),
+    ])
+
+    const applicationsData = [];
+    // evitamos ids duplicados
+    const seenIds = new Set();
+
+    driverSnapshot.docs.forEach((doc) => {
+      if (!seenIds.has(doc.id)) {
+        applicationsData.push({ id: doc.id, ...doc.data() });
+        seenIds.add(doc.id);
+      }
+    });
+
+    ownerSnapshot.docs.forEach((doc) => {
+      if (!seenIds.has(doc.id)) {
+        applicationsData.push({ id: doc.id, ...doc.data() });
+        seenIds.add(doc.id);
+      }
+    });
+
+    // Ordenamos la lista combinada por start_time descendente
+    applicationsData.sort((a, b) => {
+      const timeA = a.start_time?.seconds || 0;
+      const timeB = b.start_time?.seconds || 0;
+      return timeB - timeA;
+    });
+    
+    if (applicationsData.length === 0) {
+      return [];
+    }
 
     // Enriquecer con detalles del vehículo
     const carsData = await Promise.all(
@@ -49,6 +84,50 @@ export async function fetchUserRentalHistory(userId) {
     throw error;
   }
 }
+// export async function fetchUserRentalHistory(userId) {
+//   try {
+//     const rentsCollection = collection(db, "rents");
+//     const q = query(
+//       rentsCollection,
+//       where("driver_id", "==", userId),
+//       where("status", "in", ["completed"]),
+//       orderBy("start_time", "desc"),
+//     );
+
+//     const querySnapshot = await getDocs(q);
+//     const applicationsData = querySnapshot.docs.map((doc) => ({
+//       id: doc.id,
+//       ...doc.data(),
+//     }));
+
+//     // Enriquecer con detalles del vehículo
+//     const carsData = await Promise.all(
+//       applicationsData.map(async (app) => {
+//         if (!app.vehicle_id) {
+//           console.warn(`Solicitud ${app.id} no tiene vehicle_id.`);
+//           return { ...app, vehicleDetails: null, ownerDetails: null };
+//         }
+//         const carRef = doc(db, "cars", app.vehicle_id);
+//         const carSnap = await getDoc(carRef);
+//         const vehicleDetails = carSnap.exists() ? { id: carSnap.id, ...carSnap.data() } : null;
+
+//         let ownerDetails = null;
+//         if (vehicleDetails && vehicleDetails.user_id) {
+//           const ownerRef = doc(db, "users", vehicleDetails.user_id);
+//           const ownerSnap = await getDoc(ownerRef);
+//           ownerDetails = ownerSnap.exists() ? { id: ownerSnap.id, name: ownerSnap.data().name, photoURL: ownerSnap.data().photoURL } : null;
+//         }
+
+//         return { ...app, vehicleDetails, ownerDetails };
+//       })
+//     );
+
+//     return carsData;
+//   } catch (error) {
+//     console.error("Error al obtener las solicitudes de alquiler del conductor:", error);
+//     throw error;
+//   }
+// }
 
 
 // Vista del Conductor donde obtenemos los datos de la ultima solicitud
@@ -59,7 +138,7 @@ export async function fetchRentedCars(userId) {
       rentsCollection,
       where("driver_id", "==", userId),
       // Ordenar por fecha de inicio, las más recientes primero
-      // where("status", "in", ["confirmed", "in_progress"])
+      where("status", "in", ["pending", "confirmed", "in_progress"]),
       orderBy("start_time", "desc"),
       limit(1)
     );
@@ -454,7 +533,7 @@ export async function fetchLatestActiveOwnedRental(ownerId){
     const q = query(
       rentsCollection,
       where("owner_id", "==", ownerId),
-      where("status", "in", ["pending", "confirmed", "in_progress", "completed"]),
+      where("status", "in", ["pending", "confirmed", "in_progress"]),
       orderBy("timestamp", "desc"), // Usar timestamp de creación de la solicitud para "más reciente"
       limit(1)
     );

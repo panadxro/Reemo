@@ -25,10 +25,11 @@ import Cross from "@icons/Cross.vue";
 import Check from "@icons/Check.vue";
 import DeletePaymentModal from '@/components/user/DeletePaymentModal.vue';
 import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
+import History from '@/components/user/history.vue'
 
 export default {
   name: "UserProfile",
-  components: { Heading, CardCar, UserNav, RentedCar, Loading, UserCar, Arrow, BackButton, MercadoPago, Uala, PayPal, CreditCard, Trash, Plus, Input, DeletePaymentModal, Cross, Check, RentStatusDetails },
+  components: { Heading, CardCar, UserNav, RentedCar, Loading, UserCar, Arrow, BackButton, MercadoPago, Uala, PayPal, CreditCard, Trash, Plus, Input, DeletePaymentModal, Cross, Check, RentStatusDetails, History },
   props: {
     id: {
       type: String,
@@ -340,7 +341,8 @@ const saveNewPaymentMethod = async () => {
             <Heading :type="1" class="text-white">Historial</Heading>
             <a v-if="rentedCars && rentedCars.length" href="" class=" text-white">Ver todo</a>
           </div>
-          <RentStatusDetails />
+          <!-- <RentStatusDetails /> -->
+          <History />
           <!-- <div v-if="rentedCars && rentedCars.length">
               <RentedCar v-for="rental in rentedCars" :key="rental.id" :car="rental.car" />
             </div>
