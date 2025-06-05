@@ -148,7 +148,7 @@ watch(currentUser, (newUser, oldUser) => {
   <div v-else-if="!driverRentalDetail && !ownerRentalDetail" class="text-center text-gray-500 p-4">
     <div class="text-white flex flex-col items-center justify-center">
       <img src="@/assets/car-history.png" alt="History Car" class="max-w-[150px] mx-auto mb-4" />
-      <Heading :type="3" class="text-white text-center">No hay registros de alquileres.</Heading>
+      <Heading :type="3" class="text-center">No hay registros de Solicitudes.</Heading>
       <router-link to="/search" class="mt-4 px-4 py-2 rounded-lg text-primary-900 bg-secondary-300 hover:bg-primary-700 hover:text-white transition-all duration-300 w-fit font-black">
         <span class="font-bold">Alquilá un auto</span>
       </router-link>
@@ -156,11 +156,13 @@ watch(currentUser, (newUser, oldUser) => {
   </div>
 
     <div v-else class="space-y-6">
+      
     <!-- Sección: Alquileres como Conductor -->
-    <div v-if="driverRentalDetail" class="bg-white text-black w-full max-w-md flex flex-col rounded-xl shadow-lg p-4 mx-auto">
+    <!-- bg-white text-black w-full max-w-md flex flex-col rounded-xl shadow-lg p-4 mx-auto -->
+    <div v-if="driverRentalDetail" class="text-black w-full flex flex-col rounded-xl mx-auto"> 
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
-          <div class="rounded-full w-4 h-4 border border-purple-500"></div>
+          <!-- <div class="rounded-full w-4 h-4 border border-purple-500"></div> -->
           <div class="text-md font-bold">
             <span class="px-3 py-1 text-xs font-semibold rounded-full capitalize" :class="getStatusClass(driverRentalDetail.status)">
               {{ driverRentalDetail.status.replace('_', ' ') }}
@@ -168,20 +170,20 @@ watch(currentUser, (newUser, oldUser) => {
           </div>
         </div>
       </div>
-      <div class="mt-4 text-gray-500 font-bold text-sm">
-        <div class="grid grid-cols-6 items-center">
+      <div class="mt-4 text-sm ">
+        <div class="grid grid-cols-6 items-center border-b pb-4 mb-2">
           <div class="flex-shrink-0">
             <img v-if="driverRentalDetail.vehicleDetails?.images && driverRentalDetail.vehicleDetails.images.length > 0"
               :src="driverRentalDetail.vehicleDetails.images[0]"
               :alt="`Imagen de ${driverRentalDetail.vehicleDetails?.marca} ${driverRentalDetail.vehicleDetails?.modelo}`"
-              class="h-14 w-14 rounded-full object-cover" />
+              class="w-16 h-16 object-cover rounded-lg" />
             <div v-else class="h-14 w-14 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No img</div>
           </div>
           <div class="col-span-3 px-3 flex flex-col">
-            <p v-if="driverRentalDetail.vehicleDetails"><strong>Vehículo:</strong> {{ driverRentalDetail.vehicleDetails.marca }} {{ driverRentalDetail.vehicleDetails.modelo }}</p>
-            <p><strong>Propietario:</strong> {{ driverRentalDetail.ownerDetails?.name || 'No disponible' }}</p>
-            <p><strong>Inicia:</strong> {{ formatDate(driverRentalDetail.start_time) }}</p>
-            <p><strong>Total:</strong> ${{ driverRentalDetail.total_price?.toFixed(2) || 'N/A' }}</p>
+            <p v-if="driverRentalDetail.vehicleDetails"><span class="font-semibold">Vehículo:</span> {{ driverRentalDetail.vehicleDetails.marca }} {{ driverRentalDetail.vehicleDetails.modelo }}</p>
+            <p><span class="font-semibold">Propietario:</span> {{ driverRentalDetail.ownerDetails?.name || 'No disponible' }}</p>
+            <p><span class="font-semibold">Inicia:</span> {{ formatDate(driverRentalDetail.start_time) }}</p>
+            <p><span class="font-semibold">Total:</span> ${{ driverRentalDetail.total_price?.toFixed(2) || 'N/A' }}</p>
           </div>
           <div class="col-span-2 py-2 justify-self-end flex flex-col items-end space-y-2">
             <button v-if="driverRentalDetail.status === 'pending'"
@@ -195,18 +197,18 @@ watch(currentUser, (newUser, oldUser) => {
         <button
           v-if="driverRentalDetail.status === 'confirmed' || driverRentalDetail.status === 'in_progress' || driverRentalDetail.status === 'completed'"
           @click="navigateToRentalDetails(driverRentalDetail.id)"
-          class="mt-4 w-full bg-secondary-500 hover:bg-secondary-600 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out"
+          class="mt-4 w-full bg-[#0a0a3c] hover:bg-secondary-800 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out cursor-pointer"
         >
           Ver Detalles del Alquiler
         </button>
       </div>
     </div>
 
-        <!-- Sección: Vehículos Propios Alquilados -->
-    <div v-if="ownerRentalDetail" class="bg-white text-black w-full max-w-md flex flex-col rounded-xl shadow-lg p-4 mx-auto mt-6">
+    <!-- Sección: Vehículos Propios Alquilados -->
+    <div v-if="ownerRentalDetail" class="text-black w-full flex flex-col mx-auto mt-6">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
-          <div class="rounded-full w-4 h-4 border border-teal-500"></div>
+          <!-- <div class="rounded-full w-4 h-4 border border-teal-500"></div> -->
           <div class="text-md font-bold">
             <span class="px-3 py-1 text-xs font-semibold rounded-full capitalize" :class="getStatusClass(ownerRentalDetail.status)">
               {{ ownerRentalDetail.status.replace('_', ' ') }}
@@ -215,12 +217,12 @@ watch(currentUser, (newUser, oldUser) => {
         </div>
       </div>
       <div class="mt-4 text-gray-500 font-bold text-sm">
-        <div class="grid grid-cols-6 items-center">
+        <div class="grid grid-cols-6 items-center border-b pb-4 mb-4">
           <div class="flex-shrink-0">
             <img v-if="ownerRentalDetail.vehicleDetails?.images && ownerRentalDetail.vehicleDetails.images.length > 0"
               :src="ownerRentalDetail.vehicleDetails.images[0]"
               :alt="`Imagen de ${ownerRentalDetail.vehicleDetails?.marca} ${ownerRentalDetail.vehicleDetails?.modelo}`"
-              class="h-14 w-14 rounded-full object-cover" />
+              class="w-16 h-16 object-cover rounded-lg" />
             <div v-else class="h-14 w-14 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No img</div>
           </div>
           <div class="col-span-3 px-3 flex flex-col">
@@ -237,7 +239,7 @@ watch(currentUser, (newUser, oldUser) => {
         <button
           v-if="ownerRentalDetail.status === 'confirmed' || ownerRentalDetail.status === 'in_progress' || ownerRentalDetail.status === 'completed'"
           @click="navigateToRentalDetails(ownerRentalDetail.id)"
-          class="mt-4 w-full bg-secondary-500 hover:bg-secondary-600 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out"
+          class="mt-4 w-full bg-[#0a0a3c] hover:bg-secondary-800 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out cursor-pointer"
         >
           Ver Detalles del Alquiler
         </button>

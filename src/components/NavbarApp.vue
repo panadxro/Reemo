@@ -6,6 +6,7 @@ import Cross from '@icons/Cross.vue';
 import Reemo from '@icons/Reemo.vue';
 import Home from '@icons/Home.vue';
 import Search from '@icons/Search.vue';
+import Notification from '@icons/Notification.vue';
 import Map from '@icons/Map.vue';
 import UserIcon from '@icons/UserIcon.vue';
 import QA from '@icons/QA.vue';
@@ -156,6 +157,7 @@ onBeforeUnmount(() => {
     <ul class="flex flex-col gap-4">
       <li class="w-full">
         <IconNavButton to="/" title="Notifications" @click="toggleMobileMenu">
+          <Notification />
           <span class="font-semibold">Notificaciones</span>
         </IconNavButton>
       </li>
