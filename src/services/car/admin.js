@@ -1,5 +1,5 @@
 import { doc, updateDoc, collection, query, getDocs } from "firebase/firestore";
-import { db } from "./firebase.js"
+import { db } from "../firebase.js"
 
 // Actualizar validación del vehículo (Cambiar o eliminar)
 export async function updateCarValidation(carId, isValidated) {

@@ -18,7 +18,7 @@ export default {
   <router-link 
     :to="to"
     :title="title"
-    class="flex items-center justify-center p-2 rounded-full transition-colors duration-300 hover:bg-vibrant-light-800"
+    class="flex items-center p-2 rounded-full transition-colors duration-300 hover:bg-white/50"
     active-class="bg-vibrant-light-800"
   >
     <slot></slot>

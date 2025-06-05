@@ -6,6 +6,7 @@ import UserOnboarding from "../pages/UserOnboarding.vue";
 import CarRegister from "../pages/CarRegister.vue";
 import Register from "../pages/Register.vue";
 import Maps from "../pages/Maps.vue";
+import Dashboard from "../pages/Dashboard.vue";
 import Search from "../pages/Search.vue";
 import Publish from "../pages/CarPublish.vue";
 import CarDetails from "../pages/CarDetails.vue";
@@ -31,6 +32,12 @@ const routes = [
       }
     },
    },
+  { path: "/dashboard/:id", 
+    component: Dashboard, 
+    name: "Dashboard",
+    props: true,
+    meta: { needsAuth: true },
+  },
   { path: "/search", component: Search, name: "Search" },
   { path: "/maps", component: Maps },
   {
