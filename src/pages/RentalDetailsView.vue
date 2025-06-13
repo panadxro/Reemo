@@ -1,11 +1,12 @@
 <script setup>
 
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch, nextTick  } from 'vue'; 
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@stores';
 import { addAlert } from '@/services/alerts';
 import { updateRentalStatus, subscribeToRentalDetails, markRentalAsPickedUp } from '@/services/rentedCarService';
 import { createRentalRequestNotification } from '@/services/car/notifyRented.js';
+import { loadGoogleMaps, initMap } from '@/services/google-maps'; 
 
 import Heading from "@components/atoms/Heading.vue";
 import BackButton from "@components/atoms/BackButton.vue";
@@ -13,6 +14,8 @@ import Loading from '@icons/Loading.vue';
 
 const route = useRoute();
 const router = useRouter();
+const map = ref(null);
+const mapInitialized = ref(false);
 const rentalId = ref(route.params.id);
 const authStore = useAuthStore();
 const rentalDetails = ref(null);
@@ -46,6 +49,31 @@ function setupRentalSubscription() {
     console.error('No se puede cargar los detalles de alquiler', error);
     isLoading.value = false;
     throw error;
+  }
+}
+async function initializeMap(details) {
+  // Cambiar las coordenadas por la nueva coleccion de "cars"
+  if (details && details.vehicleData?.coordenadas && !mapInitialized.value){
+    try {
+      console.log('[RentalDetailsView] Intentando iniciar el mapa');
+      await loadGoogleMaps();
+      const mapInstance = await initMap('map');
+      if (mapInstance) {
+        map.value = mapInstance;
+        const vehicleCoords = details.vehicleData.coordenadas;
+        if (typeof vehicleCoords.lat === 'number' && typeof vehicleCoords.lng === 'number') {
+          map.value.setCenter(vehicleCoords);
+          map.value.setZoom(15);
+          const { Marker } = await google.maps.importLibrary("marker");
+          new Marker({ position: vehicleCoords, map: map.value, title: `${details.vehicleData.marca} ${details.vehicleData.modelo}` });
+          mapInitialized.value = true;
+        } else {
+          console.warn('[RentalDetailsView]: Coordenadas del vehículo no disponibles o inválidas para centrar el mapa.');
+        }
+      }
+    } catch (error) {
+      console.error('[RentalDetailsView]: Error al inicializar el mapa:', mapError);
+    }
   }
 }
 
@@ -165,7 +193,16 @@ const formatDate = (timestampInput) => {
   return date.toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' });
 };
 
-onMounted(setupRentalSubscription);
+watch(rentalDetails, async (newDetails) => {
+  if (newDetails && !showCompletedView.value) { // Solo intentar inicializar si hay detalles y no estamos en la vista completada
+    // Esperar a que el DOM se actualice si es necesario, especialmente si el div del mapa depende de `v-if`
+    await nextTick();
+    const mapDiv = document.getElementById('map');
+    if (mapDiv) { // Verificar que el div exista en el DOM
+      await initializeMap(newDetails);
+    }
+  }
+}, { immediate: true, deep: true });
 
 onUnmounted(() => {
   if (unsubscribeRental) {
@@ -173,6 +210,9 @@ onUnmounted(() => {
   }
 });
 
+onMounted(() => {
+  setupRentalSubscription();
+});
 </script>
 
 <template>
@@ -277,7 +317,7 @@ onUnmounted(() => {
             Calificar Alquiler (Próximamente)
           </button>
         </div>
-        <button @click="router.push('/')"
+        <button @click="router.push(`/dashboard/${loggedUser?.id}`)"
           class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
           Volver a Inicio
         </button>
@@ -314,8 +354,8 @@ onUnmounted(() => {
 
       <!-- Mapa (placeholder) -->
       <div class="flex-1 bg-gray-200 rounded-3xl relative overflow-hidden">
-        <p class="text-gray-500 text-center pt-40">[ Aca va a ir el mapa ]</p>
-
+        <div id="map" class="absolute inset-0 z-0"></div>
+        
         <!-- Chat flotante -->
         <div
           class="absolute bottom-4 right-4 w-80 bg-[#0D0D3C] text-white rounded-2xl p-3 flex flex-col gap-2 shadow-lg">
