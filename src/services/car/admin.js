@@ -1,5 +1,11 @@
 import { doc, updateDoc, collection, query, getDocs } from "firebase/firestore";
-import { db } from "./firebase.js"
+import { db } from "../firebase"
+
+export async function getCars() {
+  const carsCollection = collection(db, "cars");
+  const carsSnapshot = await getDocs(carsCollection);
+  return carsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+}
 
 // Actualizar validación del vehículo (Cambiar o eliminar)
 export async function updateCarValidation(carId, isValidated) {

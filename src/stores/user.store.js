@@ -6,7 +6,8 @@ import {
   updateUserDocuments,
   updateUserAddress,
   addPaymentMethod,
-  acceptedTerms
+  acceptedTerms,
+  getUserById
 } from '../services/user'
 import { uploadUserFile } from '../services/storage/documents'
 import { useAuthStore } from '@stores'
@@ -30,6 +31,7 @@ export const useUserStore = defineStore('user', {
     profileLoaded: false,
     visitedProfileData: null,
     visitedRole: null,
+    userById: {},
     posts: [],
     cars: [],
     rentedCars: [],
@@ -69,6 +71,36 @@ export const useUserStore = defineStore('user', {
     setUser(userData) {
       this.user = userData
     },
+
+    async getUserById(userId) {
+      if (!userId) {
+        console.error('getUserById: no existe el userId');
+        return null;
+      }
+
+      if (this.userById[userId]) {
+        return this.userById[userId];
+      }
+
+      this.loading = true;
+      try {
+        const userProfile = await getUserById(userId);
+        
+        if (userProfile) {
+          this.userById[userId] = userProfile;
+          return userProfile;
+        }
+        
+        return null;
+      } catch (error) {
+        console.error('Error getting user by ID:', error);
+        this.error = error.message;
+        return null;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async loadUserProfile(userId) {
       const authStore = useAuthStore();
       this.loading = true
@@ -103,7 +135,7 @@ export const useUserStore = defineStore('user', {
     async updateProfile(uid, profileData) {
       this.loading = true
       try {
-        const { personalInfo, documents, address, paymentMethods, agreements } = profileData;
+        const {personalInfo, documents, address, paymentMethods, agreements} = profileData;
         if(personalInfo ) {
           await updatePersonalInfo(uid, personalInfo);
         }
@@ -163,5 +195,8 @@ export const useUserStore = defineStore('user', {
     address: (state) =>  state.profileData?.address || {},
     paymentMethods: (state) =>  state.profileData?.paymentMethods || {},
     agreements: (state) =>  state.profileData?.agreements || {},
+    getUserDataById: (state) => (userId) => {
+      return state.userById[userId] || null;
+    },
   }
 })
