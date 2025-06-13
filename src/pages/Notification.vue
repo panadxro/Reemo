@@ -1,0 +1,272 @@
+<script setup>
+
+import Heading from '@/components/atoms/Heading.vue';
+import Loading from '@/icons/Loading.vue';
+
+import { useAuthStore } from '@/stores';
+import { useNotificationStore } from '@/stores/notification.store';
+import { addAlert } from '@/services/alerts';
+
+import { computed, onMounted } from 'vue';
+
+const authStore = useAuthStore();
+const notificationStore = useNotificationStore(); // Usar el store
+const currentUser = computed(() => authStore.user); 
+
+// Acceder a los datos del store
+const notifications = computed(() => notificationStore.sortedNotifications); // Usar el getter para ordenarlas
+const isLoading = computed(() => notificationStore.isLoading);
+const errorLoading = computed(() => notificationStore.error);
+
+onMounted(() => {
+  // El listener ya debería estar inicializado por App.vue o un watcher global.
+  // Si por alguna razón no se ha cargado y el usuario está aquí, podemos intentar iniciarlo.
+  if (currentUser.value && currentUser.value.id && !notificationStore.hasLoadedOnce) {
+    console.log("[Notification.vue onMounted] El store no ha cargado, intentando iniciar listener.");
+    notificationStore.initListenerForUser(currentUser.value.id);
+  } else if (!currentUser.value || !currentUser.value.id) {
+     // Si no hay usuario, el store debería estar limpio, pero podemos asegurarlo.
+    if (notificationStore.notifications.length > 0 || notificationStore.isLoading) {
+        notificationStore.clearListenerAndData();
+    }
+    console.warn("[Notification.vue onMounted] No hay usuario autenticado.");
+  }
+});
+
+const handleRentalAction = async (rentId, newStatus, senderId, vehicleOwnerId) => {
+  try {
+    await notificationStore.handleRentalAction({ rentId, newStatus, senderId, vehicleOwnerId });
+    addAlert(`Solicitud ${newStatus === 'confirmed' ? 'aceptada' : 'rechazada'} correctamente.`, 'success');
+    // El store se encarga de la lógica de actualizar el estado y enviar notificaciones de feedback.
+  } catch (error) {
+    console.error("Error al procesar la solicitud de alquiler:", error);
+    addAlert("Error al procesar la accion", "error");
+  }
+};
+
+const formatDate = (timestamp) => {
+  if (timestamp && timestamp.seconds) { // Para Timestamps de Firestore
+    return new Date(timestamp.seconds * 1000).toLocaleString();
+  } else if (typeof timestamp === 'string') { // Para fechas que ya son strings ISO
+    return new Date(timestamp).toLocaleString();
+  }
+  return 'Fecha no disponible';
+};
+
+const handleNotificationClick = async (notification) => {
+  if(!notification.read){
+    try {
+      await notificationStore.markNotificationAsRead(notification.id);
+      // No es estrictamente necesario actualizar localmente `notification.read = true` aquí,
+      // ya que onSnapshot debería recoger el cambio y actualizar la lista `notifications`.
+      // Si la actualización de onSnapshot es muy rápida, el cambio local es redundante.
+      // Si quieres una respuesta visual *inmediata* antes de que onSnapshot actualice, podrías hacerlo:
+      // const notifToUpdate = notifications.value.find(n => n.id === notification.id);
+      // if (notifToUpdate) notifToUpdate.read = true;
+    } catch (error) {
+      addAlert("Error al marcar la notificación como leída.", "error");
+      console.error("Error al marcar la notificación como leída:", error);
+    }
+  }
+  // Lógica de navegación si es necesario (ej. ir a RentalDetailsView)
+  // if (notification.type === 'rent_response' && notification.rent_id) {
+  //   router.push(`/rental-details/${notification.rent_id}`);
+  // }
+}
+
+</script> 
+
+
+<template>
+
+  <div class="w-full mx-auto bg-white rounded-lg shadow p-4 overflow-y-hidden">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4">
+      <Heading :type="1" class="text-start pb-2 pt-4">Notificaciones</Heading>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex border-b mb-4 space-x-4">
+      <button class="relative pb-2 border-b-2 border-black font-semibold">
+        Inbox <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">4</span>
+      </button>
+      <button class="relative pb-2 text-gray-500">Team
+        <span class="ml-1 bg-gray-300 text-xs rounded-full px-1">2</span>
+      </button>
+    </div>
+
+    <div v-if="isLoading" class="flex justify-center items-center p-10">
+      <Loading class="h-12 w-12 text-secondary-500" />
+      <p class="ml-4 text-gray-600">Cargando notificaciones...</p>
+    </div>
+
+    <div v-if="!isLoading && !notifications.length" class="text-center p-10 text-gray-500">
+      Aún no tienes notificaciones.
+    </div>
+
+    <!-- Notifications -->
+    <div v-if="!isLoading && notifications.length > 0" class="overflow-y-auto max-h-screen"> 
+      <div v-for="noti in notifications" :key="noti.id" 
+        class="overflow-y-auto p-6 border-b last:border-b-0 hover:bg-gray-200 rounded-xl"
+        @click="handleNotificationClick(noti)">
+        <!-- Contenedor General para una Notificación -->
+        <div class="flex items-start space-x-3">
+          <img v-if="noti.senderDetails?.photoURL"
+            :src="noti.senderDetails?.photoURL" class="w-10 h-10 rounded-full" />
+          <div v-else class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
+            <h3>{{ noti.senderDetails?.name  ? noti.senderDetails.name .charAt(0).toUpperCase() : 'R' }}</h3>
+            <p> {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}</p>
+          </div>
+          <div class="flex-1">
+
+            <!-- Emcabezado general -->
+            <div class="flex items-center justify-between">
+              <p class="text-sm">
+                <span v-if="!noti.read" class="inline-block w-2 h-2 mr-2 rounded-full bg-red-500" title="No leído"></span>
+                <span class="font-semibold">{{ noti.senderDetails?.name ? noti.senderDetails.name : 'Reemo Bot' }}</span>
+                <!-- <span> {{ noti.message }} </span> -->
+              </p>
+            </div>
+
+            <!-- Contenido específico por tipo de notificación -->
+            <!-- Solicitud de Alquiler (para el propietario del vehículo) -->
+            <div v-if="noti.type === 'rent_request'">
+              <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div>
+              <p class="text-sm text-gray-700">
+                {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}
+                <span class="font-medium">{{ noti.vehicleDetails?.marca || '' }} {{ noti.vehicleDetails?.modelo ||
+                  'Vehículo no especificado' }}</span>.
+              </p>
+              <!-- File info -->
+              <div v-if="noti.rentDetails" class="mt-3 bg-gray-100 rounded p-3">
+                <div class="flex items-center space-x-2 bg-gray-100 rounded px-2 py-1 mt-3">
+                  <img v-if="noti.type === 'rent_request' && noti.vehicleDetails?.images"
+                    :src="noti.vehicleDetails.images[1]" :alt="noti.vehicleDetails.marca"
+                    class="w-12 h-12 rounded-full" />
+                  <div v-else
+                    class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
+                    {{ noti.senderDetails?.name ? noti.senderDetails.name.charAt(0).toUpperCase() : 'R' }}
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-800">
+                      {{ noti.vehicleDetails?.marca || 'N/A' }} {{ noti.vehicleDetails?.modelo || 'N/A' }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      Desde: {{ formatDate(noti.rentDetails?.start_time) }} Hasta: {{ formatDate(noti.rentDetails.end_time) }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                    Precio Total: <span class="text-xs px-2 py-0.5 rounded bg-green-100 border text-green-700">${{ noti.rentDetails?.total_price?.toFixed(2) || 'N/A' }} </span>
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      Estado:
+                      <span class="font-semibold"
+                        :class="noti.rentDetails.status === 'pending' ? 'text-yellow-600' : noti.rentDetails.status === 'confirmed' ? 'text-green-600' : 'text-red-600'">
+                        {{ noti.rentDetails.status.replace('_', ' ') }}
+                      </span>
+                    </p>
+                  </div>
+                  <!-- <span class="text-xs text-gray-400 ml-auto">Edited {{ noti.archivo.edicion }}</span> -->
+                  <span class="text-xs text-gray-400 ml-auto">Edited 12 mins ago</span>
+                </div>
+                <!-- <p class="text-xs text-gray-600">
+                  Desde: {{ formatDate(noti.rentDetails.start_time) }}
+                </p>
+                <p class="text-xs text-gray-600">
+                  Hasta: {{ formatDate(noti.rentDetails.end_time) }}
+                </p>
+                <p class="text-xs text-gray-600">
+                  Precio Total: ${{ noti.rentDetails.total_price?.toFixed(2) || 'N/A' }}
+                </p> -->
+                <div v-if="noti.type === 'rent_request' && noti.rentDetails" class="flex space-x-2 mt-3">
+                  <div v-if="noti.rentDetails.status === 'pending'" class="flex space-x-2 mt-3">
+                    <button
+                      @click="handleRentalAction(noti.rent_id, 'confirmed', noti.sender_id, noti.receiver_id, noti.rentDetails.vehicle_id)"
+                      class="text-sm px-3 py-1 rounded border text-gray-700 cursor-pointer">Aceptar</button>
+                    <button
+                      @click="handleRentalAction(noti.rent_id, 'rejected', noti.sender_id, noti.receiver_id, noti.rentDetails.vehicle_id)"
+                      class="text-sm px-3 py-1 rounded bg-black text-white cursor-pointer">Rechazar</button>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+
+            <!-- Caso: Respuesta a Solicitud de Alquiler (para el conductor que solicitó) -->
+          <div v-else-if="noti.type === 'rent_response'">
+            <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div>
+            <p class="text-sm text-gray-700">
+              {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}
+            </p>
+            <div v-if="noti.rentDetails" class="mt-3 bg-gray-100 rounded p-3">
+              <div class="flex items-center space-x-2 mb-2">
+                 <img v-if="noti.vehicleDetails?.images && noti.vehicleDetails.images.length > 0"
+                  :src="noti.vehicleDetails.images[0]"
+                  :alt="`Imagen de ${noti.vehicleDetails.marca}`" 
+                  class="w-12 h-12 rounded-md object-cover" />
+                <div v-else class="w-12 h-12 rounded-md bg-gray-200 flex items-center justify-center text-xs text-gray-400">Sin foto</div>
+                <div>
+                  <p class="text-sm font-medium text-gray-800">
+                    {{ noti.vehicleDetails?.marca || 'N/A' }} {{ noti.vehicleDetails?.modelo || 'N/A' }}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    Estado: 
+                    <span class="font-semibold" 
+                          :class="{
+                            'text-yellow-600': noti.rentDetails.status === 'pending',
+                            'text-green-600': noti.rentDetails.status === 'confirmed',
+                            'text-red-600': noti.rentDetails.status === 'rejected' || noti.rentDetails.status === 'cancelled_by_user' || noti.rentDetails.status === 'cancelled_by_owner',
+                            'text-blue-600': noti.rentDetails.status === 'completed',
+                            'text-indigo-600': noti.rentDetails.status === 'in_progress',
+                          }">
+                      {{ noti.rentDetails.status.replace('_', ' ') }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+               <p class="text-xs text-gray-600">
+                Desde: {{ formatDate(noti.rentDetails.start_time) }}
+              </p>
+              <p class="text-xs text-gray-600">
+                Hasta: {{ formatDate(noti.rentDetails.end_time) }}
+              </p>
+            </div>
+          </div>
+          
+          <!-- Caso: Otro tipo de notificación (genérico) -->
+          <div v-else>
+            <p class="text-sm text-gray-700">{{ noti.message || 'Tienes una nueva notificación.' }}</p>
+            <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div>
+          </div>
+
+
+            <!-- Mensaje comentado -->
+            <!-- <div v-if="noti.mensajeExtra" class="bg-gray-50 border rounded p-2 mt-3 text-sm text-gray-600">
+              {{ noti.mensajeExtra }}
+            </div> -->
+
+            <!-- Acciones -->
+            <!-- <div v-if="noti.acciones" class="flex space-x-2 mt-3"> -->
+            <!-- <div v-if="noti.acciones" class="flex space-x-2 mt-3">
+            <button class="text-sm px-3 py-1 rounded border text-gray-700">Decline</button>
+            <button class="text-sm px-3 py-1 rounded bg-black text-white">Accept</button>
+            </div> -->
+
+             <!-- <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div> -->
+            <!-- <div class="text-xs text-gray-400 mt-1">1 min ago • Easy 2023 Project</div> -->
+
+            <!-- Tags -->
+            <!-- <div v-if="noti.tags.length > 0" class="flex flex-wrap mt-2 gap-1">
+            <span v-for="tag in noti.tags" :key="tag"
+              class="text-xs px-2 py-0.5 rounded bg-gray-100 border text-gray-700">{{ tag }}</span>
+            </div> -->
+
+            <!-- Responder -->
+            <button v-if="noti.responder" class="text-sm text-gray-600 mt-2">Reply</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</template>

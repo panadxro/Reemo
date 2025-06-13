@@ -1,9 +1,12 @@
 import { defineStore } from 'pinia';
 import { login, logout, subscribeToAuthState, register } from '@services/auth';
 import { createUserProfile } from '../services/user';
+import { readNotification } from '@/services/car/notifyRented'
 import { addAlert } from '@services/alerts';
 import router from '@router/router';
-import { useUserStore } from '@stores'
+import { useUserStore } from '@stores';
+import { useNotificationStore } from '@stores/notification.store'
+
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -15,7 +18,9 @@ export const useAuthStore = defineStore('auth', {
     error: null,
     isLoggedIn: false,
     isSubmitting: false,
-    isInitialized: false
+    isInitialized: false,
+    unreadNotifications: false,
+    unsubscribeReadNotification: null,
   }),
   persist: {
     key: 'auth_session',
@@ -26,6 +31,12 @@ export const useAuthStore = defineStore('auth', {
     init() {
       if (this.isInitialized) return;
       this.isInitialized = true;
+
+      // limpiar listener anterior
+      if(this.unsubscribeReadNotification){
+        // this.unsubscribeReadNotification();
+        this.unsubscribeReadNotification = null;
+      }
 
       // Leer el valor de auth_session de localStorage
       const authSessionValue = localStorage.getItem('auth_session');
@@ -45,10 +56,23 @@ export const useAuthStore = defineStore('auth', {
           if (!userStore.profileData.personalInfo.userName) {
             await userStore.loadUserProfile(newUserData.id); // Cargamos el perfil
           }
+
+          this.unsubscribeReadNotification = readNotification(
+            newUserData.id,
+            (hasUnread) => {
+              this.unreadNotifications = hasUnread;
+            }
+          );
+        
         } else {
           this.user = { id: null, email: null };
           this.isLoggedIn = false;
           // userStore.resetProfile();
+          // Detener el listener de notificaciones si el usuario se desloguea
+          if(this.unsubscribeReadNotification){
+            // this.unsubscribeReadNotification();
+            this.unsubscribeReadNotification = null;
+          }
         }
       })
     },
@@ -137,6 +161,13 @@ export const useAuthStore = defineStore('auth', {
       try {
         await logout()
         this.updateAuthSessionHistory(localStorage.getItem('auth_session') || '');
+        const notificationStore = useNotificationStore();
+        notificationStore.clearListenerAndData();
+
+        if(this.unsubscribeReadNotification){
+            this.unsubscribeReadNotification = null;
+        }
+
         this.$reset()
         router.push("/");
       } catch (error) {
@@ -161,6 +192,10 @@ export const useAuthStore = defineStore('auth', {
       }
       addAlert(this.error, 'error')
       this.isSubmitting = false
+    },
+
+    setUnreadNotifications(status){
+      this.unreadNotifications = status;
     }
   }
 })

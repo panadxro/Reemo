@@ -6,6 +6,7 @@ import UserOnboarding from "../pages/UserOnboarding.vue";
 import CarRegister from "../pages/CarRegister.vue";
 import Register from "../pages/Register.vue";
 import Maps from "../pages/Maps.vue";
+import Dashboard from "../pages/Dashboard.vue";
 import Search from "../pages/Search.vue";
 import Publish from "../pages/CarPublish.vue";
 import CarDetails from "../pages/CarDetails.vue";
@@ -13,7 +14,9 @@ import AdminCars from "../pages/admin/Cars.vue";
 import AdminUsers from "../pages/admin/Users.vue";
 import PrivateChat from "../pages/PrivateChat.vue";
 import UserProfile from "../pages/UserProfile.vue";
-import NotFound from "../pages/NotFound.vue"
+import NotFound from "../pages/NotFound.vue";
+import Notification from "../pages/Notification.vue";
+import RentalDetailsView from '../pages/RentalDetailsView.vue';
  
 const routes = [
   { path: "/", component: Home, name: "Home" },
@@ -29,6 +32,12 @@ const routes = [
       }
     },
    },
+  { path: "/dashboard/:id", 
+    component: Dashboard, 
+    name: "Dashboard",
+    props: true,
+    meta: { needsAuth: true },
+  },
   { path: "/search", component: Search, name: "Search" },
   { path: "/maps", component: Maps },
   {
@@ -54,6 +63,14 @@ const routes = [
     name: "CarDetails",
     component: CarDetails,
     props: true,
+    meta: { needsAuth: true },
+  },
+  {
+    path: "/notification",
+    name: "Notification",
+    component: Notification,
+    props: true,
+    meta: { needsAuth: true },
   },
   {
     path: "/user/:id",
@@ -71,6 +88,13 @@ const routes = [
         meta: { needsAuth: true },
       },
     ],
+  },
+  {
+    path: '/rental-details/:id',
+    name: 'RentalDetailsView',
+    component: RentalDetailsView,
+    props: true,
+    meta: { needsAuth: true },
   },
   {
     path: "/admin",

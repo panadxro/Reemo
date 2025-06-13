@@ -41,9 +41,10 @@ export default {
     setDefaultImage(event) {
       event.target.src = this.defaultCarImage;
     },
-    handleLike() {
-      console.log('Like');
-    }
+    // handleLike(event) {
+    //   event.preventDefault();
+    //   this.$emit('like', this.car.id);
+    // },
 
 /*     async handleDelete(id) {
   this.loading = true;
@@ -98,38 +99,44 @@ export default {
 </script>
 
 <template>
-  <div class="relative flex flex-col border-2 rounded-3xl border-secondary-100 p-4">
-    <button
+  <div class="relative flex flex-col overflow-hidden rounded-2xl hover:shadow-custom transition-all duration-300 bg-white">
+    <!-- <button
       @click.stop="handleLike"
-      class="absolute top-4 right-4 z-10 p-2 rounded-full"
+      class="absolute top-3 right-3 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all duration-300"
+      aria-label="Añadir a favoritos"
     >
       <Like />
-    </button>
+    </button> -->
 
     <router-link 
       :to="{ name: 'CarDetails', params: { id: car.id } }" 
-      class="flex flex-col"
+      class="flex flex-col h-full"
     >
-      <div class="flex flex-row gap-2">
-        <Status :status="car.isAvailable ? 'validated' : 'not-validated'" />
-      </div>
-      <div class="flex justify-end">
-        <figure class="aspect-[21/9] h-24 overflow-hidden"> 
+      <div class="relative w-full overflow-hidden">
+        <div class="absolute top-3 left-3 z-10">
+          <Status :status="car.isAvailable ? 'validated' : 'not-validated'" />
+        </div>
+
+        <div class="absolute bottom-3 right-3 z-10 px-2 py-1 rounded-2xl text-sm font-semibold flex items-center bg-primary-100/80">
+          <p>{{ car.transmision }}</p>
+        </div>
+        
+        <div class="w-full aspect-[16/9] overflow-hidden">
           <img
-            class="rounded-xl object-center object-cover w-full h-full"
+            class="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
             :src="car.photos && car.photos.length > 0 ? car.photos[0] : defaultCarImage" 
             @error="setDefaultImage"
             :alt="car.basicInfo?.brand + ' ' + car.basicInfo?.model" 
           />
-        </figure>
+        </div>
       </div>
       <div class="flex flex-1 flex-row justify-between items-end">
         <article class="flex flex-col align-end justify-between">
           <p class="text-sm text-gray-500">{{ car.basicInfo?.brand }}</p>
           <Heading :type="4">{{ car.basicInfo?.model }}</Heading>
         </article>
-        <Heading :type="4">${{ car.pricing?.rates?.daily }}/ hr</Heading>
-      </div>
+        <Heading :type="4">${{ car.pricing?.rates?.daily }}/ día</Heading>
+      </div>        
     </router-link>
   </div>
 </template>
