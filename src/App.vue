@@ -25,11 +25,14 @@ const layoutMap = {
   '/car/register': 'simple',
   
   // Rutas con layout de dashboard (con sidebar)
+  '/dashboard': 'dashboard',
   '/user': 'dashboard',
   '/admin': 'dashboard',
   '/search': 'dashboard',
   '/map': 'dashboard',
   '/car': 'dashboard',
+  '/notification': 'dashboard',
+  '/rental-details': 'dashboard',
   
   // Por defecto (con navbar y footer)
   '/404': 'default',

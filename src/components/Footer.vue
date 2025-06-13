@@ -16,129 +16,127 @@ export default {
 </script>
 
 <template>
-  <footer class="p-4 flex flex-col gap-4">
-    <div class="rounded-[38px] sm:rounded-[52px] bg-secondary-100 pt-20 pb-12">
-      <div class="flex flex-col justify-between sm:gap-20 m-auto sm:w-10/12 sm:p-0 sm:flex-row p-3.5">
-        <div class="flex flex-col gap-20 justify-end">
+  <footer class="p-4 sm:p-6 flex flex-col gap-4 max-w-[1800px] mx-auto">
+    <div class="rounded-3xl sm:rounded-[52px] bg-secondary-100 pt-10 sm:pt-20 pb-8 sm:pb-12 px-4 md:px-8">
+      <div class="flex flex-col lg:flex-row justify-between gap-8 sm:gap-12 m-auto w-full lg:w-11/12 xl:w-10/12 p-0">
+        <div class="flex flex-col gap-8 sm:gap-12 lg:gap-20 w-full lg:w-auto">
           <div class="flex flex-col gap-6">
-            <ReemoSm/>
-            <ul class="flex gap-2">
-              <li><a href=""><Facebook/></a></li>
-              <li><a href=""><Instagram/></a></li>
-              <li><a href=""><Twitter/></a></li>
-              <li><a href=""><LinkedIn/></a></li>
+            <ReemoSm class="w-32 sm:w-auto lg:w-32"/>
+            <ul class="flex gap-4 sm:justify-center items-center">
+              <li><a href="#"><Facebook class="w-8 h-8"/></a></li>
+              <li><a href="#"><Instagram class="w-8 h-8"/></a></li>
+              <li><a href="#"><Twitter class="w-8 h-8"/></a></li>
+              <li><a href="#"><LinkedIn class="w-8 h-8"/></a></li>
             </ul>
           </div>
-          <div class="flex flex-col gap-7">
-            <a class="text-secondary-900 font-bold text-lg mb-0.5 sm:text-md" href="">Sobre Reemo</a>
-            <a class="text-secondary-900 font-bold text-lg mb-0.5 sm:text-md" href="">Beneficios</a>
-            <NavDropdown class="flex flex-col gap-5 bg-secondary-100 py-2 sm:p-0">
+          
+          <div class="flex flex-col gap-4 sm:gap-7">
+            <a class="text-secondary-900 font-bold text-base sm:text-lg" href="#">Sobre Reemo</a>
+            <a class="text-secondary-900 font-bold text-base sm:text-lg" href="#">Beneficios</a>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 w-full">
+          <NavDropdown>
+            <template #title>
+              <Heading type="5" class="pb-2">Facilidades</Heading>
+            </template>
+            <ul class="flex flex-col gap-2 sm:gap-2.5 text-sm mt-3 sm:mt-0">
+              <li><a href="#" class="block py-1 sm:py-0">Registro de vehículos</a></li>
+              <li><a href="#" class="block py-1 sm:py-0">Documentación y verificación</a></li>
+              <li><a href="#" class="block py-1 sm:py-0">Tarifas personalizadas</a></li>
+              <li><a href="#" class="block py-1 sm:py-0">Ubicación flexible</a></li>
+              <li><a href="#" class="block py-1 sm:py-0">Chat con propietarios</a></li>
+              <li><a href="#" class="block py-1 sm:py-0">Soporte a propietarios</a></li>
+            </ul>
+          </NavDropdown>
+
+          <NavDropdown>
+            <template #title>
+              <Heading type="5" class="pb-2">Pagos</Heading>
+            </template>
+            <ul class="flex flex-col gap-2 sm:gap-2.5 text-sm mt-3 sm:mt-0">
+              <li><a href="#" class="block py-1 sm:py-0">Métodos de pago seguros</a></li>
+              <li><a href="#" class="block py-1 sm:py-0">Pago con tarjeta</a></li>
+              <li><a href="#" class="block py-1 sm:py-0">Integraciones</a></li>
+              <li><a href="#" class="block py-1 sm:py-0">Transferencias bancarias</a></li>
+              <li><a href="#" class="block py-1 sm:py-0">Gestión de pagos automáticos</a></li>
+            </ul>
+          </NavDropdown>
+
+          <div class="flex flex-col gap-6 sm:gap-10 ">
+            <NavDropdown>
               <template #title>
-                <Heading type="5">Facilidades</Heading>
+                <Heading type="5" class="pb-2">Propietarios</Heading>
               </template>
-              <ul class="flex flex-col gap-2.5 text-sm">
-                <li><a href="">Registro de vehículos</a></li>
-                <li><a href="">Documentación y verificación</a></li>
-                <li><a href="">Tarifas personalizadas</a></li>
-                <li><a href="">Ubicación flexible</a></li>
-                <li><a href="">Chat con propietarios</a></li>
-                <li><a href="">Soporte a propietarios</a></li>
+              <ul class="flex flex-col gap-2 sm:gap-2.5 text-sm mt-3 sm:mt-0">
+                <li><a href="#" class="block py-1 sm:py-0">Publicá tu vehículo</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Generá ingresos extras</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Gestión de reservas</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Soporte para propietarios</a></li>
+              </ul>
+            </NavDropdown>
+
+            <NavDropdown>
+              <template #title>
+                <Heading type="5" class="pb-2">Usuarios</Heading>
+              </template>
+              <ul class="flex flex-col gap-2 sm:gap-2.5 text-sm mt-3 sm:mt-0">
+                <li><a href="#" class="block py-1 sm:py-0">Alquileres express</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Amplia selección de vehículos</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Chat directo con propietarios</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Alquiler flexible por día o semana</a></li>
+              </ul>
+            </NavDropdown>
+          </div>
+
+          <div class="flex flex-col gap-6 sm:gap-10">
+            <NavDropdown>
+              <template #title>
+                <Heading type="5" class="pb-2">Información importante</Heading>
+              </template>
+              <ul class="flex flex-col gap-2 sm:gap-2.5 text-sm mt-3 sm:mt-0">
+                <li><a href="#" class="block py-1 sm:py-0">Términos y condiciones de uso</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Política de privacidad</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Régimen de transparencia</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Tarifas y comisiones vigentes</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Información para usuarios PEP's</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Código de conducta y responsabilidad social</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Ley de Defensa del Consumidor (Ley 24.240)</a></li>
+              </ul>
+            </NavDropdown>
+
+            <NavDropdown>
+              <template #title>
+                <Heading type="5" class="pb-2">Contacto</Heading>
+              </template>
+              <ul class="flex flex-col gap-2 sm:gap-2.5 text-sm mt-3 sm:mt-0">
+                <li><a href="#" class="block py-1 sm:py-0">Soporte y ayuda</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Atención al cliente</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Consultas comerciales</a></li>
+                <li><a href="#" class="block py-1 sm:py-0">Reclamos y sugerencias</a></li>
               </ul>
             </NavDropdown>
           </div>
         </div>
-        <div class="flex flex-col sm:gap-10">
-          <NavDropdown class="flex flex-col gap-5 bg-secondary-100 py-2 sm:p-0">
-            <template #title>
-              <Heading type="5">Pagos</Heading>
-            </template>
-            <ul class="flex flex-col gap-2.5 text-sm">
-              <li><a href="">Métodos de pago seguros</a></li>
-              <li><a href="">Pago con tarjeta</a></li>
-              <li><a href="">Integraciones</a></li>
-              <li><a href="">Transferencias bancarias</a></li>
-              <li><a href="">Gestión de pagos automáticos</a></li>
-            </ul>
-          </NavDropdown>
-          <NavDropdown class="flex flex-col gap-5 bg-secondary-100 py-2 sm:p-0">
-            <template #title>
-              <Heading type="5">Seguridad</Heading>
-            </template>
-            <ul class="flex flex-col gap-2.5 text-sm">
-              <li><a href="">Uso seguro</a></li>
-              <li><a href="">Verificaciones</a></li>
-              <li><a href="">Seguro contra todo riesgo</a></li>
-              <li><a href="">Encriptación de datos</a></li>
-              <li><a href="">Pausar y cancelar reservas</a></li>
-              <li><a href="">Atención de emergencias 24/7</a></li>
-            </ul>
-          </NavDropdown>
-        </div>
-        <div class="flex flex-col sm:gap-10">
-          <NavDropdown class="flex flex-col gap-5 bg-secondary-100 py-2 sm:p-0">
-            <template #title>
-              <Heading type="5">Propietarios</Heading>
-            </template>
-            <ul class="flex flex-col gap-2.5 text-sm">
-              <li><a href="">Publicá tu vehículo</a></li>
-              <li><a href="">Generá ingresos extras</a></li>
-              <li><a href="">Gestión de reservas</a></li>
-              <li><a href="">Soporte para propietarios</a></li>
-            </ul>
-          </NavDropdown>
-          <NavDropdown class="flex flex-col gap-5 bg-secondary-100 py-2 sm:p-0">
-            <template #title>
-              <Heading type="5">Usuarios</Heading>
-            </template>
-            <ul class="flex flex-col gap-2.5 text-sm">
-              <li><a href="">Alquileres express</a></li>
-              <li><a href="">Amplia selección de vehículos</a></li>
-              <li><a href="">Chat directo con propietarios</a></li>
-              <li><a href="">Alquiler flexible por día o semana</a></li>
-            </ul>
-          </NavDropdown>
-        </div>
-        <div class="flex flex-col sm:gap-10">
-          <NavDropdown class="flex flex-col gap-5 bg-secondary-100 py-2 sm:p-0">
-            <template #title>
-              <Heading type="5">Información importante</Heading>
-            </template>
-            <ul class="flex flex-col gap-2.5 text-sm">
-              <li><a href="">Términos y condiciones de uso</a></li>
-              <li><a href="">Política de privacidad</a></li>
-              <li><a href="">Régimen de transparencia</a></li>
-              <li><a href="">Tarifas y comisiones vigentes</a></li>
-              <li><a href="">Información para usuarios PEP's</a></li>
-              <li><a href="">Código de conducta y responsabilidad social</a></li>
-              <li><a href="">Ley de Defensa del Consumidor (Ley 24.240)</a></li>
-            </ul>
-          </NavDropdown>
-          <NavDropdown class="flex flex-col gap-5 bg-secondary-100 py-2 sm:p-0">
-            <template #title>
-              <Heading type="5">Contacto</Heading>
-            </template>
-            <ul class="flex flex-col gap-2.5 text-sm">
-              <li><a href="">Soporte y ayuda</a></li>
-              <li><a href="">Atención al cliente</a></li>
-              <li><a href="">Consultas comerciales</a></li>
-              <li><a href="">Reclamos y sugerencias</a></li>
-            </ul>
-          </NavDropdown>
-        </div>
       </div>
     </div>
-    <div class="rounded-[38px] sm:rounded-[52px] bg-secondary-100 py-2 sm:py-8 gap-x-8">
-      <div class="flex flex-col-reverse sm:flex-row gap-x-8 gap-y-4 m-auto p-4 sm:w-3/4">
-        <article class="flex flex-col gap-2">
-          <Heading :type="6">&copy; Reemo, 2024. Todos los derechos reservados</Heading>
-          <p class="block text-sm text-gray-500">Reemo S.A. Agente de Servicios de Movilidad - Registro Propio. Secretaría de Transporte de la Nación: Nro. de matrícula 2098. Inscripto ante la Secretaría de Innovación y Tecnología de la Nación como Proveedor de Plataformas Digitales para Alquiler de Vehículos, bajo el número 342, y como Agente Autorizado de Gestión de Alquileres Temporales y Transporte Compartido, bajo el número 278.</p>
+
+    <div class="rounded-3xl sm:rounded-[52px] bg-secondary-100 py-4 sm:py-6 lg:py-8">
+      <div class="flex flex-col-reverse lg:flex-row justify-between items-start gap-6 m-auto w-full lg:w-11/12 xl:w-10/12 p-4 sm:p-6">
+        <article class="flex flex-col gap-2 w-full lg:w-2/3">
+          <Heading :type="6" class="text-sm sm:text-base">&copy; Reemo, 2024. Todos los derechos reservados</Heading>
+          <p class="text-xs sm:text-sm text-gray-500">
+            Reemo S.A. Agente de Servicios de Movilidad - Registro Propio. Secretaría de Transporte de la Nación: Nro. de matrícula 2098. Inscripto ante la Secretaría de Innovación y Tecnología de la Nación como Proveedor de Plataformas Digitales para Alquiler de Vehículos, bajo el número 342, y como Agente Autorizado de Gestión de Alquileres Temporales y Transporte Compartido, bajo el número 278.
+          </p>
         </article>
-        <div class="flex gap-2 sm:gap-4 items-center">
-          <a href="" class="h-fit">
-            <PlayStore/>
+        
+        <div class="flex gap-3 sm:gap-4 items-center w-full lg:w-auto justify-start lg:justify-end">
+          <a href="#" class="h-fit">
+            <PlayStore class="w-28 sm:w-36 h-auto"/>
           </a>
-          <a href="" class="h-fit">
-            <AppStore/>
+          <a href="#" class="h-fit">
+            <AppStore class="w-28 sm:w-36 h-auto"/>
           </a>
         </div>  
       </div>

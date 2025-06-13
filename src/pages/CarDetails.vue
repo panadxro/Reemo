@@ -4,13 +4,14 @@ import { useAuthStore, useUserStore , useCarStore } from '@stores'
 import { useRoute } from 'vue-router';
 import { Loader } from "@googlemaps/js-api-loader";
 
-import ModalRent from "@components/organisms/rental/ModalRent.vue";
 import Heading from "../components/atoms/Heading.vue";
 import Pill from "../components/atoms/Pill.vue";
 import Loading from "@icons/Loading.vue";
 import BackButton from "../components/atoms/BackButton.vue";
 import Arrow from "../icons/Arrow.vue";
-import Like from "../icons/Like.vue"
+import Like from "../icons/Like.vue";
+
+import RentalProcess from "@/components/organisms/rental/RentalProcess.vue";
 
 // Stores
 const carStore = useCarStore();
@@ -49,6 +50,44 @@ const ownerData = computed(() => {
 });
 
 // Métodos
+const initMap = async(coordenadas) => {
+  if (!coordenadas || !coordenadas.lat || !coordenadas.lng) {
+    console.error("Coordenadas no válidas:", coordenadas);
+    return;
+  }
+  try {
+    const position = { lat: coordenadas.lat, lng: coordenadas.lng };
+    const { Map } = await google.maps.importLibrary("maps");
+
+    const map = new Map(document.getElementById('map'),{
+      center: {
+        lat: coordenadas.lat,
+        lng: coordenadas.lng,
+      },
+      zoom: 14,
+      mapId: "4808da25693c56c8",
+      streetViewControl: false,
+      mapTypeControl: false,
+      disableDefaultUI: true,
+    });
+
+    new google.maps.Circle({
+      strokeColor: "#5DADE2",
+      strokeOpacity: 0.8, 
+      strokeWeight: 2, 
+      fillColor: "#A9D6F5", 
+      fillOpacity: 0.35, 
+      map: map,
+      center: position,
+      radius: 1000, 
+    });
+    
+    this.mapInitialized = true;
+  } catch (error) {
+    console.error("Error al cargar Google Maps: ", error);
+  }
+};
+
 const setCurrentImage = (image) => {
   currentImage.value = image;
 };
@@ -105,7 +144,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section v-if="car" class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
+  <section v-if="car.id" class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
     <div class="flex items-center gap-5">
       <BackButton />
       <Heading :type="1" class="medium">Alquilar auto</Heading>
@@ -201,6 +240,7 @@ onMounted(async () => {
         <Heading :type="2" class="medium">Accesorios</Heading>
         <div  class="flex flex-wrap gap-2 text-gray-700">
           <Pill v-for="(accessory, index) in car.features?.accessories" :key="index" :accessory="accessory" :name="accessory" />
+
         </div>
       </div>
     </article>
@@ -208,6 +248,14 @@ onMounted(async () => {
 
   <section v-else-if="loading" class="w-full h-full flex items-center justify-center">
     <Loading />
+    <div v-if="carStore.loading" class="flex justify-center items-center h-64">
+      <Loading role="status" class="h-6 w-6 text-blue-500" />
+    </div>
+  </section>
+  
+  <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
+    <p>{{ carStore.errorMessage }}</p>
+>>>>>>> develop
   </section>
 
   <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
@@ -215,11 +263,27 @@ onMounted(async () => {
   </section>
   
   <div class="m-2.5 w-full flex flex-col gap-3">
-    <!-- iniciamos el mapa de Google Maps -->
-    <div class="bg-background-800 w-full h-1/2 rounded-[40px] flex items-center justify-center font-semibold text-background-600">
-      <p>Mapa no disponible</p>
+    <div class="map-container">
+      <div 
+        id="map"
+        style="width: 100%; height: 300px; border-radius: 40px;"
+        v-show="currentStep === 1"
+      ></div>
     </div>
-    <div class="bg-deep-blue-900 w-full h-1/2 rounded-[40px]">
+  
+    <div class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-y-scroll">
+      
+      <RentalProcess 
+        v-if="!loading && !error"
+        :car-id="car.id"
+        :user-id="loggedUser?.id"
+        :is-car-rented="isRented"
+      />  
     </div>
+
+    <span v-if="isRented && !carStore.isUserOwner"
+      class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">
+      {{ carStore.isUserOwner ? 'Tu auto ya está alquilado' : 'Este auto ya está alquilado' }}
+    </span>
   </div>
 </template>

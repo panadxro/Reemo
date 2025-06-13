@@ -8,6 +8,7 @@ import Credential from "../../icons/Credential.vue";
 import Car from "../../icons/Car.vue";
 import History from "../../icons/History.vue";
 import NavButton from "../molecules/NavButton.vue";
+import { RouterLink } from 'vue-router';
 
 const userStore = useUserStore();
 const authStore = useAuthStore();
@@ -35,20 +36,20 @@ const profileData = computed(() => userStore.profileData)
           <span>Mi perfil</span>
         </NavButton>
       </li>
-      <li>
-        <NavButton to="/profile" title="Documentación">
+      <li class="min-w-[100px]">
+        <NavButton class="px-2" to="/profile" title="Documentos">
           <Credential />
-          <span>Documentación</span>
+          <span>Documentos</span>
         </NavButton>
       </li>
-      <li>
-        <NavButton to="/profile" title="Mis autos">
+      <li class="min-w-[100px]">
+        <NavButton class="px-2" to="/profile" title="Mis autos">
           <Car />
           <span>Mis autos</span>
         </NavButton>
       </li>
-      <li>
-        <NavButton to="/profile" title="Historial">
+      <li class="min-w-[100px]">
+        <NavButton class="px-2" to="/profile" title="Historial">
           <History />
           <span>Historial</span>
         </NavButton>
