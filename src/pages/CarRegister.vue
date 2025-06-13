@@ -1,6 +1,6 @@
 <script setup>
 import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive } from 'vue';
-import { useAuthStore, useUserStore, useGeoStore } from '@stores'
+import { useAuthStore, useUserStore, useCarStore } from '@stores'
 import { useRouter } from "vue-router";
 import { addAlert } from "../services/alerts.js";
 
@@ -20,34 +20,201 @@ import History from "@icons/History.vue";
 import Images from "@icons/Images.vue";
 import Secure from "@icons/Secure.vue";
 import Search from "@icons/Search.vue"
+import Cross from "@icons/Cross.vue"
+
+const router = useRouter();
 
 const authStore = useAuthStore();
 const userStore = useUserStore();
-const geoStore = useGeoStore();
-const router = useRouter();
+const carStore = useCarStore();
+
+const basicInfo = computed(() => carStore.basicInfo);
+const specifications = computed(() => carStore.specifications);
+const status = computed(() => carStore.status);
+const features = computed(() => carStore.features);
+const pricing = computed(() => carStore.pricing);
+const photos = computed(() => carStore.photos);
+const insurance = computed(() => carStore.insurance);
+const availability = computed(() => carStore.availability);
 
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
 
-const loggedUserId = computed(() => authStore.user?.id);
-const personalInfo = computed(() => userStore.personalInfo);
-const documents = computed(() => userStore.documents);
-const address = computed(() => userStore.address);
-const paymentMethods = computed(() => userStore.paymentMethods);
-const agreements = computed(() => userStore.agreements);
-
 const currentStep = ref(0);
+
+const justifyClass = computed(() => ({
+  'justify-start': currentStep.value <= 1,
+  'justify-center': currentStep.value > 1 && currentStep.value < 5,
+  'justify-end': currentStep.value >= 5
+}));
+
+const selectedAccessories = ref([]);
+
+const allAccessoryOptions = ref([
+  { value: 'touchScreen', label: 'Pantalla táctil' },
+  { value: 'appleCarPlayAndroidAuto', label: 'Apple CarPlay/Android Auto' },
+  { value: 'bluetooth', label: 'Bluetooth' },
+  { value: 'gps', label: 'GPS' },
+  { value: 'premiumSound', label: 'Sonido premium' },
+  { value: 'integratedVirtualAssistant', label: 'Asistente virtual integrado' },
+  { value: '360parkingSensors', label: 'Sensores de estacionamiento 360°' },
+  { value: 'absBrakes', label: 'Frenos ABS' },
+  { value: 'cruiseControl', label: 'Control de crucero' },
+  { value: 'automaticParkingAssistant', label: 'Asistente de estacionamiento automático' },
+  { value: 'rearViewCamera', label: 'Cámara de marcha atrás' },
+  { value: 'esc', label: 'Control de estabilidad (ESC)' },
+  { value: 'tractionControl', label: 'Control de tracción' },
+  { value: 'airbags', label: 'Airbags' },
+  { value: 'seatbeltPretensioners', label: 'Cinturones de seguridad con pretensores' },
+  { value: 'isofixLatch', label: 'Anclajes ISOFIX/LATCH' },
+  { value: 'steeringWheelPaddles', label: 'Paletas de cambio al volante' },
+  { value: 'drivingModes', label: 'Modos de conducción (Eco, Sport, Off-road)' },
+  { value: 'sportsSuspension', label: 'Suspensión deportiva' },
+  { value: 'powerSteering', label: 'Dirección asistida' },
+  { value: 'sportsBrakes', label: 'Frenos deportivos' },
+  { value: 'sportsExhaust', label: 'Escape deportivo' },
+  { value: 'startStopSystem', label: 'Sistema start-stop' },
+  { value: 'lockingDifferential', label: 'Diferencial autoblocante' },
+  { value: 'cngReady', label: 'Preparación GNC' },
+  { value: 'automaticClimateControl', label: 'Climatizador automático' },
+  { value: 'heatedVentilatedSeats', label: 'Asientos calefaccionados/ventilados' },
+  { value: 'memorySeat', label: 'Asiento con memoria' },
+  { value: 'premiumUpholstery', label: 'Tapizado premium' },
+  { value: 'electricSunroof', label: 'Techo solar eléctrico' },
+  { value: 'automaticWipers', label: 'Limpiaparabrisas automáticos' },
+  { value: 'automaticTrunk', label: 'Maletero automático' },
+  { value: 'smartMirrors', label: 'Espejos inteligentes' },
+  { value: 'premiumSoundproofing', label: 'Insonorización premium' },
+  { value: 'trunkOrganizer', label: 'Organizador de maletero' }
+]);
+
+const availableAccessoryOptions = computed(() => {
+  const selectedValues = selectedAccessories.value.map(acc => acc.value);
+  return allAccessoryOptions.value.filter(option => !selectedValues.includes(option.value));
+});
+
+const handleAccessorySelect = (event) => {
+  console.log('handleAccessorySelect ejecutado', event); 
+  
+  let selectedValue;
+  if (typeof event === 'string') {
+    selectedValue = event;
+  } else if (event?.target?.value) {
+    selectedValue = event.target.value;
+  } else if (event?.value) {
+    selectedValue = event.value;
+  } else {
+    console.log('No se pudo obtener el valor del evento:', event);
+    return;
+  }
+  
+  console.log('Acesorio seleccionado:', selectedValue); 
+  
+  if (selectedValue && selectedValue !== '') {
+    const selectedOption = allAccessoryOptions.value.find(option => option.value === selectedValue);
+    
+    if (selectedOption && !selectedAccessories.value.find(acc => acc.value === selectedValue)) {
+      selectedAccessories.value.push(selectedOption);
+      console.log('Accesorios actuales:', selectedAccessories.value); 
+      
+      updateFeaturesInStore();
+    }
+  }
+};
+
+const updateFeaturesInStore = () => {
+  const accessoryValues = selectedAccessories.value.map(acc => acc.value);
+  console.log('Actualizando store con:', accessoryValues); 
+  
+  carStore.updateFeatures({ accessories: accessoryValues });
+  
+  console.log('accesorios despues de actualizare:', carStore.features); 
+};
+
+const removeAccessory = (value) => {
+  selectedAccessories.value = selectedAccessories.value.filter(acc => acc.value !== value);
+  
+  updateFeaturesInStore();
+};
+
+const validateStep = (step) => {
+  switch (step) {
+    case 0: // Información básica
+      if (!basicInfo.value.brand || !basicInfo.value.model || !basicInfo.value.year || 
+          !basicInfo.value.type || !basicInfo.value.color || !basicInfo.value.licensePlate || 
+          !basicInfo.value.kilometers) {
+        addAlert('Por favor completa todos los campos de información básica', 'error');
+        return false;
+      }
+      return true;
+
+    case 1: // Especificaciones técnicas
+      if (!specifications.value.engine || !specifications.value.transmission || 
+          !specifications.value.fuelType || !specifications.value.drivetrain || 
+          !specifications.value.autonomy || !specifications.value.doors || 
+          !specifications.value.seats) {
+        addAlert('Por favor completa todos los campos de especificaciones técnicas', 'error');
+        return false;
+      }
+      return true;
+
+    case 2: // Equipamiento y características
+      // Este paso es opcional ya que son accesorios
+      return true;
+
+    case 3: // Ubicación y disponibilidad
+      if ( !availability.value.hours.startTime || 
+          !availability.value.hours.endTime) {
+        addAlert('Por favor completa la ubicación y horarios de disponibilidad', 'error');
+        return false;
+      }
+      
+      // Verificar que al menos un día esté seleccionado
+      const hasDaySelected = Object.values(availability.value.schedule).some(day => day);
+      if (!hasDaySelected) {
+        addAlert('Por favor selecciona al menos un día de disponibilidad', 'error');
+        return false;
+      }
+      return true;
+
+    case 4: // Políticas y tarifas
+      if (!pricing.value.rates.daily || !pricing.value.rates.weekly || 
+          !pricing.value.rates.monthly || !pricing.value.mileagePolicy.includedPerDay || 
+          !pricing.value.mileagePolicy.extraPricePerKm || !pricing.value.securityDeposit) {
+        addAlert('Por favor completa todos los campos de políticas y tarifas', 'error');
+        return false;
+      }
+      return true;
+
+    case 5: // Fotos del vehículo
+      if (!status.value.description || !filePreviews.photo1File) {
+        addAlert('Por favor completa la descripción y sube al menos una foto', 'error');
+        return false;
+      }
+      return true;
+
+    case 6: // Información de seguro
+      if (!insurance.value.number || !insurance.value.company || 
+          !insurance.value.type || !insurance.value.expirationDate) {
+        addAlert('Por favor completa todos los campos de información de seguro', 'error');
+        return false;
+      }
+      return true;
+
+    default:
+      return true;
+  }
+};
+
 const filePreviews = reactive({
-  profilePhoto: null,
-  profilePhotoFile: null,
-  dniFront: null,
-  dniFrontFile: null,
-  dniBack: null,
-  dniBackFile: null,
-  driverLicenseFront: null,
-  driverLicenseFrontFile: null,
-  driverLicenseBack: null,
-  driverLicenseBackFile: null,
+  photo1: null,
+  photo1File: null,
+  photo2: null,
+  photo2File: null,
+  photo3: null,
+  photo3File: null,
+  photo4: null,
+  photo4File: null
 });
 
 const loading = ref(false)
@@ -61,16 +228,32 @@ const sections = ref([
   { title: 'Información de seguro', icon: markRaw(Secure) },
 ])
 
-const handleFileChange = async (event, field) => {
+const handleFileChange = (event, field) => {
   const file = event.target.files[0];
-  if (file) {
-    // Creamos la previsualización
-    filePreviews[field] = URL.createObjectURL(file);
-    filePreviews[`${field}File`] = file;
+  if (!file) return;
+
+  // Validaciones básicas
+  if (!file.type.startsWith('image/')) {
+    addAlert('Por favor sube solo imágenes (JPEG, PNG)', 'error');
+    return;
   }
+
+  // Crear preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    filePreviews[field] = e.target.result;
+  };
+  reader.readAsDataURL(file);
+
+  // Guardar archivo
+  filePreviews[`${field}File`] = file;
 };
 
 const nextStep = () => {
+  if (!validateStep(currentStep.value)) {
+    return; // No avanzar si la validación falla
+  }
+  
   if (currentStep.value < sections.value.length - 1) {
     currentStep.value++;
   }
@@ -82,81 +265,93 @@ const prevStep = () => {
   }
 };
 
-const cargarCiudades = () => {
-  userStore.setCity(''); // Reinicia la ciudad seleccionada
-  userStore.setCities(geoStore.getCiudadesPorProvincia(address.value.province) || []);
-};
-
 const days = [
-  { label: 'L', value: 'monday' },
-  { label: 'M', value: 'tuesday' },
-  { label: 'X', value: 'wednesday' },
-  { label: 'J', value: 'thursday' },
-  { label: 'V', value: 'friday' },
-  { label: 'S', value: 'saturday' },
-  { label: 'D', value: 'sunday' }
+  { label: 'L', storeKey: 'monday' },
+  { label: 'M', storeKey: 'tuesday' },
+  { label: 'X', storeKey: 'wednesday' },
+  { label: 'J', storeKey: 'thursday' },
+  { label: 'V', storeKey: 'friday' },
+  { label: 'S', storeKey: 'saturday' },
+  { label: 'D', storeKey: 'sunday' }
 ];
 
-// Días seleccionados (solo para demostración visual)
-const selectedDays = ref(['monday', 'tuesday', 'wednesday', 'thursday', 'friday']);
+const timeOptions = ref(
+  Array.from({ length: 24 }, (_, i) => {
+    const hour = i % 12 || 12;
+    const ampm = i < 12 ? 'AM' : 'PM';
+    return {
+      value: `${i.toString().padStart(2, '0')}:00`,
+      label: `${hour}:00 ${ampm}`
+    };
+  })
+);
 
 const handleSubmit = async () => {
-  // Basic validation example
-  if (!agreements.value.acceptedTerms || !agreements.value.acceptedPrivacyPolicy) {
-    addAlert('Debes aceptar los términos y políticas', 'error')
-    return
+    // Validar el último paso antes de enviar
+    if (!validateStep(currentStep.value)) {
+    return;
   }
-  loading.value = true
-    try {
-      // 1. Upload files
-      const uploadPromises = [];
-
-      console.log(filePreviews.profilePhotoFile instanceof File)
-      if (filePreviews.profilePhotoFile instanceof File) {
-        uploadPromises.push(
-          userStore.uploadFile(loggedUserId.value, filePreviews.profilePhotoFile, 'profile/avatar.jpg', 'profilePhoto')
-        );
-      }
-      if (filePreviews.dniFrontFile instanceof File) {
-        uploadPromises.push(
-          userStore.uploadFile(loggedUserId.value, filePreviews.dniFrontFile, 'documents/dni_front.jpg', 'dniFront')
-        );
-      }
-      if (filePreviews.dniBackFile instanceof File) {
-        uploadPromises.push(
-          userStore.uploadFile(loggedUserId.value, filePreviews.dniBackFile, 'documents/dni_back.jpg', 'dniBack')
-        );
-      }
-      if (filePreviews.driverLicenseFrontFile instanceof File) {
-        uploadPromises.push(
-          userStore.uploadFile(loggedUserId.value, filePreviews.driverLicenseFrontFile, 'documents/drive_front.jpg', 'driverLicenseFront')
-        );
-      }
-      if (filePreviews.driverLicenseBackFile instanceof File) {
-        uploadPromises.push(
-          userStore.uploadFile(loggedUserId.value, filePreviews.driverLicenseBackFile, 'documents/driver_back.jpg', 'driverLicenseBack')
-        );
-      }
-      console.log(uploadPromises)
-      await Promise.all(uploadPromises);
-
-      // Update profile
-      await userStore.updateProfile(loggedUserId.value, {
-        personalInfo: userStore.personalInfo,
-        documents: userStore.documents,
-        address: userStore.address,
-        paymentMethods: userStore.paymentMethods,
-        agreements: userStore.agreements
-      })
-
-      addAlert('!Usuario completado con éxito!', 'success');
-      router.push('/search');
-    } catch (error) {
-      console.error('Error en onboarding:', error);
-      addAlert('Error al cargar los datos de usuario.', 'error');
-    } finally {
-      loading.value = false
+  
+  // Validar todos los pasos antes de enviar
+  for (let i = 0; i < sections.value.length; i++) {
+    if (!validateStep(i)) {
+      currentStep.value = i; // Redirigir al paso con error
+      addAlert(`Por favor completa todos los campos requeridos en la sección "${sections.value[i].title}"`, 'error');
+      return;
     }
+  }
+
+  loading.value = true;
+  
+  try {
+    // 1. Obtener ID del store (ya generado previamente)
+    const carId = carStore.currentCar.id;
+    if (!carId) throw new Error("Missing car ID");
+
+    // 2. Subir fotos
+    const photoUrls = [];
+    for (let i = 0; i < 4; i++) {
+      const photoKey = `photo${i+1}`;
+      if (filePreviews[`${photoKey}File`]) {
+        photoUrls[i] = await carStore.uploadCarPhoto(
+          authStore.user.id,
+          filePreviews[`${photoKey}File`],
+          carStore.currentCar.id,
+          i
+        );
+      }
+    }
+
+    // 3. Preparar datos completos
+    const carData = {
+      id: carId,
+      ownerId: authStore.user.id,
+      basicInfo: { ...basicInfo.value },
+      specifications: { ...specifications.value },
+      status: { 
+        ...status.value,
+        current: "available",
+        timesRented: 0
+      },
+      features: { ...features.value },
+      pricing: { ...pricing.value },
+      insurance: { ...insurance.value },
+      availability: { ...availability.value },
+      photos: photoUrls.filter(url => url)
+    };
+
+   // 4. Guardar en Firestore (primera creación real)
+   await carStore.saveCar(carData);
+
+    addAlert('¡Vehículo registrado con éxito!', 'success');
+    router.push(`/car/${carStore.currentCar.id}`);
+    
+  } catch (error) {
+    console.error('Error al registrar vehículo:', error);
+    addAlert('Error al registrar el vehículo. Por favor intenta nuevamente.', 'error');
+  } finally {
+    loading.value = false;
+  }
 };
 
 const handleBeforeUnload = (event) => {
@@ -166,11 +361,35 @@ const handleBeforeUnload = (event) => {
   return message;
 };
 
+const toggleDay = (dayKey) => {
+  carStore.availability.schedule[dayKey] = !carStore.availability.schedule[dayKey];
+};
+
 // Load initial data
 onMounted(async () => {
   // window.addEventListener('beforeunload', handleBeforeUnload);
-  await userStore.loadUserProfile(authSession.user.id);
-  await geoStore.loadProvinciasYLocalidades();
+  try {
+    if (!authSession.user.id) {
+      throw new Error("User not authenticated");
+    }
+    
+    // await geoStore.loadProvinciasYLocalidades();
+    // await carStore.initializeCar(authSession.user.id);
+    if (!carStore.currentCar.id) {
+      carStore.initializeCar();
+    }
+
+    // Cargar accesorios existentes si los hay
+    if (features.value?.accessories) {
+      selectedAccessories.value = allAccessoryOptions.value.filter(
+        option => features.value.accessories.includes(option.value)
+      );
+    }
+  } catch (error) {
+    console.error("Initialization error:", error);
+    addAlert('Error al cargar los datos del vehículo', 'error');
+    router.push('/'); // Redirige si hay error
+  }
 });
 
 onBeforeUnmount(() => {
@@ -179,14 +398,19 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="flex max-w-[1120px] max-h-[675px] h-full w-full mx-auto justify-between px-16 py-12 bg-vibrant-light-600 rounded-[40px] text-deep-blue-900 overflow-hidden">
+  <section class="flex relative max-w-[1120px] max-h-[675px] h-full w-full mx-auto justify-between px-16 py-12 bg-vibrant-light-600 rounded-[40px] text-deep-blue-900 overflow-hidden">
     <!-- Secciones al costado -->
     <aside class="flex flex-col gap-8 w-full max-w-[425px]">
       <div class="flex flex-col gap-2">
+        <div class="flex gap-2 items-center">
         <Heading type="1" class="large text-deep-blue-900 font-extrabold!">Registrar vehículo</Heading>
+        </div>
         <p class="text-sm max-w-[420px]">Subscribí tu vehículo a la plataforma y haz que trabaje por vos.</p>
       </div>
-      <ul class="sections-sidebar">
+      <ul 
+        class="flex flex-col gap-[40px] max-w-[420px] w-full h-[495px] rounded-lg px-2 overflow-hidden transition-all duration-300 ease-in-out"
+        :class="justifyClass"
+        >
         <li
           v-for="(section, index) in sections"
           :key="index"
@@ -206,15 +430,19 @@ onBeforeUnmount(() => {
       </ul>
     </aside>
 
+    
+    
     <!-- Formulario dinámico -->
     <section class="max-h-[568px]">
       <form
-        class="flex flex-col justify-center gap-9 grow w-full max-w-[425px]"
-        @submit.prevent="handleSubmit"
+      class="flex flex-col justify-center gap-9 grow w-full max-w-[425px]"
+      @submit.prevent="handleSubmit"
       >
-        <div class="flex justify-end">
-          <Reemo />
-        </div>
+      <div class="flex justify-between">
+        <p>{{ currentStep + 1 }}/{{ sections.length }}</p>
+        <Reemo />
+      </div>
+      
 
         <!-- Paso 1: Información básica -->
         <router-view v-if="currentStep === 0">
@@ -228,14 +456,18 @@ onBeforeUnmount(() => {
             <div class="flex gap-5">
               <Input
                 type="select"
-                name="gender"
-                id="gender"
+                v-model="basicInfo.brand"
+                name="brand"
+                id="brand"
                 placeholder="Marca"
                 :options="[
-                  { value: 'male', label: 'Masculino' },
-                  { value: 'female', label: 'Femenino' },
-                  { value: 'other', label: 'Otro' },
-                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                  { value: 'Toyota', label: 'Toyota' },
+                  { value: 'Volkswagen', label: 'Volkswagen' },
+                  { value: 'Ford', label: 'Ford' },
+                  { value: 'Chevrolet', label: 'Chevrolet' },
+                  { value: 'Fiat', label: 'Fiat' },
+                  { value: 'Renault', label: 'Renault' },
+                  { value: 'Peugeot', label: 'Peugeot' }
                 ]"
                 icon-position="right"
                 variant="secondary"
@@ -244,14 +476,16 @@ onBeforeUnmount(() => {
               />
               <Input
                 type="select"
-                name="gender"
-                id="gender"
+                v-model="basicInfo.model"
+                name="model"
+                id="model"
                 placeholder="Modelo"
                 :options="[
-                  { value: 'male', label: 'Masculino' },
-                  { value: 'female', label: 'Femenino' },
-                  { value: 'other', label: 'Otro' },
-                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                  { value: 'Corolla', label: 'Corolla' },
+                  { value: 'Hilux', label: 'Hilux' },
+                  { value: 'Etios', label: 'Etios' },
+                  { value: 'SW4', label: 'SW4' },
+                  { value: 'Yaris', label: 'Yaris' }
                 ]"
                 icon-position="right"
                 variant="secondary"
@@ -262,8 +496,9 @@ onBeforeUnmount(() => {
             <div class="flex gap-5">
               <Input
                 type="select"
-                name="gender"
-                id="gender"
+                v-model="basicInfo.year"
+                name="year"
+                id="year"
                 placeholder="Año"
                 :options="Array.from({ length: new Date().getFullYear() - 2009 }, (_, i) => ({
                   value: 2010 + i,
@@ -276,14 +511,16 @@ onBeforeUnmount(() => {
               />
               <Input
                 type="select"
-                name="gender"
-                id="gender"
+                v-model="basicInfo.type"
+                name="type"
+                id="type"
                 placeholder="Tipo de chasis"
                 :options="[
-                  { value: 'male', label: 'Masculino' },
-                  { value: 'female', label: 'Femenino' },
-                  { value: 'other', label: 'Otro' },
-                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                  { value: 'Sedan', label: 'Sedán' },
+                  { value: 'Hatchback', label: 'Hatchback' },
+                  { value: 'SUV', label: 'SUV' },
+                  { value: 'Pickup', label: 'Pickup' },
+                  { value: 'Van', label: 'Van' }
                 ]"
                 icon-position="right"
                 variant="secondary"
@@ -292,14 +529,17 @@ onBeforeUnmount(() => {
               /> 
               <Input
                 type="select"
-                name="gender"
-                id="gender"
+                v-model="basicInfo.color"
+                name="color"
+                id="color"
                 placeholder="Color"
                 :options="[
-                  { value: 'male', label: 'Masculino' },
-                  { value: 'female', label: 'Femenino' },
-                  { value: 'other', label: 'Otro' },
-                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                  { value: 'Blanco', label: 'Blanco' },
+                  { value: 'Negro', label: 'Negro' },
+                  { value: 'Gris', label: 'Gris' },
+                  { value: 'Rojo', label: 'Rojo' },
+                  { value: 'Azul', label: 'Azul' },
+                  { value: 'Plateado', label: 'Plateado' }
                 ]"
                 icon-position="right"
                 variant="secondary"
@@ -308,8 +548,24 @@ onBeforeUnmount(() => {
               /> 
             </div>  
             <div class="flex gap-5">
-              <Input type="text" placeholder="Patente" :variant="'secondary'" :outline="true" required />
-              <Input type="text" placeholder="Kilometraje" :variant="'secondary'" :outline="true" required />
+              <Input
+                type="text"
+                v-model="basicInfo.licensePlate"
+                name="licensePlate"
+                id="licensePlate"
+                placeholder="Patente"
+                :variant="'secondary'"
+                :outline="true"
+                required />
+              <Input
+                type="text"
+                v-model="basicInfo.kilometers"
+                name="kilometers"
+                id="kilometers"
+                placeholder="Kilometraje"
+                :variant="'secondary'"
+                :outline="true"
+                required />
             </div>           
           </div>
         </router-view>
@@ -326,14 +582,17 @@ onBeforeUnmount(() => {
             <div class="flex gap-5">
               <Input
                 type="select"
-                name="gender"
-                id="gender"
+                v-model="specifications.engine"
+                name="engine"
+                id="engine"
                 placeholder="Motor"
                 :options="[
-                  { value: 'male', label: 'Masculino' },
-                  { value: 'female', label: 'Femenino' },
-                  { value: 'other', label: 'Otro' },
-                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                  { value: '1.4', label: '1.4L 4 cilindros' },
+                  { value: '1.6', label: '1.6L 4 cilindros' },
+                  { value: '1.8', label: '1.8L 4 cilindros' },
+                  { value: '2.0', label: '2.0L 4 cilindros' },
+                  { value: '2.4', label: '2.4L 4 cilindros' },
+                  { value: '3.0', label: '3.0L V6' }
                 ]"
                 icon-position="right"
                 variant="secondary"
@@ -342,16 +601,14 @@ onBeforeUnmount(() => {
               />
               <Input
                 type="select"
-                name="gender"
-                id="gender"
+                v-model="specifications.transmission"
+                name="transmission"
+                id="transmission"
                 placeholder="Transmisión"
-                v-model="selectedTransmission"
                 :options="[
-                  { value: 'male', label: 'Masculino' },
-                  { value: 'female', label: 'Femenino' },
-                  { value: 'other', label: 'Otro' },
-                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
-                ]"
+                  { value: 'Automática', label: 'Automática' },
+                  { value: 'Manual', label: 'Manual' },
+                  { value: 'CVT', label: 'CVT' }                ]"
                 icon-position="right"
                 variant="secondary"
                 :outline="true"
@@ -361,14 +618,16 @@ onBeforeUnmount(() => {
             <div class="flex gap-5">
               <Input
                 type="select"
-                name="gender"
-                id="gender"
+                v-model="specifications.fuelType"
+                name="fuelType"
+                id="fuelType"
                 placeholder="Combustible"
                 :options="[
-                  { value: 'male', label: 'Masculino' },
-                  { value: 'female', label: 'Femenino' },
-                  { value: 'other', label: 'Otro' },
-                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                  { value: 'Nafta', label: 'Nafta' },
+                  { value: 'Diesel', label: 'Diésel' },
+                  { value: 'GNC', label: 'GNC' },
+                  { value: 'Híbrido', label: 'Híbrido' },
+                  { value: 'Eléctrico', label: 'Eléctrico' }
                 ]"
                 icon-position="right"
                 variant="secondary"
@@ -377,14 +636,15 @@ onBeforeUnmount(() => {
               />
               <Input
                 type="select"
-                name="gender"
-                id="gender"
+                v-model="specifications.drivetrain"
+                name="drivetrain"
+                id="drivetrain"
                 placeholder="Tracción"
                 :options="[
-                  { value: 'male', label: 'Masculino' },
-                  { value: 'female', label: 'Femenino' },
-                  { value: 'other', label: 'Otro' },
-                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                  { value: 'Delantera', label: 'Delantera' },
+                  { value: 'Trasera', label: 'Trasera' },
+                  { value: '4x4', label: '4x4' },
+                  { value: 'AWD', label: 'AWD (Tracción integral)' }
                 ]"
                 icon-position="right"
                 variant="secondary"
@@ -393,53 +653,82 @@ onBeforeUnmount(() => {
               />            
             </div> 
             <div class="flex gap-5">
-              <Input type="text" placeholder="Consumo" :variant="'secondary'" :outline="true" required />
-              <Input type="text" placeholder="Puertas" :variant="'secondary'" :outline="true" required />
-              <Input type="text" placeholder="Asientos" :variant="'secondary'" :outline="true" required />
+              <Input
+                type="text"
+                v-model="specifications.autonomy"
+                placeholder="Autonomía"
+                name="autonomy"
+                id="autonomy"
+                :variant="'secondary'"
+                :outline="true"
+                required />
+              <Input
+                type="text"
+                v-model="specifications.doors"
+                name="doors"
+                id="doors"
+                placeholder="Puertas"
+                :variant="'secondary'"
+                :outline="true"
+                required />
+              <Input
+                type="text"
+                v-model="specifications.seats"
+                name="seats"
+                id="seats"
+                placeholder="Asientos"
+                :variant="'secondary'"
+                :outline="true"
+                required />
             </div>
           </div>
         </router-view>
 
         <!-- Paso 3: Equipamiento y características -->
         <router-view v-if="currentStep === 2">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Equipamiento y características</Heading>
-            <Loading v-if="loading" role="status" />
-          </div>
-          <div class="flex flex-col gap-5">
-            <Input
-              type="select"
-              name="tecnologia-conectividad"
-              id="tecnologia-conectividad"
-              placeholder="Buscar características"
-              :options="[
-                { value: 'male', label: 'Pantalla táctil' },
-                { value: 'female', label: 'Apple CarPlay/Android Auto' },
-                { value: 'other', label: 'Bluetooth' },
-                { value: 'other', label: 'GPS' },
-                { value: 'other', label: 'Sonido premium' },
-                { value: 'other', label: 'Asistente virtual integrado' },
-                { value: 'other', label: 'Sensores de estacionamiento 360°' }
-              ]"
-              icon-position="right"
-              variant="secondary"
-              :outline="true"
-              class="w-full cursor-pointer"
-            />   
-            <DropdownForm title="Tecnología y conectividad" :section-id="'section-1'" :dropdown-id="'tecnologia-conectividad'" :is-initial="true">
-        
-            </DropdownForm>
-            <DropdownForm title="Seguridad y Asistencia" :section-id="'section-1'" :dropdown-id="'seguridad-asistencia'">
-                  
-            </DropdownForm>
-            <DropdownForm title="Performance" :section-id="'section-1'" :dropdown-id="'performance'">
-                 
-            </DropdownForm>
-            <DropdownForm title="Confort" :section-id="'section-1'" :dropdown-id="'confort'">
-                
-            </DropdownForm>
-          </div>
-        </router-view>
+  <div class="flex gap-4 items-center">
+    <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Equipamiento y características</Heading>
+    <Loading v-if="loading" role="status" />
+  </div>
+  <div class="flex flex-col gap-5">
+    <Input
+      type="select"
+      name="tecnologia-conectividad"
+      id="tecnologia-conectividad"
+      placeholder="Buscar características"
+      :options="availableAccessoryOptions"
+      icon-position="right"
+      variant="secondary"
+      :outline="true"
+      class="w-full cursor-pointer"
+      @change="handleAccessorySelect"
+    />   
+    
+    <div 
+      v-if="selectedAccessories.length > 0" 
+      class="flex flex-wrap gap-2 mt-3 max-h-[200px] overflow-auto"
+      >
+      <div 
+        v-for="accessory in selectedAccessories" 
+        :key="accessory.value"
+        class="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-2 rounded-full text-sm font-medium border border-blue-200 hover:bg-blue-200 transition-colors"
+      >
+        <span>{{ accessory.label }}</span>
+        <Cross @click="removeAccessory(accessory.value)" :aria-label="`Eliminar ${accessory.label}`"/>
+      </div>
+    </div>
+    
+    <!-- <DropdownForm title="Tecnología y conectividad" :section-id="'section-1'" :dropdown-id="'tecnologia-conectividad'" :is-initial="true">
+    </DropdownForm>
+    <DropdownForm title="Seguridad y Asistencia" :section-id="'section-1'" :dropdown-id="'seguridad-asistencia'">
+    </DropdownForm>
+    <DropdownForm title="Performance" :section-id="'section-1'" :dropdown-id="'performance'">
+    </DropdownForm>
+    <DropdownForm title="Confort" :section-id="'section-1'" :dropdown-id="'confort'">
+    </DropdownForm>
+    -->
+  </div>
+</router-view>
  
         <!-- Paso 4: Ubicación y disponibilidad -->
         <router-view v-if="currentStep === 3" class="step">
@@ -462,13 +751,16 @@ onBeforeUnmount(() => {
             <div class="w-full h-full bg-vibrant-light-700 flex flex-col items-center justify-center rounded-[23px] p-4">
               <Heading type="5" class="mb-6">Días activo</Heading>
               
-              <!-- Selector de días -->
               <div class="flex gap-4 mb-8">
                 <div 
                   v-for="(day, index) in days" 
                   :key="index"
                   class="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-deep-blue-900 font-semibold"
-                  :class="selectedDays.includes(day.value) ? 'bg-vibrant-light-900' : ''"
+                  :class="{
+                    'bg-vibrant-light-900': availability.schedule[day.storeKey],
+                    'bg-white': !availability.schedule[day.storeKey]
+                  }"
+                  @click="toggleDay(day.storeKey)"
                 >
                   {{ day.label }}
                 </div>
@@ -477,16 +769,39 @@ onBeforeUnmount(() => {
               <!-- Selector de horario -->
               <div class="flex w-full max-w-xs gap-4 font-bold">
                 <div class="flex-1 flex flex-col items-center">
-                  <label for="desde">Desde</label>
-                  <div id="desde">08:00 AM</div>
+                  <label for="start-time">Desde</label>
+                  <select 
+                    id="start-time" 
+                    v-model="availability.hours.startTime" 
+                    class="p-2 rounded-lg border border-gray-300"
+                  >
+                    <option 
+                      v-for="time in timeOptions" 
+                      :key="'start-'+time.value" 
+                      :value="time.value"
+                    >
+                      {{ time.label }}
+                    </option>
+                  </select>
                 </div>
                 <div class="flex-1 flex flex-col items-center">
-                  <label for="hasta">Hasta</label>
-                  <div id="hasta">05:00 PM</div>
+                  <label for="end-time">Hasta</label>
+                  <select 
+                    id="end-time" 
+                    v-model="availability.hours.endTime"
+                    class="p-2 rounded-lg border border-gray-300"
+                  >
+                    <option 
+                      v-for="time in timeOptions" 
+                      :key="'end-'+time.value" 
+                      :value="time.value"
+                    >
+                      {{ time.label }}
+                    </option>
+                  </select>
                 </div>
               </div>
             </div>
-
           </div>
         </router-view>
 
@@ -499,110 +814,152 @@ onBeforeUnmount(() => {
           <p class="text-sm font-medium">Establecé la tarifa diaria para alquilar tu vehículo. Configurá los kilómetros incluidos, el precio por KM extra y el depósito de seguridad sugerido. Esto permite definir claramente las condiciones para el arrendatario.</p>
           <DropdownForm title="Tarifa base" :section-id="'section-2'" :dropdown-id="'tarifa'" :is-initial="true">
             <div class="flex gap-5">
-              <Input type="text" placeholder="Diaria" :variant="'secondary'" :outline="true" required />
-              <Input type="text" placeholder="Semanal" :variant="'secondary'" :outline="true" required />
-              <Input type="text" placeholder="Mensual" :variant="'secondary'" :outline="true" required />
+              <Input
+                type="text"
+                v-model="pricing.rates.daily"
+                name="daily"
+                id="daily"
+                placeholder="Diaria"
+                :variant="'secondary'"
+                :outline="true"
+                required />
+              <Input
+                type="text"
+                v-model="pricing.rates.weekly"
+                name="weekly"
+                id="weekly"
+                placeholder="Semanal"
+                :variant="'secondary'"
+                :outline="true"
+                required />
+              <Input
+                type="text"
+                v-model="pricing.rates.monthly"
+                name="monthly"
+                id="monthly"
+                placeholder="Mensual"
+                :variant="'secondary'"
+                :outline="true"
+                required />
             </div>
             <div class="flex gap-2 items-center">
-            <Checkbox />
-            <p class="text-sm font-medium">Sugerencia automática</p>
-          </div>
+              <Checkbox />
+              <p class="text-sm font-medium">Sugerencia automática</p>
+            </div>
           </DropdownForm>
           <DropdownForm title="Política de kilometraje" :section-id="'section-2'" :dropdown-id="'kilometraje'">
             <div class="flex gap-5">
               <Input
                 type="select"
+                v-model="pricing.mileagePolicy.includedPerDay"
                 name="km-incluidos"
                 id="km-incluidos"
                 placeholder="KM incluidos/día"
                 :options="[
-                  { value: 'male', label: 'Climatizador automático' },
-                  { value: 'female', label: 'Asientos calefaccionados/ventilados' },
-                  { value: 'other', label: 'Asientos con memoria' },
-                  { value: 'other', label: 'Tapizado premium' },
-                  { value: 'other', label: 'Limpiaparabrisas automáticos' },
-                  { value: 'other', label: 'Maletero automático' },
-                  { value: 'other', label: 'Espejos inteligentes' },
-                  { value: 'other', label: 'Insonorización premium' },
-                  { value: 'other', label: 'Organizador de maletero' }
+                  { value: '100', label: '100 km/día' },
+                  { value: '150', label: '150 km/día' },
+                  { value: '200', label: '200 km/día (Recomendado)' },
+                  { value: '250', label: '250 km/día' },
+                  { value: '300', label: '300 km/día' },
+                  { value: 'ilimitado', label: 'Ilimitado' }
+                ]"
+                icon-position="right"
+                variant="secondary"
+                :outline="true"
+                class="flex !flex-45"
+              />
+              <Input
+                type="select"
+                v-model="pricing.mileagePolicy.extraPricePerKm"
+                name="km-extra"
+                id="km-extra"
+                placeholder="Precio por KM extra"
+                :options="[
+                  { value: '500', label: '$500/km' },
+                  { value: '750', label: '$750/km' },
+                  { value: '1000', label: '$1000/km (Promedio)' },
+                  { value: '1200', label: '$1200/km' },
+                  { value: '1500', label: '$1500/km' }
                 ]"
                 icon-position="right"
                 variant="secondary"
                 :outline="true"
                 class="flex !flex-50"
-              />  
-              <Input type="number" placeholder="Precio por KM extra" :variant="'secondary'" :outline="true" class="flex !flex-40"/>
+              />    
             </div>
           </DropdownForm>
           <DropdownForm title="Depósito de seguridad" :section-id="'section-2'" :dropdown-id="'seguridad'">
-              <Input type="number" placeholder="Monto total del depósito" :variant="'secondary'" :outline="true" required />
+              <Input 
+                type="number" 
+                v-model="pricing.securityDeposit" 
+                name="security-deposit" 
+                id="security-deposit" 
+                placeholder="Monto total del depósito" 
+                :variant="'secondary'" 
+                :outline="true" 
+                required />
           </DropdownForm>
         </router-view>
 
          <!-- Paso 5: Fotos del vehículo -->
-        <router-view v-if="currentStep === 5" class="step">
+         <router-view v-if="currentStep === 5" class="step">
           <div class="flex gap-4 items-center">
             <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Fotos del vehículo</Heading>
             <Loading v-if="loading" role="status" />
           </div>
-          <p class="text-sm font-medium">Subí imágenes claras y atractivas de tu auto para generar confianza en los posibles clientes. Las fotos deben mostrar el estado real del vehículo, incluyendo el exterior y interior.</p>
-          <div class="flex gap-3">
-            <label for="dni-front" class="cursor-pointer">
-              <img src="" class="w-[250px] h-[150px] object-cover rounded-sm">
-            </label>
-            <div class="flex flex-col gap-4">
-              <label for="dni-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Editar imagen</label>
-              <span class="text-xs text-start">
-                Las imagenes del vehículo aumentan tu reservas un 40%.
-              </span>
-            </div>
-            <input id="dni-front" type="file" accept="image/*" class="hidden" />
-          </div>
+          <p class="text-sm font-medium">Describe las características principales de tu vehículo. Subí fotos que muestren tanto el exterior como el interior, destacando sus mejores atributos. Las publicaciones con buenas imágenes reciben un 40% más de reservas.</p>
           
-          <!-- Sección para las 4 imágenes cuadradas -->
-          <div class="flex gap-4">
-            <!-- Imagen 1 -->
-            <div class="flex flex-col items-center gap-2">
-              <label for="image-1" class="cursor-pointer">
-                <div class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition">
-                  <span class="text-gray-500 text-sm" v-if="!true">+ Agregar imagen</span>
-                  <img v-else src="../assets/Car-Img.png" class="w-full h-full object-cover rounded-lg" alt="Imagen 1">
+          <!-- Textarea descripcion -->
+          <Input 
+            type="textarea" 
+            v-model="status.description" 
+            name="description" 
+            id="description" 
+            placeholder="Descripción" 
+            :variant="'secondary'" 
+            :outline="true" 
+            required />
+
+          <!-- Contenedor de fotos con grid de 4 columnas -->
+          <div class="grid grid-cols-4 gap-4 w-full">
+            <div 
+              v-for="index in 4" 
+              :key="index" 
+              class="flex flex-col items-center gap-2"
+            >
+              <label :for="'photo' + index" class="cursor-pointer w-full">
+                <!-- Contenedor de imagen con tamaño fijo y object-cover -->
+                <div class="relative aspect-square w-full border-2 border-dashed border-gray-300 rounded-lg overflow-hidden bg-gray-50 hover:bg-gray-100 transition">
+                  <!-- Imagen de placeholder o subida -->
+                  <img 
+                    v-if="!filePreviews['photo' + index]" 
+                    src="../assets/Car-Img.png" 
+                    class="absolute inset-0 w-full h-full object-contain p-4"
+                    :alt="`Foto ${index}`"
+                  >
+                  <img 
+                    v-else 
+                    :src="filePreviews['photo' + index]" 
+                    class="absolute inset-0 w-full h-full object-cover"
+                    :alt="`Foto ${index}`"
+                  >
+                  <!-- Indicador de foto subida -->
+                  <div 
+                    v-if="filePreviews['photo' + index]" 
+                    class="absolute top-2 right-2 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
+                  >
+                    ✓
+                  </div>
                 </div>
               </label>
-              <input id="image-1" type="file" accept="image/*" class="hidden" />
-            </div>
-            
-            <!-- Imagen 2 -->
-            <div class="flex flex-col items-center gap-2">
-              <label for="image-2" class="cursor-pointer">
-                <div class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition">
-                  <span class="text-gray-500 text-sm" v-if="!true">+ Agregar imagen</span>
-                  <img v-else src="../assets/Car-Img.png" class="w-full h-full object-cover rounded-lg" alt="Imagen 2">
-                </div>
-              </label>
-              <input id="image-2" type="file" accept="image/*" class="hidden" />
-            </div>
-            
-            <!-- Imagen 3 -->
-            <div class="flex flex-col items-center gap-2">
-              <label for="image-3" class="cursor-pointer">
-                <div class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition">
-                  <span class="text-gray-500 text-sm" v-if="!true">+ Agregar imagen</span>
-                  <img v-else src="../assets/Car-Img.png" class="w-full h-full object-cover rounded-lg" alt="Imagen 3">
-                </div>
-              </label>
-              <input id="image-3" type="file" accept="image/*" class="hidden" />
-            </div>
-            
-            <!-- Imagen 4 -->
-            <div class="flex flex-col items-center gap-2">
-              <label for="image-4" class="cursor-pointer">
-                <div class="border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition">
-                  <span class="text-gray-500 text-sm" v-if="!true">+ Agregar imagen</span>
-                  <img v-else src="../assets/Car-Img.png" class="w-full h-full object-cover rounded-lg" alt="Imagen 4">
-                </div>
-              </label>
-              <input id="image-4" type="file" accept="image/*" class="hidden" />
+              <input 
+                :id="'photo' + index" 
+                type="file" 
+                accept="image/*" 
+                @change="(e) => handleFileChange(e, 'photo' + index)" 
+                class="hidden"
+              >
+              <span class="text-xs text-gray-500">Foto {{ index }}</span>
             </div>
           </div>
         </router-view>
@@ -615,50 +972,59 @@ onBeforeUnmount(() => {
           </div>
           <p class="text-sm font-medium">Indicá el tipo de cobertura, la compañía aseguradora y la vigencia del contrato. Además, cargá una imagen de la cédula verde para validar que la póliza está activa y cumple con los requisitos legales.</p>
           <div class="flex flex-col gap-5">
+            <Input 
+              type="tel" 
+              v-model="insurance.number" 
+              name="number-insurance" 
+              id="number-insurance" 
+              placeholder="Número de póliza" 
+              :variant="'secondary'" 
+              :outline="true" 
+              required />
             <Input
               type="select"
-              name="confort"
-              id="confort"
-              placeholder="Tipo de cobertura"
-              :options="[
-                { value: 'male', label: 'Climatizador automático' },
-                { value: 'female', label: 'Asientos calefaccionados/ventilados' },
-                { value: 'other', label: 'Asientos con memoria' }
-              ]"
-              icon-position="right"
-              variant="secondary"
-              :outline="true"
-              class="w-full cursor-pointer"
-            />
-            <Input
-              type="select"
-              name="confort"
-              id="confort"
+              v-model="insurance.company"
+              name="company"
+              id="company"
               placeholder="Compañia aseguradora"
               :options="[
-                { value: 'male', label: 'Climatizador automático' },
-                { value: 'female', label: 'Asientos calefaccionados/ventilados' },
-                { value: 'other', label: 'Asientos con memoria' }
+                { value: 'san_cristobal', label: 'San Cristóbal' },
+                { value: 'la_caja', label: 'La Caja' },
+                { value: 'federacion_patronal', label: 'Federación Patronal' },
+                { value: 'allianz', label: 'Allianz' },
+                { value: 'sancor', label: 'Sancor Seguros' },
+                { value: 'mercantil', label: 'Mercantil Andina' },
+                { value: 'triunfo', label: 'El Triunfo' }
               ]"
               icon-position="right"
               variant="secondary"
               :outline="true"
-              class="w-full cursor-pointer"
-            />
-            <Input type="date" placeholder="Vencimiento de póliza" :variant="'secondary'" :outline="true" required />
-            <div class="flex gap-3">
-              <label for="driver-front" class="cursor-pointer">
-                <img v-if="documents.driverLicenseFront || filePreviews.driverLicenseFront" :src="filePreviews.driverLicenseFront ? filePreviews.driverLicenseFront : documents.driverLicenseFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
-                <DriverFront v-else/>
-              </label>
-              <div class="flex flex-col gap-4">
-                <label for="driver-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
-                <span class="text-xs text-start">Parte trasera de tu Licencia de Conducir.</span>
-              </div>
-              <input id="driver-front" type="file" accept="image/*"
-              @change="(event) => handleFileChange(event, 'driverLicenseFront')"
-              class="hidden" />
-            </div>
+              class="w-full cursor-pointer" />
+            <Input
+              type="select"
+              v-model="insurance.type"
+              name="type-insurance"
+              id="type-insurance"
+              placeholder="Tipo de cobertura"
+              :options="[
+                { value: 'total', label: 'Todo riesgo' },
+                { value: 'terceros_completo', label: 'Terceros completo' },
+                { value: 'terceros_basico', label: 'Terceros básico' },
+                { value: 'granizo', label: 'Todo riesgo + granizo' }
+              ]"
+              icon-position="right"
+              variant="secondary"
+              :outline="true"
+              class="w-full cursor-pointer" />
+            <Input 
+              type="date" 
+              v-model="insurance.expirationDate"
+              name="expiration-date"
+              id="expiration-date"
+              placeholder="Vencimiento de póliza" 
+              :variant="'secondary'" 
+              :outline="true" 
+              required />
           </div>
         </router-view>
 
@@ -683,7 +1049,7 @@ onBeforeUnmount(() => {
             class="cursor-pointer"
           />
           <Input
-            type="submit"
+            :type="currentStep === 6 ? 'submit' : 'button'"
             :text="loading ? 'Procesando...' : 'Finalizar'"
             variant="primary"
             :class="loading ? 'cursor-not-allowed bg-deep-blue-900' : 'cursor-pointer'"
@@ -698,7 +1064,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.sections-sidebar {
+/* .sections-sidebar {
   max-width: 420px;
   width: 100%;
   border-radius: 8px;
@@ -706,7 +1072,7 @@ onBeforeUnmount(() => {
   flex-direction: column;
   gap: 40px;
 }
-
+ */
 .section-item {
   padding: 1rem;
   border-radius: 16px;
@@ -751,62 +1117,3 @@ onBeforeUnmount(() => {
   filter: brightness(7);
 }
 </style>
-
-<!--  <DropdownForm title="Documento de Identidad" :section-id="'section-1'" :dropdown-id="'doc-identidad'" :is-initial="true">
-              <p class="text-sm font-medium">Para completar la verificación de identidad, sube una foto clara y ligible de tu DNI.</p>
-              <div class="flex gap-3">
-                <label for="dni-front" class="cursor-pointer">
-                  <img v-if="documents.dniFront || filePreviews.dniFront" :src="filePreviews.dniFront ? filePreviews.dniFront : documents.dniFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
-                  <DNIFront v-else/>
-                </label>
-                <div class="flex flex-col gap-4">
-                  <label for="dni-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar frente del DNI</label>
-                  <span class="text-xs text-start">
-                    Parte frontal de tu Documento Nacional de Identidad.
-                  </span>
-                </div>
-                <input id="dni-front" type="file" accept="image/*" @change="(event) => handleFileChange(event, 'dniFront')" class="hidden" />
-              </div>
-              <div class="flex gap-3">
-                <label for="dni-back" class="cursor-pointer">
-                  <img v-if="documents.dniBack || filePreviews.dniBack" :src="filePreviews.dniBack ? filePreviews.dniBack : documents.dniBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
-                  <DNIBack v-else/>
-                </label>
-                <div class="flex flex-col gap-4">
-                  <label for="dni-back" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del DNI</label>
-                  <span class="text-xs text-start">Parte trasera de tu Documento Nacional de Identidad.</span>
-                </div>
-                <input id="dni-back" type="file" accept="image/*"
-                @change="(event) => handleFileChange(event, 'dniBack')" class="hidden" />
-              </div>
-            </DropdownForm>
-            
-            <DropdownForm title="Registro de conducir" :dropdown-id="'doc-licencia'" :section-id="'section-1'">
-              <p class="text-sm font-medium">Para poder alquilar en nuestra plataforma, es esencial que tengas vinculado tu registro de conducir. </p>
-              <div class="flex gap-3">
-                <label for="driver-front" class="cursor-pointer">
-                  <img v-if="documents.driverLicenseFront || filePreviews.driverLicenseFront" :src="filePreviews.driverLicenseFront ? filePreviews.driverLicenseFront : documents.driverLicenseFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
-                  <DriverFront v-else/>
-                </label>
-                <div class="flex flex-col gap-4">
-                  <label for="driver-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
-                  <span class="text-xs text-start">Parte trasera de tu Licencia de Conducir.</span>
-                </div>
-                <input id="driver-front" type="file" accept="image/*"
-                @change="(event) => handleFileChange(event, 'driverLicenseFront')"
-                class="hidden" />
-              </div>
-              <div class="flex gap-3">
-                <label for="driver-back" class="cursor-pointer">
-                  <img v-if="documents.driverLicenseBack || filePreviews.driverLicenseBack" :src="filePreviews.driverLicenseBack ? filePreviews.driverLicenseBack : documents.driverLicenseBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
-                  <DriverBack v-else/>
-                </label>
-                <div class="flex flex-col gap-4">
-                  <label for="driver-back" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
-                  <span class="text-xs text-start">Parte trasera de tu Licencia de Conducir.</span>
-                </div>
-                <input id="driver-back" type="file" accept="image/*"
-                @change="(event) => handleFileChange(event, 'driverLicenseBack')"
-                class="hidden" />
-              </div>
-            </DropdownForm> -->

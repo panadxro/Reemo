@@ -117,18 +117,18 @@ export default {
         <figure class="aspect-[21/9] h-24 overflow-hidden"> 
           <img
             class="rounded-xl object-center object-cover w-full h-full"
-            :src="car.images && car.images.length > 0 ? car.images[0] : defaultCarImage" 
+            :src="car.photos && car.photos.length > 0 ? car.photos[0] : defaultCarImage" 
             @error="setDefaultImage"
-            :alt="car.marca + ' ' + car.modelo" 
+            :alt="car.basicInfo?.brand + ' ' + car.basicInfo?.model" 
           />
         </figure>
       </div>
       <div class="flex flex-1 flex-row justify-between items-end">
         <article class="flex flex-col align-end justify-between">
-          <p class="text-sm text-gray-500">{{ car.marca }}</p>
-          <Heading :type="4">{{ car.modelo }}</Heading>
+          <p class="text-sm text-gray-500">{{ car.basicInfo?.brand }}</p>
+          <Heading :type="4">{{ car.basicInfo?.model }}</Heading>
         </article>
-        <Heading :type="4">${{ car.precio }}/ hr</Heading>
+        <Heading :type="4">${{ car.pricing?.rates?.daily }}/ hr</Heading>
       </div>
     </router-link>
   </div>

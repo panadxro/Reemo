@@ -1,5 +1,5 @@
 <script>
-import { getAvailableCars, addCar } from "../services/car-service.js";
+import { getAvailableCars } from "../services/car";
 import { subscribeToAuthState } from "../services/auth.js";
 import { subscribeToNewPublication } from "../services/publication.js";
 
@@ -64,14 +64,14 @@ export default {
         this.loading = false;
       }
     },
-    async addNewCar(newCar) {
-      try {
-        const addedCar = await addCar(newCar);
-        this.cars.push(addedCar);
-      } catch (error) {
-        console.error("Error al agregar un nuevo auto:", error);
-      }
-    },
+    // async addNewCar(newCar) {
+    //   try {
+    //     const addedCar = await addCar(newCar);
+    //     this.cars.push(addedCar);
+    //   } catch (error) {
+    //     console.error("Error al agregar un nuevo auto:", error);
+    //   }
+    // },
     goToCarDetails(carId) {
       this.$router.push({ name: "CarDetails", params: { id: carId } });
     },
@@ -292,7 +292,7 @@ export default {
         </template>
 
         <template v-else>
-          <router-link to="/publish"
+          <router-link to="/car/register"
             class="gap-4 md:flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
             <span class="hidden md:block">Publicar Vehículo</span>
             <AddIcon />

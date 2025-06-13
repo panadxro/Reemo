@@ -59,7 +59,7 @@ export default {
 
     onMounted(async () => {
       await userStore.loadUserProfile(userIdFromRoute.value);
-      console.error("User is not logged in", userIdFromRoute.value)
+      // console.error("User is not logged in", userIdFromRoute.value)
 
       if(loggedUserId.value && isOwnProfile.value){
         if(!userStore.profileData.profileCompleted){

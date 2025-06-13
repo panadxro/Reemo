@@ -2,9 +2,11 @@
 import { getAvailableCarsForAdmin } from "../../services/car-service.js";
 import { subscribeToAuthState } from "../../services/auth.js";
 import { updateCarValidation } from "../../services/car-service.js";
+import { ref, computed, onMounted } from "vue";
+import { useAdminStore } from "@stores";
 import { addAlert } from "../../services/alerts";
 import { formatDate } from '../../libraries/date.js';
-import { getUserById } from '../../services/users.js';
+// import { getUserById } from '../../services/users.js';
 
 import Heading from "@components/atoms/Heading.vue";
 import Loading from "@icons/Loading.vue";
@@ -13,40 +15,45 @@ import Input from "../../components/molecules/Input.vue";
 import Popover from "../../components/molecules/Popover.vue";
 
 export default {
+  name: "AdminCars",
   components: { Heading, Loading, Status, Input, Popover },
   data() {
     return {
-      cars: [],
-      loggedUser: {
-        id: null,
-        email: null,
-      },
-      loading: false,
       openPopoverId: null,
-      filtroActual: "todos",
+      filter: 'all',
+    };
+  },
+  setup() {
+    const adminStore = useAdminStore();
+    const loading = ref(false);
+
+/*     const cars = computed(() => {
+      return adminStore.cars.map(car => {
+        const owner = adminStore.users.find(user => user.id === car.ownerId);
+        return { ...car, owner: owner || {} };
+      });
+    }); */
+
+    onMounted(async () => {
+      // await adminStore.fetchCars();
+      // await adminStore.fetchUsers();
+      try {
+        loading.value = true;
+        const cars = await adminStore.fetchCars();
+      } catch (error) {
+        console.error("Error al obtener los autos:", error);
+      } finally {
+        loading.value = false;
+      }
+    });
+
+    return {
+      adminStore
     };
   },
   methods: {
-    async fetchCars() {
-      this.loading = true;
-      try {
-        const cars = await getAvailableCarsForAdmin();
-        const carsWithUser = await Promise.all(
-          cars.map(async (car) => {
-            const user = await getUserById(car.user_id);
-            return { ...car, user: user || {} };
-          })
-        );
-        // console.log("Datos de carsWithUser:", carsWithUser);
-        this.cars = carsWithUser;
-      } catch (error) {
-        console.error("Error al buscar autos:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
     toggleFiltro(filtro) {
-      this.filtroActual = filtro;
+      this.filter = filtro;
     },
     formatDate(timestamp) {
       if (!timestamp) return "Fecha no disponible";
@@ -83,21 +90,18 @@ export default {
     }
   },
   computed: {
-    carsFiltrados() {
-      if (this.filtroActual === "habilitados") {
-        return this.cars.filter((car) => car.status === "validated");
-      } else if (this.filtroActual === "deshabilitados") {
-        return this.cars.filter((car) => car.status === "not-validated");
+/*     carsFilter() {
+      if (this.filter === 'habilitados') {
+        return this.cars.filter((cars) => cars.status);
+      } else if (this.filter === 'deshabilitados') {
+        return this.cars.filter((cars) => !cars.status);
+      } else {
+        // If filter is not 'habilitados' or 'deshabilitados', show all cars.
+        // return an array with all cars
+        return this.cars;
       }
-      return this.cars;
-    },
-  },
-  mounted() {
-    subscribeToAuthState((newUserData) => {
-      this.loggedUser = newUserData;
-      this.fetchCars();
-    });
-  },
+    } */
+  }
 };
 </script>
 
@@ -110,7 +114,7 @@ export default {
         text="Todos"
         variant="secondary"
         class="cursor-pointer"
-        :class="filtroActual === 'todos' ? ' bg-vibrant-light-900' : ''"
+        :class="filter === 'todos' ? ' bg-vibrant-light-900' : ''"
         @click="toggleFiltro('todos')"
       />
       <Input 
@@ -118,7 +122,7 @@ export default {
         text="Validados"
         variant="secondary"
         class="cursor-pointer"
-        :class="filtroActual === 'habilitados' ? ' bg-vibrant-light-900' : ''"
+        :class="filter === 'habilitados' ? ' bg-vibrant-light-900' : ''"
         @click="toggleFiltro('habilitados')"
       />
       <Input 
@@ -126,7 +130,7 @@ export default {
         text="Invalidados"
         variant="secondary"
         class="cursor-pointer"
-        :class="filtroActual === 'deshabilitados' ? ' bg-vibrant-light-900' : ''"
+        :class="filter === 'deshabilitados' ? ' bg-vibrant-light-900' : ''"
         @click="toggleFiltro('deshabilitados')"
       />
     </div>
@@ -134,7 +138,7 @@ export default {
       <thead class="mr-4">
         <tr class="flex w-full border-2 border-secondary-100 rounded-xl">
           <th class="py-2.5 px-5 flex flex-1">Vehículo</th>
-          <th class="py-2.5 px-5 flex flex-1">Usuarios</th>
+          <th class="py-2.5 px-5 flex flex-1">Dueño</th>
           <th class="py-2.5 px-5 flex w-20">Año</th>
           <th class="py-2.5 px-5 flex flex-1">Tipo</th>
           <th class="py-2.5 px-5 flex flex-1">Estado</th>
@@ -144,34 +148,35 @@ export default {
       </thead>
       <tbody class="flex flex-col gap-5 h-full overflow-y-scroll">
         <tr 
-          v-for="(car, index) in carsFiltrados" 
+          v-for="(car, index) in cars" 
           :key="car.id" 
           class="flex w-full max-h-16 border-2 border-secondary-100 rounded-xl font-semibold">
           <td class="py-2.5 px-5 flex flex-1 items-center gap-2.5">
             <figure>
-              <img :src="car.personalInfo.profilePhoto" alt="Imagen del auto" class="w-14 h-8 object-cover rounded-sm" />
+              <img :src="car.photos[0]" alt="Imagen del auto" class="w-14 h-8 object-cover rounded-sm" />
             </figure>
             <div>
-              <p class="text-sm font-semibold ">{{ car.marca }}</p>
-              <p class="text-xl">{{ car.modelo }}</p>
+              <p class="text-sm font-semibold ">{{ car.basicInfo.brand }}</p>
+              <p class="text-xl">{{ car.basicInfo.model }}</p>
             </div>
           </td>
           <td class="py-2.5 px-5 flex flex-1">
-            <router-link :to="`/user/${car.user_id}`" class="flex items-center gap-2 hover:cursor-pointer">
-              <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
-              <p class="hover:underline">{{ car.user.name }} {{ car.user.lastName }}</p>
+            <router-link :to="`/user/${car.ownerId}`" class="flex items-center gap-2 hover:cursor-pointer">
+              Dueño
+              <!-- <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" /> -->
+              <!-- <p class="hover:underline">{{ user.name }} {{ car.user.lastName }}</p> -->
             </router-link>
           </td>
-          <td class="py-2.5 px-5 flex w-20 items-center">{{ car.año }}</td>
-          <td class="py-2.5 px-5 flex flex-1 items-center">{{ car.chasis }}</td>
+          <td class="py-2.5 px-5 flex w-20 items-center">{{ car.basicInfo.year }}</td>
+          <td class="py-2.5 px-5 flex flex-1 items-center">{{ car.basicInfo.type }}</td>
           <td class="py-2.5 px-5 flex flex-1"><Status status="registrado" /></td>
           <td class="py-2.5 px-5 flex items-center w-32 font-">{{ formatDate(car.created_at) }}</td>
           <td class="py-2.5 px-5 flex justify-center relative w-24 items-center">
             <Popover
               :items="[
-                { label: 'Ver auto', to: `/car/${car.id}` },
-                { label: 'Chat', to: `/user/${car.user_id}/chat` },
-                { label: car.isValidated ? 'Invalidar' : 'Validar', action: () => updateValidation(car.id, !car.isValidated), class: `car.isValidated ? 'text-red-500' : ''` },
+                { label: 'Ver auto', to: `/car/${car.ownerId}` },
+                { label: 'Chat', to: `/user/${car.ownerId}/chat` },
+                // { label: car.isValidated ? 'Invalidar' : 'Validar', action: () => updateValidation(car.id, !car.isValidated), class: `car.isValidated ? 'text-red-500' : ''` },
               ]"
               :isOpen="openPopoverId === index"
               :popoverId="index"

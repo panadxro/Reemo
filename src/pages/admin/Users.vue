@@ -68,7 +68,6 @@ export default {
           // return an array with all users
           return this.users;
         }
-
     },
   },
 };

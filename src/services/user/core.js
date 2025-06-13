@@ -1,4 +1,3 @@
-// Operaciones básicas de usuario
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, where } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { getDownloadURL } from 'firebase/storage';
@@ -58,6 +57,24 @@ export async function createUserProfile( uid, email ) {
     updatedAt: new Date()
   });
 };
+
+export async function getUserById(userId) {
+  try {
+    const userDoc = doc(db, "users", userId); 
+    const userSnapshot = await getDoc(userDoc); 
+
+    if (userSnapshot.exists()) {
+      return { id: userSnapshot.id, ...userSnapshot.data() };
+
+    } else {
+
+      return null; 
+    }
+  } catch (error) {
+    console.error("Error al obtener el usuario:", error);
+    throw new Error("Hubo un error al cargar el perfil del usuario.");
+  }
+}
 
 export async function getUserProfile(uid) {
   if (!uid) {
