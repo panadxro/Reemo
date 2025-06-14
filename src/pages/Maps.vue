@@ -1,219 +1,199 @@
-<script>
-import { getAvailableCars, addCar } from "../services/car-service.js";
-import { updateCars, initAutocomplete, updateMapMarkers, loadGoogleMaps, initMap, getCurrentLocation } from "../services/google-maps.js";
-import { subscribeToAuthState } from "../services/auth.js";
-import { subscribeToNewPublication } from "../services/publication.js";
+<script setup>
+import { ref, onMounted, watch, computed  } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from "@/stores/auth.store.js";
 
+import { getAvailableCars } from "../services/car-service.js";
+import { updateCars, initAutocomplete, updateMapMarkers, loadGoogleMaps, initMap, getCurrentLocation } from "../services/google-maps.js";
+
+import { addAlert } from "@/services/alerts.js";
 import Heading from "@components/atoms/Heading.vue";
-import CardCar from "@components/organisms/my-cars/CardCar.vue";
-import AddIcon from "@icons/AddIcon.vue";
+import comentarioIcon from '@/assets/marcador.png';
 import Loading from "@icons/Loading.vue";
 
-import AddressInput from "@/components/organisms/google-maps/AddressInput.vue";
 
-import comentarioIcon from '@/assets/marcador.png';
+// const props = defineProps({
+//   id: {
+//     type: String,
+//     required: true,
+//   }
+// });
 
-export default {
-  name: "Maps",
-  components: { Heading, CardCar, AddIcon, Loading, AddressInput },
-  data() {
-    return {
-      // activeOverlay: null,
-      selectedCar: null,
-      cars: [],
-      searchQuery: "",
-      searchLocation: "",
-      filteredCars: [],
-      map: null,
-      markers: [],
-      loggedUser: {
-        id: null,
-        email: null,
-      },
-      loading: false,
-      showSuggestions: false,
-      car : {
-        owner: {
-         name: 'Jazmín Vega',
-         avatar: 'https://i.pravatar.cc/40?img=5'
-      }
-    }
-    };
-  },
-  methods: {
-    async fetchCars() {
-      this.loading = true;
-      try {
-        this.cars = await getAvailableCars(this.loggedUser.id);
-        // this.filteredCars = this.cars;
-        // Si hay una búsqueda activa (searchLocation está definida),
-        // re-aplicar el filtro ahora que los coches están cargados.
-        // De lo contrario, simplemente actualiza los marcadores con todos los coches.
-        if (this.searchLocation && typeof this.searchLocation.lat === 'number' && typeof this.searchLocation.lng === 'number') {
-          console.log('[Maps.vue] fetchCars: Hay una searchLocation activa, re-filtrando coches.');
-          await this.filterCars();
-        } else {
-          console.log('[Maps.vue] fetchCars: No hay searchLocation activa, mostrando todos los coches.');
-          this.filteredCars = this.cars; // Mostrar todos
-          await this.updateMapMarkers();
-        }
+const router = useRouter();
+const authStore = useAuthStore();
+const loggedUser = ref({ id: null, email: null }); 
 
-        // console.log(`[Maps.vue] fetchCars: ${this.cars.length} coches cargados. Mostrando todos inicialmente.`);
-        // await this.updateMapMarkers(); 
+const selectedCar = ref(null);
+const cars = ref([]); 
+const searchQuery = ref("");
+const searchLocation = ref(null);
+const filteredCars = ref([]); 
+const map = ref(null); 
+const markers = ref([]); 
+const loading = ref(false);
+const showSuggestions = ref(false);
 
-      } catch (error) {
-        console.error("Error al buscar autos:", error);
-        this.cars = []; // Asegurar que cars esté vacío en caso de error
-        this.filteredCars = [];
-        await this.updateMapMarkers(); // Limpiar marcadores en caso de error
-      } finally {
-        this.loading = false;
-      }
-    },
-
-
-    async addNewCar(newCar) {
-      try {
-        const addedCar = await addCar(newCar);
-        this.cars.push(addedCar);
-      } catch (error) {
-        console.error("Error al agregar un nuevo auto:", error);
-      }
-    },
-
-    
-    goToCarDetails(carId) {
-      this.$router.push({ name: "CarDetails", params: { id: carId } });
-    },
-
-    async filterCars() {
-      if (this.map && this.searchLocation && typeof this.searchLocation.lat === 'number' && typeof this.searchLocation.lng === 'number') {
-        // Centrar el mapa aquí primero si es necesario o si updateCars no lo hace siempre
-        this.map.setCenter(this.searchLocation);
-        this.map.setZoom(14); // O el zoom deseado
-        this.filteredCars = updateCars(this.cars, this.searchLocation, this.map);
-        await this.updateMapMarkers();
-      } else {
-        console.warn('[filterCars] searchLocation no es valido para filtrar o centrar el mapa', this.searchLocation);
-        // Opcionalmente, mostrar todos los autos si no hay ubicación de búsqueda
-        this.filteredCars = this.cars;
-        await this.updateMapMarkers();
-      }
-    },
-    
-    async handlePlaceSelected({ formattedAddress, location }) {
-      this.searchLocation = location;
-      // Centrar el mapa inmediatamente con las nuevas coordenadas
-      if(this.map && this.searchLocation && typeof this.searchLocation.lat === 'number' && typeof this.searchLocation.lng === 'number') {
-        this.map.setCenter(this.searchLocation);
-        this.map.setZoom(14);
-      }
-      this.searchQuery = formattedAddress;
-      await this.filterCars();
-      this.showSuggestions = false;
-    },
-
-    handleCarSelected(car) {
-      this.selectedCar = car;
-      console.log('esto contiene selectedCars', this.selectedCar)
-      // Centrar el mapa en el coche seleccionado y hacer zoom
-      if (this.map && car.coordenadas && typeof car.coordenadas.lat === 'number' && typeof car.coordenadas.lng === 'number') {
-        const newCenter = new google.maps.LatLng(car.coordenadas.lat, car.coordenadas.lng);
-        console.log('[Maps.vue] handleCarSelected: Centrando mapa en:', newCenter.toJSON(), 'y zoom a 16');
-        this.map.panTo(newCenter);
-        this.map.setZoom(16);
-      } else {
-        console.warn('[Maps.vue] handleCarSelected: No se puede centrar el mapa. Verifique las condiciones:');
-        console.warn('  - this.map:', this.map);
-        console.warn('  - car.coordenadas:', car.coordenadas);
-        if(car.coordenadas) console.warn('  - typeof car.coordenadas.lat:', typeof car.coordenadas.lat, 'typeof car.location.lng:', typeof car.location.lng);
-      }
-    },  
-
-    closeCarDetails() {
-      this.selectedCar = null;
-      // Opcionalmente, puedes resetear el zoom/centro del mapa aquí si lo deseas
-      this.map.setZoom(14);
-    },
-
-    async updateMapMarkers() {
-      if (this.map) {
-        this.markers = await updateMapMarkers(this.map, this.filteredCars, this.markers, comentarioIcon, this.handleCarSelected);
-      }
-    },
-
-    async useMyLocation() {
-      this.showSuggestions = false;
-      try {
-        // Mostrar un indicador de carga si es necesario
-        this.loading = true; // Necesitarías añadir esta data property
-        const place = await getCurrentLocation();
-        this.loading = false;
-
-        // Ya tenemos 'place.location' y 'place.formattedAddress'
-        // handlePlaceSelected se encargará de centrar, actualizar input y filtrar
-        await this.handlePlaceSelected(place);
-      } catch (error) {
-        console.error("Error al usar mi ubicacion:", error);
-        addAlert("No se pudo obtener tu ubicación actual.", "error");
-        // Aquí podrías usar tu servicio de alertas para notificar al usuario
-        // addAlert("No se pudo obtener tu ubicación actual.", "error");
-      }
-    },
-
-    // useMyLocation() {
-    //   this.showSuggestions = false;
-    //   getCurrentLocation(this.handlePlaceSelected);
-    // },
-  },
-  async mounted() {
-    
-    await loadGoogleMaps();
-    this.map = await initMap('map')
-    initAutocomplete('searchInput', this.handlePlaceSelected);
-
-    try {
-      const initialPlace = await getCurrentLocation();
-      this.searchLocation = initialPlace.location;
-      this.searchQuery = initialPlace.formattedAddress;
-      console.log('[Maps.vue] mounted: Ubicación inicial obtenida:', initialPlace.formattedAddress, 'Coords:', initialPlace.location);
-      if (this.map && this.searchLocation && typeof this.searchLocation.lat === 'number' && typeof this.searchLocation.lng === 'number') {
-        this.map.setCenter(this.searchLocation); // Centrar el mapa con la ubicación inicial
-        this.map.setZoom(14); // Un zoom un poco más alejado para el inicio
-      }
-    } catch (error) {
-      console.warn("No se pudo obtener la ubicación inicial:", error);
-      // El mapa se centrará en la ubicación por defecto de initMap
-    }
-    // getCurrentLocation((location) => {
-    //   this.searchLocation = location;
-    //   if (this.map && this.searchLocation) {
-    //     this.map.setCenter(this.searchLocation);
-    //     this.map.setZoom(14);
-    //   }
-    //   // this.applyFilters(); // esto usa searchLocation actual
-    // });
-
-    subscribeToAuthState((newUserData) => {
-      this.loggedUser = newUserData;
-      if (newUserData && newUserData.id) {
-        console.log('[Maps.vue] mounted: Usuario autenticado:', newUserData.email, 'ID:', newUserData.id, '. Buscando coches.');
-        this.fetchCars(); // fetchCars ya llama a updateMapMarkers
-      } else {
-        console.log('[Maps.vue] mounted: Usuario no autenticado o datos de usuario incompletos. Limpiando coches y marcadores.');
-        this.cars = [];
-        this.filteredCars = [];
-        this.selectedCar = null; // También limpia el coche seleccionado si el usuario se desloguea
-        this.updateMapMarkers(); // Para limpiar los marcadores del mapa
-      }
-    });
-
-    subscribeToNewPublication((newCars) => {
-      this.cars = newCars;
-      this.filterCars();
-    });
-  },
+// This 'car' object was used in the original template for static owner info
+// when a car is selected. It's kept for template compatibility.
+// Ideally, selectedCar would contain all necessary owner details.
+const car = {
+  owner: {
+    name: 'Jazmín Vega',
+    avatar: 'https://i.pravatar.cc/40?img=5'
+  }
 };
+
+
+const updateMapMarkersService = async () => {
+  if (map.value) {
+    markers.value = await updateMapMarkers(
+      map.value,
+      filteredCars.value,
+      markers.value, // Pass current markers to be updated/cleared
+      comentarioIcon,
+      handleCarSelected // Callback for when a marker is clicked
+    );
+  }
+};
+
+const filterCars = async () => {
+  if (map.value && searchLocation.value && typeof searchLocation.value.lat === 'number' && typeof searchLocation.value.lng === 'number') {
+    // Center map on search location
+    map.value.setCenter(searchLocation.value);
+    map.value.setZoom(14); // Adjust zoom as needed
+    // Filter cars based on the current searchLocation
+    filteredCars.value = updateCars(cars.value, searchLocation.value, map.value);
+  } else {
+    // If no valid search location, show all cars (or handle as per requirements)
+    console.warn('[Maps.vue filterCars] searchLocation no es valido para filtrar o centrar el mapa.', searchLocation.value);
+    filteredCars.value = [...cars.value]; // Display all fetched cars
+  }
+  await updateMapMarkersService(); // Update markers with the new filtered list
+};
+
+const fetchCars = async () => {
+  loading.value = true;
+  try {
+    // Fetch cars, potentially based on logged-in user
+    cars.value = await getAvailableCars(loggedUser.value?.id);
+    // After fetching, apply current filters (which might be based on searchLocation)
+    await filterCars();
+  } catch (error) {
+    console.error("Error al buscar autos:", error);
+    addAlert("Error al cargar los vehículos.", "error");
+    cars.value = [];
+    filteredCars.value = [];
+    await updateMapMarkersService(); // Clear markers on error
+  } finally {
+    loading.value = false;
+  }
+};
+
+const goToCarDetails = (carId) => {
+  router.push({ name: "CarDetails", params: { id: carId } });
+};
+
+const handlePlaceSelected = async ({ formattedAddress, location }) => {
+  searchLocation.value = location;
+  searchQuery.value = formattedAddress; // Update the input field display
+
+  if (map.value && location && typeof location.lat === 'number' && typeof location.lng === 'number') {
+    map.value.setCenter(location);
+    map.value.setZoom(14);
+  }
+  await filterCars(); // Filter cars based on new location
+  showSuggestions.value = false;
+};
+
+const handleCarSelected = (carFromMarker) => {
+  selectedCar.value = carFromMarker;
+  if (map.value && carFromMarker.coordenadas && typeof carFromMarker.coordenadas.lat === 'number' && typeof carFromMarker.coordenadas.lng === 'number') {
+    const newCenter = new google.maps.LatLng(carFromMarker.coordenadas.lat, carFromMarker.coordenadas.lng);
+    map.value.panTo(newCenter);
+    map.value.setZoom(16);
+  } else {
+    console.warn('[Maps.vue handleCarSelected] Coordenadas inválidas o mapa no listo:', carFromMarker.coordenadas);
+  }
+};
+
+const closeCarDetails = () => {
+  selectedCar.value = null;
+  if (map.value && searchLocation.value) {
+     map.value.setZoom(14);
+     // map.value.panTo(searchLocation.value); // Optionally re-center to the search location
+  } else if (map.value) {
+     map.value.setZoom(14);
+  }
+};
+
+const useMyLocation = async () => {
+  showSuggestions.value = false;
+  loading.value = true;
+  try {
+    const place = await getCurrentLocation();
+    // handlePlaceSelected will update searchLocation, searchQuery, map center, and filter cars
+    await handlePlaceSelected(place);
+  } catch (error) {
+    console.error("Error al usar mi ubicacion:", error);
+    addAlert("No se pudo obtener tu ubicación actual.", "error");
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(async () => {
+  await loadGoogleMaps();
+  map.value = await initMap('map'); // initMap should return the map instance
+  initAutocomplete('searchInput', handlePlaceSelected); // Initialize autocomplete on the input
+
+  // Attempt to get initial location
+  try {
+    const initialPlace = await getCurrentLocation();
+    // Set initial search location and query. handlePlaceSelected will then filter cars.
+    searchLocation.value = initialPlace.location;
+    searchQuery.value = initialPlace.formattedAddress;
+    if (map.value && searchLocation.value) {
+        map.value.setCenter(searchLocation.value);
+        map.value.setZoom(14); // Initial zoom level
+    }
+    console.log('[Maps.vue onMounted] Ubicación inicial obtenida y mapa centrado.');
+    // Cars will be fetched based on auth state or if explicitly called after this.
+  } catch (error) {
+    console.warn("[Maps.vue onMounted] No se pudo obtener la ubicación inicial:", error);
+    // Proceed without initial location; map will use its default center.
+    // Cars will be fetched by auth state change, potentially showing all if no searchLocation.
+  }
+
+});
+
+// Watch for changes in authentication state
+watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser, initialized]) => {
+  if (!initialized) {
+    // Opcional: puedes mostrar un estado de carga aquí si el store aún no está listo.
+    // loading.value = true; // Por ejemplo, si quieres mostrar un spinner global.
+    console.log('[Maps.vue authStore watch] authStore no inicializado todavía. Esperando...');
+    return; // No hacer nada hasta que el store esté inicializado.
+  }
+  // Si llegamos aquí, el store está inicializado.
+  // loading.value = false; // Quitar el loading si se puso arriba
+  loggedUser.value = currentUser ? { id: currentUser.id, email: currentUser.email } : { id: null, email: null };
+
+  if (loggedUser.value && loggedUser.value.id) {
+    console.log('[Maps.vue authStore.user watch] Usuario autenticado. Buscando coches.');
+    await fetchCars(); // Fetch cars for the logged-in user
+  } else {
+    console.log('[Maps.vue authStore.user watch] Usuario no autenticado. Limpiando datos.');
+    cars.value = [];
+    filteredCars.value = [];
+    selectedCar.value = null;
+    await updateMapMarkersService();
+  }
+}, { immediate: true, deep: true });
+
+// All declared constants and functions (refs, router, local functions, imported functions/components)
+// are automatically available to the template when using <script setup>.
+// No explicit `return` statement is needed from setup().
+
 </script>
 
 <template>
@@ -331,7 +311,7 @@ export default {
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           d="M21 21l-4.35-4.35m1.85-4.65a7 7 0 11-14 0 7 7 0 0114 0z" />
       </svg>
-      <input type="text" id="searchInput" placeholder="¿Dónde necesitas un coche?"
+      <input type="text" id="searchInput" v-model="searchQuery" placeholder="¿Dónde necesitas un coche?"
         class="bg-transparent outline-none text-gray-700 w-full pl-2 placeholder-gray-400" />
     </div>
 

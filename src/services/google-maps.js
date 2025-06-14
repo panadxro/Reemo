@@ -486,21 +486,29 @@ export function getCurrentLocation() {
 export async function updateMapMarkers(map, cars, existingMarkers, iconUrl, onMarkerClickCallback) {
   // 1. Limpiar marcadores existentes del mapa y del array
   existingMarkers.forEach(marker => marker.setMap(null));
-  existingMarkers.length = 0; // Vacía el array manteniendo la referencia original
+  let newMarkers = []; // Usaremos un nuevo array, como en tu versión vieja.
+  // existingMarkers.length = 0;
 
-  if (!cars || cars.length === 0) {
-    // console.log('[google-maps.js] updateMapMarkers: No hay coches para mostrar.');
-    return existingMarkers; // Devuelve el array vacío
+
+  if (!map) {
+    console.error('[google-maps.js] updateMapMarkers: El mapa no está inicializado.');
+    return newMarkers;
   }
 
+  if (!cars || cars.length === 0) {
+    console.warn("[google-maps.js] updateMapMarkers: No hay coches filtrados para mostrar en el mapa.");
+    return newMarkers; 
+  }
+  
   // console.log('[google-maps.js] updateMapMarkers: Creando marcadores para', cars.length, 'coches.');
+  const bounds = new google.maps.LatLngBounds();
 
   // 2. Crear nuevos marcadores
   cars.forEach(car => {
     // Asegurarse de que el coche tiene una ubicación válida
     if (!car.coordenadas || typeof car.coordenadas.lat !== 'number' || typeof car.coordenadas.lng !== 'number') {
-      // console.warn('[google-maps.js] Coche omitido por ubicación inválida o faltante:', car.id, car.location);
-      return; // Saltar este coche
+      console.warn('[google-maps.js] Coche omitido por ubicación inválida o faltante:', car.id, car.location);
+      return;
     }
 
     const marker = new google.maps.Marker({
@@ -508,14 +516,14 @@ export async function updateMapMarkers(map, cars, existingMarkers, iconUrl, onMa
       map: map,
       icon: iconUrl ? {
         url: iconUrl,
-        scaledSize: new google.maps.Size(40, 40) // Ajusta el tamaño según sea necesario
+        scaledSize: new google.maps.Size(40, 40) // Ajusta el tamaño
       } : undefined, // Usa el icono por defecto si iconUrl no se proporciona
       title: `${car.marca} ${car.modelo}` // Tooltip al pasar el mouse
     });
 
     // Crear una copia del objeto 'car' para el listener.
-    // Esto asegura que si el objeto original en el array 'cars' es modificado después,
-    // el listener todavía tendrá los datos correctos de cuando se creó el marcador.
+    // Aseguramos que si el objeto original en el array 'cars' es modificado después,
+    // el listener todavía tendrá los datos correctos de cuando se creo el marcador.
     const carDataForCallback = JSON.parse(JSON.stringify(car));
 
     // 3. Añadir listener de clic al marcador
@@ -530,8 +538,27 @@ export async function updateMapMarkers(map, cars, existingMarkers, iconUrl, onMa
       }
     });
 
-    existingMarkers.push(marker);
+    // existingMarkers.push(marker);
+    newMarkers.push(marker);
+    bounds.extend(marker.getPosition());
   });
 
-  return existingMarkers;
+  // return existingMarkers;
+
+  if (newMarkers.length > 0) {
+    // Usar un pequeño timeout puede ayudar si el mapa aún se está renderizando o ajustando
+    setTimeout(() => {
+      if (map && typeof map.fitBounds === 'function') { 
+        map.fitBounds(bounds);
+        // Si solo hay un marcador, fitBounds puede hacer un zoom excesivo.
+        if (newMarkers.length === 1 && map.getZoom() > 15) { // 15 es un ejemplo, ajústalo
+          map.setZoom(14);
+        }
+      }
+    }, 100);
+  }
+
+  // console.log('[google-maps.js] updateMapMarkers: Retornando', newMarkers.length, 'marcadores nuevos.');
+  return newMarkers; 
+
 }
