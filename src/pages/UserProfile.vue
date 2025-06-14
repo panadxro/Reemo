@@ -70,8 +70,8 @@ export default {
 
     // PAra verificare si es el usuario logueado o un usuario visitado, y le asignamos los autos correspondientes
     const userCars = computed(() => {
-  return isOwnProfile.value ? carStore.getUserCars : carStore.getVisitedUserCars;
-});
+      return carStore.loadCarById(userIdFromRoute.value);
+    });
 
     const displayedPaymentMethods = computed(() => {
       if (!paymentStore.paymentMethods.length) return [];
@@ -133,6 +133,7 @@ const saveNewPaymentMethod = async () => {
 
     onMounted(async () => {
       await userStore.loadUserProfile(userIdFromRoute.value);
+      // console.error("User is not logged in", userIdFromRoute.value)
 
       // Fetch a los autos del usuaroi
       await carStore.loadUserCars(userIdFromRoute.value);
@@ -171,97 +172,6 @@ const saveNewPaymentMethod = async () => {
 }
 </script>
 
-
-  <!-- <div class="profile-layout">
-    <UserNav v-if="isOwnProfile" class="nav-component" />
-    
-    <section class="profile-container">
-      <div class="header-section">
-        <BackButton />
-        <Heading v-if="showProfile && showProfile.personalInfo" :type="1" class="medium profile-heading">
-          {{ isOwnProfile ? "Mi perfil" : showProfile.personalInfo.username }}
-        </Heading>
-      </div>
-
-      <article class="profile-info">
-        <img 
-          v-if="showProfile && showProfile.personalInfo && showProfile.personalInfo.profilePhoto" 
-          class="profile-photo" 
-          :src="showProfile.personalInfo.profilePhoto"
-          :alt="`Perfil de ${showProfile?.personalInfo?.username || 'usuario'}`" 
-        />
-        <div class="profile-details">
-          <Heading :type="2" class="medium" v-if="showProfile && showProfile.personalInfo">
-            {{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }}
-          </Heading>
-          <p v-if="showProfile">{{ showProfile.email }}</p>
-          <router-link 
-            v-if="!isOwnProfile && showProfile && showProfile.personalInfo && showProfile.personalInfo.id !== id"
-            :to="`/user/${id}/chat`" 
-            class="message-button"
-          >
-            Enviar Mensaje
-          </router-link>
-        </div>
-      </article>
-
-      <div class="dashboard-grid">
-        <div class="history-section" v-if="!$route.matched.some(route => route.name === 'PrivateChat')">
-          <div class="section-header">
-            <Heading :type="1" class="text-white">Historial</Heading>
-            <a href="" class="section-link text-white">Ver más</a>
-          </div>
-          
-          <div v-if="isOwnProfile" class="history-content">
-            <div v-if="rentedCars && rentedCars.length">
-              <RentedCar v-for="rental in rentedCars" :key="rental.id" :car="rental.car" />
-            </div>
-            <div v-else class=" text-white">
-              <p class="empty-message">Aún no has alquilado ningún auto.</p>
-              <router-link to="/search" class="action-link">
-                <span>Alquilá un auto</span>
-              </router-link>
-            </div>
-          </div>
-          
-          <div v-else class="empty-section text-white">
-            <p class="empty-message">Historial no disponible</p>
-          </div>
-        </div>
-
-        <div
-          v-if="!$route.matched.some(route => route.name === 'PrivateChat')"
-          class="user-section">
-          <p>Usuario</p>
-        </div>
-
-        <div class="cars-section">
-          <div class="section-header">
-            <Heading :type="1">{{ isOwnProfile ? "Mis autos" : "Vehículos" }}</Heading>
-            <a href="" class="section-link">Ver más</a>
-          </div>
-          
-          <div v-if="posts && posts.length" class="cars-content">
-            <UserCar 
-              v-for="post in posts" 
-              :key="post.id" 
-              :car="post"
-            />
-          </div>
-          <div v-else class="empty-section">
-            <p class="empty-message">
-              {{ isOwnProfile ? "Aún no tienes autos registrados." : "Este usuario no tiene autos registrados." }}
-            </p>
-            <router-link v-if="isOwnProfile" to="/" class="action-link">
-              <span>Registra un auto</span>
-            </router-link>
-          </div>
-        </div>
-      </div>
-      
-      <router-view></router-view>
-    </section>
-  </div>  -->
 <template>
   <section class="flex flex-col md:flex-row" v-if="isOwnProfile">
     <BackButton class="md:hidden w-fit mt-1 ml-2" />
@@ -276,7 +186,7 @@ const saveNewPaymentMethod = async () => {
               Mi perfil
             </Heading>
           </div>
-          <!-- Pongo datos falsos despues los reemplazoamos -->
+
           <article
             class="bg-secondary-100 rounded-[20px] md:rounded-[30px] xl:rounded-[40px] p-4 md:p-6 xl:max-w-[600px]">
             <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
@@ -601,17 +511,9 @@ const saveNewPaymentMethod = async () => {
             <Heading :type="1" class="text-primary-900">
               {{ isOwnProfile ? "Mis autos" : "Vehículos" }}
             </Heading>
-            <!-- Mostrar en caso de que se haga la pagina -->
-            <!-- <router-link 
-              v-if="isOwnProfile && userCars.length > 0" 
-              to="/my-cars" 
-              class="text-primary-800 text-sm hover:text-primary-600 transition-colors"
-            >
-              Ver todos
-            </router-link> -->
           </div>
 
-          <div v-if="carStore.loadingUserCars" class="flex justify-center py-8">
+          <div v-if="carStore.loading" class="flex justify-center py-8">
             <Loading class="w-8 h-8 text-primary-800" />
           </div>
 
@@ -622,11 +524,17 @@ const saveNewPaymentMethod = async () => {
               ]" @click="$router.push(`/car/${car.id}`)">
               <div :class="['flex', userCars.length === 1 ? 'gap-6' : 'gap-4']">
                 <div class="relative flex-shrink-0">
-                  <img :src="car.images?.[0] || carStore.defaultCarImage" :alt="car.marca + ' ' + car.modelo" :class="[
+                  <img 
+                    :src="car.images?.[0] || carStore.defaultCarImage" 
+                    :alt="car.marca + ' ' + car.modelo"     
+                    :class="[
                       'object-cover rounded-xl',
                       userCars.length === 1 ? 'w-32 h-28 sm:w-36 sm:h-32' : 'w-24 h-20 sm:w-28 sm:h-24'
-                    ]" @error="carStore.handleImageError" />
-                  <div :class="[
+                    ]" 
+                    @error="carStore.handleImageError" 
+                    />
+                  <div 
+                    :class="[
                       'absolute -top-1 -right-1 rounded-full font-medium',
                       userCars.length === 1 ? 'px-3 py-1.5 text-sm' : 'px-2 py-1 text-xs',
                       car.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -658,7 +566,6 @@ const saveNewPaymentMethod = async () => {
                     {{ car.año }} • {{ car.combustible }} • {{ car.transmision }}
                   </p>
 
-                  <!-- Cambiar info como queiran -->
                   <div class="flex gap-2 flex-wrap">
                     <span :class="[
                       'bg-vibrant-light-600 text-primary-900 px-2 py-1 rounded-lg',
@@ -667,13 +574,6 @@ const saveNewPaymentMethod = async () => {
                       {{ car.asientos }} asientos
                     </span>
                   </div>
-
-                  <!-- Agregar despues -->
-                  <!-- <div v-if="car.rating" class="flex items-center gap-1">
-                    <span class="text-yellow-500">★</span>
-                    <span class="text-sm text-primary-900 font-medium">{{ car.rating }}</span>
-                    <span class="text-xs text-background-600">({{ car.reviewCount || 0 }} reseñas)</span>
-                  </div> -->
                 </div>
               </div>
             </div>
@@ -697,14 +597,14 @@ const saveNewPaymentMethod = async () => {
           </div>
 
           <!-- se deberia mostrar en caso de que haya mas de 4 autos pero es dificcil que pase y ademas la apgina no existe -->
-          <!-- <div v-if="userCars.length > 4" class="mt-4 text-center">
+          <div v-if="userCars.length > 4" class="mt-4 text-center">
             <router-link 
               to="/my-cars" 
               class="text-primary-800 hover:text-primary-600 text-sm font-medium"
             >
               Ver los {{ userCars.length - 4 }} autos restantes →
             </router-link>
-          </div> -->
+          </div>
         </div>
       </div>
 

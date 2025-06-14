@@ -1,28 +1,74 @@
-import { collection, doc, getDoc, addDoc, serverTimestamp, query, where, getDocs, updateDoc, onSnapshot, orderBy} from "firebase/firestore";
-import { db } from "../firebase.js";
+import { collection, doc, getDoc, setDoc, serverTimestamp, query, where, getDocs, updateDoc, onSnapshot } from "firebase/firestore";
+import { db } from "../firebase";
+
+export function createCarData() {
+  const newCarRef = doc(collection(db, 'cars'));
+  return newCarRef.id;
+}
 
 // Obtener auto por ID
 export async function getCarById(carId) {
-  const carDoc = doc(db, "cars", carId);
-  const carSnapshot = await getDoc(carDoc);
-  if (carSnapshot.exists()) {
-    const carData = carSnapshot.data();
-    const userDoc = doc(db, "users", carData.user_id);
-    const userSnapshot = await getDoc(userDoc);
-    if (userSnapshot.exists()) {
-      const userData = userSnapshot.data();
-      return { id: carSnapshot.id, ...carData, user: userData };
+  try {
+    const carRef = doc(db, "cars", carId);
+    const carSnap = await getDoc(carRef);
+    
+    if (!carSnap.exists()) {
+      throw new Error("Vehículo no encontrado");
     }
-    return { id: carSnapshot.id, ...carData, user: null };
+    
+    return {
+      id: carSnap.id,
+      ...carSnap.data()
+    };
+  } catch (error) {
+    console.error("Error getting car:", error);
+    throw error;
   }
-  throw new Error("Auto no encontrado.");
 }
 
-// Obtener autos del Usuario por ID
+export async function editCar(carId, data) {
+  const carRef = doc(db, "cars", carId);
+  await updateDoc(carRef, { 
+    ...data,
+    updatedAt: serverTimestamp()
+  });
+}
+
+export async function saveCarData(carData) {
+  try {
+    if (!carData.id) {
+      throw new Error("Car ID is required");
+    }
+
+    const carRef = doc(db, 'cars', carData.id);
+    
+    await setDoc(carRef, {
+      ...carData,
+      updatedAt: serverTimestamp(),
+      createdAt: carData.createdAt || serverTimestamp()
+    });
+
+    return carData.id;
+  } catch (error) {
+    console.error("Error saving car data:", error);
+    throw error;
+  }
+}
+
+// Chekea si el auto esta rentado (Cambiar o eliminar)
+export async function checkIfCarIsRented(carId) {
+  const rentalQuery = query(
+    collection(db, "rental_requests"),
+    where("car_id", "==", carId)
+  );
+  const querySnapshot = await getDocs(rentalQuery);
+  return !querySnapshot.empty && querySnapshot.docs[0].data().rented;
+}
+
 export function getUserCars(userId) {
   return new Promise((resolve, reject) => {
     const carsCollection = collection(db, "cars");
-    const userCarsQuery = query(carsCollection, where("user_id", "==", userId));
+    const userCarsQuery = query(carsCollection, where("ownerId", "==", userId)); // Cambió de "user_id" a "ownerId"
 
     const unsubscribe = onSnapshot(
       userCarsQuery,
@@ -31,57 +77,50 @@ export function getUserCars(userId) {
           id: doc.id,
           ...doc.data(),
         }));
-        resolve(cars); // Resuelve la promesa con los autos
+        resolve(cars);
       },
       (error) => {
         console.error("Error al obtener los autos:", error);
-        reject(error); // Rechaza la promesa si hay un error
+        reject(error);
       }
     );
 
-    // Devuelve la función para desuscribirse
     return unsubscribe;
   });
 }
 
-  // Es la que estaba en Püblications
-  export async function getAvailableCars(userId) {
-    const carsCollection = collection(db, "cars");
-    const rentedCollection = collection(db, "rents");
-  
-    // Consulta para obtener autos disponibles y validados
-    const carsQuery = query(
-      carsCollection,
-      where("isAvailable", "==", true),
-      where("isValidated", "==", true)
-    );
-    const carsSnapshot = await getDocs(carsQuery);
-  
-    // Consulta para obtener solicitudes de alquiler con estado "aceptado"
-    const activeRentsQuery  = query(
-      rentedCollection,
-      where("status", "in", ['confirmed', 'in_progress'])
-    );
-    const activeRentsSnapshot  = await getDocs(activeRentsQuery );
-  
-    // Obtener los IDs de los autos con solicitudes "aceptado"
-    const rentedVehicleIds  = new Set(activeRentsSnapshot.docs.map((doc) => doc.data().vehicle_id));
-  
-    return carsSnapshot.docs
-      .map((doc) => ({ id: doc.id, ...doc.data() }))
-      .filter(
-        (car) =>
-          car.user_id !== userId && // El auto no pertenece al usuario actual
-          !rentedVehicleIds.has(car.id) // El auto no está en la lista de IDs de vehículos activamente alquilados
-      );
-  }
-
-// Registrar vehículo
-export async function addCar(newCar) {
+// Habia que actualizar estan funcion porque quedaron los datos viejos
+export async function getAvailableCars(userId) {
   const carsCollection = collection(db, "cars");
-  const docRef = await addDoc(carsCollection, {
-    ...newCar,
-    created_at: serverTimestamp(),
-  });
-  return { id: docRef.id, ...newCar };
+  const rentedCollection = collection(db, "rents");
+
+  // Consulta para obtener todos los autos (antes filtrabamos isAvailable e isValidates, despues habria que volverlo a agregar)
+  const carsQuery = query(carsCollection);
+  const carsSnapshot = await getDocs(carsQuery);
+
+  // Para obtener solicitudes de alquiler con estado "aceptado"
+  const activeRentsQuery = query(
+    rentedCollection,
+    where("status", "in", ['confirmed', 'in_progress'])
+  );
+  const activeRentsSnapshot = await getDocs(activeRentsQuery);
+
+  // para obtener los ids de esos autos y despues filtrarlo
+  const rentedVehicleIds = new Set(activeRentsSnapshot.docs.map((doc) => doc.data().vehicle_id));
+
+  return carsSnapshot.docs
+    .map((doc) => ({ id: doc.id, ...doc.data() }))
+    .filter((car) => {
+      const isNotOwner = car.ownerId !== userId;
+      
+      // Filtrar por status disponible
+      const isAvailable = car.status?.current === 'available';
+      
+      // y si el auto no está alquilado
+      const isNotRented = !rentedVehicleIds.has(car.id);
+      
+      return isNotOwner && isAvailable && isNotRented;
+    });
 }
+
+

@@ -1,5 +1,5 @@
 <script>
-import { getAvailableCars, addCar } from "../services/car-service.js";
+import { getAvailableCars } from "../services/car";
 import { subscribeToAuthState } from "../services/auth.js";
 import { subscribeToNewPublication } from "../services/publication.js";
 
@@ -62,14 +62,14 @@ export default {
         this.loading = false;
       }
     },
-    async addNewCar(newCar) {
-      try {
-        const addedCar = await addCar(newCar);
-        this.cars.push(addedCar);
-      } catch (error) {
-        console.error("Error al agregar un nuevo auto:", error);
-      }
-    },
+    // async addNewCar(newCar) {
+    //   try {
+    //     const addedCar = await addCar(newCar);
+    //     this.cars.push(addedCar);
+    //   } catch (error) {
+    //     console.error("Error al agregar un nuevo auto:", error);
+    //   }
+    // },
     goToCarDetails(carId) {
       this.$router.push({ name: "CarDetails", params: { id: carId } });
     },
@@ -324,5 +324,39 @@ export default {
         </div>
       </div>
     </div>
+    <section class="explore m-2.5 flex flex-col w-full gap-3 overflow-hidden">
+      <div class="flex justify-between items-center">
+        <Heading :type="1" class="m-6 text-center">Autos disponibles</Heading>
+
+        <template v-if="loggedUser.id == null">
+          <router-link to="/login"
+            class="gap-4 md:flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
+            <span class="hidden md:block">Publicar Vehículo</span>
+            <AddIcon />
+          </router-link>
+        </template>
+
+        <template v-else>
+          <router-link to="/car/register"
+            class="gap-4 md:flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
+            <span class="hidden md:block">Publicar Vehículo</span>
+            <AddIcon />
+          </router-link>
+        </template>
+      </div>
+      <div v-if="loading" class="flex items-center justify-center w-fit mx-auto bg-gray-50">
+        <Loading role="status" />
+        <span class="sr-only">Cargando...</span>
+      </div>
+
+      <div v-else class="h-full overflow-auto">
+        <div class="grid justify-items-center gap-3 grid-cols-2">
+          <div v-for="(car, index) in filteredCars" :key="car.id"
+            class="rounded-2xl flex relative flex-col shadow-xs w-full">
+            <CardCar :car="car" />
+          </div>
+        </div>
+      </div>
+    </section>
   </section>
 </template>

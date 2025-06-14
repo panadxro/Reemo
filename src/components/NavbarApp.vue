@@ -8,7 +8,7 @@ import Home from '@icons/Home.vue';
 import Search from '@icons/Search.vue';
 import Notification from '@icons/Notification.vue';
 import Map from '@icons/Map.vue';
-import UserIcon from '@icons/UserIcon.vue';
+import User from '@icons/User.vue';
 import QA from '@icons/QA.vue';
 import Settings from '@icons/Settings.vue';
 import Logout from '@icons/Logout.vue';
@@ -112,7 +112,7 @@ onBeforeUnmount(() => {
       </li>
       <li>
         <IconNavButton :to="'/user/' + authStore?.user.id" title="Profile" @click="toggleMobileMenu">
-          <UserIcon class="mr-2" />
+          <User class="mr-2" />
           <span class="font-semibold">Perfil</span>
         </IconNavButton>
       </li>
@@ -148,7 +148,7 @@ onBeforeUnmount(() => {
       </li>
       <li>
         <IconNavButton :to="'/user/' + authStore?.user.id" title="Profile" @click="toggleMobileMenu">
-          <UserIcon class="mr-2" />
+          <User class="mr-2" />
           <span class="font-semibold">Perfil</span>
         </IconNavButton>
       </li>

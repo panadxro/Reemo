@@ -1,8 +1,8 @@
-<script>
+<script setup>
+import { ref, onMounted, computed } from 'vue';
+import { useAuthStore, useUserStore , useCarStore } from '@stores'
+import { useRoute } from 'vue-router';
 import { Loader } from "@googlemaps/js-api-loader";
-import { useCarStore } from "@/stores/car.store.js";
-import { useAuthStore } from "@/stores/auth.store.js";
-import { useRentalStore } from "@/stores/rent.store.js";
 
 import Heading from "../components/atoms/Heading.vue";
 import Pill from "../components/atoms/Pill.vue";
@@ -13,144 +13,134 @@ import Like from "../icons/Like.vue";
 
 import RentalProcess from "@/components/organisms/rental/RentalProcess.vue";
 
-export default {
-  props: ["id"],
-  name: "CarDetails",
-  components: {
-    Heading,
-    Pill,
-    Loading,
-    BackButton,
-    Arrow,
-    Like,
-    RentalProcess
-  },
-  data() {
-    return {
-      mapInitialized: false,
-    };
-  },
-  
-  computed: {
-    carStore() {
-      return useCarStore();
-    },
-    authStore() {
-      return useAuthStore();
-    },
-    rentalStore() {
-      return useRentalStore();
-    },
-    car() {
-      return this.carStore.car;
-    },
-    currentStep() {
-      return this.rentalStore.currentStep;
-    },
-    loading() {
-      return this.carStore.loading;
-    },
-    error() {
-      return this.carStore.error;
-    },
-    currentImage() {
-      return this.carStore.currentImage;
-    },
-    isRented() {
-      return this.carStore.isRented;
-    },
-    loggedUser() {
-      return this.authStore.user;
-    }
-  },
-  
-  async created() {
-  try {
-    this.carStore.loading = true;
-    await this.carStore.fetchCarById(this.id);
+// Stores
+const carStore = useCarStore();
+const authStore = useAuthStore();
+const userStore = useUserStore();
 
-    if (this.car.coordenadas?.lat && this.car.coordenadas?.lng) {
-      await this.loadGoogleMaps();
-      this.initMap(this.car.coordenadas);
-    }
-  } catch (error) {
-    console.error("Error loading car details:", error);
+// Router
+const route = useRoute();
+
+const props = defineProps({
+  id: {
+    type: String,
+    required: true
   }
-},
+});
 
-  mounted() {
-    // Cargar datos guardados previamente
-    const savedData = localStorage.getItem('rentalData');
-    if (savedData) {
-      try {
-        this.rentalData = JSON.parse(savedData);
-      } catch (e) {
-        console.error("Error al cargar datos guardados:", e);
-      }
-    }
-  },
+const carId = props.id;
 
-  methods: {
-    setCurrentImage(image) {
-      this.carStore.setCurrentImage(image);
-    },
+// Estado del componente
+const loading = ref(false);
+const errorMsg = ref("");
+const currentImage = ref(null);
+const carOwner = ref(null); // Nuevo estado para el dueño del carro
+const defaultCarImage = "/src/assets/default-car.jpg";
+const defaultUserImage = "/src/assets/User.png"
+
+// Computed
+const car = computed(() => carStore.currentCar);
+const user = computed(() => userStore.profileData)
+const loggedUser = computed(() => authStore.user);
+
+// Computed para obtener los datos del dueño del auto
+const ownerData = computed(() => {
+  if (!car.value?.ownerId) return null;
+  return userStore.getUserDataById(car.value.ownerId) || carOwner.value;
+});
+
+// Métodos
+const initMap = async(coordenadas) => {
+  if (!coordenadas || !coordenadas.lat || !coordenadas.lng) {
+    console.error("Coordenadas no válidas:", coordenadas);
+    return;
+  }
+  try {
+    const position = { lat: coordenadas.lat, lng: coordenadas.lng };
+    const { Map } = await google.maps.importLibrary("maps");
+
+    const map = new Map(document.getElementById('map'),{
+      center: {
+        lat: coordenadas.lat,
+        lng: coordenadas.lng,
+      },
+      zoom: 14,
+      mapId: "4808da25693c56c8",
+      streetViewControl: false,
+      mapTypeControl: false,
+      disableDefaultUI: true,
+    });
+
+    new google.maps.Circle({
+      strokeColor: "#5DADE2",
+      strokeOpacity: 0.8, 
+      strokeWeight: 2, 
+      fillColor: "#A9D6F5", 
+      fillOpacity: 0.35, 
+      map: map,
+      center: position,
+      radius: 1000, 
+    });
     
-    setDefaultImage(event) {
-      this.carStore.handleImageError(event);
-    },
-
-    async loadGoogleMaps() {
-      const loader = new Loader({
-        apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-        libraries: ["places", "geometry"], 
-      });
-
-      try {
-        await loader.load(); // Esperamos a que la API se cargue completamente
-      } catch (error) {
-        console.error("Error al cargar Google Maps:", error);
-      }
-    },
-
-    async initMap(coordenadas){
-      if (!coordenadas || !coordenadas.lat || !coordenadas.lng) {
-        console.error("Coordenadas no válidas:", coordenadas);
-        return;
-      }
-      try {
-        const position = { lat: coordenadas.lat, lng: coordenadas.lng };
-        const { Map } = await google.maps.importLibrary("maps");
-
-        const map = new Map(document.getElementById('map'),{
-          center: {
-            lat: coordenadas.lat,
-            lng: coordenadas.lng,
-          },
-          zoom: 14,
-          mapId: "4808da25693c56c8",
-          streetViewControl: false,
-          mapTypeControl: false,
-          disableDefaultUI: true,
-        });
-
-        new google.maps.Circle({
-          strokeColor: "#5DADE2",
-          strokeOpacity: 0.8, 
-          strokeWeight: 2, 
-          fillColor: "#A9D6F5", 
-          fillOpacity: 0.35, 
-          map: map,
-          center: position,
-          radius: 1000, 
-        });
-        
-        this.mapInitialized = true;
-      } catch (error) {
-        console.error("Error al cargar Google Maps: ", error);
-      }
-    }
+    this.mapInitialized = true;
+  } catch (error) {
+    console.error("Error al cargar Google Maps: ", error);
   }
 };
+
+const setCurrentImage = (image) => {
+  currentImage.value = image;
+};
+
+const setDefaultImage = (event) => {
+  event.target.src = defaultCarImage;
+};
+
+const loadGoogleMaps = async () => {
+  const loader = new Loader({
+    apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    libraries: ["places", "geometry"], 
+  });
+  try {
+    await loader.load(); // Esperamos a que la API se cargue completamente
+  } catch (error) {
+    console.error("Error al cargar Google Maps:", error);
+  }
+};
+
+// Lifecycle hooks
+onMounted(async () => {
+  try {
+    loading.value = true;
+    
+    // Primero cargamos los datos del auto
+    await carStore.loadCarById(carId);
+    
+    // despues los del dueño
+    if (car.value?.ownerId) {
+      const ownerDataResponse = await userStore.getUserById(car.value.ownerId);
+      if (ownerDataResponse) {
+        carOwner.value = ownerDataResponse;
+      }
+    }
+
+    // Configuramos la imagen principal
+    if (car.value?.photos?.length > 0) {
+      currentImage.value = car.value.photos[0];
+    }
+    
+    // Cargamos Google Maps si hay coordenadas
+    if (car.value?.location?.coordinates) {
+      await loadGoogleMaps();
+      // initMap(car.value.location.coordinates);
+    }
+  } catch (error) {
+    errorMsg.value = "Hubo un error al obtener los detalles del auto";
+    console.error("Error:", error);
+  } finally {
+    loading.value = false;
+  }
+});
 </script>
 
 <template>
@@ -164,95 +154,114 @@ export default {
         <!-- Imagen principal del carrusel -->
         <figure class="my-auto w-full max-h-64 mx-auto overflow-hidden rounded-2xl relative">
           <div class="absolute top-4 left-4 right-4 flex justify-between items-center">
-            <!-- Pill "Nueva" -->
-            <div class="bg-blue-500 text-white text-sm font-semibold px-3 py-1 rounded-full">
-              Nueva
+            <div v-if="car.status?.current === 'available'" class="bg-blue-500 text-white text-sm font-semibold px-3 py-1 rounded-full">
+              Disponible
             </div>
-            <!-- Botón de "Me gusta" -->
-            <Like />
           </div>
-          <img class="object-center w-full h-full object-cover" :src="currentImage" @error="setDefaultImage"
-            alt="Auto" />
+          <img 
+            class="object-center w-full h-full object-cover"
+            :src="currentImage || defaultCarImage" 
+            @error="setDefaultImage" 
+            alt="Imagen del vehículo"
+          />
         </figure>
 
         <!-- Miniaturas debajo de la imagen principal -->
-        <div class="flex justify-between gap-2.5">
-          <img v-for="(image, index) in carStore.car.images" :key="index" :src="image" @click="setCurrentImage(image)"
-            @error="setDefaultImage" :class="{ active: image === currentImage }"
-            class="max-h-20 object-center w-full flex-1 h-full border-2 object-cover cursor-pointer rounded-2xl hover:opacity-90 focus:border-vibrant-light-900"
-            alt="" />
+        <div v-if="car.photos?.length > 1" class="flex justify-between gap-2.5">
+          <img 
+            v-for="(image, index) in car.photos" 
+            :key="index" 
+            :src="image" 
+            @click="setCurrentImage(image)"
+            @error="setDefaultImage" 
+            :class="{ active: image === currentImage }" 
+            class="max-h-20 object-center w-full flex-1 h-full border-2 object-cover cursor-pointer rounded-2xl hover:opacity-90 focus:border-vibrant-light-900" 
+            alt="Miniatura del vehículo"
+            />
         </div>
       </div>
-      <div class="flex items-center justify-between mt-4">
+      <div class="flex items-end justify-between mt-4">
         <Heading :type="2" class="large flex flex-col">
           <span class="text-background-600 text-lg!">
-            {{ car.marca }}
-          </span>
-          {{ car.modelo }}
+            {{ car.basicInfo?.brand }}
+          </span> 
+          {{ car.basicInfo?.model }}
         </Heading>
         <div class="flex flex-col items-end gap-2">
-          <p>4 estrellas</p>
           <Heading :type="3" class="medium text-background-600">
-            {{ carStore.formattedPrice }} /día
+            ${{ car.pricing?.rates?.daily }} /día
           </Heading>
         </div>
       </div>
-      <div v-if="car.user_id !== loggedUser?.id">
-        <router-link :to="`/user/${car.user_id}`" class="flex items-center gap-2 hover:cursor-pointer">
-          <img :src="car.user?.photoURL || carStore.defaultUserImage" :alt="car.user.userName" :title="car.user.userName"
-            class="w-8 h-8 object-cover rounded-full" />
+      
+      <div v-if="ownerData">
+        <router-link :to="`/user/${car.ownerId}`" class="flex items-center gap-2 hover:cursor-pointer">
+          <img 
+            :src="ownerData.personalInfo?.profilePhoto || defaultUserImage" 
+            :alt="`${ownerData.personalInfo?.firstName} ${ownerData.personalInfo?.lastName}`" 
+            :title="`${ownerData.personalInfo?.firstName} ${ownerData.personalInfo?.lastName}`"
+            class="w-8 h-8 object-cover rounded-full" 
+          />
           <p class="font-semibold hover:underline">
-            {{ car.user.name }} {{ car.user.lastName }}
+            {{ ownerData.personalInfo?.firstName || 'Usuario' }} {{ ownerData.personalInfo?.lastName || '' }}
           </p>
         </router-link>
       </div>
-      <div v-else>
-        <img :src="car.user.photoURL" :alt="car.user.userName" class="w-8 h-8 object-cover rounded-full" />
-        <p class="py-6">{{ car.user.name }} {{ car.user.lastName }}</p>
-      </div>
+
       <ul class="font-semibold">
         <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700">
           <p>Año:</p>
-          <span>{{ car.año }}</span>
+          <span>{{ car.basicInfo?.year }}</span>
         </li>
         <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700">
           <p>Tipo:</p>
-          <span>{{ car.chasis }}</span>
+          <span>{{ car.basicInfo?.type }}</span>
         </li>
         <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700 ">
           <p>Motor:</p>
-          <span>{{ car.motor }}</span>
+          <span>{{ car.specifications?.engine }}</span>
         </li>
         <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700">
           <p>Transmisión:</p>
-          <span>{{ car.transmision }}</span>
+          <span>{{ car.specifications?.transmission }}</span>
         </li>
         <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700">
           <p>Combustible:</p>
-          <span>{{ car.combustible }}</span>
+          <span>{{ car.specifications?.fuelType }}</span>
         </li>
       </ul>
       <div class="flex flex-col gap-4">
         <Heading :type="2" class="medium">Descripción</Heading>
         <p class="break-words">
-          {{ car.description }}
+          {{ car.status?.description }}
         </p>
       </div>
       <div class="flex flex-col gap-4">
         <Heading :type="2" class="medium">Accesorios</Heading>
-        <div class="flex flex-wrap gap-2 text-gray-700">
-          <Pill v-for="(accessory, index) in car.accessories" :key="index" :accessory="accessory.id"
-            :name="accessory.name" />
+        <div  class="flex flex-wrap gap-2 text-gray-700">
+          <Pill v-for="(accessory, index) in car.features?.accessories" :key="index" :accessory="accessory" :name="accessory" />
+
         </div>
       </div>
     </article>
   </section>
-  <div v-else-if="carStore.loading" class="flex justify-center items-center h-64">
-    <Loading role="status" class="h-6 w-6 text-blue-500" />
-  </div>
+
+  <section v-else-if="loading" class="w-full h-full flex items-center justify-center">
+    <Loading />
+    <div v-if="carStore.loading" class="flex justify-center items-center h-64">
+      <Loading role="status" class="h-6 w-6 text-blue-500" />
+    </div>
+  </section>
+  
   <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
     <p>{{ carStore.errorMessage }}</p>
+>>>>>>> develop
   </section>
+
+  <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
+    <p v-if="errorMsg">{{ errorMsg || 'No se encontró el vehículo' }}</p>
+  </section>
+  
   <div class="m-2.5 w-full flex flex-col gap-3">
     <div class="map-container">
       <div 
@@ -270,12 +279,11 @@ export default {
         :user-id="loggedUser?.id"
         :is-car-rented="isRented"
       />  
-      
     </div>
 
     <span v-if="isRented && !carStore.isUserOwner"
-  class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">
-  {{ carStore.isUserOwner ? 'Tu auto ya está alquilado' : 'Este auto ya está alquilado' }}
-</span>
+      class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">
+      {{ carStore.isUserOwner ? 'Tu auto ya está alquilado' : 'Este auto ya está alquilado' }}
+    </span>
   </div>
 </template>

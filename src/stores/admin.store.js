@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia';
-import { getUsers, updateUserRole } from '@/services/user/admin';
-
+import { getUsers, updateUserRole } from '@/services/user';
+import { getCars } from '@/services/car';
+import { useUserStore } from '@stores';
 export const useAdminStore = defineStore('adminUser', {
   state: () => ({
     users: [],
+    cars: [],
     loading: false,
     error: null,
   }),
@@ -17,6 +19,29 @@ export const useAdminStore = defineStore('adminUser', {
       } catch (error) {
         this.users = [];
         this.error = error.message || 'Error fetching users';
+      } finally {
+        this.loading = false;
+      }
+    },
+    async fetchCars() {
+      this.loading = true;
+      const userStore = useUserStore();
+      try {
+        const cars = await getCars();
+
+        const owners = await Promise.all(
+          cars.map(async (car) => {
+            const owner = await userStore.getUserById(car.ownerId);
+            return { ...car, owner };
+          })
+        );
+
+        this.cars = owners;
+        console.log(this.cars)
+        this.error = null;
+      } catch (error) {
+        this.cars = [];
+        this.error = error.message || 'Error fetching cars';
       } finally {
         this.loading = false;
       }
