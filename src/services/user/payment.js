@@ -5,10 +5,10 @@ import { db } from '../firebase';
 export async function addPaymentMethod(uid, methodData) {
   const userRef = doc(db, 'users', uid);
   await updateDoc(userRef, {
-    paymentMethods: arrayUnion({
+    paymentMethods: {
       ...methodData,
       addedAt: new Date()
-    }),
+    },
     updatedAt: new Date()
   });
 };

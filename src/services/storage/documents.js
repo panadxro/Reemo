@@ -12,3 +12,15 @@ export async function uploadUserFile(userId, file, path) {
     throw error;
   }
 };
+
+export const uploadVehiclePhoto = async (file, path) => {
+  try {
+    const storage = getStorage();
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+  } catch (error) {
+    console.error('Error uploading vehicle photo:', error);
+    throw error;
+  }
+};

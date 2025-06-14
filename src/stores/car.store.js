@@ -1,198 +1,246 @@
-import { defineStore } from 'pinia';
-import { getCarById } from "../services/car-service.js";
-import { isCarAlreadyRented } from "@/services/rentedCarService";
+import { defineStore } from "pinia";
+import { editCar, saveCarData, createCarData, getCarById, getAvailableCars } from "../services/car";
+import { uploadVehiclePhoto } from '../services/storage/documents'
 import { useAuthStore } from '@stores';
-import { getUserCars } from '@/services/car/core.js'
 
-export const useCarStore = defineStore('car', {
+export const useCarStore = defineStore("car", {
   state: () => ({
-    car: {
+    currentCar: {
+      basicInfo: {
+        brand: '',
+        model: '',
+        year: '',
+        type: '',
+        color: '',
+        licensePlate: '',
+        kilometers: null
+      },
+      specifications: {
+        engine: '',
+        transmission: '',
+        fuelType: '',
+        drivetrain: '',
+        autonomy: null,
+        doors: null,
+        seats: null
+      },
+      status: {
+        current: 'available', // Agregué valor por defecto
+        description: null,
+        currentLocation: {
+          address: '',
+          city: '',
+          country: '',
+          coordinates: ''
+        },
+        timesRented: null
+      },
+      features: {
+        interior: [],
+        exterior: [],
+        safety: [],
+        additional: [],
+        accessories: [],
+        restrictions: {
+          minimumDriverAge: null,
+          requiresValidLicense: false,
+          smokingAllowed: false,
+          petsAllowed: true
+        },
+        hasInsurance: true,
+        insuranceDetails: "",
+      },
+      pricing: {
+        rates: {
+          daily: null,
+          weekly: null,
+          monthly: null
+        },
+        mileagePolicy: {
+          includedPerDay: null,
+          extraPricePerKm: null
+        },
+        securityDeposit: null,
+      },
+      photos: {
+        photo1: null,
+        photo2: null,
+        photo3: null,
+        photo4: null
+      },
+      availability: {
+        schedule: {
+          monday: false,
+          tuesday: false,
+          wednesday: false,
+          thursday: false,
+          friday: false,
+          saturday: false,
+          sunday: false
+        },
+        hours: {
+          startTime: '08:00',
+          endTime: '17:00',
+        },
+        blockedDates: [],
+        nextAvailableDate: ''
+      },
+      insurance: {
+        number: null,
+        company: null,
+        type: null,
+        expirationDate: null,
+      },
       id: null,
-      marca: '',
-      modelo: '',
-      precio: 0,
-      año: '',
-      chasis: '',
-      motor: '',
-      transmision: '',
-      combustible: '',
-      description: '',
-      accessories: [],
-      images: [],
-      coordenadas: {
-        lat: null,
-        lng: null
-      },
-      user: {
-        id: null,
-        name: '',
-        lastName: '',
-        photoURL: '',
-        userName: ''
-      },
-      user_id: null
     },
+    allAccessoryOptions: [
+      { value: 'touchScreen', label: 'Pantalla táctil' },
+      { value: 'appleCarPlayAndroidAuto', label: 'Apple CarPlay/Android Auto' },
+      { value: 'bluetooth', label: 'Bluetooth' },
+      { value: 'gps', label: 'GPS' },
+      { value: 'premiumSound', label: 'Sonido premium' },
+      { value: 'integratedVirtualAssistant', label: 'Asistente virtual integrado' },
+      { value: '360parkingSensors', label: 'Sensores de estacionamiento 360°' },
+      { value: 'absBrakes', label: 'Frenos ABS' },
+      { value: 'cruiseControl', label: 'Control de crucero' },
+      { value: 'automaticParkingAssistant', label: 'Asistente de estacionamiento automático' },
+      { value: 'rearViewCamera', label: 'Cámara de marcha atrás' },
+      { value: 'esc', label: 'Control de estabilidad (ESC)' },
+      { value: 'tractionControl', label: 'Control de tracción' },
+      { value: 'airbags', label: 'Airbags' },
+      { value: 'seatbeltPretensioners', label: 'Cinturones de seguridad con pretensores' },
+      { value: 'isofixLatch', label: 'Anclajes ISOFIX/LATCH' },
+      { value: 'steeringWheelPaddles', label: 'Paletas de cambio al volante' },
+      { value: 'drivingModes', label: 'Modos de conducción (Eco, Sport, Off-road)' },
+      { value: 'sportsSuspension', label: 'Suspensión deportiva' },
+      { value: 'powerSteering', label: 'Dirección asistida' },
+      { value: 'sportsBrakes', label: 'Frenos deportivos' },
+      { value: 'sportsExhaust', label: 'Escape deportivo' },
+      { value: 'startStopSystem', label: 'Sistema start-stop' },
+      { value: 'lockingDifferential', label: 'Diferencial autoblocante' },
+      { value: 'cngReady', label: 'Preparación GNC' },
+      { value: 'automaticClimateControl', label: 'Climatizador automático' },
+      { value: 'heatedVentilatedSeats', label: 'Asientos calefaccionados/ventilados' },
+      { value: 'memorySeat', label: 'Asiento con memoria' },
+      { value: 'premiumUpholstery', label: 'Tapizado premium' },
+      { value: 'electricSunroof', label: 'Techo solar eléctrico' },
+      { value: 'automaticWipers', label: 'Limpiaparabrisas automáticos' },
+      { value: 'automaticTrunk', label: 'Maletero automático' },
+      { value: 'smartMirrors', label: 'Espejos inteligentes' },
+      { value: 'premiumSoundproofing', label: 'Insonorización premium' },
+      { value: 'trunkOrganizer', label: 'Organizador de maletero' }
+    ],
     loading: false,
-    error: null,
-    currentImage: null,
-    isRented: false,
-    defaultCarImage: "/src/assets/Car-Img.png",
-    defaultUserImage: "/src/assets/User.png",
-    mapInitialized: false,
-    userCars: [],
-    visitedUserCars: [],
-    loadingUserCars: false,
+    error: null
   }),
 
-  getters: {
-    isUserOwner: (state) => {
-      const authStore = useAuthStore();
-      return state.car.user_id === authStore.user?.id;
-    },
-    formattedPrice: (state) => {
-      return state.car.precio ? `$${state.car.precio}` : '$0';  
-    },
-    carImages: (state) => {
-      if (!state.car?.images || !Array.isArray(state.car.images)) {
-        return [state.defaultCarImage];
-      }
-      return state.car.images.length > 0 ? state.car.images : [state.defaultCarImage];
-    },
-    errorMessage: (state) => {
-      return state.error || "Hubo un error al obtener los detalles del auto. Volvé a intentar";
-    },
-    getUserCars: (state) => state.userCars || [],
-    getVisitedUserCars: (state) => state.visitedUserCars || [],
-  },
-
   actions: {
-    async loadUserCars(userId) {
-      this.loadingUserCars = true;
+    async initializeCar() {
       try {
-        const cars = await getUserCars(userId);
-
-        const authStore = useAuthStore();
-        if (userId === authStore.user?.id) { 
-          this.userCars = cars || [];  
-        } else {
-          this.visitedUserCars = cars || [];  
-        }
-        return cars;
+        this.loading = true;
+        this.currentCar.id = createCarData();
       } catch (error) {
-        this.error = error.message || "Error al cargar autos del usuario";
-        console.error("Error al cargar autos del usuario:", error);
-        throw error;
-      } finally {
-        this.loadingUserCars = false;
-      }
-    },
-
-    async fetchCarById(carId) {
-      this.resetState();
-      this.loading = true;
-      
-      try {
-        const carData = await getCarById(carId);
-        
-        if (!carData) {
-          throw new Error("No se encontraron datos del auto");
-        }
-        
-        this.car = {
-          ...this.car, 
-          ...carData,  
-          images: carData.images || [],
-          accessories: carData.accessories || [],
-          user: carData.user || {
-            id: null,
-            name: '',
-            lastName: '',
-            photoURL: '',
-            userName: ''
-          },
-          coordenadas: carData.coordenadas || { lat: null, lng: null }
-        };
-        
-        this.currentImage = this.carImages[0];
-        
-        // Cambia checkIfCarIsRented por isCarAlreadyRented
-        this.isRented = await isCarAlreadyRented(carId);
-        
-        return this.car;
-      } catch (error) {
-        this.error = error.message || "Hubo un error al obtener los detalles del auto. Volvé a intentar";
-        console.error("Error al obtener los detalles del auto:", error);
+        this.error = error;
         throw error;
       } finally {
         this.loading = false;
       }
     },
 
-    
-    setCurrentImage(image) {
-      this.currentImage = image || this.defaultCarImage; 
-    },
-    
-    resetState() {
-      this.car = {
-        id: null,
-        marca: '',
-        modelo: '',
-        precio: 0,
-        año: '',
-        chasis: '',
-        motor: '',
-        transmision: '',
-        combustible: '',
-        description: '',
-        accessories: [],
-        images: [],
-        coordenadas: {
-          lat: null,
-          lng: null
-        },
-        user: {
-          id: null,
-          name: '',
-          lastName: '',
-          photoURL: '',
-          userName: ''
-        },
-        user_id: null
-      };
-      this.currentImage = null;
-      this.isRented = false;
-      this.loading = false;
-      this.error = null;
-    },
-    
-    updateCarCoordinates(coordinates) {
-      if (coordinates && typeof coordinates.lat === 'number' && typeof coordinates.lng === 'number') {
-        this.car.coordenadas = {
-          lat: coordinates.lat,
-          lng: coordinates.lng
-        };
-      } else {
-        console.warn("Coordenadas inválidas:", coordinates);
-      }
-    },
-    
-    async checkRentalStatus() {
-      if (this.car.id) {
-        try {
-          this.isRented = await isCarAlreadyRented(this.car.id);
-          return this.isRented;
-        } catch (error) {
-          console.error("Error al verificar estado de alquiler:", error);
-          return false;
+    // async fetchAvailableCars(){
+    //   try{
+
+    //   } catch(error){
+        
+    //   }
+    // }
+
+    async saveCar(carData) {
+      // await createCarData(uid);
+      try {
+        this.loading = true;
+        // Asegurarnos que tenemos un ID
+        if (!carData.id) {
+          throw new Error("Car ID is missing");
         }
+
+        // Añadir ownerId si no está presente
+        if (!carData.ownerId) {
+          carData.ownerId = useAuthStore().user.id;
+        }
+        const carId = await saveCarData(carData);
+        this.currentCar = { ...carData, id: carId };
+        return carId;
+      } catch (error) {
+        this.error = error;
+        throw error;
+      } finally {
+        this.loading = false;
       }
     },
-    
-    handleImageError(event) {
-      if (event?.target) { 
-        event.target.src = this.defaultCarImage;
+    async updateCar(carId, carData) {
+      this.loading = true;
+      try {
+        await saveCarData(carId, carData);
+        this.currentCar = { ...this.currentCar, ...carData };
+      } catch (error) {
+        this.error = error;
+        throw error;
+      } finally {
+        this.loading = false;
       }
-    }
+    },
+    async loadCarById(carId) {
+      try {
+        this.loading = true;
+        const carData = await getCarById(carId);
+        if (carData) {
+          this.currentCar = carData;
+        }
+        return carData;
+      } catch (error) {
+        this.error = error;
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+    async uploadCarPhoto(userId, file, carId, photoIndex) {
+      try {
+        // 1. Validar que photos sea un array
+        if (!Array.isArray(this.currentCar.photos)) {
+          this.currentCar.photos = [];
+        }
+
+        const filePath = `users/${userId}/cars/${carId}/photo_${photoIndex}`;
+        const photoUrl = await uploadVehiclePhoto(file, filePath);
+        
+        // 2. Actualizar el array de fotos de forma segura
+        this.currentCar.photos = [...this.currentCar.photos]; // Crear nuevo array
+        this.currentCar.photos[photoIndex] = photoUrl;
+        
+        return photoUrl;
+      } catch (error) {
+        console.error(`Error subiendo foto ${photoIndex}:`, error);
+        throw error;
+      }
+    },
+    updateFeatures(featuresData) {
+      this.currentCar.features = {
+        ...this.currentCar.features,
+        ...featuresData
+      };
+    },
+  },
+  getters: {
+    car: (state) => state.currentCar,
+    basicInfo: (state) => state.currentCar?.basicInfo || {},
+    specifications: (state) => state.currentCar?.specifications || {},
+    status: (state) => state.currentCar?.status || {},
+    features: (state) => state.currentCar?.features || {},
+    pricing: (state) => state.currentCar?.pricing || {},
+    photos: (state) => state.currentCar?.photos || [],
+    insurance: (state) => state.currentCar?.insurance || {},
+    availability: (state) => state.currentCar?.availability || {},
   }
 });

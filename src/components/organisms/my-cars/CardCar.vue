@@ -124,41 +124,19 @@ export default {
         <div class="w-full aspect-[16/9] overflow-hidden">
           <img
             class="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
-            :src="car.images && car.images.length > 0 ? car.images[0] : defaultCarImage" 
+            :src="car.photos && car.photos.length > 0 ? car.photos[0] : defaultCarImage" 
             @error="setDefaultImage"
-            :alt="car.marca + ' ' + car.modelo" 
+            :alt="car.basicInfo?.brand + ' ' + car.basicInfo?.model" 
           />
         </div>
       </div>
-
-      <div class="flex ">
-        <div class="flex flex-col p-4 pb-2 flex-1">
-          <div class="mb-2">
-            <p class="text-sm font-medium text-primary-500">{{ car.marca }}</p>
-            <Heading :type="4" class="text-gray-900 font-bold line-clamp-1">{{ car.modelo }}</Heading>
-          </div>
-          </div>
-            <div class="p-4">
-              <Heading :type="4" class="text-primary-600 font-bold">${{ car.precio }}<span class="text-xs font-normal">/hr</span></Heading>
-            </div>
-
-      </div>
-        
-        <!-- <div class="flex gap-3 mt-1 mb-3">
-          <div class="flex items-center text-xs text-gray-500">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-            </svg>
-            {{ car.transmision || "Automático" }}
-          </div>
-          <div class="flex items-center text-xs text-gray-500">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            {{ car.año }}
-          </div>
-        </div> -->
-        
+      <div class="flex flex-1 flex-row justify-between items-end">
+        <article class="flex flex-col align-end justify-between">
+          <p class="text-sm text-gray-500">{{ car.basicInfo?.brand }}</p>
+          <Heading :type="4">{{ car.basicInfo?.model }}</Heading>
+        </article>
+        <Heading :type="4">${{ car.pricing?.rates?.daily }}/ día</Heading>
+      </div>        
     </router-link>
   </div>
 </template>

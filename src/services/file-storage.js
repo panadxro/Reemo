@@ -2,11 +2,23 @@ import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { storage } from "./firebase";
 
 export async function uploadFile(path, file) {
-  const storageRef = ref(storage, path);
   const metadata = {
     contentType: file.type || 'image/jpeg',  // Usa el tipo de archivo o asigna un tipo por defecto
   };
-  await uploadBytes(storageRef, file, metadata);
+  const storageRef = ref(storage, path);
+  const uploadTask = await uploadBytes(storageRef, file, metadata);
+  return await getDownloadURL(uploadTask.ref);
+}
+
+
+export async function uploadUserFile(userId, file, path){
+  const newPath = `users/${userId}/${path}`;
+  try {
+    const url = await uploadFile(newPath, file);
+    return url;
+  } catch (error) {
+    throw error;
+  }
 }
 
 export async function getFileURL(path) {

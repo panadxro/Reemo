@@ -1,5 +1,7 @@
 <script>
 import Arrow from "../../icons/Arrow.vue";
+import { useUiStore } from '@stores';
+import { computed, onMounted } from 'vue';
 
 export default {
   name: "DropdownForm",
@@ -11,46 +13,66 @@ export default {
       type: String,
       required: true,
     },
-    initialOpen: {
-      type: Boolean,
-      default: false, // Por defecto, el dropdown está cerrado
+    dropdownId: {
+      type: [String, Number],
+      required: true,
     },
+    isInitial: {
+      type: Boolean,
+      default: false
+    },
+    sectionId: {
+      type: [String, Number],
+      required: true
+    },
+    color: {
+      type: String,
+      default: "#010440"
+    }
   },
-  data() {
-    return {
-      isOpen: this.initialOpen,
+  setup(props, { emit }) {
+    const uiStore = useUiStore();
+    
+    const isOpen = computed(() => uiStore.openDropdowns[props.sectionId] === props.dropdownId);
+
+    const toggleDropdown = () => {
+      uiStore.setOpenDropdown(props.sectionId, props.dropdownId);
+      emit('dropdown-toggle', props.dropdownId);
     };
+
+    onMounted(() => {
+      if (props.isInitial) {
+        uiStore.openInitialDropdown(props.sectionId, props.dropdownId)
+      }
+    });
+
+    return { isOpen, toggleDropdown };
   },
   computed: {
     contentStyle() {
       return {
-        maxHeight: this.isOpen ? "500px" : "0px", // Ajusta el valor máximo según tu contenido
+        maxHeight: this.isOpen ? "500px" : "0px",
         overflow: "hidden",
         transition: "max-height 0.3s ease-out",
       };
     },
-  },
-  methods: {
-    toggleDropdown() {
-      this.isOpen = !this.isOpen;
-      this.$emit("dropdown-toggle", this);
-    },
-    closeDropdown() {
-      this.isOpen = false;
-    },
-  },
+  }
 };
 </script>
 
 <template>
-  <div class="dropdown-form" ref="dropdown">
+  <div 
+    class="dropdown-form"
+    :class="isOpen ? 'gap-5' : ''"
+    >
     <button 
       type="button"
-      class="dropdown-button" 
+      class="dropdown-button"
+      :class="!`text-${color}`" 
       @click="toggleDropdown"
-      >
+    >
       {{ title }}
-      <Arrow color="#FFFFFF" :direction="isOpen ? 'up' : 'down'" />
+      <Arrow :color="color" :direction="isOpen ? 'up' : 'down'" />
     </button>
     <div class="dropdown-content" :style="contentStyle">
       <slot></slot>
@@ -62,14 +84,11 @@ export default {
 .dropdown-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
 .dropdown-button {
   display: flex;
   justify-content: space-between;
-  padding-block: 10px;
-  color: white;
   font-weight: 600;
   border: none;
   cursor: pointer;

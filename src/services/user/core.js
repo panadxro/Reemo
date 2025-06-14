@@ -1,4 +1,3 @@
-// Operaciones básicas de usuario
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, where } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { getDownloadURL } from 'firebase/storage';
@@ -12,10 +11,38 @@ export async function createUserProfile( uid, email ) {
       profilePhoto: '/src/assets/User.png',
       username: 'Desconocido'
     },
-    documents: {},
-    address: {},
-    paymentMethods: [],
-    agreements: {},
+    documents: {
+      dniFront: '',
+      dniBack: '',
+      driverLicenseFront: '',
+      driverLicenseBack: ''
+    },
+    address: {
+      street: '',
+      number: '',
+      city: '',
+      province: '',
+      postalCode: ''
+    },
+    paymentMethods: {
+      credit_card: {
+        cardNumber: '',
+        cardHolder: '',
+        expirationDate: '',
+        cvv: ''
+      },
+      paypal: {
+        email: ''
+      },
+      digital_wallet: {
+        walletId: '',
+        walletType: ''
+      }
+    },
+    agreements: {
+      acceptedTerms: false,
+      acceptedPrivacyPolicy: false
+    },
     email: email,
     role: 'user'
   }
@@ -31,7 +58,33 @@ export async function createUserProfile( uid, email ) {
   });
 };
 
+export async function getUserById(userId) {
+  try {
+    const userDoc = doc(db, "users", userId); 
+    const userSnapshot = await getDoc(userDoc); 
+
+    if (userSnapshot.exists()) {
+      return { id: userSnapshot.id, ...userSnapshot.data() };
+
+    } else {
+
+      return null; 
+    }
+  } catch (error) {
+    console.error("Error al obtener el usuario:", error);
+    throw new Error("Hubo un error al cargar el perfil del usuario.");
+  }
+}
+
 export async function getUserProfile(uid) {
+  if (!uid) {
+    console.error("userId is null or undefined");
+    return;
+  }
+  if (typeof uid !== 'string') {
+    console.error("userId is not a string");
+    return;
+  }
   try {
     const userRef = doc(db, 'users', uid);
     const userSnapshot = await getDoc(userRef);
