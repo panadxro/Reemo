@@ -1,0 +1,74 @@
+// Funcion para actualizar y mostrar los marcadores en el mapa de Google Maps
+export async function updateMapMarkers(map, filteredCars, markers, comentarioIcon, vueInstance){
+  if(!map){
+    console.error('el mapa no se inicia')
+    return [];
+  }
+
+  const { Marker } = await google.maps.importLibrary("marker"); 
+
+  // limpia los marcadores anteriores
+  markers.forEach(marker => marker.setMap(null));
+  markers = [];
+
+  if (filteredCars.length === 0) {
+    console.warn("No hay autos para mostrar en el mapa.");
+    return markers;
+  }
+
+  const bounds = new google.maps.LatLngBounds();
+
+  filteredCars.forEach(car => {
+    if (!car.coordenadas || !car.coordenadas.lat || !car.coordenadas.lng) {
+      console.warn(`El auto con ID ${car.id} no tiene coordenadas.`);
+      return;
+    }
+
+    const position = {
+      lat: car.coordenadas.lat,
+      lng: car.coordenadas.lng
+    };
+
+    const marker = new google.maps.Marker({
+      map: map,
+      position: position,
+      title: car.direccion,
+      icon: {
+        url: comentarioIcon,
+        scaledSize: new google.maps.Size(50, 50), // Ajusta el tamaño del icono
+        anchor: new google.maps.Point(25, 25), // Ajusta la posición del icono
+      }
+    });
+
+    const imageUrl = car.images?.length ? car.images[0] : "default-image.jpg";
+    const content = `
+          <div class="infowindow-container">
+            <figure class="infowindow-image">
+              <img src="${imageUrl}" alt="${car.marca} ${car.modelo}" />
+            </figure>
+            <div class="infowindow-details">
+              <h3>${car.marca} ${car.modelo}</h3>
+              <p>⭐ 5.0 - 6 valoraciones</p>
+              <p><strong>${car.precio} € / día</strong></p>
+              <p>28040 Buenos Aires • Servicio de entrega disponible</p>
+              <button class="infowindow-btn" id="btn-${car.id}">Ver Detalles</button>
+            </div>
+          </div>
+        `;
+
+    createOverlayView(map, car, marker, content, vueInstance);
+
+    markers.push(marker);
+
+    // Expande los límites del mapa
+    bounds.extend(position); 
+  });
+
+  setTimeout(() => {
+    if (filteredCars.length > 0) {
+      map.fitBounds(bounds);
+    }
+  }, 500);
+
+  return markers
+}
