@@ -49,7 +49,7 @@ export async function updateMapMarkers(map, filteredCars, markers, comentarioIco
             <div class="infowindow-details">
               <h3>${car.marca} ${car.modelo}</h3>
               <p>⭐ 5.0 - 6 valoraciones</p>
-              <p><strong>${car.precio} € / día</strong></p>
+              <p><strong>${car.pricing.rates.daily} € / día</strong></p>
               <p>28040 Buenos Aires • Servicio de entrega disponible</p>
               <button class="infowindow-btn" id="btn-${car.id}">Ver Detalles</button>
             </div>

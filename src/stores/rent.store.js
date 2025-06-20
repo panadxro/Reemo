@@ -46,7 +46,7 @@ export const useRentalStore = defineStore('rental', {
     },
     
     priceHours() {
-      return this.car ? this.car.precio / 24 : 0;
+      return this.car ? this.car.pricing.rates.daily / 24 : 0;
     },
     
     rentalHours() {
@@ -87,17 +87,19 @@ export const useRentalStore = defineStore('rental', {
   
   actions: {
     setInitialData(car, loggedUser, isCarRented = false) {
-      if (!loggedUser || !loggedUser.id) {
-        console.error("Usuario no válido proporcionado:", loggedUser);
-        throw new Error("Se requiere un usuario válido");
-      }
+      // if (!loggedUser) {
+      //   console.error("Usuario no válido proporcionado:", loggedUser);
+      //   throw new Error("Se requiere un usuario válido");
+      // }
       
       // Si estamos cambiando de auto, reseteamos los datos
       const isChangingCar = this.car && car && this.car.id !== car.id;
-      
+
+
       this.car = car;
       this.loggedUser = loggedUser;
       this.rented = isCarRented;
+      console.log('[setInitialData] contenido de this.rented 😊😊😊', this.rented)
       
       // Solo reseteamos datos si cambiamos de auto
       if (isChangingCar) {
@@ -346,7 +348,7 @@ export const useRentalStore = defineStore('rental', {
       const paymentStore = usePaymentStore();
       return {
         vehicle_id: this.car.id,
-        owner_id: this.car.user_id,
+        owner_id: this.car.ownerId,
         driver_id: this.loggedUser.id,
         start_location: null,
         end_location: null,

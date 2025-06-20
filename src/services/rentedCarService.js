@@ -65,7 +65,7 @@ export async function updateRentalStatus(reqId, newStatus) {
       if(carId){
         const carRef = doc(db, 'cars', carId);
         if(newStatus === 'confirmed' || newStatus === 'in_progress' || newStatus === 'returned_by_driver'){
-          await updateDoc(carRef, { isAvailable: false });
+          await updateDoc(carRef, { "status.current" : "notAvailable" });
         }else if (
           newStatus === 'completed' ||
           newStatus === 'rejected' ||
@@ -73,7 +73,7 @@ export async function updateRentalStatus(reqId, newStatus) {
           newStatus === 'cancelled_by_owner' ||
           newStatus === 'expired'
         ){
-          await updateDoc(carRef, { isAvailable: true })
+          await updateDoc(carRef, { "status.current" : "available" })
         }
 
       }
@@ -218,8 +218,8 @@ export async function fetchRentedCars(userId) {
       vehicleDetails = carSnap.exists() ? { id: carSnap.id, ...carSnap.data() } : null;
       console.log('[RentStatusDetails.vue] vehicleDetails:', vehicleDetails)
 
-      if(vehicleDetails && vehicleDetails.user_id){
-        const ownerRef = doc(db, 'users', vehicleDetails.user_id);
+      if(vehicleDetails && vehicleDetails.ownerId ){
+        const ownerRef = doc(db, 'users', vehicleDetails.ownerId );
         const ownerSnap = await getDoc(ownerRef);
         ownerDetails = ownerSnap.exists() ? {id: ownerSnap.id, name: ownerSnap.data().name, photoURL: ownerSnap.data().photoURL } : null;
       }
@@ -354,8 +354,8 @@ export async function fetchRentalRequests(userId, callback) {
               ...request,
               photoURL: userData?.photoURL || null,
               name: userData?.name || 'Usuario Desconocido',
-              carMarca: carData?.marca || "Marca Desconocida",
-              carModelo: carData?.modelo || "Modelo Desconocido",
+              carMarca: carData?.basicInfo.brand || "Marca Desconocida",
+              carModelo: carData?.basicInfo.model || "Modelo Desconocido",
               carId: carSnapId,
             };
             

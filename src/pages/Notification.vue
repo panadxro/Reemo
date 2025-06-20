@@ -152,14 +152,14 @@ const handleNotificationClick = async (notification) => {
               <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div>
               <p class="text-sm text-gray-700">
                 {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}
-                <span class="font-medium">{{ noti.vehicleDetails?.marca || '' }} {{ noti.vehicleDetails?.modelo ||
+                <span class="font-medium">{{ noti.vehicleDetails?.basicInfo?.brand || '' }} {{ noti.vehicleDetails?.basicInfo?.model ||
                   'Vehículo no especificado' }}</span>.
               </p>
               <!-- File info -->
               <div v-if="noti.rentDetails" class="mt-3 bg-gray-100 rounded p-3">
                 <div class="flex items-center space-x-2 bg-gray-100 rounded px-2 py-1 mt-3">
-                  <img v-if="noti.type === 'rent_request' && noti.vehicleDetails?.images"
-                    :src="noti.vehicleDetails.images[1]" :alt="noti.vehicleDetails.marca"
+                  <img v-if="noti.type === 'rent_request' && noti.vehicleDetails?.photos"
+                    :src="noti.vehicleDetails.photos[1]" :alt="noti.vehicleDetails.basicInfo?.brand"
                     class="w-12 h-12 rounded-full" />
                   <div v-else
                     class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
@@ -167,7 +167,7 @@ const handleNotificationClick = async (notification) => {
                   </div>
                   <div>
                     <p class="text-sm font-medium text-gray-800">
-                      {{ noti.vehicleDetails?.marca || 'N/A' }} {{ noti.vehicleDetails?.modelo || 'N/A' }}
+                      {{ noti.vehicleDetails?.basicInfo?.brand || 'N/A' }} {{ noti.vehicleDetails?.basicInfo?.model || 'N/A' }}
                     </p>
                     <p class="text-xs text-gray-500">
                       Desde: {{ formatDate(noti.rentDetails?.start_time) }} Hasta: {{
@@ -179,9 +179,21 @@ const handleNotificationClick = async (notification) => {
                     </p>
                     <p class="text-xs text-gray-500">
                       Estado:
-                      <span class="font-semibold"
-                        :class="noti.rentDetails.status === 'pending' ? 'text-yellow-600' : noti.rentDetails.status === 'confirmed' ? 'text-green-600' : 'text-red-600'">
-                        {{ noti.rentDetails.status.replace('_', ' ') }}
+                      <span class="font-semibold" :class="{
+                            'text-yellow-600': noti.rentDetails.status === 'pending',
+                            'text-green-600': noti.rentDetails.status === 'confirmed',
+                            'text-red-600': noti.rentDetails.status === 'rejected' || noti.rentDetails.status === 'cancelled_by_user' || noti.rentDetails.status === 'cancelled_by_owner',
+                            'text-blue-600': noti.rentDetails.status === 'completed',
+                            'text-indigo-600': noti.rentDetails.status === 'in_progress',
+                          }">
+                        {{ 
+                          noti.rentDetails.status === "pending" ? "Pendiente" : 
+                          noti.rentDetails.status === "confirmed" ? "Confirmada" : 
+                          noti.rentDetails.status === "rejected" ? "Rechazada" : 
+                          noti.rentDetails.status === "cancelled_by_user" ? "Cancelada por el conductor" : 
+                          noti.rentDetails.status === "cancelled_by_owner" ? "Cancelada por el propietario" : 
+                          noti.rentDetails.status === "completed" ? "Completada" : 
+                          noti.rentDetails.status === "in_progress" ? "En progreso" : "N/A" }}
                       </span>
                     </p>
                   </div>
@@ -219,15 +231,15 @@ const handleNotificationClick = async (notification) => {
               </p>
               <div v-if="noti.rentDetails" class="mt-3 bg-gray-100 rounded p-3">
                 <div class="flex items-center space-x-2 mb-2">
-                  <img v-if="noti.vehicleDetails?.images && noti.vehicleDetails.images.length > 0"
-                    :src="noti.vehicleDetails.images[0]" :alt="`Imagen de ${noti.vehicleDetails.marca}`"
+                  <img v-if="noti.vehicleDetails?.photo && noti.vehicleDetails.photo.length > 0"
+                    :src="noti.vehicleDetails.photo[0]" :alt="`Imagen de ${noti.vehicleDetails.basicInfo?.brand }`"
                     class="w-12 h-12 rounded-md object-cover" />
                   <div v-else
                     class="w-12 h-12 rounded-md bg-gray-200 flex items-center justify-center text-xs text-gray-400">Sin
                     foto</div>
                   <div>
                     <p class="text-sm font-medium text-gray-800">
-                      {{ noti.vehicleDetails?.marca || 'N/A' }} {{ noti.vehicleDetails?.modelo || 'N/A' }}
+                      {{ noti.vehicleDetails?.basicInfo?.brand || 'N/A' }} {{ noti.vehicleDetails?.basicInfo?.model || 'N/A' }}
                     </p>
                     <p class="text-xs text-gray-500">
                       Estado:
@@ -238,7 +250,14 @@ const handleNotificationClick = async (notification) => {
                             'text-blue-600': noti.rentDetails.status === 'completed',
                             'text-indigo-600': noti.rentDetails.status === 'in_progress',
                           }">
-                        {{ noti.rentDetails.status.replace('_', ' ') }}
+                        {{ 
+                          noti.rentDetails.status === "pending" ? "Pendiente" : 
+                          noti.rentDetails.status === "confirmed" ? "Confirmada" : 
+                          noti.rentDetails.status === "rejected" ? "Rechazada" : 
+                          noti.rentDetails.status === "cancelled_by_user" ? "Cancelada por el conductor" : 
+                          noti.rentDetails.status === "cancelled_by_owner" ? "Cancelada por el propietario" : 
+                          noti.rentDetails.status === "completed" ? "Completada" : 
+                          noti.rentDetails.status === "in_progress" ? "En progreso" : "N/A" }}
                       </span>
                     </p>
                   </div>

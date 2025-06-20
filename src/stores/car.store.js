@@ -31,7 +31,7 @@ export const useCarStore = defineStore("car", {
           address: '',
           city: '',
           country: '',
-          coordinates: ''
+          location: null,
         },
         timesRented: null
       },
@@ -230,6 +230,14 @@ export const useCarStore = defineStore("car", {
         ...this.currentCar.features,
         ...featuresData
       };
+    },
+
+    updateCarCurrentLocation(locationData){
+      if(this.currentCar && this.currentCar.status && this.currentCar.status.currentLocation ){
+        this.currentCar.status.currentLocation.address = locationData.address;
+        this.currentCar.status.currentLocation.location = locationData.location;
+        // Podemos actualizar city/country si los extraemos del place object
+      }
     },
   },
   getters: {

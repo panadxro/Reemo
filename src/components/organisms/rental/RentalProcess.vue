@@ -130,7 +130,7 @@ function handleViewAlert() {
 }
 
 onMounted(async () => {    
-  store.setInitialData(carStore.car, authStore.user, carStore.isCarRented);
+  store.setInitialData(carStore.car, authStore.user.id, carStore.isCarRented);
   
   watch(() => store.currentStep, async (newStep) => {
   console.log("Nuevo Paso:", newStep);
@@ -202,7 +202,7 @@ onMounted(async () => {
             :start-time="store.rentalData.selectedTime"
             :end-date="store.rentalData.rentedUntilDate"
             :end-time="store.rentalData.selectedUntilTime"
-            :daily-price="store.car ? store.car.precio : 0"
+            :daily-price="store.car ? store.car.pricing.rates.daily : 0"
             @total-updated="totalUpdated"
           />
         </template>

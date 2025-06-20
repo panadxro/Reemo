@@ -19,22 +19,28 @@ export async function loadGoogleMaps(){
 // Iniciamos el mapa
 let map = null;
 export async function initMap(mapElementId) {
-  if(!mapElementId){
-    console.error('Se requiere el Id del elemento para iniciar el mapa')
-    return;
+  try {
+    if(!mapElementId){
+      console.error('Se requiere el Id del elemento para iniciar el mapa')
+      return;
+    }
+  
+    const { Map } = await google.maps.importLibrary("maps");
+  
+    map = new Map(document.getElementById("map"), {
+      center: { lat: -34.603722, lng: -58.381592 },
+      zoom: 10,
+      mapId: "4808da25693c56c8",
+      streetViewControl: false,
+      mapTypeControl: false,
+    });
+    console.log('[google-maps.js initMap] Mapa inicializado correctamente.');
+    return map;
+  } catch (error) {
+    console.error("[google-maps.js initMap] Error al inicializar el mapa de Google:", error);
+    addAlert("Error crítico al cargar el mapa. Verifique la configuración de la API de Google Maps.", "error");
+    throw error; // Re-lanzar para que onMounted pueda saberlo
   }
-
-  const { Map } = await google.maps.importLibrary("maps");
-
-  map = new Map(document.getElementById("map"), {
-    center: { lat: -34.603722, lng: -58.381592 },
-    zoom: 10,
-    mapId: "4808da25693c56c8",
-    streetViewControl: false,
-    mapTypeControl: false,
-  });
-
-  return map;
 }
 
 
@@ -126,7 +132,7 @@ export async function createOverlayView( map, car, marker, content, vueInstance)
     }
 
     const overlay = new CustomOverlay(
-      new google.maps.LatLng(car.coordenadas.lat, car.coordenadas.lng),
+      new google.maps.LatLng(car.status.currentLocation.location.lat, car.status.currentLocation.location.lng),
       content,
       map,
       vueInstance
@@ -206,19 +212,22 @@ export function updateCars(cars, searchLocation, map ) {
     return [];
   }
 
+  console.log('[updateCars] search location tiene: ', searchLocation)
   const searchLatLng = new google.maps.LatLng(
     searchLocation.lat,
     searchLocation.lng
   );
   
-  const searchRadius = 5000;
+  const searchRadius = 10000;
 
   const filteredCars = cars.filter((car) => {
     if (!car.coordenadas) return false;
+    
+    console.log(`[updateCars] Procesando coche ID: ${car.id}. Ubicación del coche:`, car.status?.currentLocation?.location, 'Buscando cerca de:', searchLocation);
 
     const carLatLng = new google.maps.LatLng(
-      car.coordenadas.lat,
-      car.coordenadas.lng
+      car.status.currentLocation.location.lat,
+      car.status.currentLocation.location.lng
     );
     const distance = google.maps.geometry.spherical.computeDistanceBetween(
       searchLatLng,
@@ -227,16 +236,6 @@ export function updateCars(cars, searchLocation, map ) {
     
     return distance <= searchRadius;
   });
-
-  // const filterByPreferences = filteredCars.filter(car => {
-  //   return (
-  //     car.price >= filters.minPrice &&
-  //     car.price <= filters.maxPrice &&
-  //     (filters.marca ? car.marca === filters.marca : true) &&
-  //     (filters.modelo ? car.modelo === filters.modelo : true) &&
-  //     (filters.transmision ? car.transmision === filters.transmision : true)
-  //   );
-  // });
 
   if (map) {
     // centramos el mapa en la busqueda
@@ -264,7 +263,7 @@ export function initAutocomplete(inputId, onPlaceSelected) {
   }
 
   const autocomplete = new google.maps.places.Autocomplete(input, {
-    types: ["geocode"],
+    types: ["geocode"], // O ['address'] si prefieres
     componentRestrictions: { country: "AR" },
     fields: ["formatted_address", "geometry"],
   });
@@ -284,6 +283,10 @@ export function initAutocomplete(inputId, onPlaceSelected) {
     if(onPlaceSelected && typeof onPlaceSelected == 'function'){
       onPlaceSelected({ formattedAddress, location })
     }
+
+    // podemos extraer otros componentes como la ciudad
+    // city: place.address_components.find(c => c.types.includes("locality"))?.long_name,
+    // country: place.address_components.find(c => c.types.includes("country"))?.long_name,
   });
 
 }
@@ -486,7 +489,7 @@ export function getCurrentLocation() {
 export async function updateMapMarkers(map, cars, existingMarkers, iconUrl, onMarkerClickCallback) {
   // 1. Limpiar marcadores existentes del mapa y del array
   existingMarkers.forEach(marker => marker.setMap(null));
-  let newMarkers = []; // Usaremos un nuevo array, como en tu versión vieja.
+  let newMarkers = [];
   // existingMarkers.length = 0;
 
 
@@ -505,42 +508,33 @@ export async function updateMapMarkers(map, cars, existingMarkers, iconUrl, onMa
 
   // 2. Crear nuevos marcadores
   cars.forEach(car => {
-    // Asegurarse de que el coche tiene una ubicación válida
-    if (!car.coordenadas || typeof car.coordenadas.lat !== 'number' || typeof car.coordenadas.lng !== 'number') {
-      console.warn('[google-maps.js] Coche omitido por ubicación inválida o faltante:', car.id, car.location);
-      return;
+  if (car && car.status && car.status.currentLocation && car.status.currentLocation.location &&
+        typeof car.status.currentLocation.location.lat === 'number' &&
+        typeof car.status.currentLocation.location.lng === 'number') {
+
+      const position = {
+        lat: car.status.currentLocation.location.lat,
+        lng: car.status.currentLocation.location.lng
+      };
+
+      const marker = new google.maps.Marker({
+        position: position,
+        map: map,
+        title: `${car.basicInfo?.marca || ''} ${car.basicInfo?.modelo || ''}`, // Asumiendo que marca/modelo están en basicInfo
+        icon: iconUrl ? { url: iconUrl, scaledSize: new google.maps.Size(40, 40) } : undefined,
+      });
+
+      // Pasa una copia del objeto car completo al callback
+      const carDataForCallback = JSON.parse(JSON.stringify(car));
+      marker.addListener('click', () => {
+        if (typeof onMarkerClickCallback === 'function') {
+          onMarkerClickCallback(carDataForCallback);
+        }
+      });
+      // ... añadir a newMarkers y bounds.extend ...
+    } else {
+      console.warn(`[google-maps.js updateMapMarkers] Coche con ID ${car.id || 'desconocido'} omitido por datos de ubicación inválidos o faltantes en la estructura status.currentLocation.location.`, car);
     }
-
-    const marker = new google.maps.Marker({
-      position: { lat: car.coordenadas.lat, lng: car.coordenadas.lng },
-      map: map,
-      icon: iconUrl ? {
-        url: iconUrl,
-        scaledSize: new google.maps.Size(40, 40) // Ajusta el tamaño
-      } : undefined, // Usa el icono por defecto si iconUrl no se proporciona
-      title: `${car.marca} ${car.modelo}` // Tooltip al pasar el mouse
-    });
-
-    // Crear una copia del objeto 'car' para el listener.
-    // Aseguramos que si el objeto original en el array 'cars' es modificado después,
-    // el listener todavía tendrá los datos correctos de cuando se creo el marcador.
-    const carDataForCallback = JSON.parse(JSON.stringify(car));
-
-    // 3. Añadir listener de clic al marcador
-    marker.addListener('click', () => {
-      // console.log('[google-maps.js] Marcador pulsado. Objeto de coche en el ámbito del oyente.:', JSON.parse(JSON.stringify(carDataForCallback)));
-      // console.log('[google-maps.js] car.location en el ámbito del oyente:', carDataForCallback.coordenadas);
-
-      if (typeof onMarkerClickCallback === 'function') {
-        onMarkerClickCallback(carDataForCallback); // Llamar al callback con los datos del coche
-      } else {
-        console.error("[google-maps.js] onMarkerClickCallback no es una función. Verifica que se pasa correctamente desde Maps.vue.");
-      }
-    });
-
-    // existingMarkers.push(marker);
-    newMarkers.push(marker);
-    bounds.extend(marker.getPosition());
   });
 
   // return existingMarkers;
@@ -562,3 +556,84 @@ export async function updateMapMarkers(map, cars, existingMarkers, iconUrl, onMa
   return newMarkers; 
 
 }
+
+
+// export async function updateMapMarkers(map, cars, existingMarkers, iconUrl, onMarkerClickCallback) {
+//   // 1. Limpiar marcadores existentes del mapa y del array
+//   existingMarkers.forEach(marker => marker.setMap(null));
+//   let newMarkers = [];
+//   // existingMarkers.length = 0;
+
+
+//   if (!map) {
+//     console.error('[google-maps.js] updateMapMarkers: El mapa no está inicializado.');
+//     return newMarkers;
+//   }
+
+//   if (!cars || cars.length === 0) {
+//     console.warn("[google-maps.js] updateMapMarkers: No hay coches filtrados para mostrar en el mapa.");
+//     return newMarkers; 
+//   }
+  
+//   // console.log('[google-maps.js] updateMapMarkers: Creando marcadores para', cars.length, 'coches.');
+//   const bounds = new google.maps.LatLngBounds();
+
+//   // 2. Crear nuevos marcadores
+//   cars.forEach(car => {
+//     // Asegurarse de que el coche tiene una ubicación válida
+//     if (!car.coordenadas || typeof car.status.currentLocation.location.lat !== 'number' || typeof car.status.currentLocation.location.lng !== 'number') {
+//       console.warn('[google-maps.js] Coche omitido por ubicación inválida o faltante:', car.id, car.location);
+//       return;
+//     }
+
+//     const marker = new google.maps.Marker({
+//       position: { lat: car.status.currentLocation.location.lat, lng: car.status.currentLocation.location.lng },
+//       map: map,
+//       icon: iconUrl ? {
+//         url: iconUrl,
+//         scaledSize: new google.maps.Size(40, 40) // Ajusta el tamaño
+//       } : undefined, // Usa el icono por defecto si iconUrl no se proporciona
+//       title: `${car.marca} ${car.modelo}` // Tooltip al pasar el mouse
+//     });
+
+//     // Crear una copia del objeto 'car' para el listener.
+//     // Aseguramos que si el objeto original en el array 'cars' es modificado después,
+//     // el listener todavía tendrá los datos correctos de cuando se creo el marcador.
+//     const carDataForCallback = JSON.parse(JSON.stringify(car));
+
+//     // 3. Añadir listener de clic al marcador
+//     marker.addListener('click', () => {
+//       // console.log('[google-maps.js] Marcador pulsado. Objeto de coche en el ámbito del oyente.:', JSON.parse(JSON.stringify(carDataForCallback)));
+//       // console.log('[google-maps.js] car.location en el ámbito del oyente:', carDataForCallback.coordenadas);
+
+//       if (typeof onMarkerClickCallback === 'function') {
+//         onMarkerClickCallback(carDataForCallback); // Llamar al callback con los datos del coche
+//       } else {
+//         console.error("[google-maps.js] onMarkerClickCallback no es una función. Verifica que se pasa correctamente desde Maps.vue.");
+//       }
+//     });
+
+//     // existingMarkers.push(marker);
+//     newMarkers.push(marker);
+//     bounds.extend(marker.getPosition());
+//   });
+
+//   // return existingMarkers;
+
+//   if (newMarkers.length > 0) {
+//     // Usar un pequeño timeout puede ayudar si el mapa aún se está renderizando o ajustando
+//     setTimeout(() => {
+//       if (map && typeof map.fitBounds === 'function') { 
+//         map.fitBounds(bounds);
+//         // Si solo hay un marcador, fitBounds puede hacer un zoom excesivo.
+//         if (newMarkers.length === 1 && map.getZoom() > 15) { // 15 es un ejemplo, ajústalo
+//           map.setZoom(14);
+//         }
+//       }
+//     }, 100);
+//   }
+
+//   // console.log('[google-maps.js] updateMapMarkers: Retornando', newMarkers.length, 'marcadores nuevos.');
+//   return newMarkers; 
+
+// }
