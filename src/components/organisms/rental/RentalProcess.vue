@@ -26,12 +26,12 @@ const carStore = useCarStore();
 const paymentStore = usePaymentStore();
 
 const props = defineProps({
-  carId: {
-    type: [String, Number],
-    required: true
-  },
+  // carId: {
+  //   type: [String, Number],
+  //   required: true
+  // },
   userId: {
-    type: [String, Number],
+    // type: [String, Number],
     required: true
   },
   isCarRented: {
@@ -130,8 +130,19 @@ function handleViewAlert() {
 }
 
 onMounted(async () => {    
-  store.setInitialData(carStore.car, authStore.user.id, carStore.isCarRented);
+  if (!carStore.car) {
+    console.error('carStore.car es null');
+    return;
+  }
   
+  if (!authStore.user?.id) {
+    console.error('authStore.user.id es null', authStore.user?.id);
+    return;
+  }
+  store.setInitialData(carStore.car, authStore.user.id, carStore.isCarRented);
+  console.log("authstore.user.id:", authStore.user.id);
+  
+
   watch(() => store.currentStep, async (newStep) => {
   console.log("Nuevo Paso:", newStep);
   if (newStep === 3) {

@@ -4,6 +4,7 @@ import { useAuthStore, useUserStore , useCarStore } from '@stores'
 import { useRoute } from 'vue-router';
 import { Loader } from "@googlemaps/js-api-loader";
 // import { loadGoogleMaps, initMap } from "../services/google-maps.js";
+import { useRentalStore } from '@/stores/rent.store.js';
 
 import Heading from "../components/atoms/Heading.vue";
 import Pill from "../components/atoms/Pill.vue";
@@ -18,6 +19,7 @@ import RentalProcess from "@/components/organisms/rental/RentalProcess.vue";
 const carStore = useCarStore();
 const authStore = useAuthStore();
 const userStore = useUserStore();
+const store = useRentalStore();
 
 // Router
 const route = useRoute();
@@ -266,21 +268,21 @@ onMounted(async () => {
       <div 
         id="map"
         style="width: 100%; height: 300px; border-radius: 40px;"
-        v-show="currentStep === 1"
+        v-show="store.currentStep === 1"
       ></div>
     </div>
   
     <div class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-y-scroll">
       
       <RentalProcess 
-        v-if="!loading && !error"
-        :car-id="car.id"
-        :user-id="loggedUser?.id"
-        :is-car-rented="isRented"
+        v-if="!loading && !errorMsg && carStore.car && authStore.user?.id"
+        :car-id="carStore.car.id"
+        :user-id="authStore.user.id"
+        :is-car-rented="store.isRented"
       />  
     </div>
 
-    <span v-if="isRented && !carStore.isUserOwner"
+    <span v-if="store.isRented && !carStore.isUserOwner"
       class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">
       {{ carStore.isUserOwner ? 'Tu auto ya está alquilado' : 'Este auto ya está alquilado' }}
     </span>
