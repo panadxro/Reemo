@@ -3,7 +3,7 @@ import { ref, onMounted, watch, computed  } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from "@/stores/auth.store.js";
 
-import { getAvailableCars } from "../services/car-service.js";
+import { getAvailableCars } from "@/services/car";
 import { updateCars, initAutocomplete, updateMapMarkers, loadGoogleMaps, initMap, getCurrentLocation } from "../services/google-maps.js";
 
 import { addAlert } from "@/services/alerts.js";
@@ -32,6 +32,7 @@ const map = ref(null);
 const markers = ref([]); 
 const loading = ref(false);
 const showSuggestions = ref(false);
+const initialLocation = ref(false)
 
 // This 'car' object was used in the original template for static owner info
 // when a car is selected. It's kept for template compatibility.
@@ -49,23 +50,28 @@ const updateMapMarkersService = async () => {
     markers.value = await updateMapMarkers(
       map.value,
       filteredCars.value,
-      markers.value, // Pass current markers to be updated/cleared
+      markers.value,
       comentarioIcon,
-      handleCarSelected // Callback for when a marker is clicked
+      handleCarSelected 
     );
   }
 };
 
 const filterCars = async () => {
+  console.log('[Maps.vue filterCars] Iniciando. searchLocation:', JSON.parse(JSON.stringify(searchLocation.value)), 'cars.value.length:', cars.value.length);
+
   if (map.value && searchLocation.value && typeof searchLocation.value.lat === 'number' && typeof searchLocation.value.lng === 'number') {
     // Center map on search location
     map.value.setCenter(searchLocation.value);
     map.value.setZoom(14); // Adjust zoom as needed
     // Filter cars based on the current searchLocation
+    console.log('[Maps.vue filterCars] Llamando a updateCars con searchLocation válida.');
     filteredCars.value = updateCars(cars.value, searchLocation.value, map.value);
+    console.log('[Maps.vue filterCars] updateCars devolvió filteredCars.value.length:', filteredCars.value.length);
   } else {
     // If no valid search location, show all cars (or handle as per requirements)
     console.warn('[Maps.vue filterCars] searchLocation no es valido para filtrar o centrar el mapa.', searchLocation.value);
+    console.log('[Maps.vue filterCars] Mostrando todos los coches. cars.value.length:', cars.value.length);
     filteredCars.value = [...cars.value]; // Display all fetched cars
   }
   await updateMapMarkersService(); // Update markers with the new filtered list
@@ -76,12 +82,22 @@ const fetchCars = async () => {
   try {
     // Fetch cars, potentially based on logged-in user
     cars.value = await getAvailableCars(loggedUser.value?.id);
+    console.log('[Maps.vue fetchCars] Coches recibidos de getAvailableCars:', JSON.parse(JSON.stringify(cars.value)));
+    // Verificar la estructura de los coches recibidos
+    const firstCar = cars.value.length > 0 ? cars.value[0] : null;
+    if (firstCar && (!firstCar.status || !firstCar.status.currentLocation || !firstCar.status.currentLocation.location)) {
+      console.error('[Maps.vue fetchCars] ERROR ESTRUCTURAL: El primer coche NO tiene la estructura esperada car.status.currentLocation.location.', JSON.parse(JSON.stringify(firstCar)));
+      addAlert("Error: Datos de vehículos con formato inesperado.", "error");
+      // Si hay un error estructural, es probable que el filtrado falle o no muestre nada.
+      // Podríamos forzar filteredCars a estar vacío para evitar más errores en updateCars/updateMapMarkers.
+      // filteredCars.value = [];
+    }
     // After fetching, apply current filters (which might be based on searchLocation)
     await filterCars();
   } catch (error) {
     console.error("Error al buscar autos:", error);
     addAlert("Error al cargar los vehículos.", "error");
-    cars.value = [];
+    // cars.value = [];
     filteredCars.value = [];
     await updateMapMarkersService(); // Clear markers on error
   } finally {
@@ -95,32 +111,42 @@ const goToCarDetails = (carId) => {
 
 const handlePlaceSelected = async ({ formattedAddress, location }) => {
   searchLocation.value = location;
-  searchQuery.value = formattedAddress; // Update the input field display
+  searchQuery.value = formattedAddress;
 
   if (map.value && location && typeof location.lat === 'number' && typeof location.lng === 'number') {
     map.value.setCenter(location);
     map.value.setZoom(14);
   }
-  await filterCars(); // Filter cars based on new location
+  await filterCars(); 
   showSuggestions.value = false;
 };
 
 const handleCarSelected = (carFromMarker) => {
   selectedCar.value = carFromMarker;
-  if (map.value && carFromMarker.coordenadas && typeof carFromMarker.coordenadas.lat === 'number' && typeof carFromMarker.coordenadas.lng === 'number') {
-    const newCenter = new google.maps.LatLng(carFromMarker.coordenadas.lat, carFromMarker.coordenadas.lng);
+  if (map.value && carFromMarker.status && 
+      carFromMarker.status.currentLocation && 
+      carFromMarker.status.currentLocation.location && 
+      typeof carFromMarker.status.currentLocation.location.lat === 'number' && 
+      typeof carFromMarker.status.currentLocation.location.lng === 'number') { 
+    const newCenter = new google.maps.LatLng(
+      carFromMarker.status.currentLocation.location.lat, 
+      carFromMarker.status.currentLocation.location.lng 
+    );
     map.value.panTo(newCenter);
     map.value.setZoom(16);
   } else {
-    console.warn('[Maps.vue handleCarSelected] Coordenadas inválidas o mapa no listo:', carFromMarker.coordenadas);
-  }
+    console.warn('[Maps.vue handleCarSelected] Coordenadas inválidas o mapa no listo:', carFromMarker.status.currentLocation.location);  }
 };
 
 const closeCarDetails = () => {
   selectedCar.value = null;
   if (map.value && searchLocation.value) {
-     map.value.setZoom(14);
-     // map.value.panTo(searchLocation.value); // Optionally re-center to the search location
+    // map.value.setZoom(14);
+    // map.value.panTo(searchLocation.value); // Optionally re-center to the search location
+    map.value.setZoom(14); // Default zoom when closing details
+    if (searchLocation.value && typeof searchLocation.value.lat === 'number' && typeof searchLocation.value.lng === 'number') {
+      // map.value.panTo(searchLocation.value); // Optionally re-center to the last search location
+    }
   } else if (map.value) {
      map.value.setZoom(14);
   }
@@ -142,31 +168,42 @@ const useMyLocation = async () => {
 };
 
 onMounted(async () => {
-  await loadGoogleMaps();
-  map.value = await initMap('map'); // initMap should return the map instance
-  initAutocomplete('searchInput', handlePlaceSelected); // Initialize autocomplete on the input
+  await loadGoogleMaps(); 
+  map.value = await initMap('map'); 
+  initAutocomplete('searchInput', handlePlaceSelected); 
 
-  // Attempt to get initial location
   try {
     const initialPlace = await getCurrentLocation();
-    // Set initial search location and query. handlePlaceSelected will then filter cars.
+    
     searchLocation.value = initialPlace.location;
     searchQuery.value = initialPlace.formattedAddress;
-    if (map.value && searchLocation.value) {
+    if (map.value && searchLocation.value ) {
         map.value.setCenter(searchLocation.value);
-        map.value.setZoom(14); // Initial zoom level
+        map.value.setZoom(14);
+        console.log('[Maps.vue onMounted] Ubicación inicial obtenida y mapa centrado 👌👌.', JSON.parse(JSON.stringify(searchLocation.value)));
+    }
+    // Si los coches ya se cargaron (por el watch de autenticación) antes de que la geolocalización terminara,
+    // necesitamos re-filtrarlos ahora con la searchLocation obtenida.
+    if (cars.value.length > 0) {
+      console.log('[Maps.vue onMounted] Geolocalización obtenida, re-filtrando coches.');
+      await filterCars();
     }
     console.log('[Maps.vue onMounted] Ubicación inicial obtenida y mapa centrado.');
-    // Cars will be fetched based on auth state or if explicitly called after this.
   } catch (error) {
     console.warn("[Maps.vue onMounted] No se pudo obtener la ubicación inicial:", error);
-    // Proceed without initial location; map will use its default center.
-    // Cars will be fetched by auth state change, potentially showing all if no searchLocation.
+    // Si los coches ya se cargaron, y searchLocation es null, filterCars (si se llama) mostrará todos.
+    // Si getCurrentLocation falla, searchLocation.value seguirá siendo null.
+    // Si cars.value.length > 0, y llamamos a filterCars(), se mostrarán todos.
+    if (cars.value.length > 0) {
+      console.log('[Maps.vue onMounted] Geolocalización falló o denegada, asegurando que se muestren todos los coches si ya están cargados.');
+      await filterCars(); // searchLocation será null, así que mostrará todos.
+    }
+  } finally {
+    initialLocation.value = true;
   }
 
 });
 
-// Watch for changes in authentication state
 watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser, initialized]) => {
   if (!initialized) {
     // Opcional: puedes mostrar un estado de carga aquí si el store aún no está listo.
@@ -174,13 +211,14 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
     console.log('[Maps.vue authStore watch] authStore no inicializado todavía. Esperando...');
     return; // No hacer nada hasta que el store esté inicializado.
   }
-  // Si llegamos aquí, el store está inicializado.
   // loading.value = false; // Quitar el loading si se puso arriba
   loggedUser.value = currentUser ? { id: currentUser.id, email: currentUser.email } : { id: null, email: null };
 
   if (loggedUser.value && loggedUser.value.id) {
     console.log('[Maps.vue authStore.user watch] Usuario autenticado. Buscando coches.');
-    await fetchCars(); // Fetch cars for the logged-in user
+    await fetchCars();
+    // En este punto, filterCars() dentro de fetchCars() usará el searchLocation.value actual.
+    // Si getCurrentLocation() aún no ha terminado, searchLocation.value será null, y se mostrarán todos los coches.
   } else {
     console.log('[Maps.vue authStore.user watch] Usuario no autenticado. Limpiando datos.');
     cars.value = [];
@@ -188,16 +226,22 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
     selectedCar.value = null;
     await updateMapMarkersService();
   }
-}, { immediate: true, deep: true });
-
-// All declared constants and functions (refs, router, local functions, imported functions/components)
-// are automatically available to the template when using <script setup>.
-// No explicit `return` statement is needed from setup().
-
+}, { immediate: true });
+// }, { immediate: true, deep: true });
 </script>
 
 <template>
-  <section class="h-screen flex flex-col md:flex-row p-4 gap-4 relative overflow-hidden ">
+
+    <!-- <div class="flex-1 relative overflow-hidden">
+      <div id="map" class="absolute inset-0 w-full h-full z-10"></div>
+
+      <div class="absolute top-4 left-1/2 transform -translate-x-1/2 w-11/12 sm:w-80 z-20">
+        <input type="text" placeholder="Buscar" class="w-full px-4 py-2 rounded-full shadow border bg-white" />
+      </div>
+    </div> -->
+
+  <!-- <section class="h-screen flex flex-col md:flex-row p-4 gap-4 relative overflow-hidden"> -->
+  <!-- <section class="h-screen flex flex-col md:flex-row p-4 gap-4 relative"> -->
 
     <!-- Panel de Detalles del Vehículo Seleccionado -->
     <!-- class="relative w-full md:w-1/3 h-full bg-white rounded-3xl shadow-xl p-6 flex flex-col gap-4 transition-all duration-300 ease-in-out transform space-y-4 border border-gray-200" -->
@@ -225,14 +269,14 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
 
         <!-- Imagen principal -->
         <img
-          :src="selectedCar.images && selectedCar.images.length > 0 ? selectedCar.images[0] : '/src/assets/Car-Img.png'"
+          :src="selectedCar.photos && selectedCar.photos.length > 0 ? selectedCar.photos[0] : '/src/assets/Car-Img.png'"
           alt="Auto"
           class="rounded-xl w-full max-w-[500px] h-[280px] object-cover mx-auto transition-transform duration-500 ease-in-out image-fade"
         />
 
         <!-- Galería -->
         <div class="flex gap-2 overflow-x-auto">
-          <img v-for="(image, index) in selectedCar.images"
+          <img v-for="(image, index) in selectedCar.photos"
             :key="index"
             :src="image"
             class="w-16 h-16 object-cover rounded-xl border border-gray-300 cursor-pointer transition duration-300 ease-in-out" />
@@ -240,8 +284,8 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
 
         <!-- Datos principales -->
         <div>
-          <p class="text-gray-500 text-sm">{{ selectedCar.marca }}</p>
-          <h2 class="text-xl font-bold text-gray-800">{{ selectedCar.modelo }}</h2>
+          <p class="text-gray-500 text-sm">{{ selectedCar.basicInfo.brand }}</p>
+          <h2 class="text-xl font-bold text-gray-800">{{ selectedCar.basicInfo.model }}</h2>
         </div>
 
         <!-- Dueño, precio y rating -->
@@ -251,24 +295,24 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
             <span class="text-sm text-gray-700">{{ car.owner.name }}</span>
           </div>
           <div class="text-right">
-            <p class="text-lg font-semibold text-gray-800">{{ selectedCar.precio }}k <span class="text-sm text-gray-500">/hora</span></p>
+            <p class="text-lg font-semibold text-gray-800">{{ selectedCar.pricing.rates.daily }}k <span class="text-sm text-gray-500">/hora</span></p>
             <p class="text-sm text-yellow-500 flex items-center gap-1">⭐ {{ selectedCar.rating || '4.0' }}</p>
           </div>
         </div>
 
         <!-- Datos adicionales -->
         <div class="grid grid-cols-2 text-sm text-gray-600 border-t pt-2 gap-y-1">
-          <div class="font-medium">Año</div><div>{{ selectedCar.año }}</div>
-          <div class="font-medium">Chasis</div><div>{{ selectedCar.chasis }}</div>
+          <div class="font-medium">Año</div><div>{{ selectedCar.basicInfo.year }}</div>
+          <div class="font-medium">Chasis</div><div>{{ selectedCar.basicInfo.type }}</div>
+          <div class="font-medium">Kilometraje</div><div>{{ selectedCar.basicInfo.kilometers }} km</div>
           <div class="font-medium">Transmisión</div><div>{{ selectedCar.transmision }}</div>
-          <div class="font-medium">Kilometraje</div><div>{{ selectedCar.kilometraje }} km</div>
           <div class="font-medium">Asientos</div><div>{{ selectedCar.asientos }}</div>
           <!-- <div class="font-medium">Seguro</div><div>{{ selectedCar.seguro ? 'Sí' : 'No' }}</div> -->
         </div>
 
         <div>
           <Heading :type="4" class="text-primary-900 mb-1">descripcion</Heading>
-          <p>{{ selectedCar.description }}</p>
+          <p>{{ selectedCar.status.description }}</p>
         </div>
 
         
@@ -296,8 +340,9 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
     </div> -->
 
 <!-- Aca se renderiza mi mapa -->
-<div class="flex-1 relative rounded-3xl w-full h-full overflow-hidden">
-  <div id="map" class="absolute inset-0 w-full h-full z-10"></div>
+<!-- <div class="flex-1 relative rounded-3xl w-full h-full overflow-hidden"> -->
+<div class="flex-1 relative overflow-hidden rounded-3xl md:p-5">
+  <div id="map" class="absolute inset-0 w-full h-full z-10"> aca va el mapa </div>
 
   <!-- Buscador dentro del mapa -->
   <div class="absolute top-4 left-1/2 transform -translate-x-1/2 w-11/12 sm:w-80 z-20"
@@ -335,7 +380,8 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
       <span class="sr-only">Cargando...</span>
     </div> -->
 
-  </section>
+  <!-- </section> -->
+
 </template>
 
 <style>

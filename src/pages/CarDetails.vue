@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useAuthStore, useUserStore , useCarStore } from '@stores'
 import { useRoute } from 'vue-router';
 import { Loader } from "@googlemaps/js-api-loader";
+// import { loadGoogleMaps, initMap } from "../services/google-maps.js";
 
 import Heading from "../components/atoms/Heading.vue";
 import Pill from "../components/atoms/Pill.vue";
@@ -50,19 +51,19 @@ const ownerData = computed(() => {
 });
 
 // Métodos
-const initMap = async(coordenadas) => {
-  if (!coordenadas || !coordenadas.lat || !coordenadas.lng) {
-    console.error("Coordenadas no válidas:", coordenadas);
+const initMap = async(location) => {
+  if (!location || !location.lat || !location.lng) {
+    console.error("Coordenadas no válidas:", location);
     return;
   }
   try {
-    const position = { lat: coordenadas.lat, lng: coordenadas.lng };
+    const position = { lat: location.lat, lng: location.lng };
     const { Map } = await google.maps.importLibrary("maps");
 
     const map = new Map(document.getElementById('map'),{
       center: {
-        lat: coordenadas.lat,
-        lng: coordenadas.lng,
+        lat: location.lat,
+        lng: location.lng,
       },
       zoom: 14,
       mapId: "4808da25693c56c8",
@@ -247,7 +248,6 @@ onMounted(async () => {
   </section>
 
   <section v-else-if="loading" class="w-full h-full flex items-center justify-center">
-    <Loading />
     <div v-if="carStore.loading" class="flex justify-center items-center h-64">
       <Loading role="status" class="h-6 w-6 text-blue-500" />
     </div>
@@ -255,7 +255,6 @@ onMounted(async () => {
   
   <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
     <p>{{ carStore.errorMessage }}</p>
->>>>>>> develop
   </section>
 
   <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">

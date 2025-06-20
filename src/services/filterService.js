@@ -4,8 +4,8 @@ export function filterByPreferences(cars, filters){
     return cars.filter(car => {{
       // console.log('analizando', car)
         const matchesPrice = 
-          car.precio >= filters.minPrice &&
-          car.precio <= filters.maxPrice;
+          car.pricing.rates.daily >= filters.minPrice &&
+          car.pricing.rates.daily <= filters.maxPrice;
 
         const brand = filters.brand
           ? car.marca.toLowerCase().includes(filters.brand.toLowerCase())

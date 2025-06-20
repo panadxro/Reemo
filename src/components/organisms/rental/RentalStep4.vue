@@ -181,7 +181,7 @@ export default {
       return this.rentalData.selectedPaymentMethod;
     },
     priceHours() {
-      return this.car.precio / 24;
+      return this.car.pricing.rates.daily / 24;
     },
     rentalHours() {
       if (!this.rentalData.rentedFromDate || !this.rentalData.rentedUntilDate) return 0;

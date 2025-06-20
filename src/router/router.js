@@ -39,7 +39,11 @@ const routes = [
     meta: { needsAuth: true },
   },
   { path: "/search", component: Search, name: "Search" },
-  { path: "/maps", component: Maps },
+  { 
+    path: '/maps',
+    component: Maps,
+    name: 'maps', 
+  },
   {
     path: "/onboarding",
     component: UserOnboarding,

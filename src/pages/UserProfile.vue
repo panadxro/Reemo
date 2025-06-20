@@ -555,7 +555,7 @@ const saveNewPaymentMethod = async () => {
                       'text-primary-800 font-bold flex-shrink-0 ml-2',
                       userCars.length === 1 ? 'text-base' : 'text-sm'
                     ]">
-                      ${{ car.precio }}/día
+                      ${{ car.pricing.rates.daily }}/día
                     </span>
                   </div>
 
@@ -842,7 +842,7 @@ const saveNewPaymentMethod = async () => {
                           {{ car.marca }} {{ car.modelo }}
                         </h3>
                         <span class="text-sm text-primary-800 font-bold flex-shrink-0 ml-2">
-                          ${{ car.precio }}/día
+                          ${{ car.pricing.rates.daily }}/día
                         </span>
                       </div>
 

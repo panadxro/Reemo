@@ -1,6 +1,7 @@
 <script setup>
-import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive } from 'vue';
+import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch } from 'vue';
 import { useAuthStore, useUserStore, useCarStore } from '@stores'
+import { loadGoogleMaps, initAutocomplete } from "../services/google-maps.js"; 
 import { useRouter } from "vue-router";
 import { addAlert } from "../services/alerts.js";
 
@@ -41,6 +42,7 @@ const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
 
 const currentStep = ref(0);
+const autocompleteInitialized = ref(false);
 
 const justifyClass = computed(() => ({
   'justify-start': currentStep.value <= 1,
@@ -194,8 +196,7 @@ const validateStep = (step) => {
       return true;
 
     case 6: // Información de seguro
-      if (!insurance.value.number || !insurance.value.company || 
-          !insurance.value.type || !insurance.value.expirationDate) {
+      if (!insurance.value.number || !insurance.value.company || !insurance.value.type) {
         addAlert('Por favor completa todos los campos de información de seguro', 'error');
         return false;
       }
@@ -389,6 +390,34 @@ onMounted(async () => {
     console.error("Initialization error:", error);
     addAlert('Error al cargar los datos del vehículo', 'error');
     router.push('/'); // Redirige si hay error
+  }
+});
+
+watch(currentStep, async (newStep) => {  
+  if (newStep === 3 && !autocompleteInitialized.value) {  
+    // const addressInput = document.getElementById('carRegisterAddressInput');
+    // if(!addressInput){
+    //   console.warn('[CarRegister] input de dirección no encontrado', addressInput);
+    //   setTimeout(() => {}, 100);
+    //   return;
+    // }
+    try {
+      await loadGoogleMaps();
+      initAutocomplete('carRegisterAddressInput', (placeData) => {
+        if (placeData && status.value && status.value.currentLocation) {
+          // Actualizar el store directamente o mediante una acción
+          carStore.updateCarCurrentLocation({
+            address: placeData.formattedAddress,
+            location: placeData.location // {lat, lng}
+          });
+          // Opcional: podrías extraer y guardar ciudad/país aquí si es necesario
+        }
+      });
+      autocompleteInitialized.value = true;
+    } catch (error) {
+      console.error("Error al inicializar autocompletado de dirección en CarRegister:", error);
+      addAlert('No se pudo inicializar la búsqueda de direcciones.', 'error');
+    }
   }
 });
 
@@ -737,7 +766,10 @@ onBeforeUnmount(() => {
             <Loading v-if="loading" role="status" />
           </div>
           <div class="flex flex-col gap-5">
-            <Input type="text" placeholder="Direccion" :variant="'secondary'" :outline="true" iconPosition="right" required>
+            <Input
+              id="carRegisterAddressInput"
+              v-model="status.currentLocation.address"
+              type="text" placeholder="Direccion" :variant="'secondary'" :outline="true" iconPosition="right" required>
               <template #icon>
                 <Search color="#7b7b7b"/>
               </template>
@@ -1014,176 +1046,12 @@ onBeforeUnmount(() => {
               ]"
               icon-position="right"
               variant="secondary"
-              :outline="false"
+              :outline="true"
               class="w-full cursor-pointer"
             />
-
-            <!-- Ciudad/Localidad -->
-            <Input
-              type="select"
-              name="ciudad"
-              id="ciudad"
-              placeholder="Ciudad/Localidad"
-              :options="ciudades.map(c => ({ value: c, label: c }))"
-              v-model="user.city"
-              :disabled="!user.province"
-              icon-position="right"
-              variant="secondary"
-              :outline="false"
-              class="w-full cursor-pointer"
-            />
-
-            <div class="flex gap-5">
-              <!-- Calle y número -->
-              <Input
-                type="text"
-                placeholder="Calle y número"
-                v-model="user.street"
-                :variant="'secondary'"
-                :outline="false"
-              />
-              <!-- Código Postal -->
-              <Input
-                type="text"
-                placeholder="Código Postal"
-                v-model="user.postalCode"
-                :variant="'secondary'"
-                :outline="false"
-              />
-            </div>
-            
-            <div class="flex gap-5">
-              <!-- Piso (opcional) -->
-              <Input
-              type="text"
-              placeholder="Piso"
-              v-model="user.floor"
-              :variant="'secondary'"
-              :outline="false"
-            />
-
-            <!-- Departamento (opcional) -->
-            <Input
-              type="text"
-              placeholder="Departamento"
-              v-model="user.apartment"
-              :variant="'secondary'"
-              :outline="false"
-              />
-            </div>
-          </div>
-        </router-view>
- 
-        <!-- Paso 4: Método de Pago -->
-        <router-view v-if="currentStep === 3" class="step">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-white !font-extrabold">Método de Pago</Heading>
-            <Loading v-if="loading" role="status" />
-          </div>
-          <div class="flex flex-col gap-5">
-
-            <DropdownForm title="Billetera Digital" @dropdown-toggle="() => selectedPaymentMethod = 'digital_wallet'" :isOpen="selectedPaymentMethod === 'digital_wallet'">
-              <Input 
-                type="select"
-                placeholder="Tipo de billetera"
-                :options="[
-                  {value: 'mercadopago', label: 'Mercado Pago'},
-                  {value: 'uala', label: 'Ualá'},
-                  {value: 'otra', label:'Otra'}
-                  ]"
-                v-model="paymentMethods.digital_wallet.walletType"
-                variant="secondary"
-                :outline="false"
-                />
-              <Input
-                type="text"
-                placeholder="CVU o Alias"
-                v-model="paymentMethods.digital_wallet.walletId"
-                variant="secondary"
-                :outline="false"
-              />
-            </DropdownForm>
-            
-            <DropdownForm title="Tarjeta de crédito/débito" @dropdown-toggle="() => selectedPaymentMethod = 'credit_card'" :isOpen="selectedPaymentMethod === 'credit_card'">
-              <Input 
-                type="text"
-                placeholder="Titular de tarjeta"
-                v-model="paymentMethods.credit_card.cardholder"
-                :variant="'secondary'"
-                :outline="false"
-                />
-                <Input 
-                  type="text"
-                  placeholder="Número de tarjeta"
-                  v-model="paymentMethods.credit_card.cardNumber"
-                  :variant="'secondary'"
-                  :outline="false"
-                />
-              <div class="flex gap-5">
-                <Input 
-                  type="date"
-                  placeholder="Fecha de vencimiento"
-                  v-model="paymentMethods.credit_card.expiryDate"
-                  :variant="'secondary'"
-                  :outline="false"
-                />
-                <Input
-                  type="password"
-                  placeholder="CVV"
-                  v-model="paymentMethods.credit_card.cvv"
-                  :variant="'secondary'"
-                  :outline="false"
-                />
-              </div>
-            </DropdownForm>
-
-            <DropdownForm title="Paypal" @dropdown-toggle="() => selectedPaymentMethod = 'paypal'" :isOpen="selectedPaymentMethod === 'paypal'">
-              <Input 
-                type="email"
-                placeholder="Email de PayPal"
-                v-model="paymentMethods.paypal.email"
-                :variant="'secondary'"
-                :outline="false"
-                />
-            </DropdownForm>
           </div>
         </router-view>
 
-        <!-- Paso 5: Términos y Condiciones -->
-        <router-view v-if="currentStep === 4" class="step">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-white !font-extrabold">Términos y Condiciones</Heading>
-            <Loading v-if="loading" role="status" />
-          </div>
-          <div class="flex gap-2 items-center">
-            <Checkbox v-model="user.acceptedTerms" :disabled="user.acceptedTerms"/>
-            <p class="text-sm font-medium">He leído y acepto los 
-              <router-link
-                to="/terms-and-conditions"
-                class="text-primary text-background-900 font-bold"
-                >
-                <span class="hover:underline">Términos y Condiciones</span>
-              </router-link>.
-            </p>
-          </div>
-          <!-- Politicas de privacidad -->
-          <div class="flex gap-2 items-center">
-            <Checkbox v-model="user.acceptedPrivacyPolicy" :disabled="user.acceptedPrivacyPolicy"/>
-            <p class="text-sm font-medium">He leído y acepto las 
-              <router-link
-                to="/privacy-policy"
-                class="text-primary text-background-900 font-bold"
-                >
-                <span class="hover:underline">Políticas de Privacidad</span>
-              </router-link>.
-            </p>
-          </div>
-          <!-- Notificaciones -->
-          <div class="flex gap-2 items-center">
-            <Checkbox v-model="user.acceptedNotifications" />
-            <p class="text-sm font-medium">Acepto recibir notificaciones y promociones por correo electrónico.</p>
-          </div>
-        </router-view>
 
         <!-- Botones de navegación -->
         <div class="flex justify-between items-center gap-32">
