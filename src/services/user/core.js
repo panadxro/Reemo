@@ -6,10 +6,10 @@ export async function createUserProfile( uid, email ) {
   const userRef = doc(db, 'users', uid);
   const initialData = {
     personalInfo: {
-      firstName: 'Desconocido',
+      firstName: '',
       lastName: '',
       profilePhoto: '/src/assets/User.png',
-      username: 'Desconocido'
+      username: ''
     },
     documents: {
       dniFront: '',
@@ -50,7 +50,7 @@ export async function createUserProfile( uid, email ) {
     ...initialData,
 
     uid, 
-    emailVerified: false, 
+    status: 'not-verified', 
     profileCompleted: false, 
     role: 'user', 
     createdAt: new Date(), 
@@ -119,7 +119,7 @@ export async function saveUserData(uid, data) {
 
     await setDoc(userRef, {
       ...data,
-      updateAt: serverTimestamp()
+      updatedAt: serverTimestamp()
     }, { merge: true });
   } catch (error) {
     console.error("Error guardando datos del usuario:", error);

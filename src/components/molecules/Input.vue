@@ -31,6 +31,8 @@ const props = defineProps({
   }
 });
 
+const inputRef = ref(null);
+
 const emit = defineEmits(['update:modelValue']);
 
 // Referencia al elemento <select>
@@ -43,7 +45,7 @@ const inputClasses = computed(() => {
     ? (
         props.outline 
         ? 'border-deep-blue-600 text-deep-blue-600 bg-white' 
-        : 'bg-deep-blue-900 text-white border-transparent hover:bg-deep-blue-700 focus:opacity-80'
+        : 'bg-deep-blue-600 text-white border-transparent hover:bg-deep-blue-700 focus:opacity-80'
     ) 
     : (
       props.outline 
@@ -63,6 +65,18 @@ const labelClasses = computed(() => {
 const elementClasses = computed(() => {
   return props.type === 'select' ? inputClasses.value : 'w-full bg-transparent border-none outline-none';
 });
+
+// Exponer método focus
+const focus = () => {
+  if (inputRef.value) {
+    inputRef.value.focus();
+  }
+};
+
+// Exponer métodos al padre
+defineExpose({
+  focus
+});
 </script>
 
 <template>
@@ -77,6 +91,7 @@ const elementClasses = computed(() => {
     <!-- Input para tipos de texto, número, etc. -->
     <input 
       v-if="type !== 'select'"
+      ref="inputRef"
       :type="type" 
       :id="id" 
       :name="name" 

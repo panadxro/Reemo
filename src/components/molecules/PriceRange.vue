@@ -136,7 +136,6 @@ export default {
   width: 85%;
   max-width: 400px;
   margin: 0 auto;
-  padding-right: 8px;
 }
 
 .slider-container {

@@ -131,7 +131,8 @@ export const useCarStore = defineStore("car", {
       { value: 'trunkOrganizer', label: 'Organizador de maletero' }
     ],
     loading: false,
-    error: null
+    error: null,
+    availableCars: [],
   }),
 
   actions: {
@@ -146,14 +147,6 @@ export const useCarStore = defineStore("car", {
         this.loading = false;
       }
     },
-
-    // async fetchAvailableCars(){
-    //   try{
-
-    //   } catch(error){
-        
-    //   }
-    // }
 
     async saveCar(carData) {
       // await createCarData(uid);
@@ -205,6 +198,18 @@ export const useCarStore = defineStore("car", {
         this.loading = false;
       }
     },
+    async loadUserCars(userId) {
+      try {
+        this.loading = true;
+        const cars = await getAvailableCars(userId);
+        return cars;
+      } catch (error) {
+        this.error = error;
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
     async uploadCarPhoto(userId, file, carId, photoIndex) {
       try {
         // 1. Validar que photos sea un array
@@ -223,6 +228,18 @@ export const useCarStore = defineStore("car", {
       } catch (error) {
         console.error(`Error subiendo foto ${photoIndex}:`, error);
         throw error;
+      }
+    },
+    async loadAvailableCars(userId) {
+      try {
+        this.loading = true;
+        const cars = await getAvailableCars(userId);
+        this.availableCars = cars;
+      } catch (error) {
+        this.error = error;
+        throw error;
+      } finally {
+        this.loading = false;
       }
     },
     updateFeatures(featuresData) {

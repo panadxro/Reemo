@@ -32,7 +32,7 @@ const layoutMap = {
   '/map': 'dashboard',
   '/car': 'dashboard',
   '/notification': 'dashboard',
-  '/rental-details': 'dashboard',
+  '/rent': 'dashboard',
   
   // Por defecto (con navbar y footer)
   '/404': 'default',
@@ -116,13 +116,13 @@ html {
       sans-serif;
   }
   ::-webkit-scrollbar {
-    width: 16px;
-    margin: 8px;
+    width: 8px;
+    margin: 100px;
   }
   ::-webkit-scrollbar-thumb {
     background: #a7ebef;
     border-radius: 16px;
-    box-shadow: inset 0 0 0 3px #ffffff;
+    box-shadow: unset 0 0 0 3px #ffffff;
   }
   ::-webkit-scrollbar-thumb:hover {
     background: #4fd8df;

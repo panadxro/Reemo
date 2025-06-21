@@ -2,9 +2,16 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores';
-import Loading from '@/icons/Loading.vue';
 
 import { fetchUserRentalHistory } from '@/services/rentedCarService';
+import Loading from '@/icons/Loading.vue';
+
+const props = defineProps({
+  rentalDetails: {
+    type: Object,
+    default: null
+  }
+});
 
 // const router = useRouter();
 const authStore = useAuthStore();
@@ -19,14 +26,10 @@ const loadHistoryData = async () => {
   console.log('[History] loadHistoryData llamado.');
   if (!currentUser.value || !currentUser.value.id) {
     console.warn('[History] Usuario no encontrado o sin ID. currentUser:', currentUser.value);
-    // driverRentalDetail.value = null;
-    // ownerRentalDetail.value = null;
     isLoading.value = false;
     return;
   }
   isLoading.value = true;
-  // driverRentalDetail.value = null;
-  // ownerRentalDetail.value = null;
 
   try {
     const userId = currentUser.value.id;
@@ -36,18 +39,6 @@ const loadHistoryData = async () => {
     historyDetails.value = history;
 
     console.log('[History] resultado de los alquileres: ', JSON.parse(JSON.stringify(historyDetails.value)));
-
-    // Cargar ambos conjuntos de datos en paralelo
-    // const [driverRentals, ownerRental] = await Promise.all([
-    //   fetchRentedCars(userId), 
-    //   fetchLatestActiveOwnedRental(userId)
-    // ]);
-
-    // driverRentalDetail.value = driverRentals && driverRentals.length > 0 ? driverRentals[0] : null;
-    // ownerRentalDetail.value = ownerRental;
-
-    // console.log('[History] fetchRentedCars (driver) completado. Resultado:', JSON.parse(JSON.stringify(driverRentalDetail.value)));
-    // console.log('[History] fetchLatestActiveOwnedRental (owner) completado. Resultado:', JSON.parse(JSON.stringify(ownerRentalDetail.value)));
   } catch (error) {
     console.error('[History.vue] Error al cargar solicitudes de alquiler: ', error);
   } finally {
@@ -59,60 +50,37 @@ onMounted(() =>{
   loadHistoryData();
 })
 
-// watch(currentUser, () =>{
-
-// })
-
-
 </script>
 
-<template>
+<template #default="rentalDetails">
 
-  <div class="space-y-4">
-    <!-- <div v-for="car in historyDetails.slice(0, 4)"  -->
+  <div class="flex flex-col gap-5">
     <div v-for="car in historyDetails" 
       :key="car.id" 
-      class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer p-4" 
-      @click="$router.push(`/rental-details/${car.id}`)">
-      <div class="flex gap-6">
-        <div class="relative flex-shrink-0">
-          <img :src="car.vehicleDetails.images?.[0] || '@/assets/car-placeholder.png'" 
-            :alt="car.vehicleDetails.marca + ' ' + car.vehicleDetails.modelo" 
-            class="object-cover rounded-xl w-32 h-28 sm:w-36 sm:h-32" />
-        </div>
-
-        <div class="flex-1 space-y-2">
-          <div class="flex justify-between items-start">
-            <h3 class="font-bold text-primary-900 leading-tight text-lg">
-              {{ car.vehicleDetails.marca }} {{ car.vehicleDetails.modelo }}
-            </h3>
-            <span class="text-primary-800 font-bold flex-shrink-0 ml-2 text-sm">
-              ${{ car.vehicleDetails.precio }}/día
-            </span>
-          </div>
-
+      class="bg-white flex rounded-2xl cursor-pointer px-2.5 py-2 justify-between" 
+      @click="$router.push(`/rent/${car.id}`)">
+      <div class="flex items-center gap-6">
+        <img :src="car.vehicleDetails.images?.[0] || '@/assets/car-placeholder.png'" 
+          :alt="car.vehicleDetails.marca + ' ' + car.vehicleDetails.modelo" 
+          class="object-cover rounded-xl w-18 h-14" 
+        />
+        <div class="flex flex-col justify-between items-start">
+          <h3 class="font-bold text-primary-900 leading-tight text-lg">
+           {{ car.vehicleDetails.modelo }} {{ car.vehicleDetails.año }}</h3>
           <p class="text-background-600 text-sm">
-            {{ car.vehicleDetails.año }} • {{ car.vehicleDetails.combustible }} • {{ car.vehicleDetails.transmision }}
+            Fecha - Hora
           </p>
-
-          <!-- Cambiar info como queiran -->
-          <div class="flex gap-2 flex-wrap">
-            <span class="bg-vibrant-light-600 text-primary-900 px-2 py-1 rounded-lg text-xs">
-              {{ car.status }}
-            </span>
-          </div>
-
-
-
+          <p class="text-background-600 text-sm">
+            ${{ car.vehicleDetails.precio }}
+          </p>
         </div>
       </div>
+      <div v-if="!rentalDetails" class="flex items-center">
+        <span class="bg-vibrant-light-600 text-primary-900 px-2 py-1 rounded-lg text-xs">
+          {{ car.status }}
+        </span>
+      </div>
     </div>
-
-    <!-- <router-link v-if="isOwnProfile" to="/car/register"
-      class="inline-flex items-center gap-2 px-4 py-2 bg-primary-800 text-white rounded-lg hover:bg-primary-900 transition-colors font-medium">
-      <Plus class="w-4 h-4" />
-      Registrar auto
-    </router-link> -->
   </div>
 
 </template>

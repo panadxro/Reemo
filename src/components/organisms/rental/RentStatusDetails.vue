@@ -106,7 +106,7 @@ const getStatusClass = (status) => {
 }
 function navigateToRentalDetails(rentalId){
   if (rentalId) {
-    router.push(`/rental-details/${rentalId}`);
+    router.push(`/rent/${rentalId}`);
   }
 }
 

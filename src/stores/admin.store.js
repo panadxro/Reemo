@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
-import { getUsers, updateUserRole } from '@/services/user';
-import { getCars } from '@/services/car';
-import { useUserStore } from '@stores';
+import { getUsers, updateUserRole, updateVerification } from '@/services/user';
+import { getCars, updateCarValidation } from '@/services/car';
+
 export const useAdminStore = defineStore('adminUser', {
   state: () => ({
     users: [],
@@ -14,7 +14,7 @@ export const useAdminStore = defineStore('adminUser', {
       this.loading = true;
       try {
         this.users = await getUsers();
-        console.log(this.users)
+        // console.log(this.users)
         this.error = null;
       } catch (error) {
         this.users = [];
@@ -25,19 +25,19 @@ export const useAdminStore = defineStore('adminUser', {
     },
     async fetchCars() {
       this.loading = true;
-      const userStore = useUserStore();
       try {
+        // Primero obtén todos los usuarios
+        await this.fetchUsers(); // Esto llenará this.users
+        
+        // Luego obtén los autos
         const cars = await getCars();
-
-        const owners = await Promise.all(
-          cars.map(async (car) => {
-            const owner = await userStore.getUserById(car.ownerId);
-            return { ...car, owner };
-          })
-        );
-
-        this.cars = owners;
-        console.log(this.cars)
+        
+        // Ahora puedes mapear los owners desde this.users
+        this.cars = cars.map(car => {
+          const owner = this.users.find(user => user.id === car.ownerId);
+          return { ...car, owner: owner || {} };
+        });
+        
         this.error = null;
       } catch (error) {
         this.cars = [];
@@ -58,5 +58,29 @@ export const useAdminStore = defineStore('adminUser', {
         this.error = error.message || 'Error updating user role';
       }
     },
+    async changeUserVerification(userId, newStatus) {
+      try {
+        const reponse = await updateVerification(userId, newStatus);
+        if (reponse.success) {
+          await this.fetchUsers();
+        } else {
+          this.error = reponse.message || 'Error updating user verification';
+        }
+      } catch (error) {
+        this.error = error.message || 'Error updating user verification';
+      }
+    },
+    async changeCarValidation(carId, newStatus) {
+      try {
+        const response = await updateCarValidation(carId, newStatus);
+        if (response.success) {
+          await this.fetchCars();
+        } else {
+          this.error = response.message || 'Error updating car validation';
+        }
+      } catch (error) {
+        this.error = error.message || 'Error updating car validation';
+      }
+    }
   },
 });

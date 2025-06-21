@@ -262,7 +262,7 @@ onBeforeUnmount(() => {
           </div>
           <div class="flex flex-col gap-2">
 
-            <DropdownForm title="Documento de Identidad" :section-id="'section-1'" :dropdown-id="'doc-identidad'" :is-initial="true">
+            <DropdownForm color="#FFFFFF" title="Documento de Identidad" :section-id="'section-1'" :dropdown-id="'doc-identidad'" :is-initial="true">
               <p class="text-sm font-medium">Para completar la verificación de identidad, sube una foto clara y ligible de tu DNI.</p>
               <div class="flex gap-3">
                 <label for="dni-front" class="cursor-pointer">
@@ -291,7 +291,7 @@ onBeforeUnmount(() => {
               </div>
             </DropdownForm>
             
-            <DropdownForm title="Registro de conducir" :dropdown-id="'doc-licencia'" :section-id="'section-1'">
+            <DropdownForm color="#FFFFFF" title="Registro de conducir" :dropdown-id="'doc-licencia'" :section-id="'section-1'">
               <p class="text-sm font-medium">Para poder alquilar en nuestra plataforma, es esencial que tengas vinculado tu registro de conducir. </p>
               <div class="flex gap-3">
                 <label for="driver-front" class="cursor-pointer">
@@ -410,7 +410,7 @@ onBeforeUnmount(() => {
           </div>
           <div class="flex flex-col gap-5">
     
-            <DropdownForm title="Tarjeta de crédito/débito" :dropdown-id="'tarjeta'" :section-id="'section-3'" :is-initial="true">
+            <DropdownForm color="#FFFFFF" title="Tarjeta de crédito/débito" :dropdown-id="'tarjeta'" :section-id="'section-3'" :is-initial="true">
               <Input 
                 type="text"
                 placeholder="Titular de tarjeta"
@@ -443,7 +443,7 @@ onBeforeUnmount(() => {
               </div>
             </DropdownForm>
 
-            <DropdownForm title="Billetera Digital" :dropdown-id="'billetera'" :section-id="'section-3'" >
+            <DropdownForm color="#FFFFFF" title="Billetera Digital" :dropdown-id="'billetera'" :section-id="'section-3'" >
               <Input 
                 type="select"
                 placeholder="Tipo de billetera"
@@ -465,7 +465,7 @@ onBeforeUnmount(() => {
               />
             </DropdownForm>
 
-            <DropdownForm title="Paypal" :dropdown-id="'paypal'" :section-id="'section-3'"  @dropdown-toggle="'handleDropdownToggle'">
+            <DropdownForm color="#FFFFFF" title="Paypal" :dropdown-id="'paypal'" :section-id="'section-3'"  @dropdown-toggle="'handleDropdownToggle'">
               <Input 
                 type="email"
                 placeholder="Email de PayPal"
