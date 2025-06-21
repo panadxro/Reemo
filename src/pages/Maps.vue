@@ -1,4 +1,6 @@
 <script>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { getAvailableCars, addCar } from "../services/car-service.js";
 import { updateCars, initAutocomplete, updateMapMarkers, loadGoogleMaps, initMap, getCurrentLocation } from "../services/google-maps.js";
 import { subscribeToAuthState } from "../services/auth.js";
@@ -8,19 +10,15 @@ import Heading from "@components/atoms/Heading.vue";
 import CardCar from "@components/organisms/my-cars/CardCar.vue";
 import AddIcon from "@icons/AddIcon.vue";
 import Loading from "@icons/Loading.vue";
+import Input from "@components/molecules/Input.vue";
+import SearchIcon from "@icons/Search.vue";
 
 import AddressInput from "@/components/organisms/google-maps/AddressInput.vue";
-
-// import comentarioIcon from '@/assets/info-maps.png';
-// import comentarioIcon from '@/assets/comentario.png';
-// import comentarioIcon from '@/assets/coche.png';
-// import comentarioIcon from '@/assets/Reemo-icon.png';
-// import comentarioIcon from '@/assets/autito.webp';
 import comentarioIcon from '@/assets/marcador.png';
 
 export default {
   name: "Maps",
-  components: { Heading, CardCar, AddIcon, Loading, AddressInput },
+  components: { Heading, CardCar, AddIcon, Loading, AddressInput, Input, SearchIcon },
   data() {
     return {
       activeOverlay: null,
@@ -37,6 +35,18 @@ export default {
       loading: false,
       showSuggestions: false,
     };
+  },
+  setup() {
+    const router = useRouter();
+    const searchInputRef = ref(null);
+
+  onMounted(() => {
+    if (router.currentRoute.value.query.focusSearch === 'true') {
+      searchInputRef.value?.focus();
+      // Eliminar el query param
+      router.replace({ query: {} });
+    }
+  });
   },
   methods: {
     async fetchCars() {
@@ -112,39 +122,28 @@ export default {
 </script>
 
 <template>
-  <section class="w-full h-full overflow-hidden m-2.5">
+  <section class="w-full d:min-h-full overflow-hidden m-2.5">
 
-    <div class="absolute top-20 left-1/2 transform -translate-x-1/3 bg-white/70 backdrop-blur-md shadow-md rounded-full flex items-center px-4 py-2 w-80 border border-gray-300 focus-within:ring-2 focus-within:ring-primary-500 z-48">
-      <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-        stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M21 21l-4.35-4.35m1.85-4.65a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
-      <input type="text" id="searchInput" placeholder="Buscar un auto..."
-        class="bg-transparent outline-none text-gray-700 w-full pl-2 placeholder-gray-400">
-    </div>
+    <Input
+      ref="searchInputRef"
+      type="text"
+      id="searchInput"
+      name="searchInput"
+      placeholder="Buscar un auto..."
+      class="absolute top-20 left-1/2 transform -translate-x-1/3 w-80 border focus-within:ring-primary-500 z-48"
+      icon-position="left"
+      variant="secondary"
+      :outline="false"
+      >
+      <template #icon>
+        <SearchIcon />
+      </template>
+    </Input>
 
     <div
       class="absolute top-10 left-1/2 transform -translate-x-1/3 w-80 z-50"
       @click.away="showSuggestions = false"
     >
-  <!-- Input + ícono -->
-  <!-- <div
-    class="bg-white/70 backdrop-blur-md shadow-md rounded-full flex items-center px-4 py-2 border border-gray-300 focus-within:ring-2 focus-within:ring-primary-500"
-    @focusin="showSuggestions = true"
-  >
-    <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-      stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M21 21l-4.35-4.35m1.85-4.65a7 7 0 11-14 0 7 7 0 0114 0z" />
-    </svg>
-    <input
-      type="text"
-      id="searchInput"
-      placeholder="¿Dónde necesitas un coche?"
-      class="bg-transparent outline-none text-gray-700 w-full pl-2 placeholder-gray-400"
-    />
-  </div> -->
 
   <!-- Dropdown de sugerencias -->
   <div
@@ -159,9 +158,9 @@ export default {
     </button>
   </div>
 </div>
-
-    <div class="flex-1 relative w-full h-screen">
-      <div id="map" class="absolute top-0 left-0 w-full h-9/10 rounded-3xl z-10"></div>
+    <!-- Mapa -->
+    <div class="flex-1 relative h-full overflow-hidden rounded-3xl">
+      <div id="map" class="absolute top-0 left-0 w-full h-full"></div>
     </div>
 
     <div v-if="loading" class="flex items-center justify-center w-fit mx-auto bg-gray-50">

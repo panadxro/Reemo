@@ -7,10 +7,11 @@ import { formatDate } from "../../libraries/date";
 import Heading from "@components/atoms/Heading.vue";
 import Input from "../../components/molecules/Input.vue";
 import Popover from "../../components/molecules/Popover.vue";
+import Status from "../../components/molecules/Status.vue";
 
 export default {
   name: "AdminUsers",
-  components: { Heading, Input, Popover },
+  components: { Heading, Input, Popover, Status },
   setup() {
     const adminStore = useAdminStore();
 
@@ -44,6 +45,17 @@ export default {
           addAlert("Error al actualizar el rol", "error");
       }
     },
+    // Cambiar estado de verificacion del usuario
+    async updateVerification(user) {
+      try {
+        const newStatus = user.status === 'not-verified' ? 'verified' : 'not-verified';
+        await this.adminStore.changeUserVerification(user.id, newStatus);
+        user.status = newStatus;
+        addAlert("Estado de verificación actualizado con éxito", "success");
+      } catch (error) {
+          addAlert("Error al actualizar el estado de verificación", "error");
+      }
+    },
     toggleFiltro(filtro) {
       this.filter = filtro;
     },
@@ -59,13 +71,11 @@ export default {
   },
   computed: {
       userFilter() {
-        if (this.filter === 'habilitados') {
-          return this.users.filter((user) => user.profileCompleted);
-        } else if (this.filter === 'deshabilitados') {
-          return this.users.filter((user) => !user.profileCompleted);
+        if (this.filter === 'verificados') {
+          return this.users.filter((user) => user.status !== 'not-verified');
+        } else if (this.filter === 'no-verificados') {
+          return this.users.filter((user) => user.status === 'not-verified');
         } else {
-          // If filter is not 'habilitados' or 'deshabilitados', show all users.
-          // return an array with all users
           return this.users;
         }
     },
@@ -90,16 +100,16 @@ export default {
         text="Verificados"
         variant="secondary"
         class="cursor-pointer"
-        :class="filter === 'habilitados' ? ' bg-vibrant-light-900' : ''"
-        @click="toggleFiltro('habilitados')"
+        :class="filter === 'verificados' ? ' bg-vibrant-light-900' : ''"
+        @click="toggleFiltro('verificados')"
       />
       <Input 
         type="button"
         text="No verificados"
         variant="secondary"
         class="cursor-pointer"
-        :class="filter === 'deshabilitados' ? ' bg-vibrant-light-900' : ''"
-        @click="toggleFiltro('deshabilitados')"
+        :class="filter === 'no-verificados' ? ' bg-vibrant-light-900' : ''"
+        @click="toggleFiltro('no-verificados')"
       />
     </div>
     <table class="min-w-full bg-white h-full overflow-hidden flex flex-col gap-5">
@@ -112,7 +122,7 @@ export default {
           <th class="py-2.5 px-5 flex-none w-24">Accion</th>
         </tr>
       </thead>
-      <tbody class="flex flex-col gap-5 h-full overflow-y-scroll">
+      <tbody class="flex flex-col gap-5 h-full overflow-y-scroll pr-2">
         <tr 
           v-for="(user, index) in userFilter" :key="user.id"
           class="flex w-full max-h-16 border-2 border-secondary-100 rounded-xl font-semibold"
@@ -124,7 +134,7 @@ export default {
             </router-link>
           </td>
           <td class="py-2.5 px-5 flex flex-1 items-center">{{ user.role == 'admin' ? 'Administrador' : 'Usuario'}}</td>
-          <td class="py-2.5 px-5 flex flex-1 items-center">{{ user.profileCompleted == true ? 'Verificado' : 'No Verificado'}}</td>
+          <td class="py-2.5 px-5 flex flex-1 items-center"><Status :status="user.status" /></td>
           <td class="py-2.5 px-5 flex items-center w-32 font-">{{ formatDate(user.createdAt) }}</td>
           <td class="py-2.5 px-5 flex justify-center relative w-24 items-center">
             <Popover
@@ -132,6 +142,7 @@ export default {
                 { label: 'Ver perfil', to: `/user/${user.id}` },
                 { label: 'Chat', to: `/user/${user.id}/chat` },
                 { label: user.role == 'user' ? 'Otorgar admin' : 'Quitar admin', action: () => updateRole(user), class: `car.isValidated ? 'text-red-500' : ''` },
+                { label: user.status == 'not-verified' ? 'Verificar' : 'Desverificar', action: () => updateVerification(user), class: `car.isValidated ? 'text-red-500' : ''` },
               ]"
               :isOpen="openPopoverId === index"
               :popoverId="index"
@@ -143,38 +154,4 @@ export default {
       </tbody>
     </table>
   </section>
-
-<!--     <Heading :type="2" class="m-6 text-center">Usuarios</Heading>
-
-    <div class="max-w-md mx-auto md:max-w-(--breakpoint-xl) m-4">
-    <table class="min-w-full bg-white">
-      <thead>
-        <tr>
-          <th class="py-3 px-4">Imágen</th>
-          <th class="py-3 px-4">Nombre</th>
-          <th class="py-3 px-4">Email</th>
-          <th class="py-3 px-4">Rol</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="user in users" :key="user.id">
-          <td class="py-3 px-4">
-            <img :src="user.photoURL" alt="Imagen del usuario" class="w-16 h-16 object-cover rounded-sm" />
-          </td>
-          <td class="py-3 px-4">
-            <router-link :to="`/user/${user.id}`" class="flex items-center gap-2 hover:cursor-pointer">
-              <p class="hover:underline">{{ user.name }}</p>
-            </router-link>
-          </td>
-          <td class="py-3 px-4">{{ user.email }}</td>
-          <td class="py-3 px-4">
-            <select v-model="user.role" @change="updateRole(user)" class="hover:bg-gray-100 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-md hover:cursor-pointer py-1 px-2">
-              <option value="admin" class="hover:cursor-pointer">Admin</option>
-              <option value="user" class="hover:cursor-pointer">User</option>
-            </select>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div> -->
 </template>

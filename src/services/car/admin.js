@@ -8,14 +8,14 @@ export async function getCars() {
 }
 
 // Actualizar validación del vehículo (Cambiar o eliminar)
-export async function updateCarValidation(carId, isValidated) {
+export async function updateCarValidation(carId, newStatus) {
   try {
     const carDoc = doc(db, "cars", carId);
-    await updateDoc(carDoc, { isValidated });
-    return { success: true, message: "Validación actualizada correctamente" }; //para manjear alkertas
+    await updateDoc(carDoc, { "status.current": newStatus });
+    return { success: true, message: "Validación actualizada correctamente" };
   } catch (error) {
     console.error("Error al actualizar la validación del auto:", error);
-    return { success: false, message: "Error al actualizar la validación del auto" }; //para mannejar alertas
+    return { success: false, message: "Error al actualizar la validación del auto" };
   }
 }
 

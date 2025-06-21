@@ -17,10 +17,12 @@ import Arrow from '@icons/Arrow.vue'
 import FilterIcon from '@icons/FilterIcon.vue'
 import PriceRange from "../components/molecules/PriceRange.vue";
 import CheckboxFilter from "../components/atoms/CheckboxFilter.vue";
+import Repeat from "@icons/Repeat.vue";
+import SearchIcon from "@icons/Search.vue";
 
 export default {
   name: "Search",
-  components: { Heading, CardCar, AddIcon, Loading, AddressInput, Input, Arrow, PriceRange, CheckboxFilter, FilterIcon },
+  components: { Heading, CardCar, AddIcon, Loading, AddressInput, Input, Arrow, PriceRange, CheckboxFilter, FilterIcon, Repeat, SearchIcon },
   data() {
     return {
       loggedUser: {
@@ -62,14 +64,6 @@ export default {
         this.loading = false;
       }
     },
-    // async addNewCar(newCar) {
-    //   try {
-    //     const addedCar = await addCar(newCar);
-    //     this.cars.push(addedCar);
-    //   } catch (error) {
-    //     console.error("Error al agregar un nuevo auto:", error);
-    //   }
-    // },
     goToCarDetails(carId) {
       this.$router.push({ name: "CarDetails", params: { id: carId } });
     },
@@ -169,7 +163,7 @@ export default {
 </script>
 
 <template>
-  <section class="w-full h-full relative">
+  <section class="w-full md:min-h-full relative flex p-2.5 gap-5">
     <button 
       @click="toggleFilters" 
       class="lg:hidden fixed bottom-5 right-5 bg-primary-500 text-white p-3 rounded-full shadow-lg z-40"
@@ -177,21 +171,67 @@ export default {
       <FilterIcon/>
     </button>
 
-    <div class="flex flex-col md:flex-row w-full h-full">
-      <div 
-        :class="[
-          'transition-all duration-300 overflow-y-auto',
-          showFilters ? 'fixed lg:relative inset-0 z-39 bg-white/95 lg:bg-transparent' : 'hidden lg:block',
-          'lg:w-1/4 xl:w-1/5 lg:min-w-[300px] p-4'
-        ]"
-      >
-        <div class="bg-white border-secondary-100 border-2 rounded-2xl p-4 w-full h-auto">
-            <h2 class="text-xl font-bold">Filtrar vehículo</h2>
+        <div 
+          class="bg-vibrant-light-700 rounded-[40px] md:px-5 md:py-9 h-full transition-all duration-300 lg:w-1/4 xl:w-1/5 lg:min-w-[320px]"
+          :class=" showFilters ? 'fixed lg:relative inset-0 z-39' : 'hidden lg:block'"
+        >
+          <div class="flex items-center justify-between">
+            <Heading :type="2" class="regular mt-2">Filtrar vehículo</Heading>
+            <button @click="resetFilters" class="cursor-pointer hover:bg-vibrant-light-800 rounded-full p-1 transition-colors duration-300" title="Limpiar filtros">
+              <Repeat/>
+            </button>
+          </div>
+
+          <!-- marca -->
+          <div class="flex flex-col gap-2 mt-5">
+            <Heading :type="3" class="small">Marca del vehículo</Heading>
+            <div class="flex flex-col sm:flex-row gap-2 mt-2 text-sm">
+              <!-- Marca -->
+              <Input
+                type="select"
+                v-model="filters.brand"
+                name="brand"
+                id="brand"
+                placeholder="Marca"
+                :options="[
+                  { value: 'Honda', label: 'Honda' },
+                  { value: 'Toyota', label: 'Toyota' },
+                  { value: 'Ford', label: 'Ford' },
+                  { value: 'Chevrolet', label: 'Chevrolet' },
+                  { value: 'Volkswagen', label: 'Volkswagen' }
+                ]"
+                icon-position="right"
+                variant="secondary"
+                :outline="true"
+                />
+
+              <!-- Modelo -->
+                            <Input
+                type="select"
+                v-model="filters.model"
+                :disabled="!filters.brand"
+                name="model"
+                id="model"
+                placeholder="Modelo"
+                :options="[
+                  { value: 'Civic', label: 'Civic' },
+                  { value: 'CR-V', label: 'CR-V' },
+                  { value: 'Corolla', label: 'Corolla' },
+                  { value: 'Yaris', label: 'Yaris' },
+                  { value: 'Focus', label: 'Focus' },
+                  { value: 'Fiesta', label: 'Fiesta' }
+                ]"
+                icon-position="right"
+                variant="secondary"
+                :outline="true"
+                />
+            </div>
+          </div>
 
           <!-- rango de precio -->
           <div class="my-4">
             <Heading :type="3" class="small">Rango de precio</Heading>
-            <div class="mt-2 lg:ms-2 lg:me-1">
+            <div class="mt-2 lg:mx-4">
               <PriceRange :min="20000" :max="100000" v-model="filters" />
             </div>
           </div>
@@ -211,38 +251,6 @@ export default {
                 v-model="filters.chassis" 
                 :value="chassis" 
               />
-            </div>
-          </div>
-
-          <!-- marca -->
-          <div class="flex flex-col gap-2 mt-5">
-            <Heading :type="3" class="small">Marca del vehículo</Heading>
-            <div class="flex flex-col sm:flex-row gap-2 mt-2 text-sm">
-              <!-- Marca -->
-              <select class="w-full sm:w-1/2 rounded-xl border border-gray-300 p-2 focus:ring-sky-400" v-model="filters.brand">
-                <option value="">Marca</option>
-                <option value="Honda">Honda</option>
-                <option value="Toyota">Toyota</option>
-                <option value="Ford">Ford</option>
-                <option value="Chevrolet">Chevrolet</option>
-                <option value="Volkswagen">Volkswagen</option>
-              </select>
-
-              <!-- Modelo -->
-              <select 
-                class="w-full sm:w-1/2 rounded-xl border border-gray-300 p-2" 
-                v-model="filters.model"
-                :disabled="!filters.brand" 
-                :class="{ 'text-gray-400': !filters.brand }"
-              >
-                <option value="">Modelo</option>
-                <option v-if="filters.brand === 'Honda'">Civic</option>
-                <option v-if="filters.brand === 'Honda'">CR-V</option>
-                <option v-if="filters.brand === 'Toyota'">Corolla</option>
-                <option v-if="filters.brand === 'Toyota'">Yaris</option>
-                <option v-if="filters.brand === 'Ford'">Focus</option>
-                <option v-if="filters.brand === 'Ford'">Fiesta</option>
-              </select>
             </div>
           </div>
 
@@ -266,39 +274,42 @@ export default {
             </div>
           </div>
 
-          <!-- Mostrar disponibles -->
-          <!-- <div class="flex items-center justify-between mt-5">
-            <span class="font-medium">Mostrar sólo disponibles</span>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" value="" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-600"></div>
-              <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition peer-checked:translate-x-5"></div>
-            </label>
-          </div> -->
           <div class="flex gap-2 mt-4">
-            <button class="text-sm bg-[#0ba5ec] text-white px-4 py-1.5 rounded-lg shadow-sm hover:bg-[#0998d2] transition-all cursor-pointer" @click="applyFilters">
-              Guardar
-            </button>
-            <button class="text-sm text-[#0ba5ec] hover:underline cursor-pointer" @click="resetFilters">Limpiar Filtros</button>
+            <Input
+              type="button"
+              @click="applyFilters"
+              text="Aplicar Filtros"
+              variant="primary"
+              class="text-sm"
+              :outline="false"
+              />
           </div>
         </div>
 
-      </div>
 
-      <div class="w-full lg:w-3/4 xl:w-4/5 p-4 overflow-hidden flex flex-col h-full">
+      <div class="w-full lg:w-3/4 xl:w-4/5 overflow-hidden flex flex-col h-full">
         
         <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4">
-          
-          <div class="bg-white/70 rounded-full flex items-center px-4 py-2 border border-gray-300 focus-within:ring-2 focus-within:ring-primary-500 w-full lg:w-2/4 lg:order-1 mb-4 lg:mb-0">
-            <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-4.35-4.35m1.85-4.65a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input type="text" id="searchInput" placeholder="Buscar un auto..."
-              class="bg-transparent outline-none text-gray-700 w-full pl-2 placeholder-gray-400">
-          </div>
-          <Heading :type="1" class="text-xl lg:text-2xl text-start lg:mt-0">Autos disponibles</Heading>
+
+          <Heading :type="1" class="text-xl lg:text-2xl text-start flex-1 lg:mt-0">Autos disponibles</Heading>     
+          <router-link 
+            to="/maps?focusSearch=true"
+            >
+            <Input
+              type="text"
+              id="searchInput"
+              name="searchInput"
+              placeholder="Buscar por ubicación..."
+              class="lg:w-1/2 mb-2 lg:mb-0 !w-fit"
+              icon-position="left"
+              variant="secondary"
+              :outline="false"
+              >
+              <template #icon>
+                <SearchIcon />
+              </template>
+            </Input>
+          </router-link>     
           
           </div>
   
@@ -311,52 +322,12 @@ export default {
           <span class="sr-only">Cargando...</span>
         </div>
 
-        <div v-else class="flex-1 overflow-y-auto">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            <div 
-              v-for="(car, index) in filteredCars" 
-              :key="car.id"
-              class="rounded-2xl flex relative flex-col shadow-xs w-full"
-            >
-              <CardCar :car="car" />
-            </div>
+        <div v-else class="flex-1 overflow-y-auto pr-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+            <CardCar v-for="(car, index) in filteredCars" :key="car.id" :car="car" />
           </div>
         </div>
       </div>
-    </div>
-    <section class="explore m-2.5 flex flex-col w-full gap-3 overflow-hidden">
-      <div class="flex justify-between items-center">
-        <Heading :type="1" class="m-6 text-center">Autos disponibles</Heading>
-
-        <template v-if="loggedUser.id == null">
-          <router-link to="/login"
-            class="gap-4 md:flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
-            <span class="hidden md:block">Publicar Vehículo</span>
-            <AddIcon />
-          </router-link>
-        </template>
-
-        <template v-else>
-          <router-link to="/car/register"
-            class="gap-4 md:flex items-center justify-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-full md:rounded-lg text-md px-2 md:px-4 py-2 text-center">
-            <span class="hidden md:block">Publicar Vehículo</span>
-            <AddIcon />
-          </router-link>
-        </template>
-      </div>
-      <div v-if="loading" class="flex items-center justify-center w-fit mx-auto bg-gray-50">
-        <Loading role="status" />
-        <span class="sr-only">Cargando...</span>
-      </div>
-
-      <div v-else class="h-full overflow-auto">
-        <div class="grid justify-items-center gap-3 grid-cols-2">
-          <div v-for="(car, index) in filteredCars" :key="car.id"
-            class="rounded-2xl flex relative flex-col shadow-xs w-full">
-            <CardCar :car="car" />
-          </div>
-        </div>
-      </div>
-    </section>
+  
   </section>
 </template>

@@ -717,16 +717,6 @@ onBeforeUnmount(() => {
         <Cross @click="removeAccessory(accessory.value)" :aria-label="`Eliminar ${accessory.label}`"/>
       </div>
     </div>
-    
-    <!-- <DropdownForm title="Tecnología y conectividad" :section-id="'section-1'" :dropdown-id="'tecnologia-conectividad'" :is-initial="true">
-    </DropdownForm>
-    <DropdownForm title="Seguridad y Asistencia" :section-id="'section-1'" :dropdown-id="'seguridad-asistencia'">
-    </DropdownForm>
-    <DropdownForm title="Performance" :section-id="'section-1'" :dropdown-id="'performance'">
-    </DropdownForm>
-    <DropdownForm title="Confort" :section-id="'section-1'" :dropdown-id="'confort'">
-    </DropdownForm>
-    -->
   </div>
 </router-view>
  
@@ -847,7 +837,7 @@ onBeforeUnmount(() => {
               <p class="text-sm font-medium">Sugerencia automática</p>
             </div>
           </DropdownForm>
-          <DropdownForm title="Política de kilometraje" :section-id="'section-2'" :dropdown-id="'kilometraje'">
+          <DropdownForm color="" title="Política de kilometraje" :section-id="'section-2'" :dropdown-id="'kilometraje'">
             <div class="flex gap-5">
               <Input
                 type="select"
@@ -888,7 +878,7 @@ onBeforeUnmount(() => {
               />    
             </div>
           </DropdownForm>
-          <DropdownForm title="Depósito de seguridad" :section-id="'section-2'" :dropdown-id="'seguridad'">
+          <DropdownForm color="" title="Depósito de seguridad" :section-id="'section-2'" :dropdown-id="'seguridad'">
               <Input 
                 type="number" 
                 v-model="pricing.securityDeposit" 
@@ -1073,117 +1063,7 @@ onBeforeUnmount(() => {
             </div>
           </div>
         </router-view>
- 
-        <!-- Paso 4: Método de Pago -->
-        <router-view v-if="currentStep === 3" class="step">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-white !font-extrabold">Método de Pago</Heading>
-            <Loading v-if="loading" role="status" />
-          </div>
-          <div class="flex flex-col gap-5">
 
-            <DropdownForm title="Billetera Digital" @dropdown-toggle="() => selectedPaymentMethod = 'digital_wallet'" :isOpen="selectedPaymentMethod === 'digital_wallet'">
-              <Input 
-                type="select"
-                placeholder="Tipo de billetera"
-                :options="[
-                  {value: 'mercadopago', label: 'Mercado Pago'},
-                  {value: 'uala', label: 'Ualá'},
-                  {value: 'otra', label:'Otra'}
-                  ]"
-                v-model="paymentMethods.digital_wallet.walletType"
-                variant="secondary"
-                :outline="false"
-                />
-              <Input
-                type="text"
-                placeholder="CVU o Alias"
-                v-model="paymentMethods.digital_wallet.walletId"
-                variant="secondary"
-                :outline="false"
-              />
-            </DropdownForm>
-            
-            <DropdownForm title="Tarjeta de crédito/débito" @dropdown-toggle="() => selectedPaymentMethod = 'credit_card'" :isOpen="selectedPaymentMethod === 'credit_card'">
-              <Input 
-                type="text"
-                placeholder="Titular de tarjeta"
-                v-model="paymentMethods.credit_card.cardholder"
-                :variant="'secondary'"
-                :outline="false"
-                />
-                <Input 
-                  type="text"
-                  placeholder="Número de tarjeta"
-                  v-model="paymentMethods.credit_card.cardNumber"
-                  :variant="'secondary'"
-                  :outline="false"
-                />
-              <div class="flex gap-5">
-                <Input 
-                  type="date"
-                  placeholder="Fecha de vencimiento"
-                  v-model="paymentMethods.credit_card.expiryDate"
-                  :variant="'secondary'"
-                  :outline="false"
-                />
-                <Input
-                  type="password"
-                  placeholder="CVV"
-                  v-model="paymentMethods.credit_card.cvv"
-                  :variant="'secondary'"
-                  :outline="false"
-                />
-              </div>
-            </DropdownForm>
-
-            <DropdownForm title="Paypal" @dropdown-toggle="() => selectedPaymentMethod = 'paypal'" :isOpen="selectedPaymentMethod === 'paypal'">
-              <Input 
-                type="email"
-                placeholder="Email de PayPal"
-                v-model="paymentMethods.paypal.email"
-                :variant="'secondary'"
-                :outline="false"
-                />
-            </DropdownForm>
-          </div>
-        </router-view>
-
-        <!-- Paso 5: Términos y Condiciones -->
-        <router-view v-if="currentStep === 4" class="step">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-white !font-extrabold">Términos y Condiciones</Heading>
-            <Loading v-if="loading" role="status" />
-          </div>
-          <div class="flex gap-2 items-center">
-            <Checkbox v-model="user.acceptedTerms" :disabled="user.acceptedTerms"/>
-            <p class="text-sm font-medium">He leído y acepto los 
-              <router-link
-                to="/terms-and-conditions"
-                class="text-primary text-background-900 font-bold"
-                >
-                <span class="hover:underline">Términos y Condiciones</span>
-              </router-link>.
-            </p>
-          </div>
-          <!-- Politicas de privacidad -->
-          <div class="flex gap-2 items-center">
-            <Checkbox v-model="user.acceptedPrivacyPolicy" :disabled="user.acceptedPrivacyPolicy"/>
-            <p class="text-sm font-medium">He leído y acepto las 
-              <router-link
-                to="/privacy-policy"
-                class="text-primary text-background-900 font-bold"
-                >
-                <span class="hover:underline">Políticas de Privacidad</span>
-              </router-link>.
-            </p>
-          </div>
-          <!-- Notificaciones -->
-          <div class="flex gap-2 items-center">
-            <Checkbox v-model="user.acceptedNotifications" />
-            <p class="text-sm font-medium">Acepto recibir notificaciones y promociones por correo electrónico.</p>
-          </div>
-        </router-view>
 
         <!-- Botones de navegación -->
         <div class="flex justify-between items-center gap-32">

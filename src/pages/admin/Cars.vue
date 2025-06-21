@@ -1,12 +1,8 @@
 <script>
-import { getAvailableCarsForAdmin } from "../../services/car-service.js";
-import { subscribeToAuthState } from "../../services/auth.js";
-import { updateCarValidation } from "../../services/car-service.js";
 import { ref, computed, onMounted } from "vue";
 import { useAdminStore } from "@stores";
 import { addAlert } from "../../services/alerts";
 import { formatDate } from '../../libraries/date.js';
-// import { getUserById } from '../../services/users.js';
 
 import Heading from "@components/atoms/Heading.vue";
 import Loading from "@icons/Loading.vue";
@@ -27,16 +23,14 @@ export default {
     const adminStore = useAdminStore();
     const loading = ref(false);
 
-/*     const cars = computed(() => {
+    const cars = computed(() => {
       return adminStore.cars.map(car => {
         const owner = adminStore.users.find(user => user.id === car.ownerId);
         return { ...car, owner: owner || {} };
       });
-    }); */
+    });
 
     onMounted(async () => {
-      // await adminStore.fetchCars();
-      // await adminStore.fetchUsers();
       try {
         loading.value = true;
         const cars = await adminStore.fetchCars();
@@ -48,7 +42,8 @@ export default {
     });
 
     return {
-      adminStore
+      adminStore,
+      cars
     };
   },
   methods: {
@@ -70,37 +65,27 @@ export default {
     handleClosePopover() {
       this.openPopoverId = null;
     },
-    async updateValidation(carId, isValidated) {
+    async updateValidation(car) {
       try {
-        const response = await updateCarValidation(carId, isValidated);
-        if (response.success) {
-          const car = this.cars.find((car) => car.id === carId);
-          if (car) {
-            car.isValidated = isValidated; // Actualiza isValidated
-            car.status = isValidated ? "validated" : "not-validated"; // Actualiza status
-          }
-          addAlert(response.message, "success");
-        } else {
-          addAlert(response.message, "error");
-        }
+        const newStatus = car.status.current === 'not-validated' ? 'validated' : 'not-validated';
+        await this.adminStore.changeCarValidation(car.id, newStatus);
+        car.status = newStatus;
+        addAlert("Estado del vehículo actualizado con éxito", "success");
       } catch (error) {
-        console.error("Error al actualizar la validación del auto:", error);
-        addAlert("Error al actualizar la validación del auto", "error");
+        addAlert("Error al actualizar el estado del vehículo", "error");
       }
     }
   },
   computed: {
-/*     carsFilter() {
-      if (this.filter === 'habilitados') {
-        return this.cars.filter((cars) => cars.status);
-      } else if (this.filter === 'deshabilitados') {
-        return this.cars.filter((cars) => !cars.status);
+    carsFilter() {
+      if (this.filter === 'validados') {
+        return this.cars.filter((cars) => cars.status.current !== 'not-validated');
+      } else if (this.filter === 'no-validados') {
+        return this.cars.filter((cars) => cars.status.current === 'not-validated');
       } else {
-        // If filter is not 'habilitados' or 'deshabilitados', show all cars.
-        // return an array with all cars
         return this.cars;
       }
-    } */
+    }
   }
 };
 </script>
@@ -114,24 +99,24 @@ export default {
         text="Todos"
         variant="secondary"
         class="cursor-pointer"
-        :class="filter === 'todos' ? ' bg-vibrant-light-900' : ''"
-        @click="toggleFiltro('todos')"
+        :class="filter === 'all' ? ' bg-vibrant-light-900' : ''"
+        @click="toggleFiltro('all')"
       />
       <Input 
         type="button"
         text="Validados"
         variant="secondary"
         class="cursor-pointer"
-        :class="filter === 'habilitados' ? ' bg-vibrant-light-900' : ''"
-        @click="toggleFiltro('habilitados')"
+        :class="filter === 'validados' ? ' bg-vibrant-light-900' : ''"
+        @click="toggleFiltro('validados')"
       />
       <Input 
         type="button"
         text="Invalidados"
         variant="secondary"
         class="cursor-pointer"
-        :class="filter === 'deshabilitados' ? ' bg-vibrant-light-900' : ''"
-        @click="toggleFiltro('deshabilitados')"
+        :class="filter === 'no-validados' ? ' bg-vibrant-light-900' : ''"
+        @click="toggleFiltro('no-validados')"
       />
     </div>
     <table class="min-w-full bg-white h-full overflow-hidden flex flex-col gap-5">
@@ -146,9 +131,9 @@ export default {
           <th class="py-2.5 px-5 flex-none w-24">Accion</th>
         </tr>
       </thead>
-      <tbody class="flex flex-col gap-5 h-full overflow-y-scroll">
+      <tbody class="flex flex-col gap-5 h-full overflow-y-scroll pr-2">
         <tr 
-          v-for="(car, index) in cars" 
+          v-for="(car, index) in carsFilter" 
           :key="car.id" 
           class="flex w-full max-h-16 border-2 border-secondary-100 rounded-xl font-semibold">
           <td class="py-2.5 px-5 flex flex-1 items-center gap-2.5">
@@ -162,21 +147,20 @@ export default {
           </td>
           <td class="py-2.5 px-5 flex flex-1">
             <router-link :to="`/user/${car.ownerId}`" class="flex items-center gap-2 hover:cursor-pointer">
-              Dueño
-              <!-- <img :src="car.user.photoURL" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" /> -->
-              <!-- <p class="hover:underline">{{ user.name }} {{ car.user.lastName }}</p> -->
+              <img :src="car.owner.personalInfo?.profilePhoto" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
+              <p class="hover:underline">{{ car.owner.personalInfo?.firstName }} {{ car.owner.personalInfo?.lastName }}</p>
             </router-link>
           </td>
           <td class="py-2.5 px-5 flex w-20 items-center">{{ car.basicInfo.year }}</td>
           <td class="py-2.5 px-5 flex flex-1 items-center">{{ car.basicInfo.type }}</td>
-          <td class="py-2.5 px-5 flex flex-1"><Status status="registrado" /></td>
-          <td class="py-2.5 px-5 flex items-center w-32 font-">{{ formatDate(car.created_at) }}</td>
+          <td class="py-2.5 px-5 flex flex-1"><Status :status="car.status.current" /></td>
+          <td class="py-2.5 px-5 flex items-center w-32 font-">{{ formatDate(car.createdAt) }}</td>
           <td class="py-2.5 px-5 flex justify-center relative w-24 items-center">
             <Popover
               :items="[
-                { label: 'Ver auto', to: `/car/${car.ownerId}` },
+                { label: 'Ver auto', to: `/car/${car.id}` },
                 { label: 'Chat', to: `/user/${car.ownerId}/chat` },
-                // { label: car.isValidated ? 'Invalidar' : 'Validar', action: () => updateValidation(car.id, !car.isValidated), class: `car.isValidated ? 'text-red-500' : ''` },
+                { label: car.status.current !== 'not-validated' ? 'Invalidar' : 'Validar', action: () => updateValidation(car), class: `car.isValidated ? 'text-red-500' : ''` },
               ]"
               :isOpen="openPopoverId === index"
               :popoverId="index"

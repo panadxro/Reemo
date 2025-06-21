@@ -16,7 +16,7 @@ import PrivateChat from "../pages/PrivateChat.vue";
 import UserProfile from "../pages/UserProfile.vue";
 import NotFound from "../pages/NotFound.vue";
 import Notification from "../pages/Notification.vue";
-import RentalDetailsView from '../pages/RentalDetailsView.vue';
+import RentalDetails from '../pages/RentalDetails.vue';
  
 const routes = [
   { path: "/", component: Home, name: "Home" },
@@ -32,10 +32,9 @@ const routes = [
       }
     },
    },
-  { path: "/dashboard/:id", 
+  { path: "/dashboard", 
     component: Dashboard, 
     name: "Dashboard",
-    props: true,
     meta: { needsAuth: true },
   },
   { path: "/search", component: Search, name: "Search" },
@@ -90,9 +89,9 @@ const routes = [
     ],
   },
   {
-    path: '/rental-details/:id',
-    name: 'RentalDetailsView',
-    component: RentalDetailsView,
+    path: '/rent/:id',
+    name: 'RentalDetails',
+    component: RentalDetails,
     props: true,
     meta: { needsAuth: true },
   },

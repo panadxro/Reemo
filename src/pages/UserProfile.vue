@@ -48,19 +48,21 @@ export default {
     const userStore = useUserStore();
     const authStore = useAuthStore();
     const paymentStore = usePaymentStore();
+    const carStore = useCarStore();
+
     const route = useRoute();
     const router = useRouter();
+
     const showAllPaymentMethods = ref(false);
     const showNewPaymentForm = ref(false);
     const showDeleteModal = ref(false);
     const paymentMethodToDelete = ref(null);    
-    const carStore = useCarStore();
 
     const loggedUserId = computed(() => {
       return authStore.user?.id
     })
 
-    const userIdFromRoute =computed(() => {
+    const userIdFromRoute = computed(() => {
       return route.params.id;
     }) 
 
@@ -173,701 +175,267 @@ const saveNewPaymentMethod = async () => {
 </script>
 
 <template>
-  <section class="flex flex-col md:flex-row" v-if="isOwnProfile">
-    <BackButton class="md:hidden w-fit mt-1 ml-2" />
-    <UserNav class="max-w-[95%] mx-auto md:mx-4" />
+  <div class="flex md:flex-1 xs:flex-row-reverse md:flex-row max-h-vh overflow-auto mb-20 md:mb-0">
+    <UserNav v-if="isOwnProfile"/>
+    <section class="parent m-2.5 w-full md:max-h-vh md:overflow-hidden">
 
-    <section class="max-w-[95%] mx-auto md:mx-0">
-      <div class="xl:flex gap-4 mb-4">
-        <div class="flex flex-col">
-          <div class="hidden md:flex md:items-center md:gap-2 mb-4 w-fit">
-            <BackButton />
-            <Heading :type="1">
-              Mi perfil
-            </Heading>
-          </div>
-
-          <article
-            class="bg-secondary-100 rounded-[20px] md:rounded-[30px] xl:rounded-[40px] p-4 md:p-6 xl:max-w-[600px]">
-            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <img v-if="showProfile && showProfile.personalInfo && showProfile.personalInfo.profilePhoto"
-                class="w-16 sm:w-20 md:w-24 lg:w-20 aspect-square rounded-full mx-auto sm:mx-0 flex-shrink-0"
-                :src="showProfile.personalInfo.profilePhoto"
-                :alt="`Perfil de ${showProfile?.personalInfo?.username || 'usuario'}`" />
-
-              <div class="flex-1 w-full">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                  <Heading :type="2" class="medium text-primary-900 text-center sm:text-left"
-                    v-if="showProfile && showProfile.personalInfo">
-                    {{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }}
-                  </Heading>
-                </div>
-
-                <article class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-4 md:max-w-[400px]">
-                  <div class="rounded-md bg-vibrant-light-600 px-3 py-2 text-center sm:text-left">
-                    <Heading :type="3" class="text-primary-900">{{ showProfile?.tripsCount || '0' }}</Heading>
-                    <p class="text-xs sm:text-sm text-background-600">Viajes</p>
-                  </div>
-
-                  <div class="rounded-md bg-vibrant-light-600 px-3 py-2 text-center sm:text-left">
-                    <Heading :type="3" class="text-primary-900">{{ showProfile?.rating?.toFixed(1) || '0.0' }}</Heading>
-                    <p class="text-xs sm:text-sm text-background-600">Estrellas</p>
-                  </div>
-
-                  <div
-                    class="rounded-md bg-vibrant-light-600 px-3 py-2 text-center sm:text-left sm:col-span-1 col-span-1 flex flex-col">
-                    <Heading :type="3" class="text-primary-900 sm:text-base leading-tight">
-                      {{ showProfile?.role === 'owner' ? 'Arrendador' : 'Arrendatario' }}
-                    </Heading>
-                    <p class="text-xs sm:text-sm text-background-600 mt-auto">Rol Principal</p>
-                  </div>
-
-                </article>
-
-                <!-- Pongo lorem para probar. DESPUES DESCOMNETAR LO DE ABNAJO -->
-                <div class="mt-4">
-                  <p class="text-primary-900 text-sm md:text-base leading-relaxed">
-                    Lorem ipsum, dolor sit amet consectetur adipisicing elit. Illum officia pariatur laudantium
-                    similique amet deleniti iste, natus numquam accusantium eius ut aut, quo voluptatem dicta eos sint
-                    eveniet sunt alias! Earum deleniti recusandae dolores perferendis optio soluta tempora error ut!
-                  </p>
-                </div>
-
-                <!-- <div class="mt-4">
-                  <p class="text-primary-900 text-sm md:text-base leading-relaxed" v-if="showProfile?.bio">
-                    {{ showProfile.bio }}
-                  </p>
-                  <p class="text-primary-900 italic text-xs sm:text-sm text-center sm:text-left" v-else>
-                    Este usuario no ha agregado una biografía
-                  </p>
-                </div> -->
-              </div>
-            </div>
-          </article>
+      <!-- Perfil del usuario -->
+      <div class="flex profile flex-col gap-3 overflow-hidden">
+        <div class="flex items-center gap-5">
+          <BackButton />
+          <Heading v-if="showProfile && showProfile.personalInfo" :type="1" class="medium">{{ isOwnProfile ? "Mi perfil" : showProfile.personalInfo.username }}</Heading>
         </div>
-
-        <div v-if="isOwnProfile" class="bg-primary-900 border-2 rounded-[40px] p-6 mt-4 xl:mt-0">
-          <div class="flex items-center justify-between mb-4">
-            <Heading :type="1" class="text-white">Historial</Heading>
-            <a v-if="rentedCars && rentedCars.length" href="" class=" text-white">Ver todo</a>
-          </div>
-          <!-- <RentStatusDetails /> -->
-          <History />
-          <!-- <div v-if="rentedCars && rentedCars.length">
-              <RentedCar v-for="rental in rentedCars" :key="rental.id" :car="rental.car" />
-            </div>
-            <div v-else class="text-white flex flex-col items-center justify-center">
-              <img src="@/assets/car-history.png" alt="History Car" class="max-w-[150px] mx-auto mb-4" />
-              <Heading :type="3" class="text-white text-center">No hay registros de alquileres.</Heading>
-              <p class="text-sm text-white/70 mb-4 mt-2 text-center">Explora vehículos disponibles.</p>
-              <router-link to="/search" class="mt-4 px-4 py-2 rounded-lg text-primary-900 bg-secondary-300 hover:bg-primary-700 hover:text-white transition-all duration-300 w-fit font-black">
-                <span class="font-bold">Alquilá un auto</span>
+        <article  class="bg-secondary-100 h-full rounded-[40px] px-6 py-5 flex flex-col md:flex-row items-center gap-5">
+          <img 
+            v-if="showProfile && showProfile.personalInfo && showProfile.personalInfo.profilePhoto"
+            class="w-32 md:w-24 lg:w-32 aspect-square rounded-full object-cover bg-vibrant-light-800"
+            :src="showProfile.personalInfo.profilePhoto"
+            :alt="`Perfil de ${showProfile?.personalInfo?.username || 'usuario'}`" 
+          />
+          <div class="flex flex-col justify-between h-full gap-2 md:gap-0">
+            <div class="flex justify-between items-center">
+              <Heading :type="2" class="medium text-primary-900 text-center sm:text-left"
+                v-if="showProfile && showProfile.personalInfo">
+                {{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }}
+              </Heading>
+              <router-link
+                v-if="!isOwnProfile && showProfile && showProfile.personalInfo && showProfile.personalInfo.id !== id"
+                :to="`/user/${id}/chat`"
+                class="text-sm md:text-base text-primary-800 border-2 border-primary-800 rounded-lg px-3 py-2 md:px-4 bg-white hover:bg-primary-800 hover:text-white transition-colors duration-300 text-center sm:text-left whitespace-nowrap w-fit mx-auto sm:mx-0">
+                Enviar Mensaje
               </router-link>
-            </div> -->
-        </div>
-        <div v-else class="history bg-primary-900 rounded-[40px] px-5 py-7"
-          v-if="!$route.matched.some(route => route.name === 'PrivateChat')">
-          <div class="flex items-center justify-between">
-            <Heading :type="1" class="text-white">Historial</Heading>
-            <a href="" class="text-white">Ver más</a>
-          </div>
-          <div class="flex flex-col justify-center items-center h-full text-white">
-            <p class=" text-pretty font-semibold opacity-50">Historial no disponible</p>
-          </div>
-        </div>
+            </div>
 
+            <ul class="flex items-center gap-2.5">
+              <li class="flex flex-col bg-vibrant-light-600 rounded-xl px-2.5 py-2.5 w-16 h-16">
+                <Heading :type="3" class="medium text-primary-900 leading-none">{{ showProfile?.tripsCount || '0' }}</Heading>
+                <p class="text-xs sm:text-sm text-background-600">Viajes</p>
+              </li>
+
+              <li class="flex flex-col bg-vibrant-light-600 rounded-xl px-2.5 py-2.5 h-16">
+                <Heading :type="3" class="medium text-primary-900 leading-none">{{ showProfile?.rating?.toFixed(1) || '0.0' }}</Heading>
+                <p class="text-xs sm:text-sm text-background-600">Estrellas</p>
+              </li>
+
+              <li class="flex flex-col bg-vibrant-light-600 rounded-xl px-2.5 py-2.5 h-16">
+                <Heading :type="3" class="medium text-primary-900 leading-none">Rol</Heading>
+                <p class="text-xs sm:text-sm text-background-600">{{ showProfile?.role === 'owner' ? 'Arrendador' : 'Arrendatario' }}</p>
+              </li>
+            </ul>
+
+            <p class="text-primary-900 text-sm md:text-md leading-relaxed">
+              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Illum officia pariatur laudantium
+              similique amet deleniti iste, natus numquam accusantium eius ut aut, quo voluptatem dicta eos sint
+              eveniet sunt alias! 200 caracteres máximos.
+            </p>
+          </div>
+        </article>
       </div>
 
-      <div class="xl:flex gap-4 mb-4">
-        <div class="bg-primary-900 p-6 mt-4 xl:mt-0 rounded-[40px] xl:w-[60%] xl:max-h-[400px] overflow-y-auto">
-          <Heading :type="1" class="text-white pb-4">Información Personal</Heading>
-
-          <!-- Datos Personales -->
-          <div class="mb-6">
-            <Heading :type="5" class="text-white mb-3">Datos Básicos</Heading>
-            <div class="space-y-2">
-              <div class="flex justify-between text-white">
-                <span class="text-sm text-white/80">Nombre:</span>
-                <span class="text-sm">{{ showProfile?.personalInfo?.firstName || 'No especificado' }}</span>
-              </div>
-              <div class="flex justify-between text-white">
-                <span class="text-sm text-white/80">Apellido:</span>
-                <span class="text-sm">{{ showProfile?.personalInfo?.lastName || 'No especificado' }}</span>
-              </div>
-              <div class="flex justify-between text-white">
-                <span class="text-sm text-white/80">Email:</span>
-                <span class="text-sm">{{ showProfile?.personalInfo?.email || 'No especificado' }}</span>
-              </div>
-              <div class="flex justify-between text-white">
-                <span class="text-sm text-white/80">Usuario:</span>
-                <span class="text-sm">{{ showProfile?.personalInfo?.username || 'No especificado' }}</span>
-              </div>
-              <div class="flex justify-between text-white">
-                <!-- Copie lo que estaba en admin, no es que el usuario este verificado sino que completo todos los pasos del onboarding, que practicamente es lo mismo -->
-                <span class="text-sm text-white/80">Usuario verificado:</span>
-                <span class="text-sm"
-                  :class="userStore.profileData.profileCompleted ? 'text-green-400' : 'text-red-400'">
-                  {{ userStore.profileData.profileCompleted == true ? 'Verificado' : 'No Verificado'}}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dirección -->
-          <div class="mb-6" v-if="showProfile?.address && Object.keys(showProfile.address).length > 0">
-            <Heading :type="5" class="text-white mb-3">Dirección</Heading>
-            <div class="space-y-2">
-              <div class="flex justify-between text-white"
-                v-if="showProfile.address.province && showProfile.address.country">
-                <span class="text-sm text-white/80">Residencia:</span>
-                <span class="text-sm">{{ showProfile.address.province }}, {{ showProfile.address.country }}</span>
-              </div>
-              <div class="flex justify-between text-white" v-if="showProfile.address.street">
-                <span class="text-sm text-white/80">Calle:</span>
-                <span class="text-sm">{{ showProfile.address.street }}</span>
-              </div>
-              <div class="flex justify-between text-white" v-if="showProfile.address.state">
-                <span class="text-sm text-white/80">Provincia:</span>
-                <span class="text-sm">{{ showProfile.address.state }}</span>
-              </div>
-              <div class="flex justify-between text-white" v-if="showProfile.address.postalCode">
-                <span class="text-sm text-white/80">Código Postal:</span>
-                <span class="text-sm">{{ showProfile.address.postalCode }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Documentos -->
-          <div class="mb-6" v-if="showProfile?.documents">
-            <Heading :type="5" class="text-white mb-3">Documentos</Heading>
-            <div class="grid grid-cols-2 gap-4">
-              <div v-if="showProfile.documents.dniFront" class="text-center">
-                <img :src="showProfile.documents.dniFront" alt="DNI - Frente"
-                  class="h-20 w-[95%] object-cover rounded-lg border border-white/20" />
-                <p class="text-xs text-white/80 mt-1">DNI - Frente</p>
-              </div>
-
-              <div v-if="showProfile.documents.dniBack" class="text-center">
-                <img :src="showProfile.documents.dniBack" alt="DNI - Dorso"
-                  class="h-20 w-[95%] object-cover rounded-lg border border-white/20" />
-                <p class="text-xs text-white/80 mt-1">DNI - Dorso</p>
-              </div>
-
-              <div v-if="showProfile.documents.driverLicenseFront" class="text-center">
-                <img :src="showProfile.documents.driverLicenseFront" alt="Licencia de Conducir - Frente"
-                  class="h-20 w-[95%] object-cover rounded-lg border border-white/20" />
-                <p class="text-xs text-white/80 mt-1">Licencia - Frente</p>
-              </div>
-
-              <div v-if="showProfile.documents.driverLicenseBack" class="text-center">
-                <img :src="showProfile.documents.driverLicenseBack" alt="Licencia de Conducir - Dorso"
-                  class="h-20 w-[95%] object-cover rounded-lg border border-white/20" />
-                <p class="text-xs text-white/80 mt-1">Licencia - Dorso</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Métodos de pago -->
-          <div class="mb-3">
-            <div class="flex items-center justify-between mb-3 gap-8 text-white">
-              <Heading :type="5" class="text-white">Métodos de pago</Heading>
-              <button @click="toggleNewPaymentForm"
-                class="flex items-center gap-1 border-b-[0.5px] border-transparent hover:border-white transition duration-200 hover:cursor-pointer">
-                <Plus class="w-4 h-4" />
-                <span class="text-sm pb-0.5">Agregar</span>
-              </button>
-            </div>
-
-            <!-- Lista de métodos de pago -->
-            <div v-if="paymentStore.paymentMethods.length > 0" class="space-y-2 mb-3">
-              <div v-for="(method, index) in displayedPaymentMethods" :key="index"
-                class="flex items-center justify-between p-3 bg-white rounded-lg">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 flex items-center justify-center p-1 rounded-xl bg-vibrant-light-600">
-                    <MercadoPago v-if="method.walletType === 'mercadopago'" />
-                    <CreditCard v-if="method.type === 'credit_card'" />
-                    <Uala v-if="method.walletType === 'uala'" />
-                    <PayPal v-if="method.type === 'paypal'" />
-                  </div>
-                  <div class="flex-1">
-                    <p class="font-medium text-primary-900 text-sm">
-                      {{ method.type === 'credit_card' ? 'Tarjeta terminada en ' + method.cardNumber.slice(-4) :
-                      method.type === 'paypal' ? 'PayPal' :
-                      method.walletType === 'uala' ? 'Ualá' :
-                      method.walletType === 'mercadopago' ? 'Mercado Pago' :
-                      method.walletType === 'otra' ? 'Otra' :
-                      method.walletType || 'Otro método' }}
-                    </p>
-                    <p class="text-xs text-background-600">
-                      {{ method.type === 'credit_card' ? method.cardholder :
-                      method.type === 'digital_wallet' ? method.walletId :
-                      method.email }}
-                    </p>
-                  </div>
-                </div>
-                <button @click="removePaymentMethod(index)"
-                  class="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors hover:cursor-pointer"
-                  title="Eliminar método de pago">
-                  <Trash class="w-6 h-6" />
-                </button>
-              </div>
-
-              <!-- Botón mostrar más/menos -->
-              <button v-if="hasMoreMethods" @click="toggleShowAllMethods"
-                class="w-full text-sm text-primary-200 hover:text-primary-400 py-2 hover:bg-primary-50 rounded transition-colors">
-                {{ showAllPaymentMethods ? 'Mostrar menos' : `Mostrar ${paymentStore.paymentMethods.length - 2}
-                método(s) más` }}
-              </button>
-            </div>
-          
-            <div v-else class="text-center py-4">
-              <p class="text-white/80 text-sm mb-2">No tenés métodos de pago guardados</p>
-            </div>
-          
-            <div v-if="showNewPaymentForm" class="mt-4 p-4 rounded-lg border-secondary-100 border-2">
-              <div class="flex items-center justify-between mb-4">
-                <Heading :type="6" class="text-white">Nuevo método de pago</Heading>
-                <button @click="toggleNewPaymentForm"
-                  class="hover:text-background-800 text-white hover:cursor-pointer transition duration-200">
-                  ✕
-                </button>
-              </div>
-
-              <div class="flex gap-2 mb-4">
-                <button @click="paymentStore.selectedPaymentMethodType = 'credit_card'"
-                  class="flex-1 p-2 text-xs border rounded-lg cursor-pointer text-center transition-all" :class="{
-                    'border-secondary-100 bg-secondary-100 text-primary-900': paymentStore.selectedPaymentMethodType === 'credit_card', 
-                    'border-background-300 text-white hover:bg-secondary-100/20': paymentStore.selectedPaymentMethodType !== 'credit_card'
-                  }">
-                  Tarjeta
-                </button>
-                <button @click="paymentStore.selectedPaymentMethodType = 'digital_wallet'"
-                  class="flex-1 p-2 text-xs border rounded-lg cursor-pointer text-center transition-all" :class="{
-                    'border-secondary-100 bg-secondary-100 text-primary-900': paymentStore.selectedPaymentMethodType === 'digital_wallet', 
-                    'border-background-300 text-white hover:bg-secondary-100/20': paymentStore.selectedPaymentMethodType !== 'digital_wallet'
-                  }">
-                  Billetera Virtual
-                </button>
-                <button @click="paymentStore.selectedPaymentMethodType = 'paypal'"
-                  class="flex-1 p-2 text-xs border rounded-lg cursor-pointer text-center transition-all" :class="{
-                    'border-secondary-100 bg-secondary-100 text-primary-900': paymentStore.selectedPaymentMethodType === 'paypal', 
-                    'border-background-300 text-white hover:bg-secondary-100/20': paymentStore.selectedPaymentMethodType !== 'paypal'
-                  }">
-                  PayPal
-                </button>
-              </div>
-
-              <div class="space-y-3 mb-4">
-                <div v-if="paymentStore.selectedPaymentMethodType === 'credit_card'" class="space-y-3">
-                  <Input type="text" placeholder="Titular de tarjeta"
-                    v-model="paymentStore.newPaymentMethod.credit_card.cardholder" :variant="'secondary'"
-                    :outline="false" />
-                  <Input type="text" placeholder="Número de tarjeta"
-                    v-model="paymentStore.newPaymentMethod.credit_card.cardNumber" :variant="'secondary'"
-                    :outline="false" />
-                  <div class="flex gap-2">
-                    <Input type="month" placeholder="MM/AA"
-                      v-model="paymentStore.newPaymentMethod.credit_card.expiryDate" :variant="'secondary'"
-                      :outline="false" />
-                    <Input type="password" placeholder="CVV" v-model="paymentStore.newPaymentMethod.credit_card.cvv"
-                      :variant="'secondary'" :outline="false" />
-                  </div>
-                </div>
-
-                <div v-if="paymentStore.selectedPaymentMethodType === 'digital_wallet'" class="space-y-3">
-                  <Input type="select" placeholder="Tipo de billetera" :options="[
-                      {value: 'mercadopago', label: 'Mercado Pago'},
-                      {value: 'uala', label: 'Ualá'},
-                    ]" v-model="paymentStore.newPaymentMethod.digital_wallet.walletType" variant="secondary"
-                    :outline="false" />
-                  <Input type="text" placeholder="CVU o Alias"
-                    v-model="paymentStore.newPaymentMethod.digital_wallet.walletId" variant="secondary"
-                    :outline="false" />
-                </div>
-
-                <div v-if="paymentStore.selectedPaymentMethodType === 'paypal'" class="space-y-3">
-                  <Input type="email" placeholder="Email de PayPal" v-model="paymentStore.newPaymentMethod.paypal.email"
-                    :variant="'secondary'" :outline="false" />
-                </div>
-              </div>
-
-              <div class="flex gap-2">
-                <button @click="toggleNewPaymentForm"
-                  class="flex-1 py-3 px-4 border border-gray-600 rounded-xl hover:border-gray-400 transition-all text-white hover:cursor-pointer">
-                  Cancelar
-                </button>
-                <button @click="saveNewPaymentMethod" :disabled="!paymentStore.isFormValid || paymentStore.loading"
-                  class="flex-1 py-3 px-4 bg-vibrant-light-900 text-deep-blue-900 rounded-xl font-medium hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer hover:opacity-80">
-                  {{ paymentStore.loading ? 'Guardando...' : 'Guardar' }}
-                </button>
-              </div>
-            </div>
-          </div>
+      <!-- Autos del usuario -->
+      <div class="overflow-hidden flex flex-col gap-5 px-5" :class="isOwnProfile ? 'my-cars' : 'user-cars'">
+        <div class="flex items-center justify-between">
+          <Heading :type="2" class="medium text-primary-900 text-center sm:text-left">{{ isOwnProfile ? "Mis autos" : "Vehículos" }}</Heading>
+          <a href="" class="text-primary-900">Ver más</a>
         </div>
-
-        <!-- Sección de autos -->
-        <div class="bg-secondary-100 rounded-[40px] p-6 mt-4 xl:mt-0 xl:max-h-[400px] overflow-y-auto">
-          <div class="flex items-center justify-between mb-4">
-            <Heading :type="1" class="text-primary-900">
-              {{ isOwnProfile ? "Mis autos" : "Vehículos" }}
-            </Heading>
-          </div>
-
-          <div v-if="carStore.loading" class="flex justify-center py-8">
-            <Loading class="w-8 h-8 text-primary-800" />
-          </div>
-
-          <div v-else-if="userCars.length > 0" class="space-y-4">
-            <div v-for="car in userCars.slice(0, 4)" :key="car.id" :class="[
-                'bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer',
-                userCars.length === 1 ? 'p-6' : 'p-4'
-              ]" @click="$router.push(`/car/${car.id}`)">
-              <div :class="['flex', userCars.length === 1 ? 'gap-6' : 'gap-4']">
-                <div class="relative flex-shrink-0">
-                  <img 
-                    :src="car.images?.[0] || carStore.defaultCarImage" 
-                    :alt="car.marca + ' ' + car.modelo"     
-                    :class="[
-                      'object-cover rounded-xl',
-                      userCars.length === 1 ? 'w-32 h-28 sm:w-36 sm:h-32' : 'w-24 h-20 sm:w-28 sm:h-24'
-                    ]" 
-                    @error="carStore.handleImageError" 
-                    />
-                  <div 
-                    :class="[
-                      'absolute -top-1 -right-1 rounded-full font-medium',
-                      userCars.length === 1 ? 'px-3 py-1.5 text-sm' : 'px-2 py-1 text-xs',
-                      car.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    ]">
-                    {{ car.isAvailable ? 'Disponible' : 'No disponible' }}
-                  </div>
-                </div>
-
-                <div :class="['flex-1', userCars.length === 1 ? 'space-y-3' : 'space-y-2']">
-                  <div class="flex justify-between items-start">
-                    <h3 :class="[
-                      'font-bold text-primary-900 leading-tight',
-                      userCars.length === 1 ? 'text-xl' : 'text-lg'
-                    ]">
-                      {{ car.marca }} {{ car.modelo }}
-                    </h3>
-                    <span :class="[
-                      'text-primary-800 font-bold flex-shrink-0 ml-2',
-                      userCars.length === 1 ? 'text-base' : 'text-sm'
-                    ]">
-                      ${{ car.precio }}/día
-                    </span>
-                  </div>
-
-                  <p :class="[
-                    'text-background-600',
-                    userCars.length === 1 ? 'text-base' : 'text-sm'
-                  ]">
-                    {{ car.año }} • {{ car.combustible }} • {{ car.transmision }}
-                  </p>
-
-                  <div class="flex gap-2 flex-wrap">
-                    <span :class="[
-                      'bg-vibrant-light-600 text-primary-900 px-2 py-1 rounded-lg',
-                      userCars.length === 1 ? 'text-sm' : 'text-xs'
-                    ]">
-                      {{ car.asientos }} asientos
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <router-link v-if="isOwnProfile" to="/car/register"
-              class="inline-flex items-center gap-2 px-4 py-2 bg-primary-800 text-white rounded-lg hover:bg-primary-900 transition-colors font-medium">
-              <Plus class="w-4 h-4" />
-              Registrar auto
-            </router-link>
-          </div>
-
-          <div v-else class="text-center py-8">
-            <img src="@/assets/no-cars.png" alt="No cars" class="max-w-[120px] mx-auto mb-4 opacity-50" />
-            <Heading :type="3" class="text-background-600 mb-2">
-              Aún no tenés autos registrados
-            </Heading>
-            <router-link v-if="isOwnProfile" to="/car/register"
-              class="inline-flex items-center gap-2 px-4 py-2 bg-primary-800 text-white rounded-lg hover:bg-primary-900 transition-colors font-medium">
-              <Plus class="w-4 h-4" />
-              Registrar auto
-            </router-link>
-          </div>
-
-          <!-- se deberia mostrar en caso de que haya mas de 4 autos pero es dificcil que pase y ademas la apgina no existe -->
-          <div v-if="userCars.length > 4" class="mt-4 text-center">
-            <router-link 
-              to="/my-cars" 
-              class="text-primary-800 hover:text-primary-600 text-sm font-medium"
+        <div v-if="carStore.loading" class="flex justify-center py-8">
+          <Loading class="w-8 h-8 text-primary-800" />
+        </div>
+        <div v-else-if="userCars && userCars.length" class="flex flex-col gap-5 h-full overflow-auto">
+          <UserCar 
+            v-for="car in userCars.slice(0, 4)" 
+            :key="car.id" 
+            :car="car"
+            @click="() => $router.push(`/car/${car.id}`)"
+          />
+          <router-link 
+            v-if="isOwnProfile" 
+            to="/car/register" 
+            class="inline-flex items-center gap-2 px-4 py-2 bg-primary-800 text-white rounded-lg hover:bg-primary-900 transition-colors font-medium"
             >
-              Ver los {{ userCars.length - 4 }} autos restantes →
-            </router-link>
-          </div>
+            <Plus class="w-4 h-4" />
+            Registrar auto
+          </router-link>
+        </div>
+        <div v-else class="flex flex-col justify-center items-center h-full">
+          <img src="@/assets/no-cars.png" alt="No cars" class="max-w-[120px] mx-auto opacity-50" />
+          <p class="font-semibold opacity-50">{{ isOwnProfile ? "Aún no tienes autos registrados." : "Este usuario no tiene autos registrados." }}</p>
+          <router-link v-if="isOwnProfile" to="/car/register" class="font-semibold opacity-50 hover:opacity-100">
+            <span class="hover:underline">Registra un auto</span>
+          </router-link>
         </div>
       </div>
-
       
-      <!-- <router-view></router-view> -->
-    </section>
-    <DeletePaymentModal
-    :isOpen="showDeleteModal"
-    :paymentMethod="paymentMethodToDelete?.method"
-    title="Eliminar método de pago"
-    message="¿Estás seguro de que querés eliminar este método de pago? Esta acción no se puede deshacer."
-    confirmText="Eliminar"
-    cancelText="Cancelar"
-    @close="() => { showDeleteModal = false; paymentMethodToDelete = null; }"
-    @confirm="confirmDeletePaymentMethod"
-  />
-    <div
-      v-if="!$route.matched.some(route => route.name === 'PrivateChat')"
-      :class="isOwnProfile ? 'div-my-user' : 'div-user'"
-      class="div1 bg-gray-100 rounded-[40px]">
-      <!-- <p>Usuario</p> -->
-    </div>  
-
-    
-    <div v-else 
-      class="history bg-primary-900 rounded-[40px] px-5 py-7" 
-      v-if="!$route.matched.some(route => route.name === 'PrivateChat')" >
-      <div class="flex items-center justify-between">
-        <Heading :type="1" class="text-white">Historial</Heading>
-        <a href="" class="text-white">Ver más</a>
-      </div>
-      <div class="flex flex-col justify-center items-center h-full text-white">
-        <p class=" text-pretty font-semibold opacity-50">Historial no disponible</p>
-      </div>
-    </div>
-    <router-view></router-view>
-  </section>
-
-
-
-
-  <section class="" v-else>
-    <BackButton class="md:hidden w-fit mt-1 ml-2" />
-    <section class="max-w-[95%] mx-auto md:mx-0 xl:max-w-[2388px]">
-      <div class="xl:flex gap-4 mb-4">
-        <!-- Seccion datos del otro usuario e infor -->
-        <div class="flex flex-col xl:w-[50%] xl:max-h-[785.5px]"
-          :class="{ 'hidden xl:flex': $route.matched.some(route => route.name === 'PrivateChat') }">
-          <div class="hidden md:flex md:items-center md:gap-2 mb-4 w-fit">
-            <BackButton />
-            <Heading v-if="showProfile && showProfile.personalInfo" :type="1" class="pt-2">
-              {{ showProfile.personalInfo.username }}
-            </Heading>
+      <div
+        v-if="!$route.matched.some(route => route.name === 'PrivateChat')"
+        :class="isOwnProfile ? 'div-my-user' : 'div-user'"
+        class="bg-deep-blue-900 overflow-hidden rounded-[40px] py-7 px-5 "
+        >
+        <Heading :type="2" class="medium text-white text-center sm:text-left">{{ isOwnProfile ? "Información Personal" : "Información del Usuario"  }}</Heading>
+        <article v-if="isOwnProfile" class="overflow-y-auto h-full flex flex-col gap-5 pr-4 py-4">
+          <div class="flex flex-col gap-2">
+            <Heading :type="3" class="regular text-white">Datos Básicos</Heading>
+            <ul class="flex flex-col gap-1">
+              <li class="flex justify-between items-center">
+                <Heading :type="6" class="text-sm font-bold text-white">Nombre</Heading>
+                <p class="text-sm text-white/50">{{ showProfile?.personalInfo?.firstName || 'No especificado' }}</p>
+              </li>
+              <li class="flex justify-between items-center">
+                <Heading :type="6" class="text-sm font-bold text-white">Apellido</Heading>
+                <p class="text-sm text-white/50">{{ showProfile?.personalInfo?.lastName || 'No especificado' }}</p>
+              </li>
+              <li class="flex justify-between items-center">
+                <Heading :type="6" class="text-sm font-bold text-white">Email</Heading>
+                <p class="text-sm text-white/50">{{ showProfile?.personalInfo?.email || 'No especificado' }}</p>
+              </li>
+              <li class="flex justify-between items-center">
+                <Heading :type="6" class="text-sm font-bold text-white">Estado</Heading>
+                <p class="text-sm text-white/50">{{ userStore.profileData.profileCompleted == true ? 'Verificado' : 'No Verificado'}}</p>
+              </li>
+            </ul>
           </div>
-
-          <article
-            class="bg-secondary-100 rounded-[20px] md:rounded-[30px] xl:rounded-[40px] p-4 md:p-6 xl:max-h-[400px] overflow-y-auto">
-            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <img v-if="showProfile && showProfile.personalInfo && showProfile.personalInfo.profilePhoto"
-                class="w-16 sm:w-20 md:w-24 lg:w-20 aspect-square rounded-full mx-auto sm:mx-0 flex-shrink-0"
-                :src="showProfile.personalInfo.profilePhoto"
-                :alt="`Perfil de ${showProfile?.personalInfo?.username || 'usuario'}`" />
-
-              <div class="flex-1 w-full">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-                  <Heading :type="2" class="medium text-primary-900 text-center sm:text-left"
-                    v-if="showProfile && showProfile.personalInfo">
-                    {{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }}
-                  </Heading>
-
-                  <router-link
-                    v-if="!isOwnProfile && showProfile && showProfile.personalInfo && showProfile.personalInfo.id !== id"
-                    :to="`/user/${id}/chat`"
-                    class="text-sm md:text-base text-primary-800 border-2 border-primary-800 rounded-lg px-3 py-2 md:px-4 bg-white hover:bg-primary-800 hover:text-white transition-colors duration-300 text-center sm:text-left whitespace-nowrap w-fit mx-auto sm:mx-0">
-                    Enviar Mensaje
-                  </router-link>
-                </div>
-
-                <article class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mb-4 md:max-w-[400px]">
-                  <div class="rounded-md bg-vibrant-light-600 px-3 py-2 text-center sm:text-left">
-                    <Heading :type="3" class="text-primary-900">{{ showProfile?.tripsCount || '0' }}</Heading>
-                    <p class="text-xs sm:text-sm text-background-600">Viajes</p>
-                  </div>
-
-                  <div class="rounded-md bg-vibrant-light-600 px-3 py-2 text-center sm:text-left">
-                    <Heading :type="3" class="text-primary-900">{{ showProfile?.rating?.toFixed(1) || '0.0' }}</Heading>
-                    <p class="text-xs sm:text-sm text-background-600">Estrellas</p>
-                  </div>
-
-                  <div
-                    class="rounded-md bg-vibrant-light-600 px-3 py-2 text-center sm:text-left sm:col-span-1 col-span-1 flex flex-col">
-                    <Heading :type="3" class="text-primary-900 sm:text-base leading-tight">
-                      {{ showProfile?.role === 'owner' ? 'Arrendador' : 'Arrendatario' }}
-                    </Heading>
-                    <p class="text-xs sm:text-sm text-background-600 mt-auto">Rol Principal</p>
-                  </div>
-
-                </article>
-
-                <div class="mt-4">
-                  <p class="text-primary-900 text-sm md:text-base leading-relaxed">
-                    Lorem ipsum, dolor sit amet consectetur adipisicing elit. Illum officia pariatur laudantium
-                    similique amet deleniti iste, natus numquam accusantium eius ut aut, quo voluptatem dicta eos sint
-                    eveniet sunt alias! Earum deleniti recusandae dolores perferendis optio soluta tempora error ut!
-                  </p>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <div class="bg-primary-900 p-6 mt-4 rounded-[40px] xl:max-h-[400px] overflow-y-auto">
-            <Heading :type="1" class="text-white pb-4">Información del Usuario</Heading>
-
-            <!-- Aca pongo los tres items como validadods si profileCompleted es truew -->
-            <div class="mb-6">
-              <Heading :type="5" class="text-white mb-3">Verificación</Heading>
-              <div class="space-y-3">
-                <div class="flex items-center gap-3">
-                  <Cross class="w-6 h-6 text-primary-900 bg-alert-warning-800 rounded-full"
-                    v-if="!showProfile?.profileCompleted" />
-                  <Check class="w-6 h-6 bg-alert-success-900  rounded-full" v-else />
-                  <span class="text-white text-sm">Identidad verificada</span>
-                </div>
-                <div class="flex items-center gap-3">
-                  <Cross class="w-6 h-6 text-primary-900 bg-alert-warning-800 rounded-full"
-                    v-if="!showProfile?.profileCompleted" />
-                  <Check class="w-6 h-6 bg-alert-success-900 rounded-full" v-else />
-                  <span class="text-white text-sm">Licencia de conducir verificada</span>
-                </div>
-                <div class="flex items-center gap-3">
-                  <Cross class="w-6 h-6 text-primary-900 bg-alert-warning-800 rounded-full"
-                    v-if="!showProfile?.profileCompleted" />
-                  <Check class="w-6 h-6 bg-alert-success-900 rounded-full" v-else />
-                  <span class="text-white text-sm">Usuario verificado</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="mb-6">
-              <Heading :type="5" class="text-white mb-3">Estadísticas</Heading>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-white">{{ showProfile?.responseRate || '0' }}%</div>
-                  <div class="text-white/80 text-sm">Tasa de respuesta</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-white">{{ showProfile?.yearsOnPlatform || '0' }}</div>
-                  <div class="text-white/80 text-sm">En la plataforma</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-white">{{ showProfile?.rating?.toFixed(1) || '0.0' }}</div>
-                  <div class="text-white/80 text-sm">Calificación promedio</div>
-                </div>
-                <div class="text-center">
-                  <div class="text-2xl font-bold text-white">{{ showProfile?.completedRentals || '0' }}</div>
-                  <div class="text-white/80 text-sm">Alquileres completados</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="mb-4">
-              <Heading :type="5" class="text-white mb-3">Tiempo de respuesta</Heading>
-              <div class="bg-white/10 rounded-lg p-3">
-                <span class="text-white text-sm">
-                  {{ showProfile?.averageResponseTime ? `Responde normalmente en menos de
-                  ${showProfile.averageResponseTime} horas` : 'Tiempo de respuesta no disponible' }}
-                </span>
-              </div>
+          <div class="flex flex-col gap-2">
+            <Heading :type="3" class="regular text-white">Dirección</Heading>
+            <ul class="flex flex-col gap-1">
+              <li class="flex justify-between items-center">
+                <span class="text-sm font-bold text-white">Ciudad</span>
+                <p class="text-sm text-white/50">
+                  {{ showProfile?.address?.province || 'No especificado' }},
+                  {{ showProfile?.address?.country || 'No especificado' }}
+                </p>
+              </li>
+              <li class="flex justify-between items-center">
+                <Heading :type="6" class="text-sm font-bold text-white">Calle</Heading>
+                <p class="text-sm text-white/50">{{ showProfile?.address?.street || 'No especificado' }}</p>
+              </li>
+              <li class="flex justify-between items-center">
+                <Heading :type="6" class="text-sm font-bold text-white">Código Postal</Heading>
+                <p class="text-sm text-white/50">{{ showProfile?.address?.postalCode || 'No especificado' }}</p>
+              </li>
+            </ul>
+          </div>
+        </article>
+        <article v-else class="overflow-y-auto h-full flex flex-col gap-5 pr-4 py-4">
+          <div class="flex flex-col gap-2">
+            <Heading :type="3" class="regular text-white">Verificación</Heading>
+            <ul class="flex flex-col gap-2">
+              <li class="flex items-center gap-2">
+                <Cross class="w-6 h-6 text-primary-900 bg-alert-warning-800 rounded-full"
+                  v-if="!showProfile?.profileCompleted" />
+                <Check class="w-6 h-6 bg-alert-success-900  rounded-full" v-else />
+                <span class="text-white text-sm">Identidad verificada</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <Cross class="w-6 h-6 text-primary-900 bg-alert-warning-800 rounded-full"
+                  v-if="!showProfile?.profileCompleted" />
+                <Check class="w-6 h-6 bg-alert-success-900 rounded-full" v-else />
+                <span class="text-white text-sm">Licencia de conducir verificada</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <Cross class="w-6 h-6 text-primary-900 bg-alert-warning-800 rounded-full"
+                  v-if="!showProfile?.profileCompleted" />
+                <Check class="w-6 h-6 bg-alert-success-900 rounded-full" v-else />
+                <span class="text-white text-sm">Usuario verificado</span>
+              </li>
+            </ul>
+          </div>
+      
+          <div class="flex flex-col gap-2">
+            <Heading :type="3" class="regular text-white">Estadísticas</Heading>
+            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <li class="text-center">
+                <div class="text-2xl font-bold text-white">{{ showProfile?.responseRate || '0' }}%</div>
+                <div class="text-white/80 text-sm">Tasa de respuesta</div>
+              </li>
+              <li class="text-center">
+                <div class="text-2xl font-bold text-white">{{ showProfile?.yearsOnPlatform || '0' }}</div>
+                <div class="text-white/80 text-sm">En la plataforma</div>
+              </li>
+              <li class="text-center">
+                <div class="text-2xl font-bold text-white">{{ showProfile?.rating?.toFixed(1) || '0.0' }}</div>
+                <div class="text-white/80 text-sm">Calificación promedio</div>
+              </li>
+              <li class="text-center">
+                <div class="text-2xl font-bold text-white">{{ showProfile?.completedRentals || '0' }}</div>
+                <div class="text-white/80 text-sm">Alquileres completados</div>
+              </li>
+            </ul>
+          </div>
+      
+          <div class="flex flex-col gap-2">
+            <Heading :type="3" class="regular text-white">Tiempo de respuesta</Heading>
+            <div class="bg-white/10 rounded-lg p-3">
+              <span class="text-white text-sm">
+                {{ showProfile?.averageResponseTime ? `Responde normalmente en menos de
+                ${showProfile.averageResponseTime} horas` : 'Tiempo de respuesta no disponible' }}
+              </span>
             </div>
           </div>
+        </article>
+      </div>  
+
+      <!-- Historial (solo para el usuario logueado) -->
+      <div v-if="isOwnProfile" class="my-history bg-primary-900 flex flex-col rounded-[40px] px-5 py-7 gap-6">
+        <div class="flex items-center justify-between">
+          <Heading :type="2" class="medium text-white text-center sm:text-left">Historial</Heading>
+          <router-link v-if="rentedCars && rentedCars.length" to="/history" class=" text-white">Ver más</router-link>
+        </div>
+        <History />
+      </div>
+      <div 
+        v-else 
+        class="reviews bg-primary-900 flex flex-col rounded-[40px] px-5 py-7 gap-6"
+        v-if="!$route.matched.some(route => route.name === 'PrivateChat')">
+        <div class="flex items-center justify-between">
+          <Heading :type="2" class="medium text-white">Reseñas</Heading>
+          <span class="text-white text-sm">{{ showProfile?.reviews?.length || '0' }} reseñas</span>
         </div>
 
-        <router-view class="xl:hidden w-full min-h-screen"
-          v-if="$route.matched.some(route => route.name === 'PrivateChat')"></router-view>
+        <div v-if="showProfile?.reviews && showProfile?.reviews?.length">
+          <!-- Contenido de reseñas -->
+        </div>
 
-
-        <template v-if="!$route.matched.some(route => route.name === 'PrivateChat')">
-          <div class="xl:w-[50%] xl:max-h-[785.5px] flex flex-col gap-4">
-            <div class="bg-primary-900 border-2 rounded-[40px] p-6 mt-4 xl:mt-0 max-h-[380px] overflow-y-auto h-full">
-              <div class="flex items-center justify-between mb-4">
-                <Heading :type="1" class="text-white">Reseñas</Heading>
-                <span class="text-white text-sm">{{ showProfile?.reviews?.length || '0' }} reseñas</span>
-              </div>
-
-              <div v-if="showProfile?.reviews && showProfile?.reviews?.length">
-                <!-- Contenido de reseñas -->
-              </div>
-
-              <div v-else class="text-white flex flex-col items-center justify-center">
-                <img src="@/assets/no-reviews.png" alt="Sin reseñas" class="max-w-[150px] mx-auto mb-4" />
-                <Heading :type="3" class="text-white text-center" v-if="showProfile && showProfile.personalInfo">
-                  {{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }} no tiene reseñas.
-                </Heading>
-              </div>
-            </div>
-
-            <div class="bg-secondary-100 rounded-[40px] p-6 xl:mt-0 xl:max-h-[400px] overflow-y-auto">
-              <div class="flex items-center justify-between mb-4">
-                <Heading :type="1" class="text-primary-900">Vehículos</Heading>
-                <span class="text-primary-800 text-sm">{{ userCars.length }} disponibles</span>
-              </div>
-
-              <div v-if="carStore.loadingUserCars" class="flex justify-center py-8">
-                <Loading class="w-8 h-8 text-primary-800" />
-              </div>
-
-              <div v-else-if="userCars.length === 0" class="text-center py-8">
-                  <img 
-                    src="@/assets/no-cars.png" 
-                    alt="No cars" 
-                    class="max-w-[120px] mx-auto mb-4 opacity-50"
-                  />
-                  <Heading :type="3" class="text-background-600 mb-2">
-                   Este usuario no tiene autos registrados
-                  </Heading>
-              </div>
-
-              <div v-else class="space-y-4">
-                <div v-for="car in userCars" :key="car.id"
-                  class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer p-4"
-                  @click="$router.push(`/car/${car.id}`)">
-                  <div class="flex gap-4">
-                    <div class="relative flex-shrink-0">
-                      <img :src="car.images?.[0] || '/src/assets/Car-Img.png'" :alt="`${car.marca} ${car.modelo}`"
-                        class="w-28 h-24 object-cover rounded-xl" />
-                      <div class="absolute -top-1 -right-1 px-2 py-1 rounded-full text-xs font-medium"
-                        :class="car.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
-                        {{ car.isAvailable ? 'Disponible' : 'No disponible' }}
-                      </div>
-                    </div>
-
-                    <div class="flex-1 space-y-2">
-                      <div class="flex justify-between items-start">
-                        <h3 class="text-lg font-bold text-primary-900 leading-tight">
-                          {{ car.marca }} {{ car.modelo }}
-                        </h3>
-                        <span class="text-sm text-primary-800 font-bold flex-shrink-0 ml-2">
-                          ${{ car.precio }}/día
-                        </span>
-                      </div>
-
-                      <p class="text-sm text-background-600">
-                        {{ car.año }} • {{ car.combustible }} • {{ car.transmision }}
-                      </p>
-
-                      <div class="flex gap-2 flex-wrap">
-                        <span v-if="car.asientos"
-                          class="bg-vibrant-light-600 text-primary-900 px-2 py-1 rounded-lg text-xs">
-                          {{ car.asientos }} asientos
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </template>
-
-        <router-view class="xl:w-[50%] hidden xl:block max-h-[785.5px]"
-          v-if="$route.matched.some(route => route.name === 'PrivateChat')"></router-view>
+        <div v-else class="text-white flex flex-col items-center justify-center">
+          <img src="@/assets/no-reviews.png" alt="Sin reseñas" class="max-w-[120px] mx-auto" />
+          <p class="font-semibold opacity-50" v-if="showProfile && showProfile.personalInfo">Este usuario no tiene reseñas.</p>
+        </div>
       </div>
+      <router-view></router-view>
     </section>
-  </section>
-
+  </div>
 </template>
+
+<style scoped>
+@media (width >= 768px) {
+  .parent {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    grid-column-gap: 20px;
+    grid-row-gap: 20px;
+
+    .profile { grid-area: 1 / 1 / 2 / 4; }
+    .my-history { grid-area: 1 / 4 / 2 / 6; }
+    .div-user { grid-area: 1 / 4 / 2 / 6; }
+    .div-my-user { grid-area: 2 / 1 / 3 / 3; }
+    .user-cars { grid-area: 2 / 1 / 3 / 4; }
+    .my-cars { grid-area: 2 / 3 / 3 / 6; }
+    .reviews { grid-area: 2 / 4 / 3 / 6; }
+  }
+}
+@media (width < 768px) {
+  .parent {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .profile { order: 1; }
+    .my-history { order: 2; }
+    .div-user { order: 3; }
+    .div-my-user { order: 4; }
+    .user-cars { order: 5; }
+    .my-cars { order: 6; }
+    .reviews { order: 7; }
+  }
+}
+</style>

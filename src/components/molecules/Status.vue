@@ -6,9 +6,11 @@ export default {
       required: true,
       validator: (value) => {
         return [
-          "registrado", // Nuevo estado
+          "registered", // Nuevo estado
           "validated",
           "not-validated",
+          "verified",
+          "not-verified",
           "new",
           "rented",
           "available",
@@ -20,13 +22,15 @@ export default {
   computed: {
     statusText() {
       const textos = {
-        registrado: "Registrado", // Texto para el nuevo estado
+        registrado: "Registrado",
         validated: "Validado",
         "not-validated": "No validado",
         new: "Nuevo",
         rented: "Alquilado",
         available: "Disponible",
         blocked: "Bloqueado",
+        verified: "Verificado",
+        "not-verified": "No verificado",
       };
       return textos[this.status] || "Unknown";
     },
@@ -39,6 +43,8 @@ export default {
         rented: "bg-yellow-100 text-yellow-800",
         available: "bg-blue-100 text-blue-800",
         blocked: "bg-gray-100 text-gray-800",
+        verified: "bg-green-100 text-green-800",
+        "not-verified": "bg-red-100 text-red-800",
       };
       return clases[this.status] || "bg-gray-100 text-gray-800";
     },

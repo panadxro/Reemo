@@ -1,6 +1,6 @@
 <script setup>
-import {useUserStore, useAuthStore } from '@stores'
-import { computed } from "vue";
+import { useUserStore } from '@stores'
+import { computed, inject } from "vue";
 
 import Heading from "@components/atoms/Heading.vue";
 import User from "@icons/User.vue";
@@ -8,50 +8,52 @@ import Credential from "../../icons/Credential.vue";
 import Car from "../../icons/Car.vue";
 import History from "../../icons/History.vue";
 import NavButton from "../molecules/NavButton.vue";
-import { RouterLink } from 'vue-router';
 
 const userStore = useUserStore();
-const authStore = useAuthStore();
 
 const profileData = computed(() => userStore.profileData)
+
+// Inyectar los datos del padre
+const loggedUser = inject('loggedUser');
+const authSession = inject('authSession');
 </script>
 
 <template>
-  <aside class="bg-vibrant-light-600 m-2.5 py-12 px-5 flex flex-col items-center gap-2 rounded-[40px] min-w-[250px]">
+  <aside class="md:bg-vibrant-light-600 m-2.5 md:py-12 md:px-5 flex flex-col items-center gap-2 rounded-[40px] md:min-w-[250px] fixed md:relative right-0  h-full md:h-auto justify-center">
     <img 
       v-if="profileData.personalInfo.profilePhoto" 
-      class="w-20 aspect-square rounded-full bg-vibrant-light-800" 
+      class="hidden md:block w-20 aspect-square rounded-full bg-vibrant-light-800" 
       :src="`${profileData.personalInfo.profilePhoto}`"
       :alt="`Perfil de ${profileData.personalInfo.username}`" 
     />
-    <Heading :type="1" class="regular text-center">{{ profileData.personalInfo.firstName }} {{ profileData.personalInfo.lastName }}</Heading>
-    <p class="text-sm text-gray-500">
+    <Heading :type="1" class="hidden md:block regular text-center">{{ profileData.personalInfo.firstName }} {{ profileData.personalInfo.lastName }}</Heading>
+    <p class="hidden md:block text-sm text-gray-500">
       @{{ profileData.personalInfo.username }}
     </p>
     <!-- <button type="button" @click="openUserEdit">Editar</button> -->
-    <ul class="flex flex-col gap-3 my-7 w-full">
+    <ul class="flex flex-col gap-3 my-7 md:w-full">
       <li>
-        <NavButton to="/profile" title="Mi perfil">
+        <NavButton :to="`/user/${authSession?.user?.id}`" title="Mi perfil">
           <User />
-          <span>Mi perfil</span>
+          <span class="hidden md:block">Mi perfil</span>
         </NavButton>
       </li>
-      <li class="min-w-[100px]">
-        <NavButton class="px-2" to="/profile" title="Documentos">
+      <li>
+        <NavButton to="/profile" title="Documentos">
           <Credential />
-          <span>Documentos</span>
+          <span class="hidden md:block">Documentos</span>
         </NavButton>
       </li>
-      <li class="min-w-[100px]">
-        <NavButton class="px-2" to="/profile" title="Mis autos">
+      <li>
+        <NavButton to="/profile" title="Mis autos">
           <Car />
-          <span>Mis autos</span>
+          <span class="hidden md:block">Mis autos</span>
         </NavButton>
       </li>
-      <li class="min-w-[100px]">
-        <NavButton class="px-2" to="/profile" title="Historial">
+      <li>
+        <NavButton to="/profile" title="Historial">
           <History />
-          <span>Historial</span>
+          <span class="hidden md:block">Historial</span>
         </NavButton>
       </li>
     </ul>

@@ -70,7 +70,7 @@ const handleNotificationClick = async (notification) => {
   }
   // Lógica de navegación si es necesario (ej. ir a RentalDetailsView)
   // if (notification.type === 'rent_response' && notification.rent_id) {
-  //   router.push(`/rental-details/${notification.rent_id}`);
+  //   router.push(`/rent/${notification.rent_id}`);
   // }
 }
 
