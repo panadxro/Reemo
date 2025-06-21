@@ -847,7 +847,7 @@ onBeforeUnmount(() => {
           <DropdownForm title="Tarifa base" :section-id="'section-2'" :dropdown-id="'tarifa'" :is-initial="true">
             <div class="flex gap-5">
               <Input
-                type="text"
+                type="number"
                 v-model="pricing.rates.daily"
                 name="daily"
                 id="daily"
@@ -856,7 +856,7 @@ onBeforeUnmount(() => {
                 :outline="true"
                 required />
               <Input
-                type="text"
+                type="number"
                 v-model="pricing.rates.weekly"
                 name="weekly"
                 id="weekly"
@@ -865,7 +865,7 @@ onBeforeUnmount(() => {
                 :outline="true"
                 required />
               <Input
-                type="text"
+                type="number"
                 v-model="pricing.rates.monthly"
                 name="monthly"
                 id="monthly"

@@ -60,7 +60,7 @@ export default {
       return authStore.user?.id
     })
 
-    const userIdFromRoute =computed(() => {
+    const userIdFromRoute = computed(() => {
       return route.params.id;
     }) 
 
@@ -68,9 +68,9 @@ export default {
       return loggedUserId.value === userIdFromRoute.value;
     });
 
-    // PAra verificare si es el usuario logueado o un usuario visitado, y le asignamos los autos correspondientes
+    // Corregir: usar el getter para obtener los autos del usuario
     const userCars = computed(() => {
-      return carStore.loadCarById(userIdFromRoute.value);
+      return carStore.getUserCars; // Usar el getter en lugar de llamar a la función
     });
 
     const displayedPaymentMethods = computed(() => {
@@ -80,9 +80,9 @@ export default {
         : paymentStore.paymentMethods.slice(0, 2);
     }); 
 
-  const hasMoreMethods = computed(() => {
-    return paymentStore.paymentMethods.length > 2;
-  });
+    const hasMoreMethods = computed(() => {
+      return paymentStore.paymentMethods.length > 2;
+    });
 
     const showProfile = computed(() => {
       return isOwnProfile.value ? userStore.profileData : userStore.visitedProfileData
@@ -91,58 +91,73 @@ export default {
     watch(userIdFromRoute, async (newUserId, oldUserId) => {
       if (newUserId !== oldUserId) {
         await userStore.loadUserProfile(newUserId);
+        // También cargar los autos cuando cambie el usuario
+        if (newUserId) {
+          try {
+            await carStore.loadUserCars(newUserId);
+          } catch (error) {
+            console.error("Error cargando autos del usuario:", error);
+          }
+        }
       }
     });
 
     const toggleShowAllMethods = () => {
-  showAllPaymentMethods.value = !showAllPaymentMethods.value;
-};
+      showAllPaymentMethods.value = !showAllPaymentMethods.value;
+    };
 
-const toggleNewPaymentForm = () => {
-  showNewPaymentForm.value = !showNewPaymentForm.value;
-  if (showNewPaymentForm.value) {
-    paymentStore.resetNewPaymentMethodForm();
-  }
-};
+    const toggleNewPaymentForm = () => {
+      showNewPaymentForm.value = !showNewPaymentForm.value;
+      if (showNewPaymentForm.value) {
+        paymentStore.resetNewPaymentMethodForm();
+      }
+    };
 
-const removePaymentMethod = (index) => {
-  paymentMethodToDelete.value = {
-    index: index,
-    method: paymentStore.paymentMethods[index]
-  };
-  showDeleteModal.value = true;
-};
+    const removePaymentMethod = (index) => {
+      paymentMethodToDelete.value = {
+        index: index,
+        method: paymentStore.paymentMethods[index]
+      };
+      showDeleteModal.value = true;
+    };
 
-const confirmDeletePaymentMethod = async () => {
-  if (paymentMethodToDelete.value !== null) {
-    await paymentStore.removePaymentMethod(
-      loggedUserId.value, 
-      paymentMethodToDelete.value.index
-    );
-    showDeleteModal.value = false;
-    paymentMethodToDelete.value = null;
-  }
-};
+    const confirmDeletePaymentMethod = async () => {
+      if (paymentMethodToDelete.value !== null) {
+        await paymentStore.removePaymentMethod(
+          loggedUserId.value, 
+          paymentMethodToDelete.value.index
+        );
+        showDeleteModal.value = false;
+        paymentMethodToDelete.value = null;
+      }
+    };
 
-const saveNewPaymentMethod = async () => {
-  const Check = await paymentStore.saveNewPaymentMethod(loggedUserId.value);
-  if (Check) {
-    showNewPaymentForm.value = false;
-  }
-};
+    const saveNewPaymentMethod = async () => {
+      const check = await paymentStore.saveNewPaymentMethod(loggedUserId.value);
+      if (check) {
+        showNewPaymentForm.value = false;
+      }
+    };
 
     onMounted(async () => {
-      await userStore.loadUserProfile(userIdFromRoute.value);
-      // console.error("User is not logged in", userIdFromRoute.value)
+      try {
+        // Cargar perfil del usuario
+        await userStore.loadUserProfile(userIdFromRoute.value);
 
-      // Fetch a los autos del usuaroi
-      await carStore.loadUserCars(userIdFromRoute.value);
-
-      if(loggedUserId.value && isOwnProfile.value){
-        if(!userStore.profileData.profileCompleted){
-          router.push('/onboarding')
+        // Cargar autos del usuario si el ID existe
+        if (userIdFromRoute.value) {
+          await carStore.loadUserCars(userIdFromRoute.value);
         }
-        await paymentStore.fetchPaymentMethods(loggedUserId.value);
+
+        // Si es el perfil propio, verificar si está completo y cargar métodos de pago
+        if (loggedUserId.value && isOwnProfile.value) {
+          if (!userStore.profileData.profileCompleted) {
+            router.push('/onboarding');
+          }
+          await paymentStore.fetchPaymentMethods(loggedUserId.value);
+        }
+      } catch (error) {
+        console.error("Error en onMounted:", error);
       }
     });
     
@@ -508,39 +523,34 @@ const saveNewPaymentMethod = async () => {
         <!-- Sección de autos -->
         <div class="bg-secondary-100 rounded-[40px] p-6 mt-4 xl:mt-0 xl:max-h-[400px] overflow-y-auto">
           <div class="flex items-center justify-between mb-4">
-            <Heading :type="1" class="text-primary-900">
+            <h1 class="text-primary-900 text-2xl font-bold">
               {{ isOwnProfile ? "Mis autos" : "Vehículos" }}
-            </Heading>
+            </h1>
           </div>
 
           <div v-if="carStore.loading" class="flex justify-center py-8">
-            <Loading class="w-8 h-8 text-primary-800" />
+            <div class="w-8 h-8 border-4 border-primary-800 border-t-transparent rounded-full animate-spin"></div>
           </div>
 
           <div v-else-if="userCars.length > 0" class="space-y-4">
-            <div v-for="car in userCars.slice(0, 4)" :key="car.id" :class="[
-                'bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer',
-                userCars.length === 1 ? 'p-6' : 'p-4'
-              ]" @click="$router.push(`/car/${car.id}`)">
+            <div v-for="car in userCars.slice(0, 4)" :key="car.id" 
+                :class="[
+                  'bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer',
+                  userCars.length === 1 ? 'p-6' : 'p-4'
+                ]" 
+                @click="$router.push(`/car/${car.id}`)">
+              
               <div :class="['flex', userCars.length === 1 ? 'gap-6' : 'gap-4']">
                 <div class="relative flex-shrink-0">
                   <img 
-                    :src="car.images?.[0] || carStore.defaultCarImage" 
-                    :alt="car.marca + ' ' + car.modelo"     
+                    :src="car.photos?.[0] || carStore.defaultCarImage" 
+                    :alt="`${car.basicInfo?.brand || ''} ${car.basicInfo?.model || ''}`"     
                     :class="[
                       'object-cover rounded-xl',
                       userCars.length === 1 ? 'w-32 h-28 sm:w-36 sm:h-32' : 'w-24 h-20 sm:w-28 sm:h-24'
                     ]" 
-                    @error="carStore.handleImageError" 
-                    />
-                  <div 
-                    :class="[
-                      'absolute -top-1 -right-1 rounded-full font-medium',
-                      userCars.length === 1 ? 'px-3 py-1.5 text-sm' : 'px-2 py-1 text-xs',
-                      car.isAvailable ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    ]">
-                    {{ car.isAvailable ? 'Disponible' : 'No disponible' }}
-                  </div>
+                    @error="handleImageError" 
+                  />
                 </div>
 
                 <div :class="['flex-1', userCars.length === 1 ? 'space-y-3' : 'space-y-2']">
@@ -549,13 +559,13 @@ const saveNewPaymentMethod = async () => {
                       'font-bold text-primary-900 leading-tight',
                       userCars.length === 1 ? 'text-xl' : 'text-lg'
                     ]">
-                      {{ car.marca }} {{ car.modelo }}
+                      {{ car.basicInfo?.brand || 'Sin marca' }} {{ car.basicInfo?.model || 'Sin modelo' }}
                     </h3>
                     <span :class="[
                       'text-primary-800 font-bold flex-shrink-0 ml-2',
                       userCars.length === 1 ? 'text-base' : 'text-sm'
                     ]">
-                      ${{ car.pricing.rates.daily }}/día
+                      ${{ car.pricing?.rates?.daily || 0 }}/día
                     </span>
                   </div>
 
@@ -563,7 +573,9 @@ const saveNewPaymentMethod = async () => {
                     'text-background-600',
                     userCars.length === 1 ? 'text-base' : 'text-sm'
                   ]">
-                    {{ car.año }} • {{ car.combustible }} • {{ car.transmision }}
+                    {{ car.basicInfo?.year || 'N/A' }} • 
+                    {{ car.specifications?.fuelType || 'N/A' }} • 
+                    {{ car.specifications?.transmission || 'N/A' }}
                   </p>
 
                   <div class="flex gap-2 flex-wrap">
@@ -571,41 +583,48 @@ const saveNewPaymentMethod = async () => {
                       'bg-vibrant-light-600 text-primary-900 px-2 py-1 rounded-lg',
                       userCars.length === 1 ? 'text-sm' : 'text-xs'
                     ]">
-                      {{ car.asientos }} asientos
+                      {{ car.specifications?.seats || 0 }} asientos
                     </span>
                   </div>
                 </div>
               </div>
             </div>
+            
             <router-link v-if="isOwnProfile" to="/car/register"
               class="inline-flex items-center gap-2 px-4 py-2 bg-primary-800 text-white rounded-lg hover:bg-primary-900 transition-colors font-medium">
-              <Plus class="w-4 h-4" />
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
               Registrar auto
             </router-link>
           </div>
 
           <div v-else class="text-center py-8">
-            <img src="@/assets/no-cars.png" alt="No cars" class="max-w-[120px] mx-auto mb-4 opacity-50" />
-            <Heading :type="3" class="text-background-600 mb-2">
+            <div class="max-w-[120px] mx-auto mb-4 opacity-50">
+              <img src="@/assets/no-cars.png" alt="No cars" class="w-full h-auto" />
+            </div>
+            <h3 class="text-background-600 mb-2 text-xl font-semibold">
               Aún no tenés autos registrados
-            </Heading>
+            </h3>
             <router-link v-if="isOwnProfile" to="/car/register"
               class="inline-flex items-center gap-2 px-4 py-2 bg-primary-800 text-white rounded-lg hover:bg-primary-900 transition-colors font-medium">
-              <Plus class="w-4 h-4" />
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
               Registrar auto
             </router-link>
           </div>
 
-          <!-- se deberia mostrar en caso de que haya mas de 4 autos pero es dificcil que pase y ademas la apgina no existe -->
-          <div v-if="userCars.length > 4" class="mt-4 text-center">
-            <router-link 
-              to="/my-cars" 
-              class="text-primary-800 hover:text-primary-600 text-sm font-medium"
-            >
-              Ver los {{ userCars.length - 4 }} autos restantes →
-            </router-link>
-          </div>
-        </div>
+  <!-- Se debería mostrar en caso de que haya más de 4 autos -->
+  <div v-if="userCars.length > 4" class="mt-4 text-center">
+    <router-link 
+      to="/my-cars" 
+      class="text-primary-800 hover:text-primary-600 text-sm font-medium"
+    >
+      Ver los {{ userCars.length - 4 }} autos restantes →
+    </router-link>
+  </div>
+</div>
       </div>
 
       

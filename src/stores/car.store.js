@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { editCar, saveCarData, createCarData, getCarById, getAvailableCars } from "../services/car";
+import { editCar, saveCarData, createCarData, getCarById, getAvailableCars, getUserCars } from "../services/car";
 import { uploadVehiclePhoto } from '../services/storage/documents'
 import { useAuthStore } from '@stores';
 
@@ -25,7 +25,7 @@ export const useCarStore = defineStore("car", {
         seats: null
       },
       status: {
-        current: 'available', // Agregué valor por defecto
+        current: 'available',
         description: null,
         currentLocation: {
           address: '',
@@ -93,6 +93,7 @@ export const useCarStore = defineStore("car", {
       },
       id: null,
     },
+    userCars: [],
     allAccessoryOptions: [
       { value: 'touchScreen', label: 'Pantalla táctil' },
       { value: 'appleCarPlayAndroidAuto', label: 'Apple CarPlay/Android Auto' },
@@ -147,16 +148,7 @@ export const useCarStore = defineStore("car", {
       }
     },
 
-    // async fetchAvailableCars(){
-    //   try{
-
-    //   } catch(error){
-        
-    //   }
-    // }
-
     async saveCar(carData) {
-      // await createCarData(uid);
       try {
         this.loading = true;
         // Asegurarnos que tenemos un ID
@@ -178,6 +170,7 @@ export const useCarStore = defineStore("car", {
         this.loading = false;
       }
     },
+
     async updateCar(carId, carData) {
       this.loading = true;
       try {
@@ -190,6 +183,7 @@ export const useCarStore = defineStore("car", {
         this.loading = false;
       }
     },
+
     async loadCarById(carId) {
       try {
         this.loading = true;
@@ -205,6 +199,23 @@ export const useCarStore = defineStore("car", {
         this.loading = false;
       }
     },
+
+    async loadUserCars(userId) {
+      try {
+        this.loading = true;
+        // getUserCars ahora devuelve una Promise con un unsubscribe
+        const userCars = await getUserCars(userId);
+        this.userCars = userCars; // Guardar en el estado
+        return userCars;
+      } catch (error) {
+        this.error = error;
+        console.error("Error al cargar los autos del usuario:", error);
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async uploadCarPhoto(userId, file, carId, photoIndex) {
       try {
         // 1. Validar que photos sea un array
@@ -225,6 +236,7 @@ export const useCarStore = defineStore("car", {
         throw error;
       }
     },
+
     updateFeatures(featuresData) {
       this.currentCar.features = {
         ...this.currentCar.features,
@@ -240,6 +252,7 @@ export const useCarStore = defineStore("car", {
       }
     },
   },
+
   getters: {
     car: (state) => state.currentCar,
     basicInfo: (state) => state.currentCar?.basicInfo || {},
@@ -250,5 +263,6 @@ export const useCarStore = defineStore("car", {
     photos: (state) => state.currentCar?.photos || [],
     insurance: (state) => state.currentCar?.insurance || {},
     availability: (state) => state.currentCar?.availability || {},
+    getUserCars: (state) => state.userCars,
   }
 });
