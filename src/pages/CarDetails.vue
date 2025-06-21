@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useAuthStore, useUserStore , useCarStore } from '@stores'
 import { useRoute } from 'vue-router';
 import { Loader } from "@googlemaps/js-api-loader";
-// import { loadGoogleMaps, initMap } from "../services/google-maps.js";
+import { loadGoogleMaps, initMap } from "../services/google-maps.js";
 import { useRentalStore } from '@/stores/rent.store.js';
 
 import Heading from "../components/atoms/Heading.vue";
@@ -52,44 +52,7 @@ const ownerData = computed(() => {
   return userStore.getUserDataById(car.value.ownerId) || carOwner.value;
 });
 
-// Métodos
-const initMap = async(location) => {
-  if (!location || !location.lat || !location.lng) {
-    console.error("Coordenadas no válidas:", location);
-    return;
-  }
-  try {
-    const position = { lat: location.lat, lng: location.lng };
-    const { Map } = await google.maps.importLibrary("maps");
 
-    const map = new Map(document.getElementById('map'),{
-      center: {
-        lat: location.lat,
-        lng: location.lng,
-      },
-      zoom: 14,
-      mapId: "4808da25693c56c8",
-      streetViewControl: false,
-      mapTypeControl: false,
-      disableDefaultUI: true,
-    });
-
-    new google.maps.Circle({
-      strokeColor: "#5DADE2",
-      strokeOpacity: 0.8, 
-      strokeWeight: 2, 
-      fillColor: "#A9D6F5", 
-      fillOpacity: 0.35, 
-      map: map,
-      center: position,
-      radius: 1000, 
-    });
-    
-    this.mapInitialized = true;
-  } catch (error) {
-    console.error("Error al cargar Google Maps: ", error);
-  }
-};
 
 const setCurrentImage = (image) => {
   currentImage.value = image;
@@ -99,17 +62,7 @@ const setDefaultImage = (event) => {
   event.target.src = defaultCarImage;
 };
 
-const loadGoogleMaps = async () => {
-  const loader = new Loader({
-    apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries: ["places", "geometry"], 
-  });
-  try {
-    await loader.load(); // Esperamos a que la API se cargue completamente
-  } catch (error) {
-    console.error("Error al cargar Google Maps:", error);
-  }
-};
+
 
 // Lifecycle hooks
 onMounted(async () => {
@@ -133,9 +86,36 @@ onMounted(async () => {
     }
     
     // Cargamos Google Maps si hay coordenadas
-    if (car.value?.location?.coordinates) {
-      await loadGoogleMaps();
-      // initMap(car.value.location.coordinates);
+    if (car.value?.status?.currentLocation?.location) {
+      const coordenadas = car.value.status.currentLocation.location;
+      console.log("Coordenadas:", coordenadas)
+      await loadGoogleMaps(); // Usamos la función del servicio
+      
+      // Inicializamos el mapa con las coordenadas del auto
+      const mapInstance = await initMap('map');
+      
+      if (mapInstance && car.value.status.currentLocation.location) {
+        // Centramos el mapa en la ubicación del auto
+        mapInstance.setCenter({
+          lat: car.value.status.currentLocation.location.lat,
+          lng: car.value.status.currentLocation.location.lng
+        });
+        
+        // Añadimos un círculo para resaltar la zona
+        new google.maps.Circle({
+          strokeColor: "#5DADE2",
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: "#A9D6F5",
+          fillOpacity: 0.35,
+          map: mapInstance,
+          center: {
+            lat: car.value.status.currentLocation.location.lat,
+            lng: car.value.status.currentLocation.location.lng
+          },
+          radius: 1000,
+        });
+      }
     }
   } catch (error) {
     errorMsg.value = "Hubo un error al obtener los detalles del auto";
@@ -272,10 +252,10 @@ onMounted(async () => {
       ></div>
     </div>
   
-    <div class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-y-scroll">
+    <div v-if="authStore.user?.id !== carStore.car.ownerId" class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-y-scroll">
       
       <RentalProcess 
-        v-if="!loading && !errorMsg && carStore.car && authStore.user?.id"
+        v-if="!loading && !errorMsg && carStore.car && authStore.user?.id "
         :car-id="carStore.car.id"
         :user-id="authStore.user.id"
         :is-car-rented="store.isRented"
