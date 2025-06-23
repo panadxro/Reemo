@@ -10,7 +10,6 @@ import CardCar from "@components/organisms/my-cars/CardCar.vue";
 import UserNav from "@components/user/UserNav.vue";
 import RentedCar from "@components/organisms/rental/RentedCar.vue";
 import Loading from "@icons/Loading.vue";
-import UserCar from "@components/organisms/my-cars/UserCar.vue";
 import Arrow from "../icons/Arrow.vue";
 import BackButton from "@components/atoms/BackButton.vue";
 
@@ -29,7 +28,7 @@ import History from '@/components/user/history.vue'
 
 export default {
   name: "UserProfile",
-  components: { Heading, CardCar, UserNav, RentedCar, Loading, UserCar, Arrow, BackButton, MercadoPago, Uala, PayPal, CreditCard, Trash, Plus, Input, DeletePaymentModal, Cross, Check, RentStatusDetails, History },
+  components: { Heading, CardCar, UserNav, RentedCar, Loading, Arrow, BackButton, MercadoPago, Uala, PayPal, CreditCard, Trash, Plus, Input, DeletePaymentModal, Cross, Check, RentStatusDetails, History },
   props: {
     id: {
       type: String,
@@ -56,24 +55,15 @@ export default {
     const showAllPaymentMethods = ref(false);
     const showNewPaymentForm = ref(false);
     const showDeleteModal = ref(false);
-    const paymentMethodToDelete = ref(null);    
+    const paymentMethodToDelete = ref(null);
 
-    const loggedUserId = computed(() => {
-      return authStore.user?.id
-    })
+    const userCars = computed(() => carStore.userCars);
+    const loggedUserId = computed(() => authStore.user?.id);
 
-    const userIdFromRoute = computed(() => {
-      return route.params.id;
-    }) 
+    const userIdFromRoute = computed(() => route.params.id); 
 
-    const isOwnProfile = computed(() => {
-      return loggedUserId.value === userIdFromRoute.value;
-    });
+    const isOwnProfile = computed(() => loggedUserId.value === userIdFromRoute.value);
 
-    // PAra verificare si es el usuario logueado o un usuario visitado, y le asignamos los autos correspondientes
-    const userCars = computed(() => {
-      return carStore.loadCarById(userIdFromRoute.value);
-    });
 
     const displayedPaymentMethods = computed(() => {
       if (!paymentStore.paymentMethods.length) return [];
@@ -139,6 +129,7 @@ const saveNewPaymentMethod = async () => {
 
       // Fetch a los autos del usuaroi
       await carStore.loadUserCars(userIdFromRoute.value);
+      console.log('Autos del usuario', carStore.userCars)
 
       if(loggedUserId.value && isOwnProfile.value){
         if(!userStore.profileData.profileCompleted){
@@ -180,7 +171,7 @@ const saveNewPaymentMethod = async () => {
     <section class="parent m-2.5 w-full md:max-h-vh md:overflow-hidden">
 
       <!-- Perfil del usuario -->
-      <div class="flex profile flex-col gap-3 overflow-hidden">
+      <div class="flex profile flex-col gap-3 h-full overflow-hidden">
         <div class="flex items-center gap-5">
           <BackButton />
           <Heading v-if="showProfile && showProfile.personalInfo" :type="1" class="medium">{{ isOwnProfile ? "Mi perfil" : showProfile.personalInfo.username }}</Heading>
@@ -192,7 +183,7 @@ const saveNewPaymentMethod = async () => {
             :src="showProfile.personalInfo.profilePhoto"
             :alt="`Perfil de ${showProfile?.personalInfo?.username || 'usuario'}`" 
           />
-          <div class="flex flex-col justify-between h-full gap-2 md:gap-0">
+          <div class="flex flex-col justify-between h-full  gap-2 md:gap-0">
             <div class="flex justify-between items-center">
               <Heading :type="2" class="medium text-primary-900 text-center sm:text-left"
                 v-if="showProfile && showProfile.personalInfo">
@@ -201,8 +192,15 @@ const saveNewPaymentMethod = async () => {
               <router-link
                 v-if="!isOwnProfile && showProfile && showProfile.personalInfo && showProfile.personalInfo.id !== id"
                 :to="`/user/${id}/chat`"
-                class="text-sm md:text-base text-primary-800 border-2 border-primary-800 rounded-lg px-3 py-2 md:px-4 bg-white hover:bg-primary-800 hover:text-white transition-colors duration-300 text-center sm:text-left whitespace-nowrap w-fit mx-auto sm:mx-0">
-                Enviar Mensaje
+                class="cursor-pointer"
+                >
+              <Input 
+                type="button"
+                text="Chat"
+                variant="primary"
+                :outline="false"
+                class="cursor-pointer"
+              />
               </router-link>
             </div>
 
@@ -223,7 +221,7 @@ const saveNewPaymentMethod = async () => {
               </li>
             </ul>
 
-            <p class="text-primary-900 text-sm md:text-md leading-relaxed">
+            <p class="text-primary-900 text-sm md:text-md leading-relaxed h-[60px] 2xl:h-full overflow-y-auto overflow-hidden">
               Lorem ipsum, dolor sit amet consectetur adipisicing elit. Illum officia pariatur laudantium
               similique amet deleniti iste, natus numquam accusantium eius ut aut, quo voluptatem dicta eos sint
               eveniet sunt alias! 200 caracteres máximos.
@@ -242,20 +240,13 @@ const saveNewPaymentMethod = async () => {
           <Loading class="w-8 h-8 text-primary-800" />
         </div>
         <div v-else-if="userCars && userCars.length" class="flex flex-col gap-5 h-full overflow-auto">
-          <UserCar 
+          <CardCar 
             v-for="car in userCars.slice(0, 4)" 
             :key="car.id" 
             :car="car"
+            layout="rectangle"
             @click="() => $router.push(`/car/${car.id}`)"
           />
-          <router-link 
-            v-if="isOwnProfile" 
-            to="/car/register" 
-            class="inline-flex items-center gap-2 px-4 py-2 bg-primary-800 text-white rounded-lg hover:bg-primary-900 transition-colors font-medium"
-            >
-            <Plus class="w-4 h-4" />
-            Registrar auto
-          </router-link>
         </div>
         <div v-else class="flex flex-col justify-center items-center h-full">
           <img src="@/assets/no-cars.png" alt="No cars" class="max-w-[120px] mx-auto opacity-50" />

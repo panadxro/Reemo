@@ -1,5 +1,4 @@
 <script setup>
-
 import { ref, inject, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { addAlert } from '@/services/alerts';
@@ -15,6 +14,7 @@ import History from '@components/user/History.vue';
 const route = useRoute();
 const rentalId = ref(route.params.id);
 const rentalDetails = ref(null);
+const userRentals = ref([]);
 const actionInProgress = ref(false);
 const isLoading = ref(true);
 const error = ref(null);
@@ -35,7 +35,23 @@ const cleanupSubscription = () => {
     unsubscribeRental = null;
   }
 };
-
+async function loadUserRentals() {
+  try {
+    isLoading.value = true;
+    const rentals = await getUserRentals(authSession.user.id);
+    userRentals.value = rentals.sort((a, b) => new Date(b.start_time?.seconds || 0) - new Date(a.start_time?.seconds || 0)
+    );
+    // Si no hay un ID en la ruta, seleccionamos la última renta
+    if (!rentalId.value && userRentals.value.length > 0) {
+      rentalId.value = userRentals.value[0].id;
+    }
+  } catch (error) {
+    console.error('Error al cargar rental del usuario:', error);
+    addAlert('Error al argar historial de rentas', 'error');
+  } finally {
+    isLoading.value = false;
+  }
+}
 function setupRentalSubscription() {
   cleanupSubscription();
 
@@ -190,7 +206,10 @@ watch(() => route.params.id, (newId) => {
   }
 })
 
-onMounted(setupRentalSubscription);
+onMounted(async () => {
+  await loadUserRentals();
+  setupRentalSubscription();
+});
 
 onUnmounted(() => {
   cleanupSubscription();

@@ -8,7 +8,6 @@ import Register from "../pages/Register.vue";
 import Maps from "../pages/Maps.vue";
 import Dashboard from "../pages/Dashboard.vue";
 import Search from "../pages/Search.vue";
-import Publish from "../pages/CarPublish.vue";
 import CarDetails from "../pages/CarDetails.vue";
 import AdminCars from "../pages/admin/Cars.vue";
 import AdminUsers from "../pages/admin/Users.vue";
@@ -16,7 +15,7 @@ import PrivateChat from "../pages/PrivateChat.vue";
 import UserProfile from "../pages/UserProfile.vue";
 import NotFound from "../pages/NotFound.vue";
 import Notification from "../pages/Notification.vue";
-import RentalDetails from '../pages/RentalDetails.vue';
+import Rent from '../pages/Rent.vue';
  
 const routes = [
   { path: "/", component: Home, name: "Home" },
@@ -43,12 +42,6 @@ const routes = [
     path: "/onboarding",
     component: UserOnboarding,
     name: "onboarding",
-    meta: { needsAuth: true },
-  },
-  {
-    path: "/publish",
-    component: Publish,
-    name: "Publish",
     meta: { needsAuth: true },
   },
   {
@@ -89,9 +82,9 @@ const routes = [
     ],
   },
   {
-    path: '/rent/:id',
-    name: 'RentalDetails',
-    component: RentalDetails,
+    path: '/rent/:id?',
+    name: 'Rent',
+    component: Rent,
     props: true,
     meta: { needsAuth: true },
   },

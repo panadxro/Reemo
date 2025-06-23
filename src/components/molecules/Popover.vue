@@ -80,7 +80,7 @@ export default {
     <!-- Botón que abre el popover -->
     <button
       @click="$emit('toggle-popover', popoverId)"
-      class="bg-vibrant-light-800 p-2 rounded-full cursor-pointer hover:bg-vibrant-light-700 focus:bg-vibrant-light-700"
+      class="p-2 rounded-full cursor-pointer hover:bg-vibrant-light-700 focus:bg-vibrant-light-700"
     >
       <Action />
     </button>

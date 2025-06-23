@@ -9,14 +9,16 @@ import Loading from "@icons/Loading.vue";
 import Status from "../../components/molecules/Status.vue";
 import Input from "../../components/molecules/Input.vue";
 import Popover from "../../components/molecules/Popover.vue";
+import SearchIcon from "@icons/Search.vue";
 
 export default {
   name: "AdminCars",
-  components: { Heading, Loading, Status, Input, Popover },
+  components: { Heading, Loading, Status, Input, Popover, SearchIcon },
   data() {
     return {
       openPopoverId: null,
       filter: 'all',
+      searchQuery: ''
     };
   },
   setup() {
@@ -49,6 +51,7 @@ export default {
   methods: {
     toggleFiltro(filtro) {
       this.filter = filtro;
+      this.searchQuery = '';
     },
     formatDate(timestamp) {
       if (!timestamp) return "Fecha no disponible";
@@ -78,13 +81,22 @@ export default {
   },
   computed: {
     carsFilter() {
+      let filteredCars = this.cars; 
+
       if (this.filter === 'validados') {
-        return this.cars.filter((cars) => cars.status.current !== 'not-validated');
+        filteredCars = filteredCars.filter((cars) => cars.status.current !== 'not-validated');
       } else if (this.filter === 'no-validados') {
-        return this.cars.filter((cars) => cars.status.current === 'not-validated');
-      } else {
-        return this.cars;
+        filteredCars = filteredCars.filter((cars) => cars.status.current === 'not-validated');
+      } 
+
+      if (this.searchQuery) {
+        const query = this.searchQuery.toLowerCase();
+        filteredCars = filteredCars.filter(car => {
+          const ownerName = `${car.owner.personalInfo?.firstName || ''} ${car.owner.personalInfo?.lastName || ''}`.toLowerCase();
+          return ownerName.includes(query);
+        });
       }
+      return filteredCars;
     }
   }
 };
@@ -93,31 +105,48 @@ export default {
 <template>
   <section class="w-full p-2.5 flex flex-col gap-6 overflow-hidden">
     <Heading :type="1" class="medium">Administrar Vehículos</Heading>
-    <div class="flex flex-row gap-4">
-      <Input 
-        type="button"
-        text="Todos"
+    <div class="flex justify-between items-center">
+      <div class="flex flex-row gap-4">
+        <Input 
+          type="button"
+          text="Todos"
+          variant="secondary"
+          class="cursor-pointer !flex-0"
+          :class="filter === 'all' ? ' bg-vibrant-light-900' : ''"
+          @click="toggleFiltro('all')"
+        />
+        <Input 
+          type="button"
+          text="Validados"
+          variant="secondary"
+          class="cursor-pointer !flex-0"
+          :class="filter === 'validados' ? ' bg-vibrant-light-900' : ''"
+          @click="toggleFiltro('validados')"
+        />
+        <Input 
+          type="button"
+          text="Invalidados"
+          variant="secondary"
+          class="cursor-pointer !flex-0"
+          :class="filter === 'no-validados' ? ' bg-vibrant-light-900' : ''"
+          @click="toggleFiltro('no-validados')"
+        />
+      </div>
+      <Input
+        type="text"
+        id="searchInput"
+        name="searchInput"
+        placeholder="Buscar autos de dueño"
+        class="mb-2 lg:mb-0 !flex-0 !min-w-fit"
+        icon-position="left"
         variant="secondary"
-        class="cursor-pointer"
-        :class="filter === 'all' ? ' bg-vibrant-light-900' : ''"
-        @click="toggleFiltro('all')"
-      />
-      <Input 
-        type="button"
-        text="Validados"
-        variant="secondary"
-        class="cursor-pointer"
-        :class="filter === 'validados' ? ' bg-vibrant-light-900' : ''"
-        @click="toggleFiltro('validados')"
-      />
-      <Input 
-        type="button"
-        text="Invalidados"
-        variant="secondary"
-        class="cursor-pointer"
-        :class="filter === 'no-validados' ? ' bg-vibrant-light-900' : ''"
-        @click="toggleFiltro('no-validados')"
-      />
+        :outline="false"
+        v-model="searchQuery"
+        >
+        <template #icon>
+          <SearchIcon />
+        </template>
+      </Input>
     </div>
     <table class="min-w-full bg-white h-full overflow-hidden flex flex-col gap-5">
       <thead class="mr-4">

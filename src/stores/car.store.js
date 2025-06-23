@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { editCar, saveCarData, createCarData, getCarById, getAvailableCars } from "../services/car";
+import { editCar, saveCarData, createCarData, getCarById, getAvailableCars, getUserCars } from "../services/car";
 import { uploadVehiclePhoto } from '../services/storage/documents'
 import { useAuthStore } from '@stores';
 
@@ -133,6 +133,7 @@ export const useCarStore = defineStore("car", {
     loading: false,
     error: null,
     availableCars: [],
+    userCars: []
   }),
 
   actions: {
@@ -201,8 +202,10 @@ export const useCarStore = defineStore("car", {
     async loadUserCars(userId) {
       try {
         this.loading = true;
-        const cars = await getAvailableCars(userId);
-        return cars;
+        const cars = await getUserCars(userId);
+        if (cars) {
+          this.userCars = cars;
+        }
       } catch (error) {
         this.error = error;
         throw error;
