@@ -132,7 +132,7 @@ export async function createOverlayView( map, car, marker, content, vueInstance)
     }
 
     const overlay = new CustomOverlay(
-      new google.maps.LatLng(car.status.currentLocation.location.lat, car.status.currentLocation.location.lng),
+      new google.maps.LatLng(car.status?.currentLocation.location.lat, car.status?.currentLocation.location.lng),
       content,
       map,
       vueInstance
@@ -202,55 +202,96 @@ export async function createOverlayView( map, car, marker, content, vueInstance)
 // }
 
 
+const MAX_DISTANCE_KM = 50; // Radio de búsqueda en kilómetros. ¡Ajusta este valor si es necesario!
 
+function calculateDistance(coords1, coords2) {
+  if (!coords1 || !coords2 || typeof coords1.lat !== 'number' || typeof coords1.lng !== 'number' || typeof coords2.lat !== 'number' || typeof coords2.lng !== 'number') {
+    return Infinity; 
+  }
+  const toRad = (value) => (value * Math.PI) / 180;
+  const R = 6371; // Radio de la Tierra en km
+  const dLat = toRad(coords2.lat - coords1.lat);
+  const dLon = toRad(coords2.lng - coords1.lng);
+  const lat1 = toRad(coords1.lat);
+  const lat2 = toRad(coords2.lat);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 // Filtramos los autos por la Ubicacion
-export function updateCars(cars, searchLocation, map ) {
-  if (!searchLocation || !searchLocation.lat || !searchLocation.lng) {
-    console.error("searchLocation no es válido");
-    // alert('No hay autos disponibles en esta zona')
-    return [];
+export function updateCars(allCars, searchLocation) {
+  if (!searchLocation || typeof searchLocation.lat !== 'number') {
+      console.warn('[updateCars] searchLocation inválida, no se puede filtrar.');
+      return []; // Devuelve vacío si no hay dónde buscar
   }
 
-  console.log('[updateCars] search location tiene: ', searchLocation)
-  const searchLatLng = new google.maps.LatLng(
-    searchLocation.lat,
-    searchLocation.lng
-  );
-  
-  const searchRadius = 10000;
+  const nearbyCars = allCars.filter(car => { 
+    // ¡CRÍTICO! Acceder a la nueva estructura de ubicación de forma segura
+    const carLocation = car.status?.currentLocation?.location;
 
-  const filteredCars = cars.filter((car) => {
-    if (!car.coordenadas) return false;
-    
-    console.log(`[updateCars] Procesando coche ID: ${car.id}. Ubicación del coche:`, car.status?.currentLocation?.location, 'Buscando cerca de:', searchLocation);
+    if (!carLocation || typeof carLocation.lat !== 'number' || typeof carLocation.lng !== 'number') {
+      console.warn(`Coche con ID ${car.id} omitido por datos de ubicación inválidos.`);
+      return false;
+    }
 
-    const carLatLng = new google.maps.LatLng(
-      car.status.currentLocation.location.lat,
-      car.status.currentLocation.location.lng
-    );
-    const distance = google.maps.geometry.spherical.computeDistanceBetween(
-      searchLatLng,
-      carLatLng
-    );
-    
-    return distance <= searchRadius;
+    const distance = calculateDistance(searchLocation, carLocation);
+    return distance <= MAX_DISTANCE_KM;
   });
 
-  if (map) {
-    // centramos el mapa en la busqueda
-    map.setCenter(searchLocation);
-    map.setZoom(14);
+  if (nearbyCars.length === 0) {
+    console.warn(`No hay autos cercanos en esta zona (radio: ${MAX_DISTANCE_KM}km).`);
   }
 
-  if (filteredCars.length === 0) {
-    console.warn("No hay autos cercanos en esta zona.");
-    addAlert('No hay autos disponibles en esta zona', 'warning')
-  }
-
-  return filteredCars;
-  // return filterByPreferences;
+  return nearbyCars;
 }
+
+// export function updateCars(cars, searchLocation, map ) {
+//   if (!searchLocation || !searchLocation.lat || !searchLocation.lng) {
+//     console.error("searchLocation no es válido");
+//     // alert('No hay autos disponibles en esta zona')
+//     return [];
+//   }
+
+//   console.log('[updateCars] search location tiene: ', searchLocation)
+//   const searchLatLng = new google.maps.LatLng(
+//     searchLocation.lat,
+//     searchLocation.lng
+//   );
+  
+//   const searchRadius = 10000;
+
+//   const filteredCars = cars.filter((car) => {
+//     if (!car.coordenadas) return false;
+    
+//     console.log(`[updateCars] Procesando coche ID: ${car.id}. Ubicación del coche:`, car.status?.currentLocation?.location, 'Buscando cerca de:', searchLocation);
+
+//     const carLatLng = new google.maps.LatLng(
+//       car.status?.currentLocation.location.lat,
+//       car.status?.currentLocation.location.lng
+//     );
+//     const distance = google.maps.geometry.spherical.computeDistanceBetween(
+//       searchLatLng,
+//       carLatLng
+//     );
+    
+//     return distance <= searchRadius;
+//   });
+
+//   if (map) {
+//     // centramos el mapa en la busqueda
+//     map.setCenter(searchLocation);
+//     map.setZoom(14);
+//   }
+
+//   if (filteredCars.length === 0) {
+//     console.warn("No hay autos cercanos en esta zona.");
+//     addAlert('No hay autos disponibles en esta zona', 'warning')
+//   }
+
+//   return filteredCars;
+//   // return filterByPreferences;
+// }
 
 
 // Maneja el autocompletado del buscador de Google Maps
@@ -509,12 +550,12 @@ export async function updateMapMarkers(map, cars, existingMarkers, iconUrl, onMa
   // 2. Crear nuevos marcadores
   cars.forEach(car => {
   if (car && car.status && car.status.currentLocation && car.status.currentLocation.location &&
-        typeof car.status.currentLocation.location.lat === 'number' &&
-        typeof car.status.currentLocation.location.lng === 'number') {
+        typeof car.status?.currentLocation.location.lat === 'number' &&
+        typeof car.status?.currentLocation.location.lng === 'number') {
 
       const position = {
-        lat: car.status.currentLocation.location.lat,
-        lng: car.status.currentLocation.location.lng
+        lat: car.status?.currentLocation.location.lat,
+        lng: car.status?.currentLocation.location.lng
       };
 
       const marker = new google.maps.Marker({

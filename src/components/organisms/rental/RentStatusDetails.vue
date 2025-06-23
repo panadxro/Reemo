@@ -173,14 +173,14 @@ watch(currentUser, (newUser, oldUser) => {
       <div class="mt-4 text-sm ">
         <div class="grid grid-cols-6 items-center border-b pb-4 mb-2">
           <div class="flex-shrink-0">
-            <img v-if="driverRentalDetail.vehicleDetails?.images && driverRentalDetail.vehicleDetails.images.length > 0"
-              :src="driverRentalDetail.vehicleDetails.images[0]"
-              :alt="`Imagen de ${driverRentalDetail.vehicleDetails?.marca} ${driverRentalDetail.vehicleDetails?.modelo}`"
+            <img v-if="driverRentalDetail.vehicleDetails?.photos && driverRentalDetail.vehicleDetails.photos.length > 0"
+              :src="driverRentalDetail.vehicleDetails.photos[0]"
+              :alt="`Imagen de ${driverRentalDetail.vehicleDetails?.basicInfo.brand} ${driverRentalDetail.vehicleDetails?.basicInfo.model}`"
               class="w-16 h-16 object-cover rounded-lg" />
             <div v-else class="h-14 w-14 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No img</div>
           </div>
           <div class="col-span-3 px-3 flex flex-col">
-            <p v-if="driverRentalDetail.vehicleDetails"><span class="font-semibold">Vehículo:</span> {{ driverRentalDetail.vehicleDetails.marca }} {{ driverRentalDetail.vehicleDetails.modelo }}</p>
+            <p v-if="driverRentalDetail.vehicleDetails"><span class="font-semibold">Vehículo:</span> {{ driverRentalDetail.vehicleDetails?.basicInfo.brand }} {{ driverRentalDetail.vehicleDetails?.basicInfo.model }}</p>
             <p><span class="font-semibold">Propietario:</span> {{ driverRentalDetail.ownerDetails?.name || 'No disponible' }}</p>
             <p><span class="font-semibold">Inicia:</span> {{ formatDate(driverRentalDetail.start_time) }}</p>
             <p><span class="font-semibold">Total:</span> ${{ driverRentalDetail.total_price?.toFixed(2) || 'N/A' }}</p>
@@ -219,14 +219,14 @@ watch(currentUser, (newUser, oldUser) => {
       <div class="mt-4 text-gray-500 font-bold text-sm">
         <div class="grid grid-cols-6 items-center border-b pb-4 mb-4">
           <div class="flex-shrink-0">
-            <img v-if="ownerRentalDetail.vehicleDetails?.images && ownerRentalDetail.vehicleDetails.images.length > 0"
-              :src="ownerRentalDetail.vehicleDetails.images[0]"
-              :alt="`Imagen de ${ownerRentalDetail.vehicleDetails?.marca} ${ownerRentalDetail.vehicleDetails?.modelo}`"
+            <img v-if="ownerRentalDetail.vehicleDetails?.photos && ownerRentalDetail.vehicleDetails.photos.length > 0"
+              :src="ownerRentalDetail.vehicleDetails.photos[0]"
+              :alt="`Imagen de ${ownerRentalDetail.vehicleDetails?.basicInfo.brand} ${ownerRentalDetail.vehicleDetails?.basicInfo.model}`"
               class="w-16 h-16 object-cover rounded-lg" />
             <div v-else class="h-14 w-14 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No img</div>
           </div>
           <div class="col-span-3 px-3 flex flex-col">
-            <p v-if="ownerRentalDetail.vehicleDetails"><strong>Vehículo:</strong> {{ ownerRentalDetail.vehicleDetails.marca }} {{ ownerRentalDetail.vehicleDetails.modelo }}</p>
+            <p v-if="ownerRentalDetail.vehicleDetails"><strong>Vehículo:</strong> {{ ownerRentalDetail.vehicleDetails?.basicInfo.brand }} {{ ownerRentalDetail.vehicleDetails?.basicInfo.model }}</p>
             <p><strong>Inquilino:</strong> {{ ownerRentalDetail.driverDetails?.name || 'No disponible' }}</p>
             <p><strong>Inicia:</strong> {{ formatDate(ownerRentalDetail.start_time) }}</p>
             <p><strong>Total:</strong> ${{ ownerRentalDetail.total_price?.toFixed(2) || 'N/A' }}</p>

@@ -8,20 +8,20 @@ export function filterByPreferences(cars, filters){
           car.pricing.rates.daily <= filters.maxPrice;
 
         const brand = filters.brand
-          ? car.marca.toLowerCase().includes(filters.brand.toLowerCase())
+          ? car.basicInfo.brand.toLowerCase().includes(filters.brand.toLowerCase())
           : true;
 
         const model = filters.model
-          ? car.modelo.toLowerCase().includes(filters.model.toLowerCase())
+          ? car.basicInfo.model.toLowerCase().includes(filters.model.toLowerCase())
           : true;
 
         const chassis = filters.chassis?.length 
           ? filters.chassis.some(filtro =>
-            removeAccents(car.chasis).toLowerCase().includes(removeAccents(filtro))
+            removeAccents(car.basicInfo.type).toLowerCase().includes(removeAccents(filtro))
           )
           : true;
 
-        const transmission = filters.transmission ? car.transmision === filters.transmission : true;
+        const transmission = filters.transmission ? car.specifications.transmission === filters.transmission : true;
 
         const result = matchesPrice && brand && model && transmission && chassis;
         // console.log(`${car.marca} ${car.modelo} - Match`, result);
