@@ -53,19 +53,19 @@ function setupRentalSubscription() {
 }
 async function initializeMap(details) {
   // Cambiar las coordenadas por la nueva coleccion de "cars"
-  if (details && details.vehicleData?.coordenadas && !mapInitialized.value){
+  if (details && details.vehicleData?.status.currentLocation.location && !mapInitialized.value){
     try {
       console.log('[RentalDetailsView] Intentando iniciar el mapa');
       await loadGoogleMaps();
       const mapInstance = await initMap('map');
       if (mapInstance) {
         map.value = mapInstance;
-        const vehicleCoords = details.vehicleData.coordenadas;
+        const vehicleCoords = details.vehicleData?.status.currentLocation.location;
         if (typeof vehicleCoords.lat === 'number' && typeof vehicleCoords.lng === 'number') {
           map.value.setCenter(vehicleCoords);
           map.value.setZoom(15);
           const { Marker } = await google.maps.importLibrary("marker");
-          new Marker({ position: vehicleCoords, map: map.value, title: `${details.vehicleData.marca} ${details.vehicleData.modelo}` });
+          new Marker({ position: vehicleCoords, map: map.value, title: `${details.vehicleData?.basicInfo.brand} ${details.vehicleData?.basicInfo.model}` });
           mapInitialized.value = true;
         } else {
           console.warn('[RentalDetailsView]: Coordenadas del vehículo no disponibles o inválidas para centrar el mapa.');
@@ -240,7 +240,17 @@ onMounted(() => {
               'bg-blue-500 text-white': rentalDetails.status === 'confirmed' || rentalDetails.status === 'in_progress',
               'bg-green-500 text-white': rentalDetails.status === 'completed',
               'bg-red-500 text-white': rentalDetails.status === 'cancelled_by_user' || rentalDetails.status === 'cancelled_by_owner' || rentalDetails.status === 'rejected' || rentalDetails.status === 'expired',
-            }">{{ rentalDetails.status.replace(/_/g, ' ') }}</span>
+            }">
+            {{ 
+              rentalDetails.status === "pending" ? "Pendiente" : 
+              rentalDetails.status === "confirmed" ? "Confirmada" : 
+              rentalDetails.status === "rejected" ? "Rechazada" : 
+              rentalDetails.status === "cancelled_by_user" ? "Cancelada por el conductor" : 
+              rentalDetails.status === "cancelled_by_owner" ? "Cancelada por el propietario" : 
+              rentalDetails.status === "returned_by_driver" ? "Devuelta por el conductor" : 
+              rentalDetails.status === "completed" ? "Completado" : 
+              rentalDetails.status === "in_progress" ? "En progreso" : "N/A" }}
+            </span>
 
         </div>
         <div class="border-t border-white/20 my-2"></div>
@@ -268,11 +278,11 @@ onMounted(() => {
       </div>
 
       <div class="flex items-center gap-2 border rounded-xl p-3">
-        <img :src="rentalDetails.vehicleData?.images[0]" :alt="rentalDetails.vehicleData?.marca" alt="auto"
+        <img :src="rentalDetails.vehicleData?.photos[0]" :alt="rentalDetails.vehicleData?.basicInfo.brand" alt="auto"
           class="w-12 h-8 object-contain" />
         <div>
-          <p class="font-semibold">{{ rentalDetails.vehicleData.marca }} {{ rentalDetails.vehicleData.modelo }}</p>
-          <p class="text-sm">{{ rentalDetails.vehicleData.patente }}</p>
+          <p class="font-semibold">{{ rentalDetails.vehicleData?.basicInfo.brand }} {{ rentalDetails.vehicleData?.basicInfo.model }}</p>
+          <p class="text-sm">{{ rentalDetails.vehicleData?.basicInfo.licensePlate  }}</p>
         </div>
       </div>
 
@@ -336,7 +346,7 @@ onMounted(() => {
       <div class="grid grid-cols-4 gap-4">
         <div class="bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-md">
           <span class="text-sm font-medium text-gray-500">Ubicación</span>
-          <span class="text-[#0D0D3C] font-semibold">{{ rentalDetails.vehicleData.direccion }}</span>
+          <span class="text-[#0D0D3C] font-semibold">{{ rentalDetails.vehicleData?.status.currentLocation.address }}</span>
         </div>
         <div class="bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-md">
           <span class="text-sm font-medium text-gray-500">Velocidad</span>
@@ -394,11 +404,11 @@ onMounted(() => {
         <!-- Vehículo -->
         <div class="border-b pb-4">
           <h3 class="font-semibold text-lg">🚗 Vehículo</h3>
-          <p><strong>Marca / Modelo:</strong> {{ rentalDetails.vehicleData?.marca }} {{
-            rentalDetails.vehicleData?.modelo }} ({{ rentalDetails.vehicleData.año }})</p>
-          <p><strong>Patente:</strong> {{ rentalDetails.vehicleData?.patente }}</p>
-          <p><strong>Transmisión:</strong> {{ rentalDetails.vehicleData?.transmision }}</p>
-          <p><strong>Combustible:</strong> {{ rentalDetails.vehicleData?.combustible }}</p>
+          <p><strong>Marca / Modelo:</strong> {{ rentalDetails.vehicleData?.basicInfo.brand }} {{
+            rentalDetails.vehicleData?.basicInfo.model }} ({{ rentalDetails.vehicleData?.basicInfo.year }})</p>
+          <p><strong>Patente:</strong> {{ rentalDetails.vehicleData?.basicInfo.licensePlate }}</p>
+          <p><strong>Transmisión:</strong> {{ rentalDetails.vehicleData?.specifications.transmission }}</p>
+          <p><strong>Combustible:</strong> {{ rentalDetails.vehicleData?.specifications.fuelType }}</p>
           <p><strong>Extras:</strong> {{ rentalDetails.vehicleData.extras?.join(', ') || 'Ninguno' }}</p>
         </div>
 
@@ -420,8 +430,8 @@ onMounted(() => {
         <!-- Ubicaciones -->
         <div class="border-b pb-4">
           <h3 class="font-semibold text-lg">📍 Ubicaciones</h3>
-          <p><strong>Retiro:</strong> {{ rentalDetails.vehicleData.direccion }}</p>
-          <p><strong>Devolución:</strong> {{ rentalDetails.vehicleData.direccion }}</p>
+          <p><strong>Retiro:</strong> {{ rentalDetails.vehicleData?.status.currentLocation.address }}</p>
+          <p><strong>Devolución:</strong> {{ rentalDetails.vehicleData?.status.currentLocation.address }}</p>
         </div>
 
         <!-- Pago -->

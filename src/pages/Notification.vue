@@ -192,7 +192,7 @@ const handleNotificationClick = async (notification) => {
                           noti.rentDetails.status === "rejected" ? "Rechazada" : 
                           noti.rentDetails.status === "cancelled_by_user" ? "Cancelada por el conductor" : 
                           noti.rentDetails.status === "cancelled_by_owner" ? "Cancelada por el propietario" : 
-                          noti.rentDetails.status === "completed" ? "Completada" : 
+                          noti.rentDetails.status === "completed" ? "Completado" : 
                           noti.rentDetails.status === "in_progress" ? "En progreso" : "N/A" }}
                       </span>
                     </p>

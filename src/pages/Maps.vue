@@ -32,7 +32,7 @@ const map = ref(null);
 const markers = ref([]); 
 const loading = ref(false);
 const showSuggestions = ref(false);
-const initialLocation = ref(false)
+// const initialLocation = ref(false);
 
 // This 'car' object was used in the original template for static owner info
 // when a car is selected. It's kept for template compatibility.
@@ -66,7 +66,7 @@ const filterCars = async () => {
     map.value.setZoom(14); // Adjust zoom as needed
     // Filter cars based on the current searchLocation
     console.log('[Maps.vue filterCars] Llamando a updateCars con searchLocation válida.');
-    filteredCars.value = updateCars(cars.value, searchLocation.value, map.value);
+    filteredCars.value = updateCars(cars.value, searchLocation.value);
     console.log('[Maps.vue filterCars] updateCars devolvió filteredCars.value.length:', filteredCars.value.length);
   } else {
     // If no valid search location, show all cars (or handle as per requirements)
@@ -168,40 +168,11 @@ const useMyLocation = async () => {
 };
 
 onMounted(async () => {
-  await loadGoogleMaps(); 
-  map.value = await initMap('map'); 
-  initAutocomplete('searchInput', handlePlaceSelected); 
-
-  try {
-    const initialPlace = await getCurrentLocation();
-    
-    searchLocation.value = initialPlace.location;
-    searchQuery.value = initialPlace.formattedAddress;
-    if (map.value && searchLocation.value ) {
-        map.value.setCenter(searchLocation.value);
-        map.value.setZoom(14);
-        console.log('[Maps.vue onMounted] Ubicación inicial obtenida y mapa centrado 👌👌.', JSON.parse(JSON.stringify(searchLocation.value)));
-    }
-    // Si los coches ya se cargaron (por el watch de autenticación) antes de que la geolocalización terminara,
-    // necesitamos re-filtrarlos ahora con la searchLocation obtenida.
-    if (cars.value.length > 0) {
-      console.log('[Maps.vue onMounted] Geolocalización obtenida, re-filtrando coches.');
-      await filterCars();
-    }
-    console.log('[Maps.vue onMounted] Ubicación inicial obtenida y mapa centrado.');
-  } catch (error) {
-    console.warn("[Maps.vue onMounted] No se pudo obtener la ubicación inicial:", error);
-    // Si los coches ya se cargaron, y searchLocation es null, filterCars (si se llama) mostrará todos.
-    // Si getCurrentLocation falla, searchLocation.value seguirá siendo null.
-    // Si cars.value.length > 0, y llamamos a filterCars(), se mostrarán todos.
-    if (cars.value.length > 0) {
-      console.log('[Maps.vue onMounted] Geolocalización falló o denegada, asegurando que se muestren todos los coches si ya están cargados.');
-      await filterCars(); // searchLocation será null, así que mostrará todos.
-    }
-  } finally {
-    initialLocation.value = true;
-  }
-
+  await loadGoogleMaps();
+  map.value = await initMap('map');
+  initAutocomplete('searchInput', handlePlaceSelected);
+  
+  console.log('[Maps.vue onMounted] Montado. La geolocalización se activará manualmente por el usuario.');
 });
 
 watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser, initialized]) => {

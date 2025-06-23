@@ -587,7 +587,7 @@ onBeforeUnmount(() => {
                 :outline="true"
                 required />
               <Input
-                type="text"
+                type="number"
                 v-model.number="basicInfo.kilometers"
                 name="kilometers"
                 id="kilometers"
@@ -683,7 +683,7 @@ onBeforeUnmount(() => {
             </div> 
             <div class="flex gap-5">
               <Input
-                type="text"
+                type="number"
                 v-model.number="specifications.autonomy"
                 placeholder="Autonomía"
                 name="autonomy"
@@ -692,7 +692,7 @@ onBeforeUnmount(() => {
                 :outline="true"
                 required />
               <Input
-                type="text"
+                type="number"
                 v-model.number="specifications.doors"
                 name="doors"
                 id="doors"
@@ -701,7 +701,7 @@ onBeforeUnmount(() => {
                 :outline="true"
                 required />
               <Input
-                type="text"
+                type="number"
                 v-model.number="specifications.seats"
                 name="seats"
                 id="seats"

@@ -76,29 +76,29 @@ onMounted(() =>{
       @click="$router.push(`/rental-details/${car.id}`)">
       <div class="flex gap-6">
         <div class="relative flex-shrink-0">
-          <img :src="car.vehicleDetails.images?.[0] || '@/assets/car-placeholder.png'" 
-            :alt="car.vehicleDetails.marca + ' ' + car.vehicleDetails.modelo" 
+          <img :src="car.vehicleDetails.photos?.[0] || '@/assets/car-placeholder.png'" 
+            :alt="car.vehicleDetails.basicInfo.brand + ' ' + car.vehicleDetails.basicInfo.model" 
             class="object-cover rounded-xl w-32 h-28 sm:w-36 sm:h-32" />
         </div>
 
         <div class="flex-1 space-y-2">
           <div class="flex justify-between items-start">
             <h3 class="font-bold text-primary-900 leading-tight text-lg">
-              {{ car.vehicleDetails.marca }} {{ car.vehicleDetails.modelo }}
+              {{ car.vehicleDetails.basicInfo.brand }} {{ car.vehicleDetails.basicInfo.model }}
             </h3>
             <span class="text-primary-800 font-bold flex-shrink-0 ml-2 text-sm">
-              ${{ car.vehicleDetails.precio }}/día
+              <!-- ${{ car.vehicleDetails.precio }}/día -->
             </span>
           </div>
 
           <p class="text-background-600 text-sm">
-            {{ car.vehicleDetails.año }} • {{ car.vehicleDetails.combustible }} • {{ car.vehicleDetails.transmision }}
+            {{ car.vehicleDetails.basicInfo.year }} • {{ car.vehicleDetails.specifications.fuelType }} • {{ car.vehicleDetails.specifications.transmission }}
           </p>
 
           <!-- Cambiar info como queiran -->
           <div class="flex gap-2 flex-wrap">
             <span class="bg-vibrant-light-600 text-primary-900 px-2 py-1 rounded-lg text-xs">
-              {{ car.status }}
+              <!-- {{ car.status }} -->
             </span>
           </div>
 
