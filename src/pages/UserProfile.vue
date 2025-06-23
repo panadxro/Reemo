@@ -59,11 +59,8 @@ export default {
 
     const userCars = computed(() => carStore.userCars);
     const loggedUserId = computed(() => authStore.user?.id);
-
     const userIdFromRoute = computed(() => route.params.id); 
-
     const isOwnProfile = computed(() => loggedUserId.value === userIdFromRoute.value);
-
 
     const displayedPaymentMethods = computed(() => {
       if (!paymentStore.paymentMethods.length) return [];
@@ -72,9 +69,9 @@ export default {
         : paymentStore.paymentMethods.slice(0, 2);
     }); 
 
-  const hasMoreMethods = computed(() => {
-    return paymentStore.paymentMethods.length > 2;
-  });
+    const hasMoreMethods = computed(() => {
+      return paymentStore.paymentMethods.length > 2;
+    });
 
     const showProfile = computed(() => {
       return isOwnProfile.value ? userStore.profileData : userStore.visitedProfileData
@@ -83,59 +80,72 @@ export default {
     watch(userIdFromRoute, async (newUserId, oldUserId) => {
       if (newUserId !== oldUserId) {
         await userStore.loadUserProfile(newUserId);
+        // También cargar los autos cuando cambie el usuario
+        if (newUserId) {
+          try {
+            await carStore.loadUserCars(newUserId);
+          } catch (error) {
+            console.error("Error cargando autos del usuario:", error);
+          }
+        }
       }
     });
 
     const toggleShowAllMethods = () => {
-  showAllPaymentMethods.value = !showAllPaymentMethods.value;
-};
+      showAllPaymentMethods.value = !showAllPaymentMethods.value;
+    };
 
-const toggleNewPaymentForm = () => {
-  showNewPaymentForm.value = !showNewPaymentForm.value;
-  if (showNewPaymentForm.value) {
-    paymentStore.resetNewPaymentMethodForm();
-  }
-};
+    const toggleNewPaymentForm = () => {
+      showNewPaymentForm.value = !showNewPaymentForm.value;
+      if (showNewPaymentForm.value) {
+        paymentStore.resetNewPaymentMethodForm();
+      }
+    };
 
-const removePaymentMethod = (index) => {
-  paymentMethodToDelete.value = {
-    index: index,
-    method: paymentStore.paymentMethods[index]
-  };
-  showDeleteModal.value = true;
-};
+    const removePaymentMethod = (index) => {
+      paymentMethodToDelete.value = {
+        index: index,
+        method: paymentStore.paymentMethods[index]
+      };
+      showDeleteModal.value = true;
+    };
 
-const confirmDeletePaymentMethod = async () => {
-  if (paymentMethodToDelete.value !== null) {
-    await paymentStore.removePaymentMethod(
-      loggedUserId.value, 
-      paymentMethodToDelete.value.index
-    );
-    showDeleteModal.value = false;
-    paymentMethodToDelete.value = null;
-  }
-};
+    const confirmDeletePaymentMethod = async () => {
+      if (paymentMethodToDelete.value !== null) {
+        await paymentStore.removePaymentMethod(
+          loggedUserId.value, 
+          paymentMethodToDelete.value.index
+        );
+        showDeleteModal.value = false;
+        paymentMethodToDelete.value = null;
+      }
+    };
 
-const saveNewPaymentMethod = async () => {
-  const Check = await paymentStore.saveNewPaymentMethod(loggedUserId.value);
-  if (Check) {
-    showNewPaymentForm.value = false;
-  }
-};
+    const saveNewPaymentMethod = async () => {
+      const check = await paymentStore.saveNewPaymentMethod(loggedUserId.value);
+      if (check) {
+        showNewPaymentForm.value = false;
+      }
+    };
 
     onMounted(async () => {
-      await userStore.loadUserProfile(userIdFromRoute.value);
-      // console.error("User is not logged in", userIdFromRoute.value)
+      try {
+        // Cargar perfil del usuario
+        await userStore.loadUserProfile(userIdFromRoute.value);
 
-      // Fetch a los autos del usuaroi
-      await carStore.loadUserCars(userIdFromRoute.value);
-      console.log('Autos del usuario', carStore.userCars)
+        // Fetch a los autos del usuario
+        await carStore.loadUserCars(userIdFromRoute.value);
+        console.log('Autos del usuario', carStore.userCars)
 
-      if(loggedUserId.value && isOwnProfile.value){
-        if(!userStore.profileData.profileCompleted){
-          router.push('/onboarding')
+        // Si es el perfil propio, verificar si está completo y cargar métodos de pago
+        if (loggedUserId.value && isOwnProfile.value) {
+          if (!userStore.profileData.profileCompleted) {
+            router.push('/onboarding');
+          }
+          await paymentStore.fetchPaymentMethods(loggedUserId.value);
         }
-        await paymentStore.fetchPaymentMethods(loggedUserId.value);
+      } catch (error) {
+        console.error("Error en onMounted:", error);
       }
     });
     

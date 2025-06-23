@@ -1,6 +1,7 @@
 <script setup>
-import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive } from 'vue';
+import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch } from 'vue';
 import { useAuthStore, useUserStore, useCarStore } from '@stores'
+import { loadGoogleMaps, initAutocomplete } from "../services/google-maps.js"; 
 import { useRouter } from "vue-router";
 import { addAlert } from "../services/alerts.js";
 
@@ -41,6 +42,7 @@ const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
 
 const currentStep = ref(0);
+const autocompleteInitialized = ref(false);
 
 const justifyClass = computed(() => ({
   'justify-start': currentStep.value <= 1,
@@ -194,8 +196,7 @@ const validateStep = (step) => {
       return true;
 
     case 6: // Información de seguro
-      if (!insurance.value.number || !insurance.value.company || 
-          !insurance.value.type || !insurance.value.expirationDate) {
+      if (!insurance.value.number || !insurance.value.company || !insurance.value.type) {
         addAlert('Por favor completa todos los campos de información de seguro', 'error');
         return false;
       }
@@ -392,6 +393,34 @@ onMounted(async () => {
   }
 });
 
+watch(currentStep, async (newStep) => {  
+  if (newStep === 3 && !autocompleteInitialized.value) {  
+    // const addressInput = document.getElementById('carRegisterAddressInput');
+    // if(!addressInput){
+    //   console.warn('[CarRegister] input de dirección no encontrado', addressInput);
+    //   setTimeout(() => {}, 100);
+    //   return;
+    // }
+    try {
+      await loadGoogleMaps();
+      initAutocomplete('carRegisterAddressInput', (placeData) => {
+        if (placeData && status.value && status.value.currentLocation) {
+          // Actualizar el store directamente o mediante una acción
+          carStore.updateCarCurrentLocation({
+            address: placeData.formattedAddress,
+            location: placeData.location // {lat, lng}
+          });
+          // Opcional: podrías extraer y guardar ciudad/país aquí si es necesario
+        }
+      });
+      autocompleteInitialized.value = true;
+    } catch (error) {
+      console.error("Error al inicializar autocompletado de dirección en CarRegister:", error);
+      addAlert('No se pudo inicializar la búsqueda de direcciones.', 'error');
+    }
+  }
+});
+
 onBeforeUnmount(() => {
   // window.removeEventListener('beforeunload', handleBeforeUnload);
 });
@@ -496,7 +525,7 @@ onBeforeUnmount(() => {
             <div class="flex gap-5">
               <Input
                 type="select"
-                v-model="basicInfo.year"
+                v-model.number="basicInfo.year"
                 name="year"
                 id="year"
                 placeholder="Año"
@@ -558,8 +587,8 @@ onBeforeUnmount(() => {
                 :outline="true"
                 required />
               <Input
-                type="text"
-                v-model="basicInfo.kilometers"
+                type="number"
+                v-model.number="basicInfo.kilometers"
                 name="kilometers"
                 id="kilometers"
                 placeholder="Kilometraje"
@@ -654,8 +683,8 @@ onBeforeUnmount(() => {
             </div> 
             <div class="flex gap-5">
               <Input
-                type="text"
-                v-model="specifications.autonomy"
+                type="number"
+                v-model.number="specifications.autonomy"
                 placeholder="Autonomía"
                 name="autonomy"
                 id="autonomy"
@@ -663,8 +692,8 @@ onBeforeUnmount(() => {
                 :outline="true"
                 required />
               <Input
-                type="text"
-                v-model="specifications.doors"
+                type="number"
+                v-model.number="specifications.doors"
                 name="doors"
                 id="doors"
                 placeholder="Puertas"
@@ -672,8 +701,8 @@ onBeforeUnmount(() => {
                 :outline="true"
                 required />
               <Input
-                type="text"
-                v-model="specifications.seats"
+                type="number"
+                v-model.number="specifications.seats"
                 name="seats"
                 id="seats"
                 placeholder="Asientos"
@@ -727,7 +756,10 @@ onBeforeUnmount(() => {
             <Loading v-if="loading" role="status" />
           </div>
           <div class="flex flex-col gap-5">
-            <Input type="text" placeholder="Direccion" :variant="'secondary'" :outline="true" iconPosition="right" required>
+            <Input
+              id="carRegisterAddressInput"
+              v-model="status.currentLocation.address"
+              type="text" placeholder="Direccion" :variant="'secondary'" :outline="true" iconPosition="right" required>
               <template #icon>
                 <Search color="#7b7b7b"/>
               </template>
@@ -805,8 +837,8 @@ onBeforeUnmount(() => {
           <DropdownForm title="Tarifa base" :section-id="'section-2'" :dropdown-id="'tarifa'" :is-initial="true">
             <div class="flex gap-5">
               <Input
-                type="text"
-                v-model="pricing.rates.daily"
+                type="number"
+                v-model.number="pricing.rates.daily"
                 name="daily"
                 id="daily"
                 placeholder="Diaria"
@@ -814,8 +846,8 @@ onBeforeUnmount(() => {
                 :outline="true"
                 required />
               <Input
-                type="text"
-                v-model="pricing.rates.weekly"
+                type="number"
+                v-model.number="pricing.rates.weekly"
                 name="weekly"
                 id="weekly"
                 placeholder="Semanal"
@@ -823,8 +855,8 @@ onBeforeUnmount(() => {
                 :outline="true"
                 required />
               <Input
-                type="text"
-                v-model="pricing.rates.monthly"
+                type="number"
+                v-model.number="pricing.rates.monthly"
                 name="monthly"
                 id="monthly"
                 placeholder="Mensual"
@@ -841,7 +873,7 @@ onBeforeUnmount(() => {
             <div class="flex gap-5">
               <Input
                 type="select"
-                v-model="pricing.mileagePolicy.includedPerDay"
+                v-model.number="pricing.mileagePolicy.includedPerDay"
                 name="km-incluidos"
                 id="km-incluidos"
                 placeholder="KM incluidos/día"
@@ -881,7 +913,7 @@ onBeforeUnmount(() => {
           <DropdownForm color="" title="Depósito de seguridad" :section-id="'section-2'" :dropdown-id="'seguridad'">
               <Input 
                 type="number" 
-                v-model="pricing.securityDeposit" 
+                v-model.number="pricing.securityDeposit" 
                 name="security-deposit" 
                 id="security-deposit" 
                 placeholder="Monto total del depósito" 
@@ -964,7 +996,7 @@ onBeforeUnmount(() => {
           <div class="flex flex-col gap-5">
             <Input 
               type="tel" 
-              v-model="insurance.number" 
+              v-model.number="insurance.number" 
               name="number-insurance" 
               id="number-insurance" 
               placeholder="Número de póliza" 
@@ -1004,10 +1036,9 @@ onBeforeUnmount(() => {
               ]"
               icon-position="right"
               variant="secondary"
-              :outline="false"
+              :outline="true"
               class="w-full cursor-pointer"
             />
-
             <!-- Ciudad/Localidad -->
             <Input
               type="select"

@@ -90,35 +90,35 @@ export function getUserCars(userId) {
 }
 
 // Habia que actualizar estan funcion porque quedaron los datos viejos
-export async function getAvailableCars(userId) {
-  const carsCollection = collection(db, "cars");
-  const rentedCollection = collection(db, "rents");
+  export async function getAvailableCars(userId) {
+    const carsCollection = collection(db, "cars");
+    const rentedCollection = collection(db, "rents");
+  
+    // Consulta para obtener autos disponibles y validados
+    const carsQuery = query(
+      carsCollection,
+      where("status.current", "==", "available"),
+      // where("isValidated", "==", true)
+    );
+    const carsSnapshot = await getDocs(carsQuery);
+  
+    // Consulta para obtener solicitudes de alquiler con estado "aceptado"
+    const activeRentsQuery  = query(
+      rentedCollection,
+      where("status", "in", ['confirmed', 'in_progress'])
+    );
+    const activeRentsSnapshot  = await getDocs(activeRentsQuery);
+  
+    // Obtener los IDs de los autos con solicitudes "aceptado"
+    const rentedVehicleIds  = new Set(activeRentsSnapshot.docs.map((doc) => doc.data().vehicle_id));
+  
+    return carsSnapshot.docs
+      .map((doc) => ({ id: doc.id, ...doc.data() }))
+      .filter(
+        (car) =>
+          car.ownerId !== userId && // El auto no pertenece al usuario actual
+          !rentedVehicleIds.has(car.id) // El auto no está en la lista de IDs de vehículos activamente alquilados
+      );
+  }
 
-  // Consulta para obtener todos los autos (antes filtrabamos isAvailable e isValidates, despues habria que volverlo a agregar)
-  const carsQuery = query(carsCollection);
-  const carsSnapshot = await getDocs(carsQuery);
 
-  // Para obtener solicitudes de alquiler con estado "aceptado"
-  const activeRentsQuery = query(
-    rentedCollection,
-    where("status", "in", ['confirmed', 'in_progress'])
-  );
-  const activeRentsSnapshot = await getDocs(activeRentsQuery);
-
-  // para obtener los ids de esos autos y despues filtrarlo
-  const rentedVehicleIds = new Set(activeRentsSnapshot.docs.map((doc) => doc.data().vehicle_id));
-
-  return carsSnapshot.docs
-    .map((doc) => ({ id: doc.id, ...doc.data() }))
-    .filter((car) => {
-      const isNotOwner = car.ownerId !== userId;
-      
-      // Filtrar por status disponible
-      const isAvailable = car.status?.current === 'available';
-      
-      // y si el auto no está alquilado
-      const isNotRented = !rentedVehicleIds.has(car.id);
-      
-      return isNotOwner && isAvailable && isNotRented;
-    });
-}

@@ -197,5 +197,5 @@ export const useAuthStore = defineStore('auth', {
     setUnreadNotifications(status){
       this.unreadNotifications = status;
     }
-  }
+  },
 })
