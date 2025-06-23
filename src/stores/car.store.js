@@ -13,7 +13,7 @@ export const useCarStore = defineStore("car", {
         type: '',
         color: '',
         licensePlate: '',
-        kilometers: null
+        kilometers: 0
       },
       specifications: {
         engine: '',
@@ -52,9 +52,9 @@ export const useCarStore = defineStore("car", {
       },
       pricing: {
         rates: {
-          daily: null,
-          weekly: null,
-          monthly: null
+          daily: 0,
+          weekly: 0,
+          monthly: 0
         },
         mileagePolicy: {
           includedPerDay: null,

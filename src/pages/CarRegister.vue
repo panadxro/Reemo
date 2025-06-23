@@ -525,7 +525,7 @@ onBeforeUnmount(() => {
             <div class="flex gap-5">
               <Input
                 type="select"
-                v-model="basicInfo.year"
+                v-model.number="basicInfo.year"
                 name="year"
                 id="year"
                 placeholder="Año"
@@ -588,7 +588,7 @@ onBeforeUnmount(() => {
                 required />
               <Input
                 type="text"
-                v-model="basicInfo.kilometers"
+                v-model.number="basicInfo.kilometers"
                 name="kilometers"
                 id="kilometers"
                 placeholder="Kilometraje"
@@ -684,7 +684,7 @@ onBeforeUnmount(() => {
             <div class="flex gap-5">
               <Input
                 type="text"
-                v-model="specifications.autonomy"
+                v-model.number="specifications.autonomy"
                 placeholder="Autonomía"
                 name="autonomy"
                 id="autonomy"
@@ -693,7 +693,7 @@ onBeforeUnmount(() => {
                 required />
               <Input
                 type="text"
-                v-model="specifications.doors"
+                v-model.number="specifications.doors"
                 name="doors"
                 id="doors"
                 placeholder="Puertas"
@@ -702,7 +702,7 @@ onBeforeUnmount(() => {
                 required />
               <Input
                 type="text"
-                v-model="specifications.seats"
+                v-model.number="specifications.seats"
                 name="seats"
                 id="seats"
                 placeholder="Asientos"
@@ -848,7 +848,7 @@ onBeforeUnmount(() => {
             <div class="flex gap-5">
               <Input
                 type="number"
-                v-model="pricing.rates.daily"
+                v-model.number="pricing.rates.daily"
                 name="daily"
                 id="daily"
                 placeholder="Diaria"
@@ -857,7 +857,7 @@ onBeforeUnmount(() => {
                 required />
               <Input
                 type="number"
-                v-model="pricing.rates.weekly"
+                v-model.number="pricing.rates.weekly"
                 name="weekly"
                 id="weekly"
                 placeholder="Semanal"
@@ -866,7 +866,7 @@ onBeforeUnmount(() => {
                 required />
               <Input
                 type="number"
-                v-model="pricing.rates.monthly"
+                v-model.number="pricing.rates.monthly"
                 name="monthly"
                 id="monthly"
                 placeholder="Mensual"
@@ -883,7 +883,7 @@ onBeforeUnmount(() => {
             <div class="flex gap-5">
               <Input
                 type="select"
-                v-model="pricing.mileagePolicy.includedPerDay"
+                v-model.number="pricing.mileagePolicy.includedPerDay"
                 name="km-incluidos"
                 id="km-incluidos"
                 placeholder="KM incluidos/día"
@@ -923,7 +923,7 @@ onBeforeUnmount(() => {
           <DropdownForm title="Depósito de seguridad" :section-id="'section-2'" :dropdown-id="'seguridad'">
               <Input 
                 type="number" 
-                v-model="pricing.securityDeposit" 
+                v-model.number="pricing.securityDeposit" 
                 name="security-deposit" 
                 id="security-deposit" 
                 placeholder="Monto total del depósito" 
@@ -1006,7 +1006,7 @@ onBeforeUnmount(() => {
           <div class="flex flex-col gap-5">
             <Input 
               type="tel" 
-              v-model="insurance.number" 
+              v-model.number="insurance.number" 
               name="number-insurance" 
               id="number-insurance" 
               placeholder="Número de póliza" 
