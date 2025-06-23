@@ -26,7 +26,7 @@ async function getPrivateChatDocument(senderId, receiverId) {
 
     if(cacheDoc) return cacheDoc;
 
-    const privateChatRef = collection(db, `private-chats`);
+    const privateChatRef = collection(db, `chats`);
 
     const privateChatQuery = query(privateChatRef, where('users', '==', {
         [senderId]: true,
@@ -55,7 +55,7 @@ async function getPrivateChatDocument(senderId, receiverId) {
 export async function savePrivateChatMessage(senderId, receiverId, text) {
     const privateChatDoc = await getPrivateChatDocument(senderId, receiverId);
 
-    const messagesRef = collection(db, `private-chats/${privateChatDoc.id}/messages`);
+    const messagesRef = collection(db, `chats/${privateChatDoc.id}/messages`);
 
     await addDoc(messagesRef, {
         user_id: senderId,
@@ -67,7 +67,7 @@ export async function savePrivateChatMessage(senderId, receiverId, text) {
 export async function subscribeToPrivateChatMessages(senderId, receiverId, callback) {
     const chatDocument = await getPrivateChatDocument(senderId, receiverId);
 
-    const messagesRef = collection(db, `private-chats/${chatDocument.id}/messages`);
+    const messagesRef = collection(db, `chats/${chatDocument.id}/messages`);
 
     const messagesQuery = query(messagesRef, orderBy('created_at'));
 
