@@ -53,8 +53,8 @@ import { collection, doc, getDoc, addDoc, serverTimestamp, query, where, getDocs
     // Consulta para obtener autos disponibles y validados
     const carsQuery = query(
       carsCollection,
-      where("isAvailable", "==", true),
-      where("isValidated", "==", true)
+      where("status.current", "==", "available"),
+      // where("isValidated", "==", true)
     );
     const carsSnapshot = await getDocs(carsQuery);
   
@@ -76,6 +76,51 @@ import { collection, doc, getDoc, addDoc, serverTimestamp, query, where, getDocs
           !rentedVehicleIds.has(car.id) // El auto no está en la lista de IDs de vehículos activamente alquilados
       );
   }
+
+//   export async function getAvailableCars(userId) {
+//     const carsCollectionRef = collection(db, "cars");
+//     // Puedes añadir filtros aquí si es necesario, por ejemplo:
+//     const q = query(carsCollectionRef, where("status.current", "==", "available"));
+//     // O si necesitas filtrar por ownerId si userId se proporciona:
+//     // const q = userId ? query(carsCollectionRef, where("ownerId", "==", userId)) : query(carsCollectionRef);
+//     //const q = query(carsCollectionRef); // Consulta simple para obtener todos los coches por ahora
+
+//     try {
+//         const querySnapshot = await getDocs(q);
+//         const cars = [];
+//         querySnapshot.forEach((doc) => {
+//             const carData = doc.data();
+//             const carId = doc.id;
+
+//             // Verificación de la estructura esperada (opcional pero recomendado para depuración)
+//             if (
+//                 carData.status &&
+//                 carData.status.currentLocation &&
+//                 carData.status.currentLocation.location &&
+//                 typeof carData.status.currentLocation.location.lat === 'number' &&
+//                 typeof carData.status.currentLocation.location.lng === 'number'
+//             ) {
+//                 cars.push({
+//                     id: carId,
+//                     ...carData
+//                 });
+//             } else {
+//                 // Si un coche no cumple con la estructura, se registra un error y se omite.
+//                 // Esto te ayuda a identificar datos que necesitan ser migrados o corregidos en Firestore.
+//                 console.warn(
+//                     `[car-service] Coche con ID '${carId}' omitido. ` +
+//                     `No tiene la estructura de ubicación esperada (status.currentLocation.location):`,
+//                     JSON.parse(JSON.stringify(carData)) // Loguear una copia para evitar problemas con Proxies
+//                 );
+//             }
+//         });
+//         return cars;
+//     } catch (error) {
+//         console.error("Error al obtener vehículos disponibles desde car-service:", error);
+//         // Es buena práctica re-lanzar el error para que el componente que llama pueda manejarlo.
+//         throw error;
+//     }
+// }
   
   
 

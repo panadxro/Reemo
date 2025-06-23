@@ -150,7 +150,7 @@ export default {
       :start-time="selectedTime"
       :end-date="rentedUntilDate"
       :end-time="selectedUntilTime"
-      :daily-price="car.precio"
+      :daily-price="car.pricing.rates.daily"
       @total-updated="handleTotalUpdate"
     />
     

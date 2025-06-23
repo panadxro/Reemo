@@ -25,13 +25,13 @@ export const useCarStore = defineStore("car", {
         seats: null
       },
       status: {
-        current: 'available', // Agregué valor por defecto
+        current: 'available',
         description: null,
         currentLocation: {
           address: '',
           city: '',
           country: '',
-          coordinates: ''
+          location: null,
         },
         timesRented: null
       },
@@ -93,6 +93,7 @@ export const useCarStore = defineStore("car", {
       },
       id: null,
     },
+    userCars: [],
     allAccessoryOptions: [
       { value: 'touchScreen', label: 'Pantalla táctil' },
       { value: 'appleCarPlayAndroidAuto', label: 'Apple CarPlay/Android Auto' },
@@ -150,7 +151,6 @@ export const useCarStore = defineStore("car", {
     },
 
     async saveCar(carData) {
-      // await createCarData(uid);
       try {
         this.loading = true;
         // Asegurarnos que tenemos un ID
@@ -172,6 +172,7 @@ export const useCarStore = defineStore("car", {
         this.loading = false;
       }
     },
+
     async updateCar(carId, carData) {
       this.loading = true;
       try {
@@ -184,6 +185,7 @@ export const useCarStore = defineStore("car", {
         this.loading = false;
       }
     },
+
     async loadCarById(carId) {
       try {
         this.loading = true;
@@ -251,7 +253,16 @@ export const useCarStore = defineStore("car", {
         ...featuresData
       };
     },
+
+    updateCarCurrentLocation(locationData){
+      if(this.currentCar && this.currentCar.status && this.currentCar.status.currentLocation ){
+        this.currentCar.status.currentLocation.address = locationData.address;
+        this.currentCar.status.currentLocation.location = locationData.location;
+        // Podemos actualizar city/country si los extraemos del place object
+      }
+    },
   },
+
   getters: {
     car: (state) => state.currentCar,
     basicInfo: (state) => state.currentCar?.basicInfo || {},
@@ -262,5 +273,6 @@ export const useCarStore = defineStore("car", {
     photos: (state) => state.currentCar?.photos || [],
     insurance: (state) => state.currentCar?.insurance || {},
     availability: (state) => state.currentCar?.availability || {},
+    getUserCars: (state) => state.userCars,
   }
 });

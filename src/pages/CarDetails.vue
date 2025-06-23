@@ -3,6 +3,8 @@ import { ref, onMounted, computed } from 'vue';
 import { useAuthStore, useUserStore , useCarStore } from '@stores'
 import { useRoute } from 'vue-router';
 import { Loader } from "@googlemaps/js-api-loader";
+import { loadGoogleMaps, initMap } from "../services/google-maps.js";
+import { useRentalStore } from '@/stores/rent.store.js';
 
 import Heading from "../components/atoms/Heading.vue";
 import Pill from "../components/atoms/Pill.vue";
@@ -18,6 +20,7 @@ import RentalProcess from "@/components/organisms/rental/RentalProcess.vue";
 const carStore = useCarStore();
 const authStore = useAuthStore();
 const userStore = useUserStore();
+const store = useRentalStore();
 
 // Router
 const route = useRoute();
@@ -50,44 +53,7 @@ const ownerData = computed(() => {
   return userStore.getUserDataById(car.value.ownerId) || carOwner.value;
 });
 
-// Métodos
-const initMap = async(coordenadas) => {
-  if (!coordenadas || !coordenadas.lat || !coordenadas.lng) {
-    console.error("Coordenadas no válidas:", coordenadas);
-    return;
-  }
-  try {
-    const position = { lat: coordenadas.lat, lng: coordenadas.lng };
-    const { Map } = await google.maps.importLibrary("maps");
 
-    const map = new Map(document.getElementById('map'),{
-      center: {
-        lat: coordenadas.lat,
-        lng: coordenadas.lng,
-      },
-      zoom: 14,
-      mapId: "4808da25693c56c8",
-      streetViewControl: false,
-      mapTypeControl: false,
-      disableDefaultUI: true,
-    });
-
-    new google.maps.Circle({
-      strokeColor: "#5DADE2",
-      strokeOpacity: 0.8, 
-      strokeWeight: 2, 
-      fillColor: "#A9D6F5", 
-      fillOpacity: 0.35, 
-      map: map,
-      center: position,
-      radius: 1000, 
-    });
-    
-    this.mapInitialized = true;
-  } catch (error) {
-    console.error("Error al cargar Google Maps: ", error);
-  }
-};
 
 const setCurrentImage = (image) => {
   currentImage.value = image;
@@ -97,17 +63,7 @@ const setDefaultImage = (event) => {
   event.target.src = defaultCarImage;
 };
 
-const loadGoogleMaps = async () => {
-  const loader = new Loader({
-    apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    libraries: ["places", "geometry"], 
-  });
-  try {
-    await loader.load(); // Esperamos a que la API se cargue completamente
-  } catch (error) {
-    console.error("Error al cargar Google Maps:", error);
-  }
-};
+
 
 // Lifecycle hooks
 onMounted(async () => {
@@ -131,9 +87,36 @@ onMounted(async () => {
     }
     
     // Cargamos Google Maps si hay coordenadas
-    if (car.value?.location?.coordinates) {
-      await loadGoogleMaps();
-      // initMap(car.value.location.coordinates);
+    if (car.value?.status?.currentLocation?.location) {
+      const coordenadas = car.value.status.currentLocation.location;
+      console.log("Coordenadas:", coordenadas)
+      await loadGoogleMaps(); // Usamos la función del servicio
+      
+      // Inicializamos el mapa con las coordenadas del auto
+      const mapInstance = await initMap('map');
+      
+      if (mapInstance && car.value.status.currentLocation.location) {
+        // Centramos el mapa en la ubicación del auto
+        mapInstance.setCenter({
+          lat: car.value.status.currentLocation.location.lat,
+          lng: car.value.status.currentLocation.location.lng
+        });
+        
+        // Añadimos un círculo para resaltar la zona
+        new google.maps.Circle({
+          strokeColor: "#5DADE2",
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: "#A9D6F5",
+          fillOpacity: 0.35,
+          map: mapInstance,
+          center: {
+            lat: car.value.status.currentLocation.location.lat,
+            lng: car.value.status.currentLocation.location.lng
+          },
+          radius: 1000,
+        });
+      }
     }
   } catch (error) {
     errorMsg.value = "Hubo un error al obtener los detalles del auto";
@@ -251,40 +234,46 @@ onMounted(async () => {
       <div v-if="carStore.loading" class="flex justify-center items-center h-64">
         <Loading role="status" class="h-6 w-6 text-blue-500" />
       </div>
-    </section>
-    
-    <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
-      <p>{{ carStore.errorMessage }}</p>
-    </section>
-  
-    <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
-      <p v-if="errorMsg">{{ errorMsg || 'No se encontró el vehículo' }}</p>
-    </section>
-    
-    <div class="m-2.5 w-full flex flex-col gap-3">
-      <div class="map-container">
-        <div 
-          id="map"
-          style="width: 100%; height: 300px; border-radius: 40px;"
-          v-show="currentStep === 1"
-        ></div>
-      </div>
-    
-      <div class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-y-scroll">
-        
-        <RentalProcess 
-          v-if="!loading && !error"
-          :car-id="car.id"
-          :user-id="loggedUser?.id"
-          :is-car-rented="isRented"
-        />  
-      </div>
-  
-      <span v-if="isRented && !carStore.isUserOwner"
-        class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">
-        {{ carStore.isUserOwner ? 'Tu auto ya está alquilado' : 'Este auto ya está alquilado' }}
-      </span>
+  </section>
+
+  <section v-else-if="loading" class="w-full h-full flex items-center justify-center">
+    <div v-if="carStore.loading" class="flex justify-center items-center h-64">
+      <Loading role="status" class="h-6 w-6 text-blue-500" />
     </div>
+  </section>
+  
+  <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
+    <p>{{ carStore.errorMessage }}</p>
+  </section>
+
+  <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
+    <p v-if="errorMsg">{{ errorMsg || 'No se encontró el vehículo' }}</p>
+  </section>
+  
+  <div class="m-2.5 w-full flex flex-col gap-3">
+    <div class="map-container">
+      <div 
+        id="map"
+        style="width: 100%; height: 300px; border-radius: 40px;"
+        v-show="store.currentStep === 1"
+      ></div>
+    </div>
+  
+    <div v-if="authStore.user?.id !== carStore.car.ownerId" class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-y-scroll">
+      
+      <RentalProcess 
+        v-if="!loading && !errorMsg && carStore.car && authStore.user?.id "
+        :car-id="carStore.car.id"
+        :user-id="authStore.user.id"
+        :is-car-rented="store.isRented"
+      />  
+    </div>
+
+    <span v-if="store.isRented && !carStore.isUserOwner"
+      class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">
+      {{ carStore.isUserOwner ? 'Tu auto ya está alquilado' : 'Este auto ya está alquilado' }}
+    </span>
+  </div>
   </div>
 
 </template>

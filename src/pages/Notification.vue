@@ -13,6 +13,22 @@ const authStore = useAuthStore();
 const notificationStore = useNotificationStore(); // Usar el store
 const currentUser = computed(() => authStore.user); 
 
+const items = [
+  { label: 'Inbox', icon: '📥' },
+  { label: 'Starry', icon: '⭐' },
+  { label: 'Drafts', icon: '📝' },
+  { label: 'Important', icon: '⚡' },
+  { label: 'Sent', icon: '📤' },
+  { label: 'Archive', icon: '📦' },
+  { label: 'Spam', icon: '🚫' },
+  { label: 'Trash', icon: '🗑️' },
+]
+const tags = ['Security', 'Update', 'Marketing', 'HR'];
+const mails = [
+  { id: 1, name: 'Brook Simmons', subject: 'Important Account Update', label: 'Security', date: '3:24 PM', avatar: 'https://i.pravatar.cc/40?img=1', unread: true },
+  // más mails...
+]
+
 // Acceder a los datos del store
 const notifications = computed(() => notificationStore.sortedNotifications); // Usar el getter para ordenarlas
 const isLoading = computed(() => notificationStore.isLoading);
@@ -105,16 +121,16 @@ const handleNotificationClick = async (notification) => {
     </div>
 
     <!-- Notifications -->
-    <div v-if="!isLoading && notifications.length > 0" class="overflow-y-auto max-h-screen"> 
-      <div v-for="noti in notifications" :key="noti.id" 
+    <div v-if="!isLoading && notifications.length > 0" class="overflow-y-auto max-h-screen">
+      <div v-for="noti in notifications" :key="noti.id"
         class="overflow-y-auto p-6 border-b last:border-b-0 hover:bg-gray-200 rounded-xl"
         @click="handleNotificationClick(noti)">
         <!-- Contenedor General para una Notificación -->
         <div class="flex items-start space-x-3">
-          <img v-if="noti.senderDetails?.photoURL"
-            :src="noti.senderDetails?.photoURL" class="w-10 h-10 rounded-full" />
-          <div v-else class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
-            <h3>{{ noti.senderDetails?.name  ? noti.senderDetails.name .charAt(0).toUpperCase() : 'R' }}</h3>
+          <img v-if="noti.senderDetails?.photoURL" :src="noti.senderDetails?.photoURL" class="w-10 h-10 rounded-full" />
+          <div v-else
+            class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
+            <h3>{{ noti.senderDetails?.name ? noti.senderDetails.name .charAt(0).toUpperCase() : 'R' }}</h3>
             <p> {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}</p>
           </div>
           <div class="flex-1">
@@ -122,8 +138,10 @@ const handleNotificationClick = async (notification) => {
             <!-- Emcabezado general -->
             <div class="flex items-center justify-between">
               <p class="text-sm">
-                <span v-if="!noti.read" class="inline-block w-2 h-2 mr-2 rounded-full bg-red-500" title="No leído"></span>
-                <span class="font-semibold">{{ noti.senderDetails?.name ? noti.senderDetails.name : 'Reemo Bot' }}</span>
+                <span v-if="!noti.read" class="inline-block w-2 h-2 mr-2 rounded-full bg-red-500"
+                  title="No leído"></span>
+                <span class="font-semibold">{{ noti.senderDetails?.name ? noti.senderDetails.name : 'Reemo Bot'
+                  }}</span>
                 <!-- <span> {{ noti.message }} </span> -->
               </p>
             </div>
@@ -134,14 +152,14 @@ const handleNotificationClick = async (notification) => {
               <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div>
               <p class="text-sm text-gray-700">
                 {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}
-                <span class="font-medium">{{ noti.vehicleDetails?.marca || '' }} {{ noti.vehicleDetails?.modelo ||
+                <span class="font-medium">{{ noti.vehicleDetails?.basicInfo?.brand || '' }} {{ noti.vehicleDetails?.basicInfo?.model ||
                   'Vehículo no especificado' }}</span>.
               </p>
               <!-- File info -->
               <div v-if="noti.rentDetails" class="mt-3 bg-gray-100 rounded p-3">
                 <div class="flex items-center space-x-2 bg-gray-100 rounded px-2 py-1 mt-3">
-                  <img v-if="noti.type === 'rent_request' && noti.vehicleDetails?.images"
-                    :src="noti.vehicleDetails.images[1]" :alt="noti.vehicleDetails.marca"
+                  <img v-if="noti.type === 'rent_request' && noti.vehicleDetails?.photos"
+                    :src="noti.vehicleDetails.photos[1]" :alt="noti.vehicleDetails.basicInfo?.brand"
                     class="w-12 h-12 rounded-full" />
                   <div v-else
                     class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
@@ -149,19 +167,33 @@ const handleNotificationClick = async (notification) => {
                   </div>
                   <div>
                     <p class="text-sm font-medium text-gray-800">
-                      {{ noti.vehicleDetails?.marca || 'N/A' }} {{ noti.vehicleDetails?.modelo || 'N/A' }}
+                      {{ noti.vehicleDetails?.basicInfo?.brand || 'N/A' }} {{ noti.vehicleDetails?.basicInfo?.model || 'N/A' }}
                     </p>
                     <p class="text-xs text-gray-500">
-                      Desde: {{ formatDate(noti.rentDetails?.start_time) }} Hasta: {{ formatDate(noti.rentDetails.end_time) }}
+                      Desde: {{ formatDate(noti.rentDetails?.start_time) }} Hasta: {{
+                      formatDate(noti.rentDetails.end_time) }}
                     </p>
                     <p class="text-xs text-gray-500">
-                    Precio Total: <span class="text-xs px-2 py-0.5 rounded bg-green-100 border text-green-700">${{ noti.rentDetails?.total_price?.toFixed(2) || 'N/A' }} </span>
+                      Precio Total: <span class="text-xs px-2 py-0.5 rounded bg-green-100 border text-green-700">${{
+                        noti.rentDetails?.total_price?.toFixed(2) || 'N/A' }} </span>
                     </p>
                     <p class="text-xs text-gray-500">
                       Estado:
-                      <span class="font-semibold"
-                        :class="noti.rentDetails.status === 'pending' ? 'text-yellow-600' : noti.rentDetails.status === 'confirmed' ? 'text-green-600' : 'text-red-600'">
-                        {{ noti.rentDetails.status.replace('_', ' ') }}
+                      <span class="font-semibold" :class="{
+                            'text-yellow-600': noti.rentDetails.status === 'pending',
+                            'text-green-600': noti.rentDetails.status === 'confirmed',
+                            'text-red-600': noti.rentDetails.status === 'rejected' || noti.rentDetails.status === 'cancelled_by_user' || noti.rentDetails.status === 'cancelled_by_owner',
+                            'text-blue-600': noti.rentDetails.status === 'completed',
+                            'text-indigo-600': noti.rentDetails.status === 'in_progress',
+                          }">
+                        {{ 
+                          noti.rentDetails.status === "pending" ? "Pendiente" : 
+                          noti.rentDetails.status === "confirmed" ? "Confirmada" : 
+                          noti.rentDetails.status === "rejected" ? "Rechazada" : 
+                          noti.rentDetails.status === "cancelled_by_user" ? "Cancelada por el conductor" : 
+                          noti.rentDetails.status === "cancelled_by_owner" ? "Cancelada por el propietario" : 
+                          noti.rentDetails.status === "completed" ? "Completado" : 
+                          noti.rentDetails.status === "in_progress" ? "En progreso" : "N/A" }}
                       </span>
                     </p>
                   </div>
@@ -188,55 +220,62 @@ const handleNotificationClick = async (notification) => {
                   </div>
                 </div>
               </div>
-              
+
             </div>
 
             <!-- Caso: Respuesta a Solicitud de Alquiler (para el conductor que solicitó) -->
-          <div v-else-if="noti.type === 'rent_response'">
-            <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div>
-            <p class="text-sm text-gray-700">
-              {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}
-            </p>
-            <div v-if="noti.rentDetails" class="mt-3 bg-gray-100 rounded p-3">
-              <div class="flex items-center space-x-2 mb-2">
-                 <img v-if="noti.vehicleDetails?.images && noti.vehicleDetails.images.length > 0"
-                  :src="noti.vehicleDetails.images[0]"
-                  :alt="`Imagen de ${noti.vehicleDetails.marca}`" 
-                  class="w-12 h-12 rounded-md object-cover" />
-                <div v-else class="w-12 h-12 rounded-md bg-gray-200 flex items-center justify-center text-xs text-gray-400">Sin foto</div>
-                <div>
-                  <p class="text-sm font-medium text-gray-800">
-                    {{ noti.vehicleDetails?.marca || 'N/A' }} {{ noti.vehicleDetails?.modelo || 'N/A' }}
-                  </p>
-                  <p class="text-xs text-gray-500">
-                    Estado: 
-                    <span class="font-semibold" 
-                          :class="{
+            <div v-else-if="noti.type === 'rent_response'">
+              <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div>
+              <p class="text-sm text-gray-700">
+                {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}
+              </p>
+              <div v-if="noti.rentDetails" class="mt-3 bg-gray-100 rounded p-3">
+                <div class="flex items-center space-x-2 mb-2">
+                  <img v-if="noti.vehicleDetails?.photo && noti.vehicleDetails.photo.length > 0"
+                    :src="noti.vehicleDetails.photo[0]" :alt="`Imagen de ${noti.vehicleDetails.basicInfo?.brand }`"
+                    class="w-12 h-12 rounded-md object-cover" />
+                  <div v-else
+                    class="w-12 h-12 rounded-md bg-gray-200 flex items-center justify-center text-xs text-gray-400">Sin
+                    foto</div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-800">
+                      {{ noti.vehicleDetails?.basicInfo?.brand || 'N/A' }} {{ noti.vehicleDetails?.basicInfo?.model || 'N/A' }}
+                    </p>
+                    <p class="text-xs text-gray-500">
+                      Estado:
+                      <span class="font-semibold" :class="{
                             'text-yellow-600': noti.rentDetails.status === 'pending',
                             'text-green-600': noti.rentDetails.status === 'confirmed',
                             'text-red-600': noti.rentDetails.status === 'rejected' || noti.rentDetails.status === 'cancelled_by_user' || noti.rentDetails.status === 'cancelled_by_owner',
                             'text-blue-600': noti.rentDetails.status === 'completed',
                             'text-indigo-600': noti.rentDetails.status === 'in_progress',
                           }">
-                      {{ noti.rentDetails.status.replace('_', ' ') }}
-                    </span>
-                  </p>
+                        {{ 
+                          noti.rentDetails.status === "pending" ? "Pendiente" : 
+                          noti.rentDetails.status === "confirmed" ? "Confirmada" : 
+                          noti.rentDetails.status === "rejected" ? "Rechazada" : 
+                          noti.rentDetails.status === "cancelled_by_user" ? "Cancelada por el conductor" : 
+                          noti.rentDetails.status === "cancelled_by_owner" ? "Cancelada por el propietario" : 
+                          noti.rentDetails.status === "completed" ? "Completada" : 
+                          noti.rentDetails.status === "in_progress" ? "En progreso" : "N/A" }}
+                      </span>
+                    </p>
+                  </div>
                 </div>
+                <p class="text-xs text-gray-600">
+                  Desde: {{ formatDate(noti.rentDetails.start_time) }}
+                </p>
+                <p class="text-xs text-gray-600">
+                  Hasta: {{ formatDate(noti.rentDetails.end_time) }}
+                </p>
               </div>
-               <p class="text-xs text-gray-600">
-                Desde: {{ formatDate(noti.rentDetails.start_time) }}
-              </p>
-              <p class="text-xs text-gray-600">
-                Hasta: {{ formatDate(noti.rentDetails.end_time) }}
-              </p>
             </div>
-          </div>
-          
-          <!-- Caso: Otro tipo de notificación (genérico) -->
-          <div v-else>
-            <p class="text-sm text-gray-700">{{ noti.message || 'Tienes una nueva notificación.' }}</p>
-            <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div>
-          </div>
+
+            <!-- Caso: Otro tipo de notificación (genérico) -->
+            <div v-else>
+              <p class="text-sm text-gray-700">{{ noti.message || 'Tienes una nueva notificación.' }}</p>
+              <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div>
+            </div>
 
 
             <!-- Mensaje comentado -->
@@ -251,7 +290,7 @@ const handleNotificationClick = async (notification) => {
             <button class="text-sm px-3 py-1 rounded bg-black text-white">Accept</button>
             </div> -->
 
-             <!-- <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div> -->
+            <!-- <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div> -->
             <!-- <div class="text-xs text-gray-400 mt-1">1 min ago • Easy 2023 Project</div> -->
 
             <!-- Tags -->
@@ -268,5 +307,72 @@ const handleNotificationClick = async (notification) => {
     </div>
   </div>
 
+
+  <!-- <div class="flex h-screen">
+    <aside class="w-64 bg-white border-r flex flex-col p-4">
+      <h1 class="text-2xl font-bold mb-6">Mails</h1>
+      <nav class="flex-1 space-y-2">
+        <button class="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-gray-100" v-for="item in items"
+          :key="item.label">
+          <span>{{ item.icon }}</span>
+          <span>{{ item.label }}</span>
+        </button>
+      </nav>
+
+      <div class="mt-6 border-t pt-4 space-y-2 text-sm">
+        <p class="font-medium">Other</p>
+        <button v-for="tag in tags" :key="tag" class="text-gray-600 hover:text-primary">
+          {{ tag }}
+        </button>
+      </div>
+
+      <div class="mt-auto pt-6 border-t">
+        <div class="text-xs text-gray-500 mb-2">Free Version</div>
+        <div class="bg-gray-200 h-2 rounded-full w-full mb-3">
+          <div class="bg-primary h-2 rounded-full w-2/3"></div>
+        </div>
+        <button class="w-full bg-primary text-white py-2 rounded-xl text-sm">Upgrade to PRO 🚀</button>
+      </div>
+    </aside>
+    <div class="flex flex-col flex-1">
+      <div class="flex items-center p-4 border-b bg-white gap-3 flex-wrap">
+        <div class="flex gap-2">
+          <input type="checkbox" />
+          <button class="bg-gray-100 p-2 rounded-lg">🏷️</button>
+          <button class="bg-gray-100 p-2 rounded-lg">📦</button>
+          <button class="bg-gray-100 p-2 rounded-lg">🗑️</button>
+        </div>
+
+        <div class="flex-1 flex gap-2 justify-end items-center">
+          <input type="text" placeholder="Search" class="border text-sm rounded-lg px-3 py-2" />
+          <button class="bg-gray-100 p-2 rounded-lg">⚙️</button>
+          <button class="bg-gray-100 p-2 rounded-lg">↻</button>
+          <span>1 of 15</span>
+          <button class="bg-gray-100 p-2 rounded-lg">←</button>
+          <button class="bg-gray-100 p-2 rounded-lg">→</button>
+        </div>
+      </div>
+
+      <div class="overflow-y-auto flex-1">
+        <div class="flex items-center p-4 border-b hover:bg-gray-50 cursor-pointer gap-3">
+          <input type="checkbox" />
+          <span class="text-gray-400">🔖</span>
+          <div class="relative">
+            <img :src="mails.avatar" class="w-10 h-10 rounded-full" />
+            <span v-if="mails.unread" class="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
+          </div>
+          <div class="flex-1">
+            <p class="font-medium text-gray-900">{{ mails.name }}</p>
+            <p class="text-gray-500 text-sm truncate">{{ mails.subject }}</p>
+          </div>
+            <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+              {{ mails.label }}
+            </span>
+          <span class="text-gray-500 text-sm">{{ mails.date }}</span>
+        </div>
+      </div>
+
+    </div>
+  </div> -->
 
 </template>

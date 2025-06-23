@@ -46,7 +46,7 @@ export const useRentalStore = defineStore('rental', {
     },
     
     priceHours() {
-      return this.car ? this.car.precio / 24 : 0;
+      return this.car ? this.car.pricing.rates.daily / 24 : 0;
     },
     
     rentalHours() {
@@ -87,17 +87,24 @@ export const useRentalStore = defineStore('rental', {
   
   actions: {
     setInitialData(car, loggedUser, isCarRented = false) {
-      if (!loggedUser || !loggedUser.id) {
-        console.error("Usuario no válido proporcionado:", loggedUser);
-        throw new Error("Se requiere un usuario válido");
+      if (!car) {
+        console.error("Auto no válido:", car);
+        throw new Error("Se requiere un auto válido con ID");
+      }
+
+      if (!loggedUser || typeof loggedUser !== 'string') {
+        console.error("Usuario no válido:", loggedUser);
+        throw new Error("Se requiere un usuario válido con ID");
       }
       
       // Si estamos cambiando de auto, reseteamos los datos
       const isChangingCar = this.car && car && this.car.id !== car.id;
-      
+
+
       this.car = car;
       this.loggedUser = loggedUser;
       this.rented = isCarRented;
+      console.log('[setInitialData] contenido de this.rented 😊😊😊', this.rented)
       
       // Solo reseteamos datos si cambiamos de auto
       if (isChangingCar) {
@@ -116,7 +123,7 @@ export const useRentalStore = defineStore('rental', {
       
       console.log("Store inicializado con datos:", {
         carId: this.car?.id,
-        userId: this.loggedUser?.id,
+        userId: this.loggedUser,
         fechas: {
           desde: this.rentalData.rentedFromDate,
           hasta: this.rentalData.rentedUntilDate
@@ -260,7 +267,7 @@ export const useRentalStore = defineStore('rental', {
     },
     
     async fetchPaymentMethods() {
-      if (!this.loggedUser || !this.loggedUser.id) {
+      if (!this.loggedUser || !this.loggedUser) {
         console.error("Usuario no identificado");
         this.errorMessage = "Usuario no identificado";
         return [];
@@ -269,7 +276,7 @@ export const useRentalStore = defineStore('rental', {
       this.loading = true;
       try {
         const paymentStore = usePaymentStore();
-        const methods = await paymentStore.fetchPaymentMethods(this.loggedUser.id);
+        const methods = await paymentStore.fetchPaymentMethods(this.loggedUser);
         
         // Si hay métodos disponibles, seleccionar el primero (si no hay uno ya seleccionado)
         if (methods.length > 0 && !this.rentalData.selectedPaymentMethod) {
@@ -289,7 +296,7 @@ export const useRentalStore = defineStore('rental', {
     
     async saveNewPaymentMethod() {
       const paymentStore = usePaymentStore();
-      const newMethod = await paymentStore.saveNewPaymentMethod(this.loggedUser.id);
+      const newMethod = await paymentStore.saveNewPaymentMethod(this.loggedUser);
       
       if (newMethod) {
         this.rentalData.selectedPaymentMethod = newMethod;
@@ -346,8 +353,8 @@ export const useRentalStore = defineStore('rental', {
       const paymentStore = usePaymentStore();
       return {
         vehicle_id: this.car.id,
-        owner_id: this.car.user_id,
-        driver_id: this.loggedUser.id,
+        owner_id: this.car.ownerId,
+        driver_id: this.loggedUser,
         start_location: null,
         end_location: null,
         start_time: `${this.rentalData.rentedFromDate}T${this.rentalData.selectedTime}:00`,
@@ -395,7 +402,7 @@ export const useRentalStore = defineStore('rental', {
         //   // si se guarda bien crea la notificacion
         //   await createRentalRequestNotification(
         //     newRentId,
-        //     this.loggedUser.id, // sender id
+        //     this.loggedUser, // sender id
         //     this.car.user_id, // receiver id
         //   )
         //   addAlert("¡Reserva completada con éxito!", "success");
