@@ -8,10 +8,11 @@ import Heading from "@components/atoms/Heading.vue";
 import Input from "../../components/molecules/Input.vue";
 import Popover from "../../components/molecules/Popover.vue";
 import Status from "../../components/molecules/Status.vue";
+import SearchIcon from "@icons/Search.vue";
 
 export default {
   name: "AdminUsers",
-  components: { Heading, Input, Popover, Status },
+  components: { Heading, Input, Popover, Status, SearchIcon },
   setup() {
     const adminStore = useAdminStore();
 
@@ -32,6 +33,7 @@ export default {
     return {
       openPopoverId: null,
       filter: 'all',
+      searchQuery: ''
     };
   },
   methods: {
@@ -58,6 +60,7 @@ export default {
     },
     toggleFiltro(filtro) {
       this.filter = filtro;
+      this.searchQuery = '';
     },
     formatDate,
     // Manejar la apertura/cierre del popover
@@ -70,15 +73,26 @@ export default {
     },
   },
   computed: {
-      userFilter() {
-        if (this.filter === 'verificados') {
-          return this.users.filter((user) => user.status !== 'not-verified');
-        } else if (this.filter === 'no-verificados') {
-          return this.users.filter((user) => user.status === 'not-verified');
-        } else {
-          return this.users;
-        }
-    },
+    userFilter() {
+      let filteredUsers = this.users; 
+
+      if (this.filter === 'verificados') {
+        filteredUsers = filteredUsers.filter((user) => user.status !== 'not-verified');
+      } else if (this.filter === 'no-verificados') {
+        filteredUsers = filteredUsers.filter((user) => user.status === 'not-verified');
+      }
+
+      // Aplicar búsqueda por nombre o apellido
+      if (this.searchQuery) {
+        const query = this.searchQuery.toLowerCase();
+        filteredUsers = filteredUsers.filter((user) => {
+          const fullName = `${user.personalInfo.firstName} ${user.personalInfo.lastName}`.toLowerCase();
+          return fullName.includes(query);
+        });
+      }
+
+      return filteredUsers;
+    }
   },
 };
 </script>
@@ -86,31 +100,48 @@ export default {
 <template>
     <section class="w-full p-2.5 flex flex-col gap-6 overflow-hidden">
     <Heading :type="1" class="medium">Administrar Usuarios</Heading>
-    <div class="flex flex-row gap-4">
-      <Input 
-        type="button"
-        text="Todos"
+    <div class="flex justify-between items-center">
+      <div class="flex flex-row gap-4">
+        <Input 
+          type="button"
+          text="Todos"
+          variant="secondary"
+          class="cursor-pointer !flex-0"
+          :class="filter === 'all' ? ' bg-vibrant-light-900' : ''"
+          @click="toggleFiltro('all')"
+        />
+        <Input 
+          type="button"
+          text="Verificados"
+          variant="secondary"
+          class="cursor-pointer !flex-0"
+          :class="filter === 'verificados' ? ' bg-vibrant-light-900' : ''"
+          @click="toggleFiltro('verificados')"
+        />
+        <Input 
+          type="button"
+          text="No verificados"
+          variant="secondary"
+          class="cursor-pointer !flex-0 !min-w-[150px]"
+          :class="filter === 'no-verificados' ? ' bg-vibrant-light-900' : ''"
+          @click="toggleFiltro('no-verificados')"
+        />
+      </div>
+      <Input
+        type="text"
+        id="searchInput"
+        name="searchInput"
+        placeholder="Buscar usuario"
+        class="mb-2 lg:mb-0 !flex-0 !min-w-fit"
+        icon-position="left"
         variant="secondary"
-        class="cursor-pointer"
-        :class="filter === 'all' ? ' bg-vibrant-light-900' : ''"
-        @click="toggleFiltro('all')"
-      />
-      <Input 
-        type="button"
-        text="Verificados"
-        variant="secondary"
-        class="cursor-pointer"
-        :class="filter === 'verificados' ? ' bg-vibrant-light-900' : ''"
-        @click="toggleFiltro('verificados')"
-      />
-      <Input 
-        type="button"
-        text="No verificados"
-        variant="secondary"
-        class="cursor-pointer"
-        :class="filter === 'no-verificados' ? ' bg-vibrant-light-900' : ''"
-        @click="toggleFiltro('no-verificados')"
-      />
+        :outline="false"
+        v-model="searchQuery"
+        >
+        <template #icon>
+          <SearchIcon />
+        </template>
+      </Input>
     </div>
     <table class="min-w-full bg-white h-full overflow-hidden flex flex-col gap-5">
       <thead class="mr-4">

@@ -30,6 +30,11 @@ export default {
       car: {
         type: Object,
         required: true
+      },
+      layout: {
+        type: String,
+        default: 'square', // 'square' o 'rectangle'
+        validator: value => ['square', 'rectangle'].includes(value)
       }
     },
     methods: {
@@ -62,7 +67,9 @@ export default {
 </script>
 
 <template>
+  <!-- Versión cuadrada (por defecto) -->
   <div 
+    v-if="layout === 'square'"
     @mouseenter="startPhotoRotation"
     @mouseleave="stopPhotoRotation"
     class="relative flex flex-col overflow-hidden rounded-2xl hover:shadow-custom transition-all duration-300 bg-white border-2 border-vibrant-light-600 hover:border-vibrant-light-700">
@@ -72,7 +79,7 @@ export default {
     >
       <div class="relative w-full overflow-hidden">
         <div class="absolute top-3 left-3 z-10">
-          <Status :status="car.isAvailable ? 'validated' : 'not-validated'" />
+          <Status :status="car.status.current" />
         </div>
 
         
@@ -93,5 +100,30 @@ export default {
         <Heading :type="4">${{ car.pricing?.rates?.daily }}/ día</Heading>
       </div>        
     </router-link>
+  </div>
+
+  <!-- Versión rectangular -->
+  <div
+    v-else
+    class="flex items-center bg-white px-5 py-4 rounded-3xl justify-between border-2 border-vibrant-light-600"
+  >
+    <router-link
+      :to="{ name: 'CarDetails', params: { id: car.id } }"
+      class="flex items-center flex-1 gap-2">
+      <img 
+        :src="car.photos[0] || defaultCarImage"
+        @error="setDefaultImage"
+        :alt="car.basicInfo?.brand + ' ' + car.basicInfo?.model"
+        class="w-16 h-16 object-cover rounded-lg"
+      />
+      <div class="flex flex-col justify-between">
+        <p class="small font-medium text-gray-500">{{ car.basicInfo?.brand }}</p>
+        <Heading type="4" class="regular">{{ car.basicInfo?.model }}, {{ car.basicInfo?.year }}</Heading>
+      </div>
+    </router-link>
+    <div class="flex items-end flex-col justify-between">
+      <Status :status="car.status.current" size="small"/>
+      <p class="text-deep-blue-900 text-lg font-bold">${{ car.pricing?.rates?.daily }}/día</p>
+    </div>
   </div>
 </template>

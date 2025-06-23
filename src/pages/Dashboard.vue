@@ -6,6 +6,7 @@ import Heading from '@/components/atoms/Heading.vue';
 import Input from '@/components/molecules/Input.vue';
 import SearchIcon from '@/icons/Search.vue';
 import Status from '@/components/molecules/Status.vue';
+import CardCar from '../components/organisms/my-cars/CardCar.vue';
 
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
@@ -14,10 +15,10 @@ const userStore = useUserStore();
 const carStore = useCarStore();
 
 const loading = ref(false);
-const userCars = ref([]);
 
 const user = computed(() => userStore.profileData);
 const availableCars = computed(() => carStore.availableCars);
+const userCars = computed(() => carStore.userCars);
 
 onMounted(async () => {
   try {
@@ -29,9 +30,10 @@ onMounted(async () => {
     // Cargar autos para disponibles para alquilar
     await carStore.loadAvailableCars(authSession.user.id);
     console.log('Available cars fetched successfully:', carStore.availableCars);
+
     // Cargar autos del usuario
     await carStore.loadUserCars(authSession.user.id);
-    userCars.value = carStore.userCars;
+    console.log('Autos del usuario', carStore.userCars)
   } catch (error) {
     console.error('Error fetching user data:', error);
   } finally {
@@ -65,11 +67,7 @@ onMounted(async () => {
         </router-link>   
       </div>
       <div class="flex gap-5 h-full">
-        <div v-if="userCars.length > 0" class="bg-deep-blue-900 text-white p-6 w-full rounded-[40px] py-10 px-6 flex flex-col gap-12">
-          <Heading type="2" class="medium text-white">¡Bienvenido a Reemo, {{ user.personalInfo.firstName }}👋!</Heading>
-          <p class="text-white">Aquí podés gestionar tus autos y solicitudes de alquiler.🚗✨</p>
-        </div>
-        <div v-else class="bg-vibrant-light-600 rounded-[40px] w-full py-10 px-6 flex flex-col justify-between">
+        <div v-if="userCars.length > 0" class="bg-vibrant-light-600 rounded-[40px] w-full py-10 px-6 flex flex-col justify-between">
           <Heading type="2" class="medium">Resumen de actividad</Heading>
           <div class="flex justify-between text-center h-full items-center">
             <div class="flex-1">
@@ -89,6 +87,10 @@ onMounted(async () => {
               <p class="text-sm text-gray-500">Ganancias</p>
             </div>
           </div>
+        </div>
+        <div v-else class="bg-deep-blue-900 text-white p-6 w-full rounded-[40px] py-10 px-6 flex flex-col gap-12">
+          <Heading type="2" class="medium text-white">¡Bienvenido a Reemo, {{ user.personalInfo.firstName }}👋!</Heading>
+          <p class="text-white">Aquí podés gestionar tus autos y solicitudes de alquiler.🚗✨</p>
         </div>
         <div class="bg-vibrant-light-800 rounded-[40px] p-6 flex flex-col justify-between">
           <h3 class="text-xl font-bold mb-2">¡Tu viaje comienza acá!</h3>
@@ -111,23 +113,12 @@ onMounted(async () => {
         <a href="#" class="text-vibrant-light-900 font-semibold">Ver más</a>
       </div>
       <div class="flex flex-col gap-2 h-full overflow-y-auto pr-2">
-        <div v-for="car in availableCars" :key="car.id" class="flex items-center bg-white px-5 py-4 rounded-2xl justify-between border-2 border-vibrant-light-600">
-          <div class="flex items-center space-x-4">
-            <img 
-              :src="car.photos[0] || '/src/assets/Car-Img.png'"
-              :alt="car.basicInfo.brand"
-              class="w-16 h-16 object-cover rounded-lg"
-            />
-            <div>
-              <p class="text-sm text-gray-500">{{ car.basicInfo.brand }}</p>
-              <p class="font-semibold">{{ car.basicInfo.model }}, {{ car.basicInfo.year }}</p>
-            </div>
-          </div>
-          <div class="flex items-center space-x-2">
-            <Status :status="car.status.current"/>
-          </div>
-          <p class="text-blue-700 font-bold">${{ car.pricing.rates.daily }}/día</p>
-        </div>
+        <CardCar 
+          v-for="car in availableCars" 
+          :key="car.id" 
+          :car="car"
+          layout="rectangle"
+        />
       </div>
     </div>
     <div class="tracking bg-[#0d0d0d] rounded-[40px] text-white py-6 px-8 h-full">

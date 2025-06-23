@@ -171,120 +171,123 @@ export default {
       <FilterIcon/>
     </button>
 
-        <div 
-          class="bg-vibrant-light-700 rounded-[40px] md:px-5 md:py-9 h-full transition-all duration-300 lg:w-1/4 xl:w-1/5 lg:min-w-[320px]"
-          :class=" showFilters ? 'fixed lg:relative inset-0 z-39' : 'hidden lg:block'"
-        >
-          <div class="flex items-center justify-between">
-            <Heading :type="2" class="regular mt-2">Filtrar vehículo</Heading>
-            <button @click="resetFilters" class="cursor-pointer hover:bg-vibrant-light-800 rounded-full p-1 transition-colors duration-300" title="Limpiar filtros">
-              <Repeat/>
-            </button>
-          </div>
-
-          <!-- marca -->
-          <div class="flex flex-col gap-2 mt-5">
-            <Heading :type="3" class="small">Marca del vehículo</Heading>
-            <div class="flex flex-col sm:flex-row gap-2 mt-2 text-sm">
-              <!-- Marca -->
-              <Input
-                type="select"
-                v-model="filters.brand"
-                name="brand"
-                id="brand"
-                placeholder="Marca"
-                :options="[
-                  { value: 'Honda', label: 'Honda' },
-                  { value: 'Toyota', label: 'Toyota' },
-                  { value: 'Ford', label: 'Ford' },
-                  { value: 'Chevrolet', label: 'Chevrolet' },
-                  { value: 'Volkswagen', label: 'Volkswagen' }
-                ]"
-                icon-position="right"
-                variant="secondary"
-                :outline="true"
-                />
-
-              <!-- Modelo -->
-                            <Input
-                type="select"
-                v-model="filters.model"
-                :disabled="!filters.brand"
-                name="model"
-                id="model"
-                placeholder="Modelo"
-                :options="[
-                  { value: 'Civic', label: 'Civic' },
-                  { value: 'CR-V', label: 'CR-V' },
-                  { value: 'Corolla', label: 'Corolla' },
-                  { value: 'Yaris', label: 'Yaris' },
-                  { value: 'Focus', label: 'Focus' },
-                  { value: 'Fiesta', label: 'Fiesta' }
-                ]"
-                icon-position="right"
-                variant="secondary"
-                :outline="true"
-                />
-            </div>
-          </div>
-
-          <!-- rango de precio -->
-          <div class="my-4">
-            <Heading :type="3" class="small">Rango de precio</Heading>
-            <div class="mt-2 lg:mx-4">
-              <PriceRange :min="20000" :max="100000" v-model="filters" />
-            </div>
-          </div>
-
-          <!-- chasis -->
-          <div class="flex flex-col gap-2 mt-5">
-            <Heading :type="3" class="small">Chasis</Heading>
-            <div class="flex flex-wrap 2 gap-2 mt-2 text-sm">
-              <CheckboxFilter 
-                v-for="chassis in chassisTypes" 
-                :key="chassis" 
-                :id="chassis.toLowerCase()"
-                :name="chassis.toLowerCase()" 
-                :label="chassis" 
-                labelPosition="right" 
-                class="text-deep-blue-900"
-                v-model="filters.chassis" 
-                :value="chassis" 
-              />
-            </div>
-          </div>
-
-          <!-- transmisión -->
-          <div class="flex flex-col gap-2 mt-5">
-            <Heading :type="3" class="small">Transmisión</Heading>
-            <div class="flex flex-wrap gap-2 mt-2">
-              <button 
-                v-for="option in optionsTransmission" 
-                :key="option" 
-                @click="filters.transmission = option === 'Ambos' ? '' : option" 
-                :class="[
-                  'cursor-pointer px-3 py-[6px] text-sm rounded-xl border font-medium transition-all duration-200',
-                  filters.transmission === (option === 'Ambos' ? '' : option)
-                    ? 'bg-[#e6faff] border-[#0ba5ec] text-[#0ba5ec]'
-                    : 'bg-white border-gray-300 text-black'
-                ]"
-              >
-                {{ option }}
-              </button>
-            </div>
-          </div>
-
-          <div class="flex gap-2 mt-4">
+    <div 
+      class="bg-vibrant-light-700 rounded-[40px] md:px-5 !pr-2 !pb-4 md:py-9 h-full transition-all duration-300 lg:w-1/4 xl:w-1/5 lg:min-w-[320px] overflow-hidden flex flex-col gap-5"
+      :class=" showFilters ? 'fixed lg:relative inset-0 z-39' : 'hidden lg:block'"
+    >
+      <div class="flex items-center justify-between">
+        <Heading :type="2" class="regular mt-2">Filtrar vehículo</Heading>
+        <button @click="resetFilters" class="cursor-pointer hover:bg-vibrant-light-800 rounded-full p-1 transition-colors duration-300" title="Limpiar filtros">
+          <Repeat/>
+        </button>
+      </div>
+      <div class="h-full overflow-y-auto pr-3 flex flex-col gap-5 relative">
+        <!-- marca -->
+        <div class="flex flex-col gap-2">
+          <Heading :type="3" class="small hidden">Marca del vehículo</Heading>
+          <div class="flex flex-col sm:flex-row gap-2 text-sm">
+            <!-- Marca -->
             <Input
-              type="button"
-              @click="applyFilters"
-              text="Aplicar Filtros"
-              variant="primary"
-              class="text-sm"
-              :outline="false"
+              type="select"
+              v-model="filters.brand"
+              name="brand"
+              id="brand"
+              placeholder="Marca"
+              :options="[
+                { value: 'Honda', label: 'Honda' },
+                { value: 'Toyota', label: 'Toyota' },
+                { value: 'Ford', label: 'Ford' },
+                { value: 'Chevrolet', label: 'Chevrolet' },
+                { value: 'Volkswagen', label: 'Volkswagen' }
+              ]"
+              icon-position="right"
+              variant="secondary"
+              :outline="true"
+              class="flex-1"
+              />
+  
+            <!-- Modelo -->
+            <Input
+              type="select"
+              v-model="filters.model"
+              :disabled="!filters.brand"
+              name="model"
+              id="model"
+              placeholder="Modelo"
+              :options="[
+                { value: 'Civic', label: 'Civic' },
+                { value: 'CR-V', label: 'CR-V' },
+                { value: 'Corolla', label: 'Corolla' },
+                { value: 'Yaris', label: 'Yaris' },
+                { value: 'Focus', label: 'Focus' },
+                { value: 'Fiesta', label: 'Fiesta' }
+              ]"
+              icon-position="right"
+              variant="secondary"
+              :outline="true"
+              class="flex-1"
               />
           </div>
         </div>
+  
+        <!-- rango de precio -->
+        <div>
+          <Heading :type="3" class="small">Rango de precio</Heading>
+          <div class="px-1 lg:mx-4">
+            <PriceRange :min="20000" :max="100000" v-model="filters" />
+          </div>
+        </div>
+  
+        <!-- chasis -->
+        <div class="flex flex-col gap-2">
+          <Heading :type="3" class="small">Chasis</Heading>
+          <div class="flex flex-wrap 2 gap-2 mt-2 text-sm">
+            <CheckboxFilter 
+              v-for="chassis in chassisTypes" 
+              :key="chassis" 
+              :id="chassis.toLowerCase()"
+              :name="chassis.toLowerCase()" 
+              :label="chassis" 
+              labelPosition="right" 
+              class="text-deep-blue-900"
+              v-model="filters.chassis" 
+              :value="chassis" 
+            />
+          </div>
+        </div>
+  
+        <!-- transmisión -->
+        <div class="flex flex-col gap-2">
+          <Heading :type="3" class="small">Transmisión</Heading>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <button 
+              v-for="option in optionsTransmission" 
+              :key="option" 
+              @click="filters.transmission = option === 'Ambos' ? '' : option" 
+              :class="[
+                'cursor-pointer px-3 py-[6px] text-sm rounded-xl border font-medium transition-all duration-200',
+                filters.transmission === (option === 'Ambos' ? '' : option)
+                  ? 'bg-[#e6faff] border-[#0ba5ec] text-[#0ba5ec]'
+                  : 'bg-white border-gray-300 text-black'
+              ]"
+            >
+              {{ option }}
+            </button>
+          </div>
+        </div>
+  
+        <div class="flex gap-2 sticky bottom-0">
+          <Input
+            type="button"
+            @click="applyFilters"
+            text="Aplicar Filtros"
+            variant="primary"
+            class="text-sm"
+            :outline="false"
+            />
+        </div>
+      </div>
+    </div>
 
 
       <div class="w-full lg:w-3/4 xl:w-4/5 overflow-hidden flex flex-col h-full">
