@@ -12,6 +12,8 @@ import comentarioIcon from '@/assets/marcador.png';
 import Loading from "@icons/Loading.vue";
 import Input from "@components/molecules/Input.vue";
 import SearchIcon from "@icons/Search.vue";
+import Status from "@components/molecules/Status.vue";
+import Cross from '../icons/Cross.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -26,18 +28,6 @@ const map = ref(null);
 const markers = ref([]); 
 const loading = ref(false);
 const showSuggestions = ref(false);
-// const initialLocation = ref(false);
-
-// This 'car' object was used in the original template for static owner info
-// when a car is selected. It's kept for template compatibility.
-// Ideally, selectedCar would contain all necessary owner details.
-const car = {
-  owner: {
-    name: 'Jazmín Vega',
-    avatar: 'https://i.pravatar.cc/40?img=5'
-  }
-};
-
 
 const updateMapMarkersService = async () => {
   if (map.value) {
@@ -196,194 +186,132 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
 </script>
 
 <template>
-<!--   <section class="w-full d:min-h-full overflow-hidden m-2.5">
-
-    <Input
-      ref="searchInputRef"
-      type="text"
-      id="searchInput"
-      name="searchInput"
-      placeholder="Buscar un auto..."
-      class="absolute top-20 left-1/2 transform -translate-x-1/3 w-80 border focus-within:ring-primary-500 z-48"
-      icon-position="left"
-      variant="secondary"
-      :outline="false"
-      >
-      <template #icon>
-        <SearchIcon />
-      </template>
-    </Input>
-
-    <div
-      class="absolute top-10 left-1/2 transform -translate-x-1/3 w-80 z-50"
-      @click.away="showSuggestions = false"
-    > -->
-<!--                                                                -->
-    <!-- <div class="flex-1 relative overflow-hidden">
-      <div id="map" class="absolute inset-0 w-full h-full z-10"></div>
-
-      <div class="absolute top-4 left-1/2 transform -translate-x-1/2 w-11/12 sm:w-80 z-20">
-        <input type="text" placeholder="Buscar" class="w-full px-4 py-2 rounded-full shadow border bg-white" />
-      </div>
-    </div> -->
-
-  <!-- <section class="h-screen flex flex-col md:flex-row p-4 gap-4 relative overflow-hidden"> -->
-  <!-- <section class="h-screen flex flex-col md:flex-row p-4 gap-4 relative"> -->
-
-    <!-- Panel de Detalles del Vehículo Seleccionado -->
-    <!-- class="relative w-full md:w-1/3 h-full bg-white rounded-3xl shadow-xl p-6 flex flex-col gap-4 transition-all duration-300 ease-in-out transform space-y-4 border border-gray-200" -->
-    <div v-if="selectedCar"
-    class="fixed overflow-y-hidden inset-0 md:static z-60 p-6 bg-white md:bg-transparent md:backdrop-blur-0 md:shadow-none transition-all duration-300 ease-in-out transform md:translate-x-0 md:opacity-100 flex flex-col md:w-1/3 h-full rounded-3xl shadow-xl border border-gray-200"
+  <section class="w-full overflow-hidden m-2.5 flex gap-5">
+    <div 
+      v-if="selectedCar"
+      class="fixed overflow-y-hidden inset-0 md:static z-60 bg-white md:bg-transparent md:backdrop-blur-0 md:shadow-none transition-all duration-300 ease-in-out transform md:translate-x-0 md:opacity-100 flex flex-col md:w-1/3 h-full gap-4"
       :class="{
         'translate-x-0 opacity-100': selectedCar,
         'translate-x-full opacity-0': !selectedCar
       }">
 
-      <div class="bg-white flex-1 overflow-y-auto space-y-4">
         <!-- Estado y editar -->
-        <div class="flex justify-between items-center">
-          <div class="space-x-2">
-            <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">Nuevo</span>
-            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Disponible</span>
-          </div>
+      <div class="flex justify-between items-center">
+        <div  class="flex gap-4 items-end">
+          <Heading :type="1" class="medium">{{ selectedCar.basicInfo.brand }} {{ selectedCar.basicInfo.model }} {{ selectedCar.basicInfo.year }}</Heading>
+          <p class="text-lg font-semibold text-gray-800">{{ selectedCar.pricing.rates.daily }}/día</p>
+        </div>
           <!-- Botón de cerrar -->
-          <button @click="closeCarDetails" class=" text-gray-500 hover:text-gray-700 z-20 cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
+          <button @click="closeCarDetails" class=" hover:bg-vibrant-light-700 focus:bg-vibrant-light-800 rounded-full p-2 z-20 cursor-pointer">
+            <Cross :size="24"/>
           </button>
         </div>
+        <div class="flex-1 overflow-hidden overflow-y-auto flex flex-col pr-2 gap-5">
 
-        <!-- Imagen principal -->
-        <img
-          :src="selectedCar.photos && selectedCar.photos.length > 0 ? selectedCar.photos[0] : '/src/assets/Car-Img.png'"
-          alt="Auto"
-          class="rounded-xl w-full max-w-[500px] h-[280px] object-cover mx-auto transition-transform duration-500 ease-in-out image-fade"
-        />
-
-        <!-- Galería -->
-        <div class="flex gap-2 overflow-x-auto">
-          <img v-for="(image, index) in selectedCar.photos"
-            :key="index"
-            :src="image"
-            class="w-16 h-16 object-cover rounded-xl border border-gray-300 cursor-pointer transition duration-300 ease-in-out" />
-        </div>
-
-        <!-- Datos principales -->
-        <div>
-          <p class="text-gray-500 text-sm">{{ selectedCar.basicInfo.brand }}</p>
-          <h2 class="text-xl font-bold text-gray-800">{{ selectedCar.basicInfo.model }}</h2>
-        </div>
-
-        <!-- Dueño, precio y rating -->
-        <div class="flex justify-between items-center">
-          <div class="flex items-center gap-2">
-            <img :src="car.owner.avatar" class="w-8 h-8 rounded-full" />
-            <span class="text-sm text-gray-700">{{ car.owner.name }}</span>
+          <!-- Imagen principal -->
+          <div class="relative">
+            <div class="flex gap-2 absolute top-2 right-2 z-50">
+              <Status :status="selectedCar.status.current" size="small" />
+            </div>
+            <img
+              :src="selectedCar.photos && selectedCar.photos.length > 0 ? selectedCar.photos[0] : '/src/assets/Car-Img.png'"
+              alt="Auto"
+              class="rounded-xl w-full max-w-[500px] h-[280px] object-cover mx-auto transition-transform duration-500 ease-in-out image-fade"
+            />
           </div>
-          <div class="text-right">
-            <p class="text-lg font-semibold text-gray-800">{{ selectedCar.pricing.rates.daily }}k <span class="text-sm text-gray-500">/hora</span></p>
-            <p class="text-sm text-yellow-500 flex items-center gap-1">⭐ {{ selectedCar.rating || '4.0' }}</p>
+  
+          <!-- Galería -->
+          <div class="flex flex-1 justify-between gap-2 w-full h-24">
+            <img v-for="(image, index) in selectedCar.photos"
+              :key="index"
+              :src="image"
+              class="aspect-square w-fit object-cover rounded-xl border border-gray-300 cursor-pointer transition duration-300 ease-in-out flex-1" />
+          </div>
+  
+          <!-- Datos adicionales -->
+          <div class="flex flex-col gap-2">
+            <Heading :type="3" class="regular">Especificaciones</Heading>
+            <ul class="flex flex-col gap-2">
+              <li class="flex justify-between items-center">
+                <div class="font-medium">Año</div>
+                <div>{{ selectedCar.basicInfo.year }}</div>
+              </li>
+              <li class="flex justify-between items-center">
+                <div class="font-medium">Chasis</div>
+                <div>{{ selectedCar.basicInfo.type }}</div>
+              </li>
+              <li class="flex justify-between items-center">
+                <div class="font-medium">Kilometraje</div>
+                <div>{{ selectedCar.basicInfo.kilometers }} km</div>
+              </li>
+              <li class="flex justify-between items-center">
+                <div class="font-medium">Transmisión</div>
+                <div>{{ selectedCar.specifications.transmission }}</div>
+              </li>
+              <li class="flex justify-between items-center">
+                <div class="font-medium">Asientos</div>
+                <div>{{ selectedCar.specifications.seats }}</div>
+              </li>
+            </ul>
           </div>
         </div>
-
-        <!-- Datos adicionales -->
-        <div class="grid grid-cols-2 text-sm text-gray-600 border-t pt-2 gap-y-1">
-          <div class="font-medium">Año</div><div>{{ selectedCar.basicInfo.year }}</div>
-          <div class="font-medium">Chasis</div><div>{{ selectedCar.basicInfo.type }}</div>
-          <div class="font-medium">Kilometraje</div><div>{{ selectedCar.basicInfo.kilometers }} km</div>
-          <div class="font-medium">Transmisión</div><div>{{ selectedCar.transmision }}</div>
-          <div class="font-medium">Asientos</div><div>{{ selectedCar.asientos }}</div>
-          <!-- <div class="font-medium">Seguro</div><div>{{ selectedCar.seguro ? 'Sí' : 'No' }}</div> -->
-        </div>
-
-        <div>
-          <Heading :type="4" class="text-primary-900 mb-1">descripcion</Heading>
-          <p>{{ selectedCar.status.description }}</p>
-        </div>
-
-        
-      </div>
       
       <!-- Botón de Alquilar -->
-      <div class="sticky bottom-0">
-        <button @click="goToCarDetails(selectedCar.id)"
-          class="mt-auto w-full bg-[#0a0a3c] hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-lg cursor-pointer transition duration-150 ease-in-out">
-          Ver Detalles y Alquilar
-        </button>
-      </div>
+        <Input
+          type="button"
+          @click="goToCarDetails(selectedCar.id)"
+          text="Ver detalles"
+          variant="primary"
+          :outline="false"
+          class="cursor-pointer w-full !flex-0 !min-w-fit sticky bottom-0"
+        />
       
     </div>
-
-    <!-- <div
-      class="absolute top-20 left-1/2 transform -translate-x-1/3 bg-white/70 backdrop-blur-md shadow-md rounded-full flex items-center px-4 py-2 w-80 border border-gray-300 focus-within:ring-2 focus-within:ring-primary-500 z-48">
-      <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-        stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M21 21l-4.35-4.35m1.85-4.65a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
-      <input type="text" id="searchInput" placeholder="Buscar un auto..."
-        class="bg-transparent outline-none text-gray-700 w-full pl-2 placeholder-gray-400">
-    </div> -->
-
-<!-- Aca se renderiza mi mapa -->
-<!-- <div class="flex-1 relative rounded-3xl w-full h-full overflow-hidden"> -->
-<div class="flex-1 relative overflow-hidden rounded-3xl md:p-5">
-  <div id="map" class="absolute inset-0 w-full h-full z-10"> aca va el mapa </div>
-
-  <!-- Buscador dentro del mapa -->
-  <div class="absolute top-20 left-1/2 transform -translate-x-1/3 w-80 focus-within:ring-primary-500 z-48"
-       @click.away="showSuggestions = false">
-      
-      <Input
-        ref="searchInputRef"
-        v-model="searchQuery"
-        type="text"
-        id="searchInput"
-        name="searchInput"
-        placeholder="Buscar un auto..."
-        icon-position="left"
-        variant="secondary"
-        :outline="false"
-        @focusin="showSuggestions = true" @click.stop
+    <div class="flex-1 relative h-full overflow-hidden rounded-3xl md:p-5">
+      <!-- Mapa -->
+      <div id="map" class="absolute inset-0 w-full h-full z-10"></div>
+      <!-- Buscador dentro del mapa -->
+      <div 
+        class="absolute top-10 left-1/2 transform -translate-x-1/3 w-80 z-50"
+        @click.away="showSuggestions = false"
         >
-        <template #icon>
-          <SearchIcon />
-        </template>
-      </Input>
-
-    <div v-if="showSuggestions"
-      class="bg-white mt-2 rounded-lg shadow-lg border border-gray-200 overflow-hidden">
-      <button @click="useMyLocation"
-        class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">📍 Utilizar mi ubicación</button>
+        <Input
+          ref="searchInputRef"
+          v-model="searchQuery"
+          type="text"
+          id="searchInput"
+          name="searchInput"
+          placeholder="Buscar un auto..."
+          icon-position="left"
+          variant="secondary"
+          :outline="false"
+          @focusin="showSuggestions = true" @click.stop
+          >
+          <template #icon>
+            <SearchIcon />
+          </template>
+        </Input>
+        <div 
+          v-if="showSuggestions"
+          class="bg-white mt-2 rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+          <button 
+            @click="useMyLocation"
+            class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
+            📍 Utilizar mi ubicación
+          </button>
+        </div>
+      </div>
     </div>
-
-  </div>
-</div>
-    <!-- Mapa -->
-<!--     <div class="flex-1 relative h-full overflow-hidden rounded-3xl">
-      <div id="map" class="absolute top-0 left-0 w-full h-full"></div>
-    </div>
-
-    <div class="flex items-center justify-center w-fit mx-auto bg-gray-50"> -->
 
     <div v-if="loading && !selectedCar"
       class="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm z-20">
       <Loading role="status" />
       <span class="sr-only">Cargando...</span>
     </div>
-
-    <!-- <div v-if="loading" class="flex items-center justify-center w-fit mx-auto bg-gray-50" :class="{'w-2/3': selectedCar, 'w-full': !selectedCar}">
-      <Loading role="status" />
-      <span class="sr-only">Cargando...</span>
-    </div> -->
-
-  <!-- </section> -->
-
+  </section>
 </template>
 
 <style>
-
 .image-fade {
   opacity: 0;
   animation: fadeIn 0.8s ease forwards;
