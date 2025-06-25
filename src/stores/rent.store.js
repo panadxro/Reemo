@@ -171,7 +171,7 @@ export const useRentalStore = defineStore('rental', {
     // Cargar datos guardados desde localStorage
     loadSavedData() {
       if (!this.car || !this.car.id) {
-        console.warn("No se puede cargar datos sin un ID de auto");
+        console.log("No se puede cargar datos sin un ID de auto");
         return;
       }
       
