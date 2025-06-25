@@ -26,6 +26,19 @@ export async function getCarById(carId) {
   }
 }
 
+export const updateCarAvailability = async (carId, newAvailability) => {
+  try {
+    const carRef = doc(db, "cars", carId);
+    await updateDoc(carRef, {
+      availability: newAvailability
+    });
+    return true;
+  } catch (error) {
+    console.error("Error updating car availability:", error);
+    throw error;
+  }
+};
+
 export async function editCar(carId, data) {
   const carRef = doc(db, "cars", carId);
   await updateDoc(carRef, { 
