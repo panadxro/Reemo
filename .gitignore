@@ -32,5 +32,3 @@ src/services/firebase.js
 reglas-firestore.txt
 reglas-storage.txt
 datos.md
-.env
-.env
