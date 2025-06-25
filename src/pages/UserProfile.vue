@@ -24,7 +24,7 @@ import Cross from "@icons/Cross.vue";
 import Check from "@icons/Check.vue";
 import DeletePaymentModal from '@/components/user/DeletePaymentModal.vue';
 import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
-import History from '@/components/user/history.vue'
+import History from '@/components/user/History.vue'
 
 export default {
   name: "UserProfile",
