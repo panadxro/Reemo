@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useAuthStore, useUserStore , useCarStore } from '@stores'
 import { useRoute } from 'vue-router';
 import { Loader } from "@googlemaps/js-api-loader";
@@ -40,6 +40,7 @@ const loading = ref(false);
 const errorMsg = ref("");
 const currentImage = ref(null);
 const carOwner = ref(null); // Nuevo estado para el dueño del carro
+const isCarAvailable = ref(false); // Estado para disponibilidad del auto
 const defaultCarImage = "/src/assets/default-car.jpg";
 const defaultUserImage = "/src/assets/User.png"
 
@@ -84,14 +85,16 @@ const saveAvailability = async () => {
   try {
     loading.value = true;
     
+    const currentStatus = isCarAvailable.value ? 'available' : 'not-available';
+    
     await carStore.updateAvailability({
       schedule: { ...carStore.availability.schedule },
       hours: { ...carStore.availability.hours }
-    });
+    }, currentStatus);
     
-    addAlert('Disponibilidad actualizada correctamente', 'success');
+    addAlert('Disponibilidad y estado actualizados correctamente', 'success');
   } catch (error) {
-    addAlert('Error al actualizar disponibilidad', 'error');
+    addAlert('Error al actualizar la información', 'error');
   } finally {
     loading.value = false;
   }
@@ -167,6 +170,12 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
+watch(car, (newCar) => {
+  if (newCar?.status?.current) {
+    isCarAvailable.value = newCar.status.current === 'available';
+  }
+}, { immediate: true });
 </script>
 
 <template>
@@ -272,17 +281,17 @@ onMounted(async () => {
     </section>
   
     <section v-else-if="loading" class="w-full h-full flex items-center justify-center">
-      <Loading />
+      <!-- <Loading /> -->
       <div v-if="carStore.loading" class="flex justify-center items-center h-64">
         <Loading role="status" class="h-6 w-6 text-blue-500" />
       </div>
   </section>
 
-  <section v-else-if="loading" class="w-full h-full flex items-center justify-center">
+  <!-- <section v-else-if="loading" class="w-full h-full flex items-center justify-center">
     <div v-if="carStore.loading" class="flex justify-center items-center h-64">
       <Loading role="status" class="h-6 w-6 text-blue-500" />
     </div>
-  </section>
+  </section> -->
   
   <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
     <p>{{ carStore.errorMessage }}</p>
@@ -312,75 +321,95 @@ onMounted(async () => {
     </div>
 
     <div v-else-if="authStore.user?.id === car.ownerId" class="mt-6">
-    <div class="w-full bg-deep-blue-900 rounded-[23px] p-6">
-      <div class="flex flex-col gap-6">
-        <div>
-          <Heading type="5" class="mb-4 text-white">Días disponibles</Heading>
-          <div class="flex justify-center gap-4">
-            <div 
-              v-for="(day, index) in days" 
-              :key="index"
-              class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer font-semibold transition-all"
-              :class="{
-                'bg-secondary-700 text-white': availability.schedule[day.storeKey],
-                'bg-deep-blue-700 text-white': !availability.schedule[day.storeKey]
-              }"
-              @click="toggleDay(day.storeKey)"
-            >
-              {{ day.label }}
-            </div>
+  <div class="w-full bg-deep-blue-900 rounded-[23px] p-6">
+    <div class="flex flex-col gap-6">
+      
+
+      <div>
+        <Heading type="5" class="mb-4 text-white">Días disponibles</Heading>
+        <div class="flex justify-center gap-4">
+          <div 
+            v-for="(day, index) in days" 
+            :key="index"
+            class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer font-semibold transition-all"
+            :class="{
+              'bg-secondary-700 text-white': availability.schedule[day.storeKey],
+              'bg-deep-blue-700 text-white': !availability.schedule[day.storeKey]
+            }"
+            @click="toggleDay(day.storeKey)"
+          >
+            {{ day.label }}
           </div>
         </div>
-        
-        <div class="flex flex-col items-center gap-4">
-          <div class="flex gap-6">
-            <div class="flex flex-col items-center gap-2">
-              <label for="start-time" class="font-medium text-white">Desde</label>
-              <select 
-                id="start-time" 
-                v-model="availability.hours.startTime"
-                class="p-2 rounded-lg border border-gray-300 bg-white"
-              >
-                <option 
-                  v-for="time in timeOptions" 
-                  :key="'start-'+time.value" 
-                  :value="time.value"
-                >
-                  {{ time.label }}
-                </option>
-              </select>
-            </div>
-            
-            <div class="flex flex-col items-center gap-2">
-              <label for="end-time" class="font-medium text-white">Hasta</label>
-              <select 
-                id="end-time" 
-                v-model="availability.hours.endTime"
-                class="p-2 rounded-lg border border-gray-300 bg-white"
-              >
-                <option 
-                  v-for="time in timeOptions" 
-                  :key="'end-'+time.value" 
-                  :value="time.value"
-                >
-                  {{ time.label }}
-                </option>
-              </select>
-            </div>
-          </div>
-        </div>
-        
-        <button
-          @click="saveAvailability"
-          class="mt-4 bg-deep-blue-900 text-white py-3 px-6 rounded-lg font-semibold hover:bg-deep-blue-800 transition-colors"
-          :disabled="loading"
-        >
-          <span v-if="!loading">Guardar cambios</span>
-          <Loading v-else class="h-5 w-5 mx-auto" />
-        </button>
       </div>
+      
+      <div class="flex flex-col items-center gap-4">
+        <div class="flex gap-6">
+          <div class="flex flex-col items-center gap-2">
+            <label for="start-time" class="font-medium text-white">Desde</label>
+            <select 
+              id="start-time" 
+              v-model="availability.hours.startTime"
+              class="p-2 rounded-lg border border-gray-300 bg-white"
+            >
+              <option 
+                v-for="time in timeOptions" 
+                :key="'start-'+time.value" 
+                :value="time.value"
+              >
+                {{ time.label }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="flex flex-col items-center gap-2">
+            <label for="end-time" class="font-medium text-white">Hasta</label>
+            <select 
+              id="end-time" 
+              v-model="availability.hours.endTime"
+              class="p-2 rounded-lg border border-gray-300 bg-white"
+            >
+              <option 
+                v-for="time in timeOptions" 
+                :key="'end-'+time.value" 
+                :value="time.value"
+              >
+                {{ time.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex items-center justify-between p-4 bg-deep-blue-800 rounded-lg">
+        <div>
+          <Heading type="6" class="text-white mb-1">Disponibilidad inmediata</Heading>
+          <p class="text-gray-300 text-sm">
+            {{ isCarAvailable ? 'Tu auto se muestra actualmente para alquilar' : 'Tu auto no se muestra actualmente para alquilar' }}
+          </p>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input 
+            type="checkbox" 
+            v-model="isCarAvailable"
+            class="sr-only peer"
+          >
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary-700">
+          </div>
+        </label>
+      </div>
+
+      <button
+        @click="saveAvailability"
+        class="mt-4 text-white py-3 px-6 rounded-lg font-semibold bg-secondary-700 transition-colors duration-300 w-fit hover:bg-deep-blue-700 hover:cursor-pointer"
+        :disabled="loading"
+      >
+        <span v-if="!loading">Guardar cambios</span>
+        <span v-else class="h-5 w-5 mx-auto" >Guardando...</span>
+      </button>
     </div>
   </div>
+</div>
 
     <span v-if="store.isRented && !carStore.isUserOwner"
       class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">

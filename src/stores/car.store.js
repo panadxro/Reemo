@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { updateCarAvailability, saveCarData, createCarData, getCarById, getAvailableCars, getUserCars } from "../services/car";
+import { updateCarAvailability, saveCarData, createCarData, getCarById, getAvailableCars, getUserCars, updateCarAvailabilityAndStatus } from "../services/car";
 import { uploadVehiclePhoto } from '../services/storage/documents'
 import { useAuthStore } from '@stores';
 
@@ -187,19 +187,27 @@ export const useCarStore = defineStore("car", {
     },
 
     // No uso updateCar porque no es para actualizar todo el aut, sino solo la disponibilidad
-    async updateAvailability(newAvailability) {
-     try {
-        // if (!this.currentCar?.id) throw new Error("No car selected");
+    async updateAvailability(newAvailability, newStatus = null) {
+      try {
+        if (!this.currentCar?.id) throw new Error("No car selected");
 
-      await updateCarAvailability(this.currentCar.id, newAvailability);
+        if (newStatus !== null) {
+          // Actualizar disponibilidad y estado juntos
+          await updateCarAvailabilityAndStatus(this.currentCar.id, newAvailability, newStatus);
+          this.currentCar.status.current = newStatus;
+        } else {
+          // Actualizar solodisponibilidad
+          await updateCarAvailability(this.currentCar.id, newAvailability);
+        }
         
         this.currentCar.availability = newAvailability;
+        
         return true;
-    } catch (error) {
+      } catch (error) {
         console.error("Error al actualizar la disponibilidad:", error);
         throw error;
       }
-  },
+    },
 
     async loadCarById(carId) {
       try {
