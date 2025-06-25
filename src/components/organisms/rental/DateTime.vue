@@ -289,7 +289,7 @@ mounted() {
     <!-- Retiro -->
     <div class="flex-1">
       <label class="block text-sm font-medium mb-1 text-white">Retiro</label>
-      <div class="flex items-center bg-[#343666] border border-gray-700 rounded-2xl p-3"
+      <div class="flex items-center bg-primary-700 border border-gray-700 rounded-2xl p-3"
            :class="{ 'opacity-80': disabled }">
         <div class="flex items-center gap-2 flex-1">
           <Calendar />
@@ -313,7 +313,7 @@ mounted() {
             v-for="hour in availableHours" 
             :key="hour" 
             :value="hour"
-            class="bg-[#DBFAFC] text-[#010440]"
+            class="bg-vibrant-light-600 text-[#010440]"
           >
             {{ hour }}
           </option>
@@ -324,7 +324,7 @@ mounted() {
     <!-- Devolución -->
     <div class="flex-1">
       <label class="block text-sm font-medium mb-1 text-white">Devolución</label>
-      <div class="flex items-center bg-[#343666] border border-gray-700 rounded-2xl p-3"
+      <div class="flex items-center bg-primary-700 border border-gray-700 rounded-2xl p-3"
            :class="{ 'opacity-80': disabled }">
         <div class="flex items-center gap-2 flex-1">
           <Calendar />
@@ -348,7 +348,7 @@ mounted() {
             v-for="hour in availableUntilHours" 
             :key="hour" 
             :value="hour"
-            class="bg-[#DBFAFC] text-[#010440]"
+            class="bg-vibrant-light-600 text-[#010440]"
           >
             {{ hour }}
           </option>

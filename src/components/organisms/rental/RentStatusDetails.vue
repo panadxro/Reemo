@@ -172,7 +172,7 @@ watch(currentUser, (newUser, oldUser) => {
       </div>
       <div class="mt-4 text-sm ">
         <div class="grid grid-cols-6 items-center border-b pb-4 mb-2">
-          <div class="flex-shrink-0">
+          <div class="shrink-0">
             <img v-if="driverRentalDetail.vehicleDetails?.photos && driverRentalDetail.vehicleDetails.photos.length > 0"
               :src="driverRentalDetail.vehicleDetails.photos[0]"
               :alt="`Imagen de ${driverRentalDetail.vehicleDetails?.basicInfo.brand} ${driverRentalDetail.vehicleDetails?.basicInfo.model}`"
@@ -218,7 +218,7 @@ watch(currentUser, (newUser, oldUser) => {
       </div>
       <div class="mt-4 text-gray-500 font-bold text-sm">
         <div class="grid grid-cols-6 items-center border-b pb-4 mb-4">
-          <div class="flex-shrink-0">
+          <div class="shrink-0">
             <img v-if="ownerRentalDetail.vehicleDetails?.photos && ownerRentalDetail.vehicleDetails.photos.length > 0"
               :src="ownerRentalDetail.vehicleDetails.photos[0]"
               :alt="`Imagen de ${ownerRentalDetail.vehicleDetails?.basicInfo.brand} ${ownerRentalDetail.vehicleDetails?.basicInfo.model}`"

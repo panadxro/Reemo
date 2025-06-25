@@ -60,7 +60,7 @@ onMounted(() =>{
       class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer p-4" 
       @click="$router.push(`/rent/${car.id}`)">
       <div class="flex gap-6">
-        <div class="relative flex-shrink-0">
+        <div class="relative shrink-0">
           <img :src="car.vehicleDetails.photos?.[0] || '@/assets/car-placeholder.png'" 
             :alt="car.vehicleDetails.basicInfo.brand + ' ' + car.vehicleDetails.basicInfo.model" 
             class="object-cover rounded-xl w-32 h-28 sm:w-36 sm:h-32" />
@@ -71,7 +71,7 @@ onMounted(() =>{
             <h3 class="font-bold text-primary-900 leading-tight text-lg">
               {{ car.vehicleDetails.basicInfo.brand }} {{ car.vehicleDetails.basicInfo.model }}
             </h3>
-            <span class="text-primary-800 font-bold flex-shrink-0 ml-2 text-sm">
+            <span class="text-primary-800 font-bold shrink-0 ml-2 text-sm">
               <!-- ${{ car.vehicleDetails.precio }}/día -->
             </span>
           </div>

@@ -11,6 +11,7 @@
   "dependencies": {
     "@fawmi/vue-google-maps": "^0.9.79",
     "@googlemaps/js-api-loader": "^1.16.8",
+    "@tailwindcss/vite": "^4.1.10",
     "core-js": "^3.42.0",
     "firebase": "^11.8.1",
     "pinia": "^3.0.2",
@@ -22,8 +23,8 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.7",
     "@vitejs/plugin-vue": "^5.2.4",
-    "postcss": "^8.4.47",
-    "tailwindcss": "^4.1.7",
-    "vite": "^6.3.5"
+    "tailwindcss": "^4.1.10",
+    "vite": "^6.3.5",
+    "vite-plugin-pwa": "^1.0.0"
   }
 }

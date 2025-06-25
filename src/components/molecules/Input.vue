@@ -40,7 +40,7 @@ const selectRef = ref(null);
 
 // Clases computadas según el modo y variante
 const inputClasses = computed(() => {
-  const baseClasses = 'flex flex-1 items-center justify-center rounded-2xl py-2.5 px-5 gap-2 border-[2px] font-semibold';
+  const baseClasses = 'flex flex-1 items-center justify-center rounded-2xl py-2.5 px-5 gap-2 border-2 font-semibold';
   const colorClasses = props.variant === 'primary' 
     ? (
         props.outline 
