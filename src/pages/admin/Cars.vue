@@ -111,7 +111,7 @@ export default {
           type="button"
           text="Todos"
           variant="secondary"
-          class="cursor-pointer !flex-0"
+          class="cursor-pointer flex-0!"
           :class="filter === 'all' ? ' bg-vibrant-light-900' : ''"
           @click="toggleFiltro('all')"
         />
@@ -119,7 +119,7 @@ export default {
           type="button"
           text="Validados"
           variant="secondary"
-          class="cursor-pointer !flex-0"
+          class="cursor-pointer flex-0!"
           :class="filter === 'validados' ? ' bg-vibrant-light-900' : ''"
           @click="toggleFiltro('validados')"
         />
@@ -127,7 +127,7 @@ export default {
           type="button"
           text="Invalidados"
           variant="secondary"
-          class="cursor-pointer !flex-0"
+          class="cursor-pointer flex-0!"
           :class="filter === 'no-validados' ? ' bg-vibrant-light-900' : ''"
           @click="toggleFiltro('no-validados')"
         />
@@ -137,7 +137,7 @@ export default {
         id="searchInput"
         name="searchInput"
         placeholder="Buscar autos de dueño"
-        class="mb-2 lg:mb-0 !flex-0 !min-w-fit"
+        class="mb-2 lg:mb-0 flex-0! min-w-fit!"
         icon-position="left"
         variant="secondary"
         :outline="false"

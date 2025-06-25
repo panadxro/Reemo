@@ -83,7 +83,7 @@ export default {
         </div>
 
         
-        <div class="w-full aspect-[16/9] overflow-hidden">
+        <div class="w-full aspect-video overflow-hidden">
           <img
             class="w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105"
             :src="car.photos && car.photos.length > currentPhotoIndex ? car.photos[currentPhotoIndex] : defaultCarImage" 

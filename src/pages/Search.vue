@@ -172,7 +172,7 @@ export default {
     </button>
 
     <div 
-      class="bg-vibrant-light-700 rounded-[40px] md:px-5 !pr-2 !pb-4 md:py-9 h-full transition-all duration-300 lg:w-1/4 xl:w-1/5 lg:min-w-[320px] overflow-hidden flex flex-col gap-5"
+      class="bg-vibrant-light-700 rounded-[40px] md:px-5 pr-2! pb-4! md:py-9 h-full transition-all duration-300 lg:w-1/4 xl:w-1/5 lg:min-w-[320px] overflow-hidden flex flex-col gap-5"
       :class=" showFilters ? 'fixed lg:relative inset-0 z-39' : 'hidden lg:block'"
     >
       <div class="flex items-center justify-between">
@@ -303,7 +303,7 @@ export default {
               id="searchInput"
               name="searchInput"
               placeholder="Buscar por ubicación..."
-              class="lg:w-1/2 mb-2 lg:mb-0 !w-fit"
+              class="lg:w-1/2 mb-2 lg:mb-0 w-fit!"
               icon-position="left"
               variant="secondary"
               :outline="false"

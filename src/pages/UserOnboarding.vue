@@ -184,7 +184,7 @@ onBeforeUnmount(() => {
             </Heading>
           </div>
           <span>
-            <LongArrow direction="right" class="hidden" color="#ffffff" :class="{ '!block': currentStep === index}"/>
+            <LongArrow direction="right" class="hidden" color="#ffffff" :class="{ 'block!': currentStep === index}"/>
           </span>
         </li>
       </ul>
@@ -203,7 +203,7 @@ onBeforeUnmount(() => {
         <!-- Paso 1: Información Personal -->
         <router-view v-if="currentStep === 0">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-white !font-extrabold">Datos personales</Heading>
+            <Heading type="2" class="large text-white! font-extrabold!">Datos personales</Heading>
             <Loading v-if="!userStore.profileLoaded" role="status" />
           </div>
 
@@ -257,7 +257,7 @@ onBeforeUnmount(() => {
         <!-- Paso 2: Documentación -->
         <router-view v-if="currentStep === 1">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-white !font-extrabold">Documentación</Heading>
+            <Heading type="2" class="large text-white! font-extrabold!">Documentación</Heading>
             <Loading v-if="loading" role="status" />
           </div>
           <div class="flex flex-col gap-2">
@@ -326,7 +326,7 @@ onBeforeUnmount(() => {
         <!-- Paso 3: Ubicación -->
         <router-view v-if="currentStep === 2">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-white !font-extrabold">Ubicación</Heading>
+            <Heading type="2" class="large text-white! font-extrabold!">Ubicación</Heading>
             <Loading v-if="loading" role="status" />
           </div>
           <p class="text-sm font-medium">Para garantizar que nuestros servicios estén disponibles en tu área, necesitamos confirmar tu ubicación en Argentina.</p>
@@ -405,7 +405,7 @@ onBeforeUnmount(() => {
         <!-- Paso 4: Método de Pago -->
         <router-view v-if="currentStep === 3" class="step">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-white !font-extrabold">Método de Pago</Heading>
+            <Heading type="2" class="large text-white! font-extrabold!">Método de Pago</Heading>
             <Loading v-if="loading" role="status" />
           </div>
           <div class="flex flex-col gap-5">
@@ -480,7 +480,7 @@ onBeforeUnmount(() => {
         <!-- Paso 5: Términos y Condiciones -->
         <router-view v-if="currentStep === 4" class="step">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-white !font-extrabold">Términos y Condiciones</Heading>
+            <Heading type="2" class="large text-white! font-extrabold!">Términos y Condiciones</Heading>
             <Loading v-if="loading" role="status" />
           </div>
           <div class="flex gap-2 items-center">

@@ -453,7 +453,7 @@ onBeforeUnmount(() => {
             </Heading>
           </div>
           <span>
-            <LongArrow direction="right" class="hidden" color="#ffffff" :class="{ '!block': currentStep === index}"/>
+            <LongArrow direction="right" class="hidden" color="#ffffff" :class="{ 'block!': currentStep === index}"/>
           </span>
         </li>
       </ul>
@@ -476,7 +476,7 @@ onBeforeUnmount(() => {
         <!-- Paso 1: Información básica -->
         <router-view v-if="currentStep === 0">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Información básica</Heading>
+            <Heading type="2" class="large text-deep-blue-900! font-extrabold!">Información básica</Heading>
             <Loading v-if="!userStore.profileLoaded" role="status" />
           </div>
           <p class="text-sm font-medium">Ingresá los datos principales del vehículo. Esta información ayuda a identificar correctamente el auto y mostrarlo a los usuarios interesados.</p>
@@ -536,7 +536,7 @@ onBeforeUnmount(() => {
                 icon-position="right"
                 variant="secondary"
                 :outline="true"
-                class="flex !flex-25"
+                class="flex flex-25!"
               />
               <Input
                 type="select"
@@ -554,7 +554,7 @@ onBeforeUnmount(() => {
                 icon-position="right"
                 variant="secondary"
                 :outline="true"
-                class="flex !flex-45"
+                class="flex flex-45!"
               /> 
               <Input
                 type="select"
@@ -573,7 +573,7 @@ onBeforeUnmount(() => {
                 icon-position="right"
                 variant="secondary"
                 :outline="true"
-                class="flex !flex-30"
+                class="flex flex-30!"
               /> 
             </div>  
             <div class="flex gap-5">
@@ -602,7 +602,7 @@ onBeforeUnmount(() => {
         <!-- Paso 2: Especificaciones técnicas -->
         <router-view v-if="currentStep === 1">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Especificaciones técnicas</Heading>
+            <Heading type="2" class="large text-deep-blue-900! font-extrabold!">Especificaciones técnicas</Heading>
             <Loading v-if="loading" role="status" />
           </div>
           <p class="text-sm font-medium">Completá las características técnicas del vehículo. Las opciones se adaptan según la marca y el modelo del vehículo, para que puedas seleccionar solo lo que corresponde a tu modelo.</p>
@@ -716,7 +716,7 @@ onBeforeUnmount(() => {
         <!-- Paso 3: Equipamiento y características -->
         <router-view v-if="currentStep === 2">
   <div class="flex gap-4 items-center">
-    <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Equipamiento y características</Heading>
+    <Heading type="2" class="large text-deep-blue-900! font-extrabold!">Equipamiento y características</Heading>
     <Loading v-if="loading" role="status" />
   </div>
   <div class="flex flex-col gap-5">
@@ -752,7 +752,7 @@ onBeforeUnmount(() => {
         <!-- Paso 4: Ubicación y disponibilidad -->
         <router-view v-if="currentStep === 3" class="step">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Ubicación y disponibilidad</Heading>
+            <Heading type="2" class="large text-deep-blue-900! font-extrabold!">Ubicación y disponibilidad</Heading>
             <Loading v-if="loading" role="status" />
           </div>
           <div class="flex flex-col gap-5">
@@ -830,7 +830,7 @@ onBeforeUnmount(() => {
         <!-- Paso 5: Políticas y tarifas -->
         <router-view v-if="currentStep === 4" class="step">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Políticas y tarifas</Heading>
+            <Heading type="2" class="large text-deep-blue-900! font-extrabold!">Políticas y tarifas</Heading>
             <Loading v-if="loading" role="status" />
           </div>
           <p class="text-sm font-medium">Establecé la tarifa diaria para alquilar tu vehículo. Configurá los kilómetros incluidos, el precio por KM extra y el depósito de seguridad sugerido. Esto permite definir claramente las condiciones para el arrendatario.</p>
@@ -888,7 +888,7 @@ onBeforeUnmount(() => {
                 icon-position="right"
                 variant="secondary"
                 :outline="true"
-                class="flex !flex-45"
+                class="flex flex-45!"
               />
               <Input
                 type="select"
@@ -906,7 +906,7 @@ onBeforeUnmount(() => {
                 icon-position="right"
                 variant="secondary"
                 :outline="true"
-                class="flex !flex-50"
+                class="flex flex-50!"
               />    
             </div>
           </DropdownForm>
@@ -926,7 +926,7 @@ onBeforeUnmount(() => {
          <!-- Paso 5: Fotos del vehículo -->
          <router-view v-if="currentStep === 5" class="step">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Fotos del vehículo</Heading>
+            <Heading type="2" class="large text-deep-blue-900! font-extrabold!">Fotos del vehículo</Heading>
             <Loading v-if="loading" role="status" />
           </div>
           <p class="text-sm font-medium">Describe las características principales de tu vehículo. Subí fotos que muestren tanto el exterior como el interior, destacando sus mejores atributos. Las publicaciones con buenas imágenes reciben un 40% más de reservas.</p>
@@ -989,7 +989,7 @@ onBeforeUnmount(() => {
         <!-- Paso 6: Información de seguro -->
         <router-view v-if="currentStep === 6" class="step">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large !text-deep-blue-900 !font-extrabold">Información de seguro</Heading>
+            <Heading type="2" class="large text-deep-blue-900! font-extrabold!">Información de seguro</Heading>
             <Loading v-if="loading" role="status" />
           </div>
           <p class="text-sm font-medium">Indicá el tipo de cobertura, la compañía aseguradora y la vigencia del contrato. Además, cargá una imagen de la cédula verde para validar que la póliza está activa y cumple con los requisitos legales.</p>

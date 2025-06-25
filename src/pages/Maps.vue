@@ -263,7 +263,7 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
           text="Ver detalles"
           variant="primary"
           :outline="false"
-          class="cursor-pointer w-full !flex-0 !min-w-fit sticky bottom-0"
+          class="cursor-pointer w-full flex-0! min-w-fit! sticky bottom-0"
         />
       
     </div>

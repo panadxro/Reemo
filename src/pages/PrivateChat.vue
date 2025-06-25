@@ -150,7 +150,7 @@ export default {
   <aside class="chat flex flex-col bg-vibrant-light-700 xl:rounded-[40px] xl:min-w-[250px] xl:p-5 xl:pt-8 xl:gap-5 
                 h-screen xl:h-auto p-0 gap-0">
     
-    <div class="flex-shrink-0 p-4 xl:p-0 bg-vibrant-light-700 xl:bg-transparent">
+    <div class="shrink-0 p-4 xl:p-0 bg-vibrant-light-700 xl:bg-transparent">
       <div v-if="loadingUser" class="flex items-center justify-center w-fit mx-auto">
         <Loading role="status" />
       </div>
@@ -191,7 +191,7 @@ export default {
       </ul>
     </div>
     
-    <div class="flex-shrink-0 p-4 xl:p-0 bg-vibrant-light-700 xl:bg-transparent">
+    <div class="shrink-0 p-4 xl:p-0 bg-vibrant-light-700 xl:bg-transparent">
       <form 
         action="#"
         class="flex bg-background-900 rounded-[20px] gap-2 items-center p-2"

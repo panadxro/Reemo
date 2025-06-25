@@ -106,7 +106,7 @@ export default {
           type="button"
           text="Todos"
           variant="secondary"
-          class="cursor-pointer !flex-0"
+          class="cursor-pointer flex-0!"
           :class="filter === 'all' ? ' bg-vibrant-light-900' : ''"
           @click="toggleFiltro('all')"
         />
@@ -114,7 +114,7 @@ export default {
           type="button"
           text="Verificados"
           variant="secondary"
-          class="cursor-pointer !flex-0"
+          class="cursor-pointer flex-0!"
           :class="filter === 'verificados' ? ' bg-vibrant-light-900' : ''"
           @click="toggleFiltro('verificados')"
         />
@@ -122,7 +122,7 @@ export default {
           type="button"
           text="No verificados"
           variant="secondary"
-          class="cursor-pointer !flex-0 !min-w-[150px]"
+          class="cursor-pointer flex-0! min-w-[150px]!"
           :class="filter === 'no-verificados' ? ' bg-vibrant-light-900' : ''"
           @click="toggleFiltro('no-verificados')"
         />
@@ -132,7 +132,7 @@ export default {
         id="searchInput"
         name="searchInput"
         placeholder="Buscar usuario"
-        class="mb-2 lg:mb-0 !flex-0 !min-w-fit"
+        class="mb-2 lg:mb-0 flex-0! min-w-fit!"
         icon-position="left"
         variant="secondary"
         :outline="false"
