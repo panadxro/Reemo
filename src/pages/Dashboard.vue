@@ -7,6 +7,7 @@ import Input from '@/components/molecules/Input.vue';
 import SearchIcon from '@/icons/Search.vue';
 import Status from '@/components/molecules/Status.vue';
 import CardCar from '../components/organisms/my-cars/CardCar.vue';
+import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
 
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
@@ -19,6 +20,17 @@ const loading = ref(false);
 const user = computed(() => userStore.profileData);
 const availableCars = computed(() => carStore.availableCars);
 const userCars = computed(() => carStore.userCars);
+
+const props = defineProps({
+  id: {
+    type: String,
+    required: true,
+  }
+});
+
+const isOwnDashboard = computed(() => {
+  return authSession.value?.id === props.id;
+});
 
 onMounted(async () => {
   try {
@@ -100,12 +112,15 @@ onMounted(async () => {
       </div>
     </div>
     <div class="my-profile bg-white border-3 border-vibrant-light-600 rounded-[40px] p-6 items-center flex flex-col justify-between">
-      <img :src="user.personalInfo.profilePhoto" :alt="user.personalInfo.firstName" class="w-28 h-28 rounded-full" />
+      <!-- <img :src="user.personalInfo.profilePhoto" :alt="user.personalInfo.firstName" class="w-28 h-28 rounded-full" />
       <Heading type="2" class="medium">{{ user.personalInfo.firstName }} {{ user.personalInfo.lastName }}</Heading>
       <p class="font-bold">@{{ user.personalInfo.username }}</p>
       <router-link :to="`/user/${authSession.user.id}`" class="flex items-center px-5 py-2.5 bg-vibrant-light-900 text-white w-fit rounded-2xl hover:bg-vibrant-light-800 transition-colors duration-300">
         Ver perfil
-      </router-link>
+      </router-link> -->
+        <div v-if="isOwnDashboard" class="">
+          <RentStatusDetails />
+        </div>
     </div>
     <div class="cars flex flex-col gap-6 overflow-hidden">
       <div class="flex justify-between items-end">

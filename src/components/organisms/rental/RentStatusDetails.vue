@@ -3,12 +3,15 @@ import { ref, onMounted, computed, watch } from 'vue';
 
 import { useAuthStore } from '@/stores';
 import { useRouter } from 'vue-router';
+import { useNotificationStore } from '@/stores/notification.store';
+
 import { fetchRentedCars, fetchLatestActiveOwnedRental, updateRentalStatus } from '@/services/rentedCarService';
 import { addAlert } from '@/services/alerts';
 import Loading from '@/icons/Loading.vue';
 import Heading from '@/components/atoms/Heading.vue';
 
 const authStore = useAuthStore();
+const notificationStore = useNotificationStore(); 
 // const rentalApplications = ref([]);
 const router = useRouter();
 const driverRentalDetail = ref(null);
@@ -17,6 +20,7 @@ const isLoading = ref(true);
 const errorLoading = ref(null);
 
 const currentUser = computed(() => authStore.user);
+const notifications = computed(() => notificationStore.sortedNotifications);
 
 const loadRentalData = async () => {
   console.log('[RentStatusDetails] loadRentalData llamado.');
@@ -56,6 +60,16 @@ const loadRentalData = async () => {
   }
 };
 
+const handleRentalAction = async (rentId, newStatus, senderId, vehicleOwnerId) => {
+  try {
+    await notificationStore.handleRentalAction({ rentId, newStatus, senderId, vehicleOwnerId });
+    addAlert(`Solicitud ${newStatus === 'confirmed' ? 'aceptada' : 'rechazada'} correctamente.`, 'success');
+    // El store se encarga de la lógica de actualizar el estado y enviar notificaciones de feedback.
+  } catch (error) {
+    console.error("Error al procesar la solicitud de alquiler:", error);
+    addAlert("Error al procesar la accion", "error");
+  }
+};
 
 const cancelDriverApplication = async (rentalId) => {
   if (!confirm("¿Estás seguro de que quieres cancelar esta solicitud?")) {
@@ -115,6 +129,17 @@ onMounted (() => {
   if(!authStore.isInitialized){
     console.warn("[RentStatusDetails] authStore no está inicializado. Asegúrate de llamar a authStore.init() al inicio de la aplicación.");
   }
+
+  // if (currentUser.value && currentUser.value.id && !notificationStore.hasLoadedOnce) {
+  //   console.log("[Notification.vue onMounted] El store no ha cargado, intentando iniciar listener.");
+  //   notificationStore.initListenerForUser(currentUser.value.id);
+  // } else if (!currentUser.value || !currentUser.value.id) {
+  //    // Si no hay usuario, el store debería estar limpio, pero podemos asegurarlo.
+  //   if (notificationStore.notifications.length > 0 || notificationStore.isLoading) {
+  //       notificationStore.clearListenerAndData();
+  //   }
+  //   console.warn("[Notification.vue onMounted] No hay usuario autenticado.");
+  // }
 });
 
 watch(currentUser, (newUser, oldUser) => {
@@ -185,6 +210,7 @@ watch(currentUser, (newUser, oldUser) => {
             <p><span class="font-semibold">Inicia:</span> {{ formatDate(driverRentalDetail.start_time) }}</p>
             <p><span class="font-semibold">Total:</span> ${{ driverRentalDetail.total_price?.toFixed(2) || 'N/A' }}</p>
           </div>
+
           <div class="col-span-2 py-2 justify-self-end flex flex-col items-end space-y-2">
             <button v-if="driverRentalDetail.status === 'pending'"
               @click="cancelDriverApplication(driverRentalDetail.id)"
@@ -193,6 +219,7 @@ watch(currentUser, (newUser, oldUser) => {
             </button>
             <p v-if="driverRentalDetail.status === 'confirmed'" class="text-xs text-green-600 text-right">¡Solicitud aceptada! Contacta al propietario.</p>
           </div>
+
         </div>
         <button
           v-if="driverRentalDetail.status === 'confirmed' || driverRentalDetail.status === 'in_progress' || driverRentalDetail.status === 'completed'"
@@ -233,6 +260,14 @@ watch(currentUser, (newUser, oldUser) => {
           </div>
            <div class="col-span-2 py-2 justify-self-end flex flex-col items-end space-y-2">
             <p v-if="ownerRentalDetail.status === 'pending'" class="text-xs text-yellow-600 text-right">Solicitud pendiente para tu vehículo.</p>
+             <div class="flex space-x-2 mt-3">
+               <button
+                 @click="handleRentalAction(ownerRentalDetail.id, 'confirmed', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"
+                 class="text-sm px-3 py-1 rounded border text-gray-700 cursor-pointer">Aceptar</button>
+               <button
+                 @click="handleRentalAction(ownerRentalDetail.id, 'rejected', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"
+                 class="text-sm px-3 py-1 rounded bg-black text-white cursor-pointer">Rechazar</button>
+             </div>
             <!-- Aquí podrías añadir botones para Aceptar/Rechazar si la gestión se hace desde UserProfile -->
           </div>
         </div>
