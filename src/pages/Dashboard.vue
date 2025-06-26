@@ -6,7 +6,7 @@ import Heading from '@/components/atoms/Heading.vue';
 import Input from '@/components/molecules/Input.vue';
 import SearchIcon from '@/icons/Search.vue';
 import Status from '@/components/molecules/Status.vue';
-import CardCar from '../components/organisms/my-cars/CardCar.vue';
+import CardCar from '../components/organisms/cars/CardCar.vue';
 import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
 
 const authSessionHistory = sessionStorage.getItem('auth_session_history');

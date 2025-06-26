@@ -9,7 +9,7 @@ import { filterByPreferences } from "../services/filterService.js";
 import AddressInput from "@/components/organisms/google-maps/AddressInput.vue";
 
 import Heading from "@components/atoms/Heading.vue";
-import CardCar from "@components/organisms/my-cars/CardCar.vue";
+import CardCar from "@components/organisms/cars/CardCar.vue";
 import AddIcon from "@icons/AddIcon.vue";
 import Loading from "@icons/Loading.vue";
 import Input from "../components/molecules/Input.vue";
