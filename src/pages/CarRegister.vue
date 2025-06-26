@@ -1,7 +1,8 @@
 <script setup>
 import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch } from 'vue';
 import { useAuthStore, useUserStore, useCarStore } from '@stores'
-import { loadGoogleMaps, initAutocomplete } from "../services/google-maps.js"; 
+import { loadGoogleMaps, initAutocomplete } from "../services/google-maps.js";
+
 import { useRouter } from "vue-router";
 import { addAlert } from "../services/alerts.js";
 
@@ -1039,59 +1040,6 @@ onBeforeUnmount(() => {
               :outline="true"
               class="w-full cursor-pointer"
             />
-            <!-- Ciudad/Localidad -->
-            <Input
-              type="select"
-              name="ciudad"
-              id="ciudad"
-              placeholder="Ciudad/Localidad"
-              :options="ciudades.map(c => ({ value: c, label: c }))"
-              v-model="user.city"
-              :disabled="!user.province"
-              icon-position="right"
-              variant="secondary"
-              :outline="false"
-              class="w-full cursor-pointer"
-            />
-
-            <div class="flex gap-5">
-              <!-- Calle y número -->
-              <Input
-                type="text"
-                placeholder="Calle y número"
-                v-model="user.street"
-                :variant="'secondary'"
-                :outline="false"
-              />
-              <!-- Código Postal -->
-              <Input
-                type="text"
-                placeholder="Código Postal"
-                v-model="user.postalCode"
-                :variant="'secondary'"
-                :outline="false"
-              />
-            </div>
-            
-            <div class="flex gap-5">
-              <!-- Piso (opcional) -->
-              <Input
-              type="text"
-              placeholder="Piso"
-              v-model="user.floor"
-              :variant="'secondary'"
-              :outline="false"
-            />
-
-            <!-- Departamento (opcional) -->
-            <Input
-              type="text"
-              placeholder="Departamento"
-              v-model="user.apartment"
-              :variant="'secondary'"
-              :outline="false"
-              />
-            </div>
           </div>
         </router-view>
 

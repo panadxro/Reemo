@@ -10,7 +10,7 @@ import { addAlert } from '@/services/alerts';
 import { computed, onMounted } from 'vue';
 
 const authStore = useAuthStore();
-const notificationStore = useNotificationStore(); // Usar el store
+const notificationStore = useNotificationStore(); 
 const currentUser = computed(() => authStore.user); 
 
 const items = [

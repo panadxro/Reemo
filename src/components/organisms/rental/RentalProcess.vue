@@ -126,7 +126,7 @@ function handleCloseSuccessModal() {
 
 function handleViewAlert() {
   showSuccess.value = false;
-  router.push({ name: 'UserProfile', params: { id: authStore.user.id } }); 
+  router.push({ name: 'Dashboard', params: { id: authStore.user.id } }); 
 }
 
 onMounted(async () => {    
