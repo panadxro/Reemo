@@ -11,12 +11,15 @@ import Search from "../pages/Search.vue";
 import CarDetails from "../pages/CarDetails.vue";
 import AdminCars from "../pages/admin/Cars.vue";
 import AdminUsers from "../pages/admin/Users.vue";
-import PrivateChat from "../pages/PrivateChat.vue";
+import Chat from "../pages/Chat.vue";
 import UserProfile from "../pages/UserProfile.vue";
 import NotFound from "../pages/NotFound.vue";
 import Notification from "../pages/Notification.vue";
-import Rent from '../pages/Rent.vue';
- 
+import RentDetail from '../pages/RentalDetailsView.vue';
+import Rent from '../pages/Rent.vue'
+import MyCars from '../pages/MyCars.vue';
+import Documentation from "../pages/Documentation.vue";
+
 const routes = [
   { path: "/", component: Home, name: "Home" },
   { path: "/login", component: Login, name: "Login" },
@@ -79,18 +82,37 @@ const routes = [
     children: [
       {
         path: "chat",
-        name: "PrivateChat",
-        component: PrivateChat,
+        name: "Chat",
+        component: Chat,
         meta: { needsAuth: true },
       },
     ],
   },
   {
-    path: '/rent/:id?',
+    path: '/rent',
     name: 'Rent',
     component: Rent,
+    meta: { needsAuth: true },
+  },
+  {
+    path: '/rent/:id',
+    name: 'RentDetail',
+    component: RentDetail,
     props: true,
     meta: { needsAuth: true },
+  },
+  {
+    path: '/my-cars/:id?',
+    name: 'MyCars',
+    component: MyCars,
+    props: true,
+    meta: { needAuth: true },
+  },
+  {
+    path: '/documents',
+    name: 'Documents',
+    components: Documentation,
+    meta: { needAuth: true },
   },
   {
     path: "/admin",

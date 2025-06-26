@@ -223,10 +223,10 @@ onMounted(() => {
   </div>
 
   <!-- bg-[#eaf7f9] -->
-  <div v-else-if="rentalDetails" class="h-screen flex p-4 gap-4">
+  <div v-else-if="rentalDetails" class="min-h-screen flex p-4 gap-4 w-full">
 
     <!-- Panel lateral -->
-    <div class="w-96 h-full bg-white rounded-3xl p-6 shadow-xl flex flex-col gap-4">
+    <div class="w-96 h-full bg-white rounded-3xl p-6 shadow-xl flex flex-col gap-4 overflow-hidden overflow-y-auto">
       <div class="flex items-center gap-2">
         <BackButton />
         <Heading :type="1" class="medium">Detalles del Alquiler</Heading>

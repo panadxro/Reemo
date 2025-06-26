@@ -268,7 +268,7 @@ export default {
       </div>
       
       <div
-        v-if="!$route.matched.some(route => route.name === 'PrivateChat')"
+        v-if="!$route.matched.some(route => route.name === 'Chat')"
         :class="isOwnProfile ? 'div-my-user' : 'div-user'"
         class="bg-deep-blue-900 overflow-hidden rounded-[40px] py-7 px-5 "
         >
@@ -386,7 +386,7 @@ export default {
       <div 
         v-else 
         class="reviews bg-primary-900 flex flex-col rounded-[40px] px-5 py-7 gap-6"
-        v-if="!$route.matched.some(route => route.name === 'PrivateChat')">
+        v-if="!$route.matched.some(route => route.name === 'Chat')">
         <div class="flex items-center justify-between">
           <Heading :type="2" class="medium text-white">Reseñas</Heading>
           <span class="text-white text-sm">{{ showProfile?.reviews?.length || '0' }} reseñas</span>
