@@ -65,7 +65,7 @@ export async function updateRentalStatus(reqId, newStatus) {
       if(carId){
         const carRef = doc(db, 'cars', carId);
         if(newStatus === 'confirmed' || newStatus === 'in_progress' || newStatus === 'returned_by_driver'){
-          await updateDoc(carRef, { "status.current" : "notAvailable" });
+          await updateDoc(carRef, { "status.current" : "not-available" });
         }else if (
           newStatus === 'completed' ||
           newStatus === 'rejected' ||
@@ -379,9 +379,9 @@ export async function fetchRentalRequests(userId, callback) {
 
 
 /**
- * Obtiene el historial de alquileres completados para un usuario, tanto como conductor o como propietario.
- * @param {string} userId - ID del usuario.
- * @returns {Promise<Array<object>>} - Un array con el historial de alquileres enriquecidos.
+ * Obtiene el historial de alquileres donde el usuario es el conductor
+ * @param {string} userId - ID del usuario (conductor)
+ * @returns {Promise<Array<object>>} - Array con los alquileres enriquecidos
  */
 export async function fetchUserRentalHistory(userId) {
   try {
@@ -435,7 +435,7 @@ export async function fetchUserRentalHistory(userId) {
       return [];
     }
 
-    // Enriquecer con detalles del vehículo
+    // Enriquecer con detalles del vehÃculo
     const carsData = await Promise.all(
       applicationsData.map(async (app) => {
         if (!app.vehicle_id) {
@@ -460,6 +460,88 @@ export async function fetchUserRentalHistory(userId) {
     return carsData;
   } catch (error) {
     console.error("Error al obtener las solicitudes de alquiler del conductor:", error);
+    throw error;
+  }
+}
+
+/**
+ * Obtiene el historial de vehículos del usuario que han sido rentados por otros
+ * @param {string} userId - ID del usuario (propietario)
+ * @returns {Promise<Array<object>>} - Array con los alquileres enriquecidos
+ */
+export async function fetchUserRentedOutHistory(userId) {
+  try {
+    if (!userId) {
+      console.warn("ID de usuario no proporcionado");
+      return [];
+    }
+
+    const rentsCollection = collection(db, "rents");
+    
+    // Consulta para obtener los alquileres donde el usuario es el propietario
+    const ownerQuery = query(
+      rentsCollection,
+      where("owner_id", "==", userId),
+      where("status", "in", ["completed", "in_progress"]),
+      orderBy("start_time", "desc")
+    );
+
+    const ownerSnapshot = await getDocs(ownerQuery);
+
+    if (ownerSnapshot.empty) {
+      console.log("No se encontraron vehículos rentados por otros");
+      return [];
+    }
+
+    // Procesar los documentos y enriquecerlos
+    const enrichedRentals = await Promise.all(
+      ownerSnapshot.docs.map(async (document) => {
+        try {
+          const rentalData = { id: document.id, ...document.data() };
+          
+          // Obtener detalles del vehículo
+          let vehicleDetails = null;
+          if (rentalData.vehicle_id) {
+            const carRef = doc(db, 'cars', rentalData.vehicle_id);
+            const carSnap = await getDoc(carRef);
+            vehicleDetails = carSnap.exists() ? { id: carSnap.id, ...carSnap.data() } : null;
+          }
+
+          // Obtener detalles del conductor (inquilino)
+          let driverDetails = null;
+          if (rentalData.driver_id) {
+            const driverRef = doc(db, 'users', rentalData.driver_id);
+            const driverSnap = await getDoc(driverRef);
+            if (driverSnap.exists()) {
+              const dData = driverSnap.data();
+              driverDetails = {
+                id: driverSnap.id,
+                name: dData.personalInfo?.firstName || dData.personalInfo?.username || dData.email,
+                lastname: dData.personalInfo?.lastName || '',
+                photoURL: dData.personalInfo?.profilePhoto || null
+              };
+            }
+          }
+
+          console.log("fetchUserRentedOutHistory called with userId:", rentalData.owner_id);
+
+          return {
+            ...rentalData,
+            vehicleDetails,
+            driverDetails,
+            isRentedOut: true
+          };
+        } catch (error) {
+          console.error("Error al enriquecer datos del alquiler:", error);
+          return null;
+        }
+      })
+    );
+
+    // Filtrar cualquier resultado nulo por errores en el enriquecimiento
+    return enrichedRentals.filter(rental => rental !== null);
+  } catch (error) {
+    console.error("Error al obtener el historial de vehículos rentados por otros:", error);
     throw error;
   }
 }

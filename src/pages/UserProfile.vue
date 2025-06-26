@@ -6,7 +6,7 @@ import { usePaymentStore } from '@/stores/payment.store.js'
 import { useCarStore } from '@/stores/car.store.js' 
 
 import Heading from "@components/atoms/Heading.vue";
-import CardCar from "@components/organisms/my-cars/CardCar.vue";
+import CardCar from "@components/organisms/cars/CardCar.vue";
 import UserNav from "@components/user/UserNav.vue";
 import RentedCar from "@components/organisms/rental/RentedCar.vue";
 import Loading from "@icons/Loading.vue";
@@ -232,16 +232,14 @@ export default {
             </ul>
 
             <p class="text-primary-900 text-sm md:text-md leading-relaxed h-[60px] 2xl:h-full overflow-y-auto overflow-hidden">
-              Lorem ipsum, dolor sit amet consectetur adipisicing elit. Illum officia pariatur laudantium
-              similique amet deleniti iste, natus numquam accusantium eius ut aut, quo voluptatem dicta eos sint
-              eveniet sunt alias! 200 caracteres máximos.
+              {{ showProfile?.email || 'Este usuario no ha proporcionado una biografía.' }}
             </p>
           </div>
         </article>
       </div>
 
       <!-- Autos del usuario -->
-      <div class="overflow-hidden flex flex-col gap-5 px-5" :class="isOwnProfile ? 'my-cars' : 'user-cars'">
+      <div class="overflow-hidden flex flex-col gap-5 px-5" :class="isOwnProfile ? 'cars' : 'user-cars'">
         <div class="flex items-center justify-between">
           <Heading :type="2" class="medium text-primary-900 text-center sm:text-left">{{ isOwnProfile ? "Mis autos" : "Vehículos" }}</Heading>
           <a href="" class="text-primary-900">Ver más</a>
@@ -376,7 +374,7 @@ export default {
       </div>  
 
       <!-- Historial (solo para el usuario logueado) -->
-      <div v-if="isOwnProfile" class="my-history bg-primary-900 flex flex-col rounded-[40px] px-5 py-7 gap-6">
+      <div v-if="isOwnProfile" class="my-history bg-primary-900 flex flex-col rounded-[40px] px-5 py-7 gap-6 overflow-y-auto">
         <div class="flex items-center justify-between">
           <Heading :type="2" class="medium text-white text-center sm:text-left">Historial</Heading>
           <router-link v-if="rentedCars && rentedCars.length" to="/history" class=" text-white">Ver más</router-link>
@@ -420,7 +418,7 @@ export default {
     .div-user { grid-area: 1 / 4 / 2 / 6; }
     .div-my-user { grid-area: 2 / 1 / 3 / 3; }
     .user-cars { grid-area: 2 / 1 / 3 / 4; }
-    .my-cars { grid-area: 2 / 3 / 3 / 6; }
+    .cars { grid-area: 2 / 3 / 3 / 6; }
     .reviews { grid-area: 2 / 4 / 3 / 6; }
   }
 }
@@ -435,7 +433,7 @@ export default {
     .div-user { order: 3; }
     .div-my-user { order: 4; }
     .user-cars { order: 5; }
-    .my-cars { order: 6; }
+    .cars { order: 6; }
     .reviews { order: 7; }
   }
 }

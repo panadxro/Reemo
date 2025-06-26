@@ -1,98 +1,97 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores';
 
-import { fetchUserRentalHistory } from '@/services/rentedCarService';
+import { fetchUserRentalHistory, fetchUserRentedOutHistory } from '@/services/rentedCarService';
 import Loading from '@/icons/Loading.vue';
+import HistoryCar from '@/components/organisms/cars/HistoryCar.vue';
 
 const props = defineProps({
-  rentalDetails: {
-    type: Object,
-    default: null
+  showOnly: {
+    type: String,
+    default: 'all' // 'all', 'rented', 'rented-out'
   }
 });
 
-// const router = useRouter();
+const router = useRouter();
 const authStore = useAuthStore();
 
 const isLoading = ref(true);
-const historyDetails = ref([]);
+const historyData = ref({
+  rented: [],    // Vehículos que yo alquilé (como conductor)
+  rentedOut: []  // Vehículos míos alquilados por otros
+});
 
 const currentUser = computed(() => authStore.user);
 
+const combinedHistory = computed(() => {
+  switch(props.showOnly) {
+    case 'rented': 
+      return historyData.value.rented;
+    case 'rented-out':
+      return historyData.value.rentedOut;
+    default:
+      return [...historyData.value.rented, ...historyData.value.rentedOut];
+  }
+});
+
 const loadHistoryData = async () => {
-  console.log('[History] loadHistoryData llamado.');
-  if (!currentUser.value || !currentUser.value.id) {
-    console.warn('[History] Usuario no encontrado o sin ID. currentUser:', currentUser.value);
+  if (!currentUser.value?.id) {
     isLoading.value = false;
     return;
   }
+
   isLoading.value = true;
 
   try {
-    const userId = currentUser.value.id;
-    console.log('[History] id de currentUser:', userId);
+    // Llamar a ambas funciones por separado
+    const [rentedHistory, rentedOutHistory] = await Promise.all([
+      fetchUserRentalHistory(currentUser.value.id),   // Vehículos que yo alquilé
+      fetchUserRentedOutHistory(currentUser.value.id) // Mis vehículos alquilados por otros
+    ]);
+    
+    historyData.value = {
+      rented: rentedHistory || [],
+      rentedOut: rentedOutHistory || []
+    };
 
-    const history = await fetchUserRentalHistory(userId);
-    historyDetails.value = history;
+    console.log('Historial cargado:', historyData.value);
 
-    console.log('[History] resultado de los alquileres: ', JSON.parse(JSON.stringify(historyDetails.value)));
   } catch (error) {
-    console.error('[History.vue] Error al cargar solicitudes de alquiler: ', error);
+    console.error('Error loading rental history:', error);
+    historyData.value = { rented: [], rentedOut: [] };
   } finally {
     isLoading.value = false;
   }
 };
 
-onMounted(() =>{
+onMounted(() => {
   loadHistoryData();
-})
-
+});
 </script>
 
-<template #default="rentalDetails">
-
+<template>
   <div class="flex flex-col gap-5">
-    <div v-for="car in historyDetails" 
-      :key="car.id" 
-      class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer p-4" 
-      @click="$router.push(`/rent/${car.id}`)">
-      <div class="flex gap-6">
-        <div class="relative shrink-0">
-          <img :src="car.vehicleDetails.photos?.[0] || '@/assets/car-placeholder.png'" 
-            :alt="car.vehicleDetails.basicInfo.brand + ' ' + car.vehicleDetails.basicInfo.model" 
-            class="object-cover rounded-xl w-32 h-28 sm:w-36 sm:h-32" />
-        </div>
-
-        <div class="flex-1 space-y-2">
-          <div class="flex justify-between items-start">
-            <h3 class="font-bold text-primary-900 leading-tight text-lg">
-              {{ car.vehicleDetails.basicInfo.brand }} {{ car.vehicleDetails.basicInfo.model }}
-            </h3>
-            <span class="text-primary-800 font-bold shrink-0 ml-2 text-sm">
-              <!-- ${{ car.vehicleDetails.precio }}/día -->
-            </span>
-          </div>
-
-          <p class="text-background-600 text-sm">
-            {{ car.vehicleDetails.basicInfo.year }} • {{ car.vehicleDetails.specifications.fuelType }} • {{ car.vehicleDetails.specifications.transmission }}
-          </p>
-
-          <!-- Cambiar info como queiran -->
-          <div class="flex gap-2 flex-wrap">
-            <span class="bg-vibrant-light-600 text-primary-900 px-2 py-1 rounded-lg text-xs">
-              <!-- {{ car.status }} -->
-            </span>
-          </div>
-        </div>
+    <template v-if="isLoading">
+      <div class="flex justify-center py-10">
+        <Loading class="w-8 h-8 text-primary-900" />
       </div>
-      <div v-if="!rentalDetails" class="flex items-center">
-        <span class="bg-vibrant-light-600 text-primary-900 px-2 py-1 rounded-lg text-xs">
-          {{ car.status }}
-        </span>
+    </template>
+    
+    <template v-else-if="combinedHistory.length > 0">
+      <HistoryCar 
+        v-for="rental in combinedHistory" 
+        :key="rental.id" 
+        :car="rental.vehicleDetails || rental"
+        :rental="rental"
+        @click="router.push(`/rent/${rental.id}`)" />
+    </template>
+    
+    <template v-else>
+      <div class="text-center py-10 text-background-600">
+        No hay historial de alquileres disponible
       </div>
-    </div>
+    </template>
   </div>
-
 </template>
