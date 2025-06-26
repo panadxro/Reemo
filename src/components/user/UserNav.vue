@@ -39,24 +39,23 @@ const authSession = inject('authSession');
         </NavButton>
       </li>
       <li>
-        <NavButton to="/profile" title="Documentos">
+        <NavButton to="/documents" title="Documentos">
           <Credential />
           <span class="hidden md:block">Documentos</span>
         </NavButton>
       </li>
       <li>
-        <NavButton to="/profile" title="Mis autos">
+        <NavButton to="/my-cars" title="Mis autos">
           <Car />
           <span class="hidden md:block">Mis autos</span>
         </NavButton>
       </li>
       <li>
-        <NavButton to="/profile" title="Historial">
+        <NavButton to="/rent" title="Historial">
           <History />
           <span class="hidden md:block">Historial</span>
         </NavButton>
       </li>
     </ul>
   </aside>
-  <!-- <UserEdit ref="UserEdit" />  -->
 </template>

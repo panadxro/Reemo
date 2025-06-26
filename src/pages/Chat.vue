@@ -12,7 +12,7 @@ import Arrow from '../icons/Arrow.vue';
 import Send from '../icons/Send.vue';
 
 export default {
-  name: "PrivateChat",
+  name: "Chat",
   components: { Heading, Loading, BackButton, Arrow, Send },
   
   setup() {

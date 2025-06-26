@@ -21,7 +21,6 @@ const historyDetails = ref([]);
 
 const currentUser = computed(() => authStore.user);
 
-
 const loadHistoryData = async () => {
   console.log('[History] loadHistoryData llamado.');
   if (!currentUser.value || !currentUser.value.id) {
