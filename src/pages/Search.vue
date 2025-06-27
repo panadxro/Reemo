@@ -114,6 +114,7 @@ export default {
         chassis: [],
         transmission: "",
       };
+      this.searchLocation = "";
       this.applyFilters();
       localStorage.removeItem('filters');
     },
