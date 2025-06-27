@@ -231,8 +231,8 @@ const handleNotificationClick = async (notification) => {
               </p>
               <div v-if="noti.rentDetails" class="mt-3 bg-gray-100 rounded p-3">
                 <div class="flex items-center space-x-2 mb-2">
-                  <img v-if="noti.vehicleDetails?.photo && noti.vehicleDetails.photo.length > 0"
-                    :src="noti.vehicleDetails.photo[0]" :alt="`Imagen de ${noti.vehicleDetails.basicInfo?.brand }`"
+                  <img v-if="noti.vehicleDetails?.photos && noti.vehicleDetails.photos.length > 0"
+                    :src="noti.vehicleDetails.photos[0]" :alt="`Imagen de ${noti.vehicleDetails.basicInfo?.brand }`"
                     class="w-12 h-12 rounded-md object-cover" />
                   <div v-else
                     class="w-12 h-12 rounded-md bg-gray-200 flex items-center justify-center text-xs text-gray-400">Sin
