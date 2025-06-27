@@ -24,17 +24,17 @@ export function filterByPreferences(cars, filters){
         const transmission = filters.transmission ? car.specifications.transmission === filters.transmission : true;
 
         const result = matchesPrice && brand && model && transmission && chassis;
-        console.log(`${car.basicInfo.brand} ${car.basicInfo.model} - Match`, result);
-        if (!matchesPrice || !brand || !model || !transmission || !chassis) {
-          console.log("❌ Filtro fallido:", {
-            marca: car.basicInfo.brand,
-            modelo: car.basicInfo.model,
-            price: car.pricing.rates.daily,
-            chassis: car.basicInfo.type,
-            transmision: car.specifications.transmission,
-            matchesPrice, brand, model, transmission, chassis
-          });
-        }
+        // console.log(`${car.basicInfo.brand} ${car.basicInfo.model} - Match`, result);
+        // if (!matchesPrice || !brand || !model || !transmission || !chassis) {
+        //   console.log("❌ Filtro fallido:", {
+        //     marca: car.basicInfo.brand,
+        //     modelo: car.basicInfo.model,
+        //     price: car.pricing.rates.daily,
+        //     chassis: car.basicInfo.type,
+        //     transmision: car.specifications.transmission,
+        //     matchesPrice, brand, model, transmission, chassis
+        //   });
+        // }
 
         return result;
     }})
