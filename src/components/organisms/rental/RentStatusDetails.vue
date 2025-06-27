@@ -9,6 +9,7 @@ import { fetchRentedCars, fetchLatestActiveOwnedRental, updateRentalStatus } fro
 import { addAlert } from '@/services/alerts';
 import Loading from '@/icons/Loading.vue';
 import Heading from '@/components/atoms/Heading.vue';
+import Status from '@/components/molecules/Status.vue';
 
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore(); 
@@ -189,9 +190,10 @@ watch(currentUser, (newUser, oldUser) => {
         <div class="flex items-center space-x-4">
           <!-- <div class="rounded-full w-4 h-4 border border-purple-500"></div> -->
           <div class="text-md font-bold">
-            <span class="px-3 py-1 text-xs font-semibold rounded-full capitalize" :class="getStatusClass(driverRentalDetail.status)">
+            <!-- <span class="px-3 py-1 text-xs font-semibold rounded-full capitalize" :class="getStatusClass(driverRentalDetail.status)">
               {{ driverRentalDetail.status.replace('_', ' ') }}
-            </span>
+            </span> -->
+            <Status :status="driverRentalDetail.status" />
           </div>
         </div>
       </div>
@@ -226,10 +228,14 @@ watch(currentUser, (newUser, oldUser) => {
           @click="navigateToRentalDetails(driverRentalDetail.id)"
           class="mt-4 w-full bg-[#0a0a3c] hover:bg-secondary-800 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out cursor-pointer"
         >
-          Ver Detalles del Alquiler
+          Ver detalles del alquiler
         </button>
       </div>
     </div>
+
+
+
+
 
     <!-- Sección: Vehículos Propios Alquilados -->
     <div v-if="ownerRentalDetail" class="text-black w-full flex flex-col mx-auto mt-6">
@@ -276,7 +282,7 @@ watch(currentUser, (newUser, oldUser) => {
           @click="navigateToRentalDetails(ownerRentalDetail.id)"
           class="mt-4 w-full bg-[#0a0a3c] hover:bg-secondary-800 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out cursor-pointer"
         >
-          Ver Detalles del Alquiler
+          Ver detalles del alquiler
         </button>
       </div>
     </div>

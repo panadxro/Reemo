@@ -525,7 +525,7 @@ onMounted(async () => {
         <!-- Paso 4: Confirmación -->
         <div v-else-if="store.currentStep === 4" class="text-white">
           <h2 class="text-2xl font-bold mb-6">
-            Resumen de tu Reserva
+            Resumen de tu reserva
           </h2>
           
           <div class="space-y-4 pb-6 my-6">

@@ -11,6 +11,7 @@ import { loadGoogleMaps, initMap } from '@/services/google-maps';
 import Heading from "@components/atoms/Heading.vue";
 import BackButton from "@components/atoms/BackButton.vue";
 import Loading from '@icons/Loading.vue';
+import Status from '@components/molecules/Status.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -229,13 +230,13 @@ onMounted(() => {
     <div class="w-96 h-full bg-white rounded-3xl p-6 shadow-xl flex flex-col gap-4 overflow-hidden overflow-y-auto">
       <div class="flex items-center gap-2">
         <BackButton />
-        <Heading :type="1" class="medium">Detalles del Alquiler</Heading>
+        <Heading :type="1" class="medium">Detalles del alquiler</Heading>
       </div>
 
       <div class="bg-[#0D0D3C] text-white rounded-2xl p-4 flex flex-col gap-2">
         <div class="flex justify-between items-center">
           <span>Orden ID: <strong>#{{ rentalDetails.id.slice(0, 8) }}</strong></span>
-          <span class="px-2 py-1 rounded-lg text-xs font-semibold capitalize" :class="{
+          <!-- <span class="px-2 py-1 rounded-lg text-xs font-semibold capitalize" :class="{
               'bg-yellow-400 text-[#0D0D3C]': rentalDetails.status === 'pending' || rentalDetails.status === 'returned_by_driver',
               'bg-blue-500 text-white': rentalDetails.status === 'confirmed' || rentalDetails.status === 'in_progress',
               'bg-green-500 text-white': rentalDetails.status === 'completed',
@@ -250,7 +251,8 @@ onMounted(() => {
               rentalDetails.status === "returned_by_driver" ? "Devuelta por el conductor" : 
               rentalDetails.status === "completed" ? "Completado" : 
               rentalDetails.status === "in_progress" ? "En progreso" : "N/A" }}
-            </span>
+            </span> -->
+            <Status :status="rentalDetails.status"/>
 
         </div>
         <div class="border-t border-white/20 my-2"></div>
@@ -399,7 +401,7 @@ onMounted(() => {
     <div v-else class="flex-1 flex flex-col items-center justify-center bg-gray-50 rounded-3xl p-8 shadow-inner">
 
       <div class="bg-white shadow-2xl rounded-2xl p-6 max-w-2xl w-full text-gray-700 space-y-5 mx-auto">
-        <Heading :type="2" class="text-gray-800">📄 Resumen del Alquiler</Heading>
+        <Heading :type="2" class="text-gray-800">📄 Resumen del alquiler</Heading>
 
         <!-- Vehículo -->
         <div class="border-b pb-4">

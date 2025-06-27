@@ -280,7 +280,7 @@ export default {
           <Input
             type="button"
             @click="applyFilters"
-            text="Aplicar Filtros"
+            text="Aplicar filtros"
             variant="primary"
             class="text-sm"
             :outline="false"
