@@ -106,7 +106,7 @@ export default {
       <article class="bg-primary-900 pl-9 py-11 flex flex-col gap-16 rounded-[40px] w-full group relative">
         <div class="flex flex-col gap-4 w-96">
           <Heading :type="3" class="text-white">Publicá tu vehículo</Heading>
-          <p class="text-lg font-regular leading-tight text-slate-400">Registrá tu auto en menos de 10 minutos y dejálo listo para ser alquilado.</p>
+          <p class="text-lg font-regular leading-tight text-slate-400">Registrá tu auto en menos de 10 minutos y dejalo listo para ser alquilado.</p>
         </div>
         <div class="flex flex-row-reverse">
           <PublishYourCar />
@@ -140,7 +140,7 @@ export default {
     </div>
 
     <div class="flex flex-col gap-5">
-      <article class="py-6 md:py-11 w-full rounded-[20px] md:rounded-[40px] shadow-custom flex flex-col lg:flex-row px-4 lg:px-0">
+      <article class="pl-9 py-11 w-full rounded-[20px] md:rounded-[40px] shadow-custom flex flex-col lg:flex-row">
         <div class="flex flex-col justify-between flex-1 gap-8">
             <div>
                 <Heading :type="3">Contactáte inmediatamente<br class="hidden md:block"/> con el dueño</Heading>
@@ -224,7 +224,7 @@ export default {
         <template #title>
           <Heading type="5">¿Qué necesito para abrir una cuenta en Reemo?</Heading>
         </template>
-        <p class="pt-4">Para registrarte en Reemo, solo necesitas un correo electrónico válido, una contraseña segura y algunos datos personales básicos para configurar tu perfil. Una vez que completes estos pasos, podrás empezar a alquilar o rentar autos en nuestra plataforma.</p>
+        <p class="pt-4">Para registrarte en Reemo, solo necesitás un correo electrónico válido, una contraseña segura y algunos datos personales básicos para configurar tu perfil. Una vez que completes estos pasos, podrás empezar a alquilar o rentar autos en nuestra plataforma.</p>
       </Dropdown>
       <Dropdown class="flex flex-col bg-secondary-100 px-8 py-5 rounded-3xl">
         <template #title>

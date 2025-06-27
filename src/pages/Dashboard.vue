@@ -9,6 +9,7 @@ import Status from '@/components/molecules/Status.vue';
 import CardCar from '../components/organisms/cars/CardCar.vue';
 import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
 
+
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
 
