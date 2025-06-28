@@ -243,9 +243,7 @@ watch(currentUser, (newUser, oldUser) => {
         <div class="flex items-center space-x-4">
           <!-- <div class="rounded-full w-4 h-4 border border-teal-500"></div> -->
           <div class="text-md font-bold">
-            <span class="px-3 py-1 text-xs font-semibold rounded-full capitalize" :class="getStatusClass(ownerRentalDetail.status)">
-              {{ ownerRentalDetail.status.replace('_', ' ') }}
-            </span>
+            <Status :status="ownerRentalDetail.status" />
           </div>
         </div>
       </div>
@@ -266,7 +264,7 @@ watch(currentUser, (newUser, oldUser) => {
           </div>
            <div class="col-span-2 py-2 justify-self-end flex flex-col items-end space-y-2">
             <p v-if="ownerRentalDetail.status === 'pending'" class="text-xs text-yellow-600 text-right">Solicitud pendiente para tu vehículo.</p>
-             <div class="flex space-x-2 mt-3">
+             <div class="flex space-x-2 mt-3" v-if="ownerRentalDetail.status === 'pending' && currentUser?.id === ownerRentalDetail.owner_id">
                <button
                  @click="handleRentalAction(ownerRentalDetail.id, 'confirmed', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"
                  class="text-sm px-3 py-1 rounded border text-gray-700 cursor-pointer">Aceptar</button>

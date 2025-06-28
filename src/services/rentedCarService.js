@@ -165,7 +165,7 @@ export function subscribeToRentalDetails(rentalId, callback) {
           const driverSnap = await getDoc(doc(db, 'users', data.driver_id));
           if (driverSnap.exists()) {
             const uData = driverSnap.data();
-            enrichedData.driverData = { id: driverSnap.id, name: uData.personalInfo?.firstName, lastname: uData.personalInfo?.lastName, photoURL: uData.personalInfo?.profilePhoto };
+            enrichedData.driverData = { id: driverSnap.id, name: uData.personalInfo?.firstName, lastname: uData.personalInfo?.lastName, photoURL: uData.personalInfo?.profilePhoto, username: uData.personalInfo?.username || uData.email };
           }
         }
         if (typeof callback === 'function') callback(enrichedData, null);
@@ -221,7 +221,8 @@ export async function fetchRentedCars(userId) {
       if(vehicleDetails && vehicleDetails.ownerId ){
         const ownerRef = doc(db, 'users', vehicleDetails.ownerId );
         const ownerSnap = await getDoc(ownerRef);
-        ownerDetails = ownerSnap.exists() ? {id: ownerSnap.id, name: ownerSnap.data().name, photoURL: ownerSnap.data().photoURL } : null;
+        const uData = ownerSnap.data();
+        ownerDetails = ownerSnap.exists() ? {id: ownerSnap.id, name: uData.personalInfo?.firstName, lastname: uData.personalInfo?.lastName, photoURL: uData.personalInfo?.profilePhoto, } : null;
       }
     } else {
       console.warn(`La solicitud ${appData.id} no tiene vehicle_id.`);
