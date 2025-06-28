@@ -21,6 +21,7 @@ export default {
           "rejected",
           "cancelled_by_user",
           "cancelled_by_owner",
+          "returned_by_driver",
           "in_progress",
           "completed"
         ].includes(value);
@@ -48,6 +49,7 @@ export default {
         rejected: "Rechazado",
         completed: "Completado",
         "in_progress": "En progreso",
+        "returned_by_driver": "Devuelto por el conductor",
         "cancelled_by_owner": "Cancelado por el propietario",
         "cancelled_by_user": "Cancelado por el usuario", 
         "not-available": "No disponible",
@@ -70,6 +72,7 @@ export default {
         rejected: "bg-red-100 text-red-800",
         completed: "bg-green-100 text-green-800",
         "in_progress": "bg-blue-100 text-blue-800",
+        "returned_by_driver": "bg-blue-100 text-blue-800",
         "cancelled_by_owner": "bg-red-100 text-red-800",
         "cancelled_by_user": "bg-red-100 text-red-800",
         "not-available": "bg-red-100 text-red-800",

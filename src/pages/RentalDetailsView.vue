@@ -264,7 +264,7 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="bg-white rounded-2xl p-4 flex flex-col gap-2">
+      <div class="bg-white rounded-2xl p-4 flex flex-col gap-2" v-if="rentalDetails.driver_id === loggedUser?.id">
         <h3 class="text-[#0D0D3C] text-sm font-semibold mb-2">Datos del propietario</h3>
         <div class="flex items-center gap-2">
           <!-- <img src="https://i.pravatar.cc/100" alt="owner" class="w-12 h-12 rounded-full" /> -->
@@ -274,6 +274,21 @@ onMounted(() => {
             <p class="font-medium">{{ rentalDetails.ownerData?.name || rentalDetails.owner_id }} {{
               rentalDetails.ownerData?.lastname}}</p>
             <p class="text-xs text-gray-500">@{{ rentalDetails.ownerData?.username}}</p>
+            <!-- <p class="text-xs text-gray-500">Propietario</p> -->
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 flex flex-col gap-2" v-else-if="rentalDetails.owner_id === loggedUser?.id">
+        <h3 class="text-[#0D0D3C] text-sm font-semibold mb-2">Datos del inquilino</h3>
+        <div class="flex items-center gap-2">
+          <!-- <img src="https://i.pravatar.cc/100" alt="owner" class="w-12 h-12 rounded-full" /> -->
+          <img :src="rentalDetails.driverData?.photoURL" :alt="rentalDetails.driverData?.name"
+            class="w-12 h-12 rounded-full" />
+          <div>
+            <p class="font-medium">{{ rentalDetails.driverData?.name || rentalDetails.owner_id }} {{
+              rentalDetails.driverData?.lastname}}</p>
+            <p class="text-xs text-gray-500">@{{ rentalDetails.driverData?.username}}</p>
             <!-- <p class="text-xs text-gray-500">Propietario</p> -->
           </div>
         </div>
@@ -289,9 +304,14 @@ onMounted(() => {
       </div>
 
       <!-- Mensaje de vehículo retirado -->
-      <div v-if="showPickupMessage" class="bg-green-600 border border-green-700 text-white p-4 rounded-md text-center">
+      <div v-if="showPickupMessage && loggedUser?.id === rentalDetails?.driver_id" class="bg-green-600 border border-green-700 text-white p-4 rounded-md text-center">
         <p class="font-semibold">¡El vehículo fue retirado!</p>
-        <p>Recuerda devolverlo antes del {{ formatDate(rentalDetails.end_time) }}.</p>
+        <p>Recuerda devolverlo antes del {{ formatDate(rentalDetails?.end_time) }}.</p>
+      </div>
+
+      <div v-else-if="showPickupMessage && loggedUser?.id === rentalDetails?.owner_id" class="bg-green-600 border border-green-700 text-white p-4 rounded-md text-center">
+        <p class="font-semibold">¡El vehículo fue retirado!</p>
+        <p>{{ rentalDetails?.driverData?.name }} debe devolverlo antes del {{ formatDate(rentalDetails?.end_time) }}.</p>
       </div>
 
       <!-- Acciones -->
@@ -299,43 +319,43 @@ onMounted(() => {
         <button v-if="canMarkAsPickedUp" @click="handleMarkAsPickedUp" :disabled="actionInProgress"
           class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
           <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
-          Marcar como Auto Retirado
+          Marcar como auto retirado
         </button>
 
         <button v-if="canMarkAsReturned_Driver" @click="handleMarkAsReturned" :disabled="actionInProgress"
           class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
           <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
-          Marcar Vehículo como Devuelto
+          Marcar vehículo como devuelto
         </button>
 
         <button v-if="canFinalize_Owner" @click="handleFinalizeRental" :disabled="actionInProgress"
           class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
           <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
-          Confirmar Devolución y Finalizar
+          Confirmar devolución y finalizar
         </button>
 
         <button v-if="canCancelRental" @click="handleCancelRental" :disabled="actionInProgress"
           class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
           <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
-          Cancelar Alquiler
+          Cancelar alquiler
         </button>
       </div>
       <div v-else class="pt-6 border-t border-gray-200 space-y-4 text-center">
-        <p class="text-xl font-semibold text-green-600">¡Alquiler Completado!</p>
+        <p class="text-xl font-semibold text-green-600">¡Alquiler completado!</p>
         <div class="my-4 p-3 bg-gray-100 rounded-lg">
           <p class="text-sm text-gray-700">Próximamente podrás calificar esta experiencia.</p>
           <button class="mt-2 text-sm text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline"
             disabled>
-            Calificar Alquiler (Próximamente)
+            Calificar alquiler (próximamente)
           </button>
         </div>
-        <button @click="router.push(`/dashboard/${loggedUser?.id}`)"
+        <button @click="router.push(`/dashboard`)"
           class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
-          Volver a Inicio
+          Volver a inicio
         </button>
         <button @click="router.push(`/user/${loggedUser?.id}`)"
           class="mt-2 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
-          Ver Mi Perfil
+          Ver mi perfil
         </button>
       </div>
 
