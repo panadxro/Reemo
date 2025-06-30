@@ -12,6 +12,9 @@ import Heading from "@components/atoms/Heading.vue";
 import BackButton from "@components/atoms/BackButton.vue";
 import Loading from '@icons/Loading.vue';
 import Status from '@components/molecules/Status.vue';
+import Velocimetre from '@icons/Velocimetre.vue';
+import Ubication from '@icons/Ubication.vue';
+import Distance from '@icons/Distance.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -73,7 +76,7 @@ async function initializeMap(details) {
         }
       }
     } catch (error) {
-      console.error('[RentalDetailsView]: Error al inicializar el mapa:', mapError);
+      console.error('[RentalDetailsView]: Error al inicializar el mapa:', error);
     }
   }
 }
@@ -91,6 +94,115 @@ const canMarkAsReturned_Driver = computed(() => {
 
 const canFinalize_Owner = computed(() => {
   return isOwner.value && rentalDetails.value?.status === 'returned_by_driver';
+});
+
+// Computada para verificar en que paso estamos y poder informar a los usuarios
+// Hay 5 tipos de pasos: action-needed detecta cuando vos mismo trenes que hacer una acción (marcar como entregado por ejemplo),
+// waiting(en caso de que el otro usuario tenga que hacer alguna accion, vos vas a ver waiting), info(se usa uno sool y es cuando tenes el auto para manejsr), 
+// success (cuando se completo el alquiler y ambos marcaron como devuelto), cancelled (cuando fue canvcelada por cualquiera de los dos usurios o rechazada)
+const nextStepInfo = computed(() => {
+  if (!rentalDetails.value) return null;
+  
+  const status = rentalDetails.value.status;
+  const ownerName = rentalDetails.value.ownerData?.name || 'el propietario';
+  const driverName = rentalDetails.value.driverData?.name || 'el conductor';
+  
+  switch (status) {
+    case 'pending':
+      if (isDriver.value) {
+        return {
+          message: `Esperando que ${ownerName} confirme tu solicitud de alquiler`,
+          type: 'waiting',
+          icon: '⏳'
+        };
+      } else if (isOwner.value) {
+        return {
+          message: 'Tenés una solicitud de alquiler pendiente por revisar',
+          type: 'action-needed',
+          icon: '🔔'
+        };
+      }
+      break;
+      
+    case 'confirmed':
+      if (isDriver.value) {
+        return {
+          message: `Esperando que ${ownerName} marque el auto como retirado`,
+          type: 'waiting',
+          icon: '⏳'
+        };
+      } else if (isOwner.value) {
+        return {
+          message: 'Cuando entregues el vehículo, marcalo como retirado',
+          type: 'action-needed',
+          icon: '🚗'
+        };
+      }
+      break;
+      
+    case 'in_progress':
+      if (isDriver.value) {
+        return {
+          message: 'Disfrutá tu viaje. Recordá devolver el vehículo a tiempo',
+          type: 'info',
+          icon: '🚙'
+        };
+      } else if (isOwner.value) {
+        return {
+          message: `${driverName} tiene el vehículo. Esperando la devolución`,
+          type: 'waiting',
+          icon: '⏰'
+        };
+      }
+      break;
+      
+    case 'returned_by_driver':
+      if (isDriver.value) {
+        return {
+          message: `Esperando que ${ownerName} confirme la devolución del vehículo`,
+          type: 'waiting',
+          icon: '⏳'
+        };
+      } else if (isOwner.value) {
+        return {
+          message: 'Revisá el estado del vehículo y confirmá la devolución',
+          type: 'action-needed',
+          icon: '✅'
+        };
+      }
+      break;
+      
+    case 'completed':
+      return {
+        message: '¡Alquiler completado exitosamente!',
+        type: 'success',
+        icon: '🎉'
+      };
+      
+    case 'cancelled_by_owner':
+      return {
+        message: `El alquiler fue cancelado por ${ownerName}`,
+        type: 'cancelled',
+        icon: '❌'
+      };
+      
+    case 'cancelled_by_user':
+      return {
+        message: `El alquiler fue cancelado por ${driverName}`,
+        type: 'cancelled',
+        icon: '❌'
+      };
+      
+    case 'rejected':
+      return {
+        message: 'La solicitud de alquiler fue rechazada',
+        type: 'cancelled',
+        icon: '❌'
+      };
+      
+    default:
+      return null;
+  }
 });
 
 async function handleMarkAsPickedUp() {
@@ -218,16 +330,15 @@ onMounted(() => {
 
 <template>
 
-  <div v-if="isLoading && !rentalDetails" class="flex flex-col items-center justify-center py-10">
+  <div v-if="isLoading" class="flex flex-col items-center justify-center py-10 w-full">
     <Loading class="h-12 w-12 text-secondary-500" />
-    <p class="mt-4">Cargando detalles del alquiler...</p>
   </div>
 
   <!-- bg-[#eaf7f9] -->
-  <div v-else-if="rentalDetails" class="min-h-screen flex p-4 gap-4 w-full">
+  <div v-else-if="rentalDetails" class="flex py-6 px-4 gap-4 w-full bg-secondary-100 rounded-3xl">
 
     <!-- Panel lateral -->
-    <div class="w-96 h-full bg-white rounded-3xl p-6 shadow-xl flex flex-col gap-4 overflow-hidden overflow-y-auto">
+    <div class="w-96 h-full flex flex-col gap-4 overflow-hidden overflow-y-auto">
       <div class="flex items-center gap-2">
         <BackButton />
         <Heading :type="1" class="medium">Detalles del alquiler</Heading>
@@ -255,53 +366,112 @@ onMounted(() => {
             <Status :status="rentalDetails.status"/>
 
         </div>
-        <div class="border-t border-white/20 my-2"></div>
-        <div class="text-sm flex flex-col gap-1">
-          <div><strong>Desde:</strong> {{ formatDate(rentalDetails.start_time) }}</div>
-          <div><strong>Hasta:</strong> {{ formatDate(rentalDetails.end_time) }}</div>
-          <div><strong>Tarifa:</strong> ARS ${{ rentalDetails.total_price?.toFixed(2) || 'N/A' }}</div>
-          <div><strong>Pago:</strong> Transferencia</div>
+        <div class="grid grid-cols-2 gap-2">
+          <div><p class="text-background-800 text-sm">Desde:</p> <p class="text-white text-sm">{{ formatDate(rentalDetails.start_time) }}</p></div>
+          <div><p class="text-background-800 text-sm">Hasta:</p> <p class="text-white text-sm">{{ formatDate(rentalDetails.end_time) }}</p></div>
+          <div><p class="text-background-800 text-sm">Tarifa:</p> <p class="text-white text-sm">${{ rentalDetails.total_price?.toFixed() || 'N/A' }}</p></div>
+          <div><p class="text-background-800 text-sm">Método de pago:</p> <p class="text-white text-sm">Transferencia</p></div>
         </div>
       </div>
 
-      <div class="bg-white rounded-2xl p-4 flex flex-col gap-2" v-if="rentalDetails.driver_id === loggedUser?.id">
-        <h3 class="text-[#0D0D3C] text-sm font-semibold mb-2">Datos del propietario</h3>
-        <div class="flex items-center gap-2">
-          <!-- <img src="https://i.pravatar.cc/100" alt="owner" class="w-12 h-12 rounded-full" /> -->
+
+      <!-- Cuadro para indicar cual es el proxim que debe seguir determinado usuario para que se etienda mas -->
+      <div v-if="nextStepInfo && !showCompletedView" 
+           class="p-4 rounded-2xl border-2 transition-all duration-300"
+           :class="{
+             'bg-blue-50 border-blue-300': nextStepInfo.type === 'waiting',
+             'bg-orange-50 border-orange-300': nextStepInfo.type === 'action-needed',
+             'bg-green-50 border-green-300': nextStepInfo.type === 'info',
+             'bg-emerald-50 border-emerald-300': nextStepInfo.type === 'success',
+             'bg-red-50 border-red-300': nextStepInfo.type === 'cancelled'
+           }">
+        <div class="flex items-start gap-3">
+          <span class="text-2xl">{{ nextStepInfo.icon }}</span>
+          <div>
+            <h3 class="font-semibold text-gray-800 mb-1">Próximo paso</h3>
+            <p class="text-gray-700 text-sm leading-relaxed">{{ nextStepInfo.message }}</p>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="p-4 flex flex-col gap-2" v-if="rentalDetails.driver_id === loggedUser?.id">
+        <div class="flex items-center justify-between">
+        <Heading :type="2" class="medium text-primary-900">Datos del propietario</Heading>
+        <router-link
+                v-if="rentalDetails.owner_id !== loggedUser?.id"
+                :to="`/user/${rentalDetails.owner_id}/chat`"
+                class="cursor-pointer"
+                >
+                <button class="px-3 py-2 bg-primary-900 text-white rounded-lg hover:bg-primary-700 hover:cursor-pointer transition-colors duration-200">
+                  Chat
+                </button>
+              <!-- <Input 
+                type="button"
+                text="Chat"
+                variant="primary"
+                :outline="false"
+                class="cursor-pointer"
+              /> -->
+              </router-link>
+        </div>
+        <router-link :to="`/user/${rentalDetails.owner_id}`" class="flex items-center gap-4 mt-4">
           <img :src="rentalDetails.ownerData?.photoURL" :alt="rentalDetails.ownerData?.name"
-            class="w-12 h-12 rounded-full" />
+            class="w-14 h-14 rounded-full" />
           <div>
-            <p class="font-medium">{{ rentalDetails.ownerData?.name || rentalDetails.owner_id }} {{
+            <p class="font-medium text-primary-900">{{ rentalDetails.ownerData?.name }} {{
               rentalDetails.ownerData?.lastname}}</p>
-            <p class="text-xs text-gray-500">@{{ rentalDetails.ownerData?.username}}</p>
-            <!-- <p class="text-xs text-gray-500">Propietario</p> -->
+              <p class="text-md text-gray-500">@{{ rentalDetails.ownerData?.username}}</p>
           </div>
-        </div>
+        </router-link>
       </div>
 
-      <div class="bg-white rounded-2xl p-4 flex flex-col gap-2" v-else-if="rentalDetails.owner_id === loggedUser?.id">
-        <h3 class="text-[#0D0D3C] text-sm font-semibold mb-2">Datos del inquilino</h3>
-        <div class="flex items-center gap-2">
-          <!-- <img src="https://i.pravatar.cc/100" alt="owner" class="w-12 h-12 rounded-full" /> -->
+        <div class="p-4 flex flex-col gap-2" v-else-if="rentalDetails.owner_id === loggedUser?.id">
+        <div class="flex items-center justify-between">
+        <Heading :type="2" class="medium text-primary-900">Datos del conductor</Heading>
+        <router-link
+                v-if="rentalDetails.driver_id !== loggedUser?.id"
+                :to="`/user/${rentalDetails.driver_id}/chat`"
+                class="cursor-pointer"
+                >
+                <button class="px-3 py-2 bg-primary-900 text-white rounded-lg hover:bg-primary-700 hover:cursor-pointer transition-colors duration-200">
+                  Chat
+                </button>
+              <!-- <Input 
+                type="button"
+                text="Chat"
+                variant="primary"
+                :outline="false"
+                class="cursor-pointer"
+              /> -->
+              </router-link>
+        </div>
+        <router-link :to="`/user/${rentalDetails.driver_id}`" class="flex items-center gap-4 mt-4">
           <img :src="rentalDetails.driverData?.photoURL" :alt="rentalDetails.driverData?.name"
-            class="w-12 h-12 rounded-full" />
+            class="w-14 h-14 rounded-full" />
           <div>
-            <p class="font-medium">{{ rentalDetails.driverData?.name || rentalDetails.owner_id }} {{
+            <p class="font-medium text-primary-900">{{ rentalDetails.driverData?.name }} {{
               rentalDetails.driverData?.lastname}}</p>
-            <p class="text-xs text-gray-500">@{{ rentalDetails.driverData?.username}}</p>
-            <!-- <p class="text-xs text-gray-500">Propietario</p> -->
+              <p class="text-md text-gray-500">@{{ rentalDetails.driverData?.username}}</p>
           </div>
-        </div>
+        </router-link>
       </div>
 
-      <div class="flex items-center gap-2 border rounded-xl p-3">
-        <img :src="rentalDetails.vehicleData?.photos[0]" :alt="rentalDetails.vehicleData?.basicInfo.brand" alt="auto"
-          class="w-12 h-8 object-contain" />
+      <router-link :to="`/car/${rentalDetails.vehicleData?.id}`" class="flex items-center gap-2 bg-white rounded-xl justify-between p-4">
+        <div class="flex gap-2">
+          <img :src="rentalDetails.vehicleData?.photos[0]" :alt="rentalDetails.vehicleData?.basicInfo.brand"
+          class="w-16 object-contain" />
         <div>
-          <p class="font-semibold">{{ rentalDetails.vehicleData?.basicInfo.brand }} {{ rentalDetails.vehicleData?.basicInfo.model }}</p>
-          <p class="text-sm">{{ rentalDetails.vehicleData?.basicInfo.licensePlate  }}</p>
+          <p class="text-sm font-semibold text-background-600">{{ rentalDetails.vehicleData?.basicInfo.brand }}</p>
+          <p class="text-lg font-bold text-primary-900">{{ rentalDetails.vehicleData?.basicInfo.model }}</p>
         </div>
-      </div>
+        </div>
+
+        <div class="text-primary-900 font-semibold text-md">
+          {{ rentalDetails.vehicleData?.basicInfo.licensePlate  }}
+        </div>
+        
+      </router-link>
 
       <!-- Mensaje de vehículo retirado -->
       <div v-if="showPickupMessage && loggedUser?.id === rentalDetails?.driver_id" class="bg-green-600 border border-green-700 text-white p-4 rounded-md text-center">
@@ -317,25 +487,25 @@ onMounted(() => {
       <!-- Acciones -->
       <div v-if="!showCompletedView" class="pt-6 border-t border-gray-200 space-y-3">
         <button v-if="canMarkAsPickedUp" @click="handleMarkAsPickedUp" :disabled="actionInProgress"
-          class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
+          class="hover:cursor-pointer w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
           <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
           Marcar como auto retirado
         </button>
 
         <button v-if="canMarkAsReturned_Driver" @click="handleMarkAsReturned" :disabled="actionInProgress"
-          class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
+          class="hover:cursor-pointer w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
           <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
           Marcar vehículo como devuelto
         </button>
 
         <button v-if="canFinalize_Owner" @click="handleFinalizeRental" :disabled="actionInProgress"
-          class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
+          class="hover:cursor-pointer w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
           <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
           Confirmar devolución y finalizar
         </button>
 
         <button v-if="canCancelRental" @click="handleCancelRental" :disabled="actionInProgress"
-          class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
+          class="hover:cursor-pointer w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
           <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
           Cancelar alquiler
         </button>
@@ -364,32 +534,43 @@ onMounted(() => {
     <!-- Panel principal -->
     <div v-if="!showCompletedView" class="flex-1 flex flex-col gap-4 relative">
 
-      <!-- Datos del viaje -->
-      <div class="grid grid-cols-4 gap-4">
-        <div class="bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-md">
-          <span class="text-sm font-medium text-gray-500">Ubicación</span>
-          <span class="text-[#0D0D3C] font-semibold">{{ rentalDetails.vehicleData?.status.currentLocation.address }}</span>
-        </div>
-        <div class="bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-md">
-          <span class="text-sm font-medium text-gray-500">Velocidad</span>
-          <span class="text-[#0D0D3C] font-semibold">60 km/h</span>
-        </div>
-        <div class="bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-md">
-          <span class="text-sm font-medium text-gray-500">Distancia</span>
-          <span class="text-[#0D0D3C] font-semibold">0.542 km</span>
-        </div>
-        <div class="bg-white rounded-2xl p-4 flex flex-col gap-1 shadow-md">
-          <span class="text-sm font-medium text-gray-500">Última parada</span>
-          <span class="text-[#0D0D3C] font-semibold">Hace 2hs</span>
-        </div>
-      </div>
-
       <!-- Mapa (placeholder) -->
       <div class="flex-1 bg-gray-200 rounded-3xl relative overflow-hidden">
         <div id="map" class="absolute inset-0 z-0"></div>
+
+        <!-- Datos del viaje -->
+      <div class="absolute left-1/2 transform -translate-x-1/2 top-8 bg-white rounded-2xl p-4 shadow-lg z-10 w-[90%] max-w-4xl mx-auto">
+        <div class="grid grid-cols-3 gap-4">
+        <div class="bg-vibrant-light-600 rounded-2xl p-4 flex flex-col gap-3 shadow-md">
+          <div class="flex items-center gap-2">
+          <Ubication class="size-6 text-primary-900" />
+          <span class="text-sm font-medium text-primary-900">Ubicación</span>
+          </div>
+          <span class="text-background-600 font-semibold">{{ rentalDetails.vehicleData?.status.currentLocation.address }}</span>
+        </div>
+        <div class="bg-vibrant-light-600 rounded-2xl p-4 flex flex-col gap-3 shadow-md">
+          <div class="flex items-center gap-2">
+          <Velocimetre class="size-6 text-primary-900" />
+          <span class="text-sm font-medium text-primary-900">Velocidad</span>
+          </div>
+          <span class="text-background-600 font-semibold">60 km/h</span>
+        </div>
+        <div class="bg-vibrant-light-600 rounded-2xl p-4 flex flex-col gap-3 shadow-md">
+          <div class="flex items-center gap-2">
+          <Distance class="size-6 text-primary-900" />
+          <span class="text-sm font-medium text-primary-900">Distancia</span>
+          </div>
+          <span class="text-background-600 font-semibold">0.542 km</span>
+        </div>
+        <!-- <div class="bg-vibrant-light-600 rounded-2xl p-4 flex flex-col gap-1 shadow-md">
+          <span class="text-sm font-medium text-primary-900">Última parada</span>
+          <span class="text-background-600 font-semibold">Hace 2hs</span>
+        </div> -->
+        </div>
+      </div>
         
         <!-- Chat flotante -->
-        <div
+        <!-- <div
           class="absolute bottom-4 right-4 w-80 bg-[#0D0D3C] text-white rounded-2xl p-3 flex flex-col gap-2 shadow-lg">
           <div class="flex justify-between items-center">
             <div class="flex items-center gap-2">
@@ -408,17 +589,21 @@ onMounted(() => {
               placeholder="Escribir mensaje...">
             <button class="bg-[#2A3EF4] px-4 rounded-r-xl">➤</button>
           </div>
-        </div>
+        </div> -->
 
         <!-- Botones flotantes -->
-        <div class="absolute bottom-4 left-4 flex gap-2">
+        <!-- <div class="absolute bottom-4 left-4 flex gap-2">
           <button class="bg-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg">🔔</button>
           <button class="bg-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg">💬</button>
-        </div>
+        </div> -->
 
       </div>
     </div>
-    <div v-else class="flex-1 flex flex-col items-center justify-center bg-gray-50 rounded-3xl p-8 shadow-inner">
+
+
+
+
+    <div v-else class="flex-1 flex flex-col items-center justify-center bg-gray-50 rounded-3xl p-8 shadow-inner overflow-hidden">
 
       <div class="bg-white shadow-2xl rounded-2xl p-6 max-w-2xl w-full text-gray-700 space-y-5 mx-auto">
         <Heading :type="2" class="text-gray-800">📄 Resumen del alquiler</Heading>
@@ -462,7 +647,7 @@ onMounted(() => {
           <p><strong>Método:</strong> {{ rentalDetails.payments.payment_method }}</p>
           <p><strong>ID Transacción:</strong> {{ rentalDetails.payments.transaction_id }}</p>
           <p><strong>Estado:</strong> {{ rentalDetails.payments.status }}</p>
-          <p><strong>Total pagado:</strong> ARS ${{ rentalDetails.total_price?.toFixed(2) }}</p>
+          <p><strong>Total pagado:</strong> ${{ rentalDetails.total_price?.toFixed() }}</p>
         </div>
 
         <!-- Estado Final -->

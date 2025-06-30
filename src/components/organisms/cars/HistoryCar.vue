@@ -60,7 +60,7 @@ const formatPrice = (price) => {
           {{ formatDate(rental.end_time) }}
         </p>
         <p class="text-gray-500 mt-1 text-sm">
-          ARS${{ formatPrice(rental.payments.amount || 0) }}
+          ${{ formatPrice(rental.payments.amount || 0) }}
         </p>
         <div v-if="car.ownerId !== rental.driver_id" class="flex items-center gap-2 mt-1">
           <img :src="rental.driverDetails?.photoURL" :alt="rental.driverDetails?.name + ' ' + rental.driverDetails?.lastName"
