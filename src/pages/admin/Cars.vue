@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { useAdminStore } from "@stores";
 import { addAlert } from "../../services/alerts";
 import { formatDate } from '../../libraries/date.js';
+import { createCarValidationNotification } from "../../services/car/notifyRented.js";
 
 import Heading from "@components/atoms/Heading.vue";
 import Loading from "@icons/Loading.vue";
@@ -71,7 +72,10 @@ export default {
     async updateValidation(car) {
       try {
         const newStatus = car.status.current === 'not-validated' ? 'validated' : 'not-validated';
+
         await this.adminStore.changeCarValidation(car.id, newStatus);
+        await createCarValidationNotification(car, newStatus);
+
         car.status = newStatus;
         addAlert("Estado del vehículo actualizado con éxito", "success");
       } catch (error) {
