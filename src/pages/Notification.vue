@@ -2,6 +2,7 @@
 
 import Heading from '@/components/atoms/Heading.vue';
 import Loading from '@/icons/Loading.vue';
+import ReemoIcon from '@/icons/ReemoIcon.vue';
 
 import { useAuthStore } from '@/stores';
 import { useNotificationStore } from '@/stores/notification.store';
@@ -127,11 +128,13 @@ const handleNotificationClick = async (notification) => {
         @click="handleNotificationClick(noti)">
         <!-- Contenedor General para una Notificación -->
         <div class="flex items-start space-x-3">
-          <img v-if="noti.senderDetails?.photoURL" :src="noti.senderDetails?.photoURL" class="w-10 h-10 rounded-full" />
+          <img v-if="noti.senderDetails?.photoURL" :src="noti.senderDetails?.photoURL" :alt="noti.senderDetails?.name || 'Reemo Bot' " class="w-10 h-10 rounded-full" />
           <div v-else
-            class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
-            <h3>{{ noti.senderDetails?.name ? noti.senderDetails.name .charAt(0).toUpperCase() : 'R' }}</h3>
-            <p> {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}</p>
+          class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
+          <!-- <img src="../assets/imagotipo-celeste.png" :alt="noti.senderDetails?.name || 'Reemo Bot' " class="w-10 h-10 rounded-full" /> -->
+          <ReemoIcon class="w-15 h-15 rounded-full" />
+          <!-- <h3>{{ noti.senderDetails?.name ? noti.senderDetails.name .charAt(0).toUpperCase() : 'R' }}</h3> -->
+          <!-- <p> {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}</p> -->
           </div>
           <div class="flex-1">
 
@@ -271,10 +274,28 @@ const handleNotificationClick = async (notification) => {
               </div>
             </div>
 
+            <div v-else-if="noti.type === 'car_validated'">
+              <a :href="noti.link" class="text-sm text-gray-700 block">
+                <p class="text-sm text-gray-700">
+                  {{ noti.message || 'Tienes una nueva notificación.' }}
+                </p>
+              </a>
+            </div>
+
+            <div v-else-if="noti.type === 'car_invalidated'">
+              <a :href="noti.link" class="text-sm text-gray-700 block">
+                <p class="text-sm text-gray-700">
+                  {{ noti.message || 'Tienes una nueva notificación.' }}
+                </p>
+              </a>
+            </div>
+
+
+
             <!-- Caso: Otro tipo de notificación (genérico) -->
             <div v-else>
-              <p class="text-sm text-gray-700">{{ noti.message || 'Tienes una nueva notificación.' }}</p>
               <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div>
+              <p class="text-sm text-gray-700">{{ noti.message || 'Tienes una nueva notificación.' }}</p>
             </div>
 
 
