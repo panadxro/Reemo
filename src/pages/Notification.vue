@@ -8,7 +8,7 @@ import { useAuthStore } from '@/stores';
 import { useNotificationStore } from '@/stores/notification.store';
 import { addAlert } from '@/services/alerts';
 
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore(); 
@@ -35,20 +35,35 @@ const notifications = computed(() => notificationStore.sortedNotifications); // 
 const isLoading = computed(() => notificationStore.isLoading);
 const errorLoading = computed(() => notificationStore.error);
 
-onMounted(() => {
-  // El listener ya debería estar inicializado por App.vue o un watcher global.
-  // Si por alguna razón no se ha cargado y el usuario está aquí, podemos intentar iniciarlo.
-  if (currentUser.value && currentUser.value.id && !notificationStore.hasLoadedOnce) {
-    console.log("[Notification.vue onMounted] El store no ha cargado, intentando iniciar listener.");
-    notificationStore.initListenerForUser(currentUser.value.id);
-  } else if (!currentUser.value || !currentUser.value.id) {
-     // Si no hay usuario, el store debería estar limpio, pero podemos asegurarlo.
-    if (notificationStore.notifications.length > 0 || notificationStore.isLoading) {
-        notificationStore.clearListenerAndData();
+// onMounted(() => {
+//   // El listener ya debería estar inicializado por App.vue o un watcher global.
+//   // Si por alguna razón no se ha cargado y el usuario está aquí, podemos intentar iniciarlo.
+//   if (currentUser.value && currentUser.value.id && !notificationStore.hasLoadedOnce) {
+//     console.log("[Notification.vue onMounted] El store no ha cargado, intentando iniciar listener.");
+//     notificationStore.initListenerForUser(currentUser.value.id);
+//   } else if (!currentUser.value || !currentUser.value.id) {
+//      // Si no hay usuario, el store debería estar limpio, pero podemos asegurarlo.
+//     if (notificationStore.notifications.length > 0 || notificationStore.isLoading) {
+//         notificationStore.clearListenerAndData();
+//     }
+//     console.warn("[Notification.vue onMounted] No hay usuario autenticado.");
+//   }
+// });
+
+watch(currentUser, (newUser) => {
+  if (newUser && newUser.id) {
+    // Si hay un usuario y el listener no se ha iniciado, lo iniciamos.
+    // El hasLoadedOnce previene que se inicie múltiples veces si el watcher se dispara de nuevo
+    if (!notificationStore.hasLoadedOnce) {
+      console.log("[Notification.vue watch] Usuario detectado, iniciando listener de notificaciones.");
+      notificationStore.initListenerForUser(newUser.id);
     }
-    console.warn("[Notification.vue onMounted] No hay usuario autenticado.");
+  } else {
+    // Si no hay usuario (o se ha deslogueado), limpiamos los datos.
+    console.log("[Notification.vue watch] No hay usuario autenticado, limpiando datos de notificaciones.");
+    notificationStore.clearListenerAndData();
   }
-});
+}, { immediate: true });
 
 const handleRentalAction = async (rentId, newStatus, senderId, vehicleOwnerId) => {
   try {
@@ -62,9 +77,9 @@ const handleRentalAction = async (rentId, newStatus, senderId, vehicleOwnerId) =
 };
 
 const formatDate = (timestamp) => {
-  if (timestamp && timestamp.seconds) { // Para Timestamps de Firestore
+  if (timestamp && timestamp.seconds) { 
     return new Date(timestamp.seconds * 1000).toLocaleString();
-  } else if (typeof timestamp === 'string') { // Para fechas que ya son strings ISO
+  } else if (typeof timestamp === 'string') {
     return new Date(timestamp).toLocaleString();
   }
   return 'Fecha no disponible';
@@ -74,12 +89,9 @@ const handleNotificationClick = async (notification) => {
   if(!notification.read){
     try {
       await notificationStore.markNotificationAsRead(notification.id);
-      // No es estrictamente necesario actualizar localmente `notification.read = true` aquí,
-      // ya que onSnapshot debería recoger el cambio y actualizar la lista `notifications`.
+      // No es estrictamente necesario actualizar localmente `notification.read = true` aca,
+      // ya que onSnapshot tendria que obtener el cambio y actualizar la lista `notifications`.
       // Si la actualización de onSnapshot es muy rápida, el cambio local es redundante.
-      // Si quieres una respuesta visual *inmediata* antes de que onSnapshot actualice, podrías hacerlo:
-      // const notifToUpdate = notifications.value.find(n => n.id === notification.id);
-      // if (notifToUpdate) notifToUpdate.read = true;
     } catch (error) {
       addAlert("Error al marcar la notificación como leída.", "error");
       console.error("Error al marcar la notificación como leída:", error);
