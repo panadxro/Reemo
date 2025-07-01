@@ -31,18 +31,28 @@ export async function createRentalRequestNotification(rentId, senderId, receiver
   }
 }
 
-const carValidationStatusNotification = (car, newStatus) => {
+const carValidationStatusNotification = (car, newStatus, message = null) => {
+
+  // Generar el contenido de la notificación, ahora pasando el motivo.
+  // Asumimos que tienes un archivo de templates como en la sugerencia anterior.
+  // Si no, puedes construir el mensaje aquí mismo.
+  const title = newStatus === 'validated' ? '¡Tu vehículo ha sido validado!' : 'Se requiere una acción para tu vehículo';
+  const reason = newStatus === 'validated'
+    ? `Buenas noticias. Tu ${car.basicInfo.brand} ${car.basicInfo.model} fue aprobado y ya está visible para alquilar.`
+    : `Tu ${car.basicInfo.brand} ${car.basicInfo.model} fue marcado como no validado por el siguiente motivo: "${message}". Por favor, corrige el problema y vuelve a solicitar la validación.`;
+
   if (newStatus === 'validated') {
     return {
-      title: '¡Tu vehículo ha sido validado!',
-      message: `Buenas noticias. Tu ${car.basicInfo.brand} ${car.basicInfo.model} fue aprobado y ya está visible para alquilar.`,
+      title: title,
+      message: reason,
       type: 'car_validated',
       link: `/car/${car.id}`, // Enlace a la página de detalles del auto
     };
   } else { // 'not-validated'
     return {
-      title: 'Se requiere una acción para tu vehículo',
-      message: `Tu ${car.basicInfo.brand} ${car.basicInfo.model} fue marcado como no validado. Por favor, revisa los detalles o contacta a soporte para más información.`,
+      title: title,
+      // message: `Tu ${car.basicInfo.brand} ${car.basicInfo.model} fue marcado como no validado. Por favor, revisa los detalles o contacta a soporte para más información.`,
+      message: reason,
       type: 'car_invalidated',
       link: `/car/${car.id}`, // Enlace a la página de detalles del auto
     };
@@ -54,14 +64,14 @@ const carValidationStatusNotification = (car, newStatus) => {
  * @param {object} car - El objeto completo del vehículo.
  * @param {string} newStatus - El nuevo estado de validación ('validated' o 'not-validated').
  */
-export const createCarValidationNotification = async (car, newStatus) => {
+export const createCarValidationNotification = async (car, newStatus, message = null) => {
   if (!car || !car.ownerId) {
     console.error("No se puede crear la notificación: faltan datos del coche o del propietario.");
     return;
   }
 
   // 1. Generar el contenido de la notificación usando el template
-  const notificationContent = carValidationStatusNotification(car, newStatus);
+  const notificationContent = carValidationStatusNotification(car, newStatus, message);
 
   // 2. Guardar la notificación en la base de datos
   try {
