@@ -4,7 +4,8 @@ import { useRoute } from 'vue-router'
 
 import DefaultLayout from '@layouts/DefaultLayout.vue'
 import SimpleLayout from "@layouts/SimpleLayout.vue"
-import DashboardLayout from './layouts/DashboardLayout.vue'
+import DashboardLayout from '@layouts/DashboardLayout.vue'
+import UserLayout from '@layouts/UserLayout.vue'
 import Alert from './components/atoms/Alert.vue';
 
 const route = useRoute()
@@ -12,7 +13,8 @@ const route = useRoute()
 const layoutComponents = {
   default: markRaw(DefaultLayout),
   simple: markRaw(SimpleLayout),
-  dashboard: markRaw(DashboardLayout)
+  dashboard: markRaw(DashboardLayout),
+  user: markRaw(UserLayout),
 }
 
 // Mapeo de rutas a tipos de layout
@@ -26,13 +28,17 @@ const layoutMap = {
   
   // Rutas con layout de dashboard (con sidebar)
   '/dashboard': 'dashboard',
-  '/user': 'dashboard',
   '/admin': 'dashboard',
   '/search': 'dashboard',
   '/map': 'dashboard',
-  '/car': 'dashboard',
+  '/car/': 'dashboard',
   '/notification': 'dashboard',
-  '/rent': 'dashboard',
+  
+  // Rutas con layout de usuario (sin sidebar y usernav) 
+  '/user': 'user',
+  '/rent': 'user',
+  '/cars/': 'user',
+  '/documents': 'user',
   
   // Por defecto (con navbar y footer)
   '/404': 'default',

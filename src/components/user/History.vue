@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores';
 
 import { fetchUserRentalHistory, fetchUserRentedOutHistory } from '@/services/rentedCarService';
 import Loading from '@/icons/Loading.vue';
-import HistoryCar from '@/components/organisms/cars/HistoryCar.vue';
+import HistoryCar from '@/components/organisms/rents/HistoryCar.vue';
 
 const props = defineProps({
   showOnly: {
@@ -72,26 +72,24 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-5">
-    <template v-if="isLoading">
-      <div class="flex justify-center py-10">
-        <Loading class="w-8 h-8 text-primary-900" />
-      </div>
-    </template>
-    
-    <template v-else-if="combinedHistory.length > 0">
-      <HistoryCar 
-        v-for="rental in combinedHistory" 
-        :key="rental.id" 
-        :car="rental.vehicleDetails || rental"
-        :rental="rental"
-        @click="router.push(`/rent/${rental.id}`)" />
-    </template>
-    
-    <template v-else>
-      <div class="text-center py-10 text-background-600">
-        No hay historial de alquileres disponible
-      </div>
-    </template>
-  </div>
+  <template v-if="isLoading">
+    <div class="flex justify-center py-10">
+      <Loading class="w-8 h-8 text-primary-900" />
+    </div>
+  </template>
+  
+  <ul v-else-if="combinedHistory.length > 0" class="flex flex-col gap-5 overflow-y-auto h-full !pr-2">
+    <HistoryCar 
+      v-for="rent in combinedHistory" 
+      :key="rent.id" 
+      :car="rent.vehicleDetails || rent"
+      :rent="rent"
+      @click="router.push(`/rent/${rent.id}`)" />
+  </ul>
+  
+  <template v-else>
+    <div class="text-center py-10 text-background-600">
+      No hay historial de alquileres disponible
+    </div>
+  </template>
 </template>

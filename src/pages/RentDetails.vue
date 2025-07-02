@@ -55,7 +55,7 @@ async function initializeMap(details) {
   // Cambiar las coordenadas por la nueva coleccion de "cars"
   if (details && details.vehicleData?.status.currentLocation.location && !mapInitialized.value){
     try {
-      console.log('[RentalDetailsView] Intentando iniciar el mapa');
+      console.log('[RentDetails] Intentando iniciar el mapa');
       await loadGoogleMaps();
       const mapInstance = await initMap('map');
       if (mapInstance) {
@@ -68,11 +68,11 @@ async function initializeMap(details) {
           new Marker({ position: vehicleCoords, map: map.value, title: `${details.vehicleData?.basicInfo.brand} ${details.vehicleData?.basicInfo.model}` });
           mapInitialized.value = true;
         } else {
-          console.warn('[RentalDetailsView]: Coordenadas del vehículo no disponibles o inválidas para centrar el mapa.');
+          console.warn('[RentDetails]: Coordenadas del vehículo no disponibles o inválidas para centrar el mapa.');
         }
       }
     } catch (error) {
-      console.error('[RentalDetailsView]: Error al inicializar el mapa:', mapError);
+      console.error('[RentDetails]: Error al inicializar el mapa:', mapError);
     }
   }
 }
@@ -223,7 +223,7 @@ onMounted(() => {
   </div>
 
   <!-- bg-[#eaf7f9] -->
-  <div v-else-if="rentalDetails" class="min-h-screen flex p-4 gap-4 w-full">
+  <div v-else-if="rentalDetails" class="min-h-screen max-h-screen flex p-4 gap-4 w-full">
 
     <!-- Panel lateral -->
     <div class="w-96 h-full bg-white rounded-3xl p-6 shadow-xl flex flex-col gap-4 overflow-hidden overflow-y-auto">
@@ -396,10 +396,10 @@ onMounted(() => {
 
       </div>
     </div>
-    <div v-else class="flex-1 flex flex-col items-center justify-center bg-gray-50 rounded-3xl p-8 shadow-inner">
+    <div v-else class="flex-1 flex flex-col bg-gray-50 rounded-3xl p-8 shadow-inner overflow-hidden ">
 
-      <div class="bg-white shadow-2xl rounded-2xl p-6 max-w-2xl w-full text-gray-700 space-y-5 mx-auto">
-        <Heading :type="2" class="text-gray-800">📄 Resumen del Alquiler</Heading>
+      <Heading :type="2" class="text-gray-800">📄 Resumen del Alquiler</Heading>
+      <div class="bg-white shadow-2xl rounded-2xl p-6 w-full text-gray-700 space-y-5 overflow-y-auto">
 
         <!-- Vehículo -->
         <div class="border-b pb-4">

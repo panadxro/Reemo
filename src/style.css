@@ -54,6 +54,14 @@
   --color-background-800: #DADADA;
   --color-background-700: #E6E6E6;
   --color-background-600: #7B7B7B;
+
+  --color-mastercard: #FC5975;
+  --color-visa: #27346A;
+  --color-uala: #2ABCFF;
+  --color-paypal: #254AA5;
+  --color-mercado-pago: #82f72d;
+  --color-lemon: #EB001B;
+  --color-modo: #008456;
 }
 
 /*

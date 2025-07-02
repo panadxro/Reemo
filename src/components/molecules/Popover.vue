@@ -1,9 +1,9 @@
 <script>
-import Action from "@/icons/Action.vue";
+import Options from "@/icons/Options.vue";
 
 export default {
   name: "Popover",
-  components: { Action },
+  components: { Options },
   props: {
     items: {
       type: Array,
@@ -82,7 +82,7 @@ export default {
       @click="$emit('toggle-popover', popoverId)"
       class="p-2 rounded-full cursor-pointer hover:bg-vibrant-light-700 focus:bg-vibrant-light-700"
     >
-      <Action />
+      <Options />
     </button>
 
     <!-- Popover -->

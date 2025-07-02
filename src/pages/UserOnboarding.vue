@@ -284,7 +284,7 @@ onBeforeUnmount(() => {
                 </label>
                 <div class="flex flex-col gap-4">
                   <label for="dni-back" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del DNI</label>
-                  <span class="text-xs text-start">Parte trasera de tu Documento Nacional de Identidad.</span>
+                  <span class="text-xs text-start">Cara dorsal de tu Documento Nacional de Identidad.</span>
                 </div>
                 <input id="dni-back" type="file" accept="image/*"
                 @change="(event) => handleFileChange(event, 'dniBack')" class="hidden" />
@@ -300,7 +300,7 @@ onBeforeUnmount(() => {
                 </label>
                 <div class="flex flex-col gap-4">
                   <label for="driver-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
-                  <span class="text-xs text-start">Parte trasera de tu Licencia de Conducir.</span>
+                  <span class="text-xs text-start">Cara frontal de tu Licencia de Conducir.</span>
                 </div>
                 <input id="driver-front" type="file" accept="image/*"
                 @change="(event) => handleFileChange(event, 'driverLicenseFront')"
@@ -313,7 +313,7 @@ onBeforeUnmount(() => {
                 </label>
                 <div class="flex flex-col gap-4">
                   <label for="driver-back" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
-                  <span class="text-xs text-start">Parte trasera de tu Licencia de Conducir.</span>
+                  <span class="text-xs text-start">Cara dorsal de tu Licencia de Conducir.</span>
                 </div>
                 <input id="driver-back" type="file" accept="image/*"
                 @change="(event) => handleFileChange(event, 'driverLicenseBack')"
