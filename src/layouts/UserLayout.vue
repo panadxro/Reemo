@@ -1,0 +1,40 @@
+<script setup>
+import { provide, computed, onMounted } from 'vue';
+import { useAuthStore } from '@stores';
+import { useRoute } from 'vue-router';
+
+import Sidebar from '@/components/Sidebar.vue';
+import UserNav from '@components/user/UserNav.vue'
+
+const authStore = useAuthStore();
+const route = useRoute();
+
+// Proveer datos de autenticación y usuario
+const loggedUser = computed(() => authStore.user);
+const authSessionHistory = sessionStorage.getItem('auth_session_history');
+const authSession = JSON.parse(authSessionHistory);
+
+// Verificar si el ID de la ruta coincide con el usuario logueado
+const showUserNav = computed(() => {
+  return route.params.id === loggedUser.value?.id;
+});
+
+onMounted(() => {
+  console.log("Hola")
+});
+
+provide('loggedUser', loggedUser);
+provide('authSession', authSession);
+</script>
+
+<template>
+  <div class="w-full md:h-screen overflow-auto">
+    <main class="flex flex-col relative md:flex-row-reverse md:min-h-screen md:max-h-screen md:p-2.5 bg-white 2xl:rounded-[40px]">
+      <div class="flex md:flex-1 xs:flex-row-reverse md:flex-row max-h-vh overflow-auto mb-20 md:mb-0">
+        <UserNav v-if="showUserNav"/>
+        <slot />
+      </div>
+      <Sidebar/>
+    </main>
+  </div>
+</template>

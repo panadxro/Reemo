@@ -11,34 +11,48 @@ const props = defineProps({
     default: 'right', // 'left' o 'right'
     validator: (value) => ['left', 'right'].includes(value)
   },
-  value: String
+  value: String,
+  type: {
+    type: String,
+    default: 'checkbox', // 'checkbox' o 'radio'
+    validator: (value) => ['checkbox', 'radio'].includes(value)
+  }
 });
 
 const emit = defineEmits(['update:modelValue']);
 
 const toggle = () => {
-  if (Array.isArray(props.modelValue)) {
-    // Si modelValue es un array, maneja múltiples selecciones
-    let newValue = [...props.modelValue];
-    if (newValue.includes(props.value)) {
-      // Si el valor ya está en el array, lo eliminamos
-      newValue = newValue.filter(item => item !== props.value);
-    } else {
-      // Si el valor no está en el array, lo agregamos
-      newValue.push(props.value);
-    }
-    emit('update:modelValue', newValue);
+  if (props.type === 'radio') {
+    // Para radios, siempre establece el valor
+    emit('update:modelValue', props.value);
   } else {
-    // Si modelValue es un booleano, maneja una sola selección
-    emit('update:modelValue', !props.modelValue);
+    if (Array.isArray(props.modelValue)) {
+      // Si modelValue es un array, maneja múltiples selecciones
+      let newValue = [...props.modelValue];
+      if (newValue.includes(props.value)) {
+        // Si el valor ya está en el array, lo eliminamos
+        newValue = newValue.filter(item => item !== props.value);
+      } else {
+        // Si el valor no está en el array, lo agregamos
+        newValue.push(props.value);
+      }
+      emit('update:modelValue', newValue);
+    } else {
+      // Si modelValue es un booleano, maneja una sola selección
+      emit('update:modelValue', !props.modelValue);
+    }
   }
 };
 
 const isChecked = () => {
-  if (Array.isArray(props.modelValue)) {
-  return props.modelValue.includes(props.value); // Verifica si el valor está en el array
+  if (props.type === 'radio') {
+    return props.modelValue === props.value;
   } else {
-    return props.modelValue; // Devuelve el valor booleano
+    if (Array.isArray(props.modelValue)) {
+    return props.modelValue.includes(props.value); // Verifica si el valor está en el array
+    } else {
+      return props.modelValue; // Devuelve el valor booleano
+    }
   }
 }
 </script>
@@ -52,7 +66,7 @@ const isChecked = () => {
     <span v-if="label && labelPosition === 'left'" class="text-sm">{{ label }}</span>
 
     <input
-      type="checkbox"
+      :type="type"
       :id="id"
       :name="name"
       :checked="isChecked()"

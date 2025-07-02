@@ -1,5 +1,5 @@
 <script>
-import { useRentalStore } from '@/stores/rent.store.js';
+import { useRentStore } from '@/stores/rent.store.js';
 import { useCarStore } from '@/stores/car.store.js';
 import { computed, watch, onMounted } from 'vue';
 
@@ -30,7 +30,7 @@ export default {
   },
   
   setup(props, { emit }) {
-    const rentalStore = useRentalStore();
+    const rentalStore = useRentStore();
     const carStore = useCarStore();
     
     const priceHours = computed(() => props.dailyPrice / 24);

@@ -1,34 +1,26 @@
 <script>
-import { subscribeToAuthState } from "@services/auth.js";
-import { unsubscribeToPublication, toggleAvailability } from '@services/publication.js';
 import { addAlert } from "@services/alerts.js";
+import { useCarStore } from "@stores";
 
 import Heading from "@components/atoms/Heading.vue";
 import Arrow from '@icons/Arrow.vue';
 import Chasis from '@icons/Chasis.vue';
 import Transmition from '@icons/Transmition.vue';
 import defaultCarImage from '@assets/Car-Img.png';
-import PopoverPublication from './PopoverPublication.vue';
+import Popover from '@components/molecules/Popover.vue';
 import Like from '@icons/Like.vue';
 import Status from '@components/molecules/Status.vue'
 
 export default {
-    data() {
-      return {
-        defaultCarImage, 
-        loading: false,
-        loggedUser: {
-          id: null
-        },
-        currentPhotoIndex: 0,
-        photoInterval: null
-      };
-    },
     name: 'CardCar',
-    components: { Heading, Arrow, Transmition, Chasis, PopoverPublication, Like, Status },
+    components: { Heading, Arrow, Transmition, Chasis, Popover, Like, Status },
     props: {
       car: {
         type: Object,
+        required: true
+      },
+      index: {
+        type: Number,
         required: true
       },
       layout: {
@@ -37,7 +29,33 @@ export default {
         validator: value => ['square', 'rectangle'].includes(value)
       }
     },
+    setup() {
+      const carStore = useCarStore();
+
+      return {
+        carStore,
+      }
+    },
+    data() {
+      return {
+        defaultCarImage, 
+        loading: false,
+        loggedUser: {
+          id: null
+        },
+        currentPhotoIndex: 0,
+        photoInterval: null,
+        openPopoverId: null
+      };
+    },
     methods: {
+      handleTogglePopover(popoverId) {
+        this.openPopoverId = this.openPopoverId === popoverId ? null : popoverId;
+      },
+      // Cerrar el popover cuando se hace scroll o clic fuera
+      handleClosePopover() {
+        this.openPopoverId = null;
+      },
       startPhotoRotation() {
         // Si hay mas de una foto, iniciamos la rotación
         if (this.car.photos && this.car.photos.length > 1) {
@@ -62,12 +80,32 @@ export default {
       setDefaultImage(event) {
         event.target.src = this.defaultCarImage;
       },
+      async updateAvailability(car) {
+        console.log(car)
+        try {
+          const newStatus = car.status.current === 'not-available' ? 'available' : 'not-available';
+          await this.carStore.changeCarAvailability(car.id, newStatus, car.ownerId);
+
+          // Actualizar el estado local del auto en la lista
+          const updatedCar = { ...car };
+          updatedCar.status.current = newStatus;
+
+          // Actualizar en el store
+          this.carStore.userCars = this.carStore.userCars.map(c => 
+            c.id === car.id ? updatedCar : c
+          );
+
+          addAlert("Estado de disponibilidad actualizado con éxito", "success");
+        } catch (error) {
+            addAlert("Error al actualizar el estado de disponibilidad", "error");
+            console.log(error)
+        }
+      }
     }
 }
 </script>
 
 <template>
-  <!-- Versión cuadrada (por defecto) -->
   <div 
     v-if="layout === 'square'"
     @mouseenter="startPhotoRotation"
@@ -102,28 +140,53 @@ export default {
     </router-link>
   </div>
 
-  <!-- Versión rectangular -->
-  <div
+  <li
     v-else
-    class="flex items-center bg-white px-5 py-4 rounded-3xl justify-between border-2 border-vibrant-light-600"
+    class="flex items-center bg-white px-5 py-4 rounded-3xl justify-between border-2 border-vibrant-light-600 w-full cursor-pointer"
   >
-    <router-link
-      :to="{ name: 'CarDetails', params: { id: car.id } }"
-      class="flex items-center flex-1 gap-2">
-      <img 
-        :src="car.photos[0] || defaultCarImage"
-        @error="setDefaultImage"
-        :alt="car.basicInfo?.brand + ' ' + car.basicInfo?.model"
-        class="w-16 h-16 object-cover rounded-lg"
-      />
-      <div class="flex flex-col justify-between">
-        <p class="small font-medium text-gray-500">{{ car.basicInfo?.brand }}</p>
-        <Heading type="4" class="regular">{{ car.basicInfo?.model }}, {{ car.basicInfo?.year }}</Heading>
+    <template v-if="$route.matched.some(route => route.name === 'MyCars')">
+      <div  class="flex items-center flex-1 gap-2">
+        <img 
+          :src="car.photos[0] || defaultCarImage"
+          @error="setDefaultImage"
+          :alt="car.basicInfo?.brand + ' ' + car.basicInfo?.model"
+          class="w-16 h-16 object-cover rounded-lg"
+        />
+        <div class="flex flex-col justify-between">
+          <p class="small font-medium text-gray-500">{{ car.basicInfo?.brand }}</p>
+          <Heading type="4" class="regular">{{ car.basicInfo?.model }}, {{ car.basicInfo?.year }}</Heading>
+        </div>
       </div>
-    </router-link>
-    <div class="flex items-end flex-col justify-between">
-      <Status :status="car.status.current" size="small"/>
-      <p class="text-deep-blue-900 text-lg font-bold">${{ car.pricing?.rates?.daily }}/día</p>
-    </div>
-  </div>
+      <Popover 
+        :items="[
+          { label: 'Ver detalles', action: () => goToCarDetails(car.id) },
+          { label: car.status.current == 'not-available' ? 'Habilitar' : 'Deshabilitar', action: () => updateAvailability(car), class: car.status.current !== 'not-available' ? 'text-red-500' : '' },
+        ]"
+        :isOpen="openPopoverId === index"
+        :popoverId="index"
+        @toggle-popover="handleTogglePopover"
+        @close-popover="handleClosePopover"
+      />
+    </template>
+    <template v-else>
+      <router-link
+        :to="{ name: 'CarDetails', params: { id: car.id } }"
+        class="flex items-center flex-1 gap-2">
+        <img 
+          :src="car.photos[0] || defaultCarImage"
+          @error="setDefaultImage"
+          :alt="car.basicInfo?.brand + ' ' + car.basicInfo?.model"
+          class="w-16 h-16 object-cover rounded-lg"
+        />
+        <div class="flex flex-col justify-between">
+          <p class="small font-medium text-gray-500">{{ car.basicInfo?.brand }}</p>
+          <Heading type="4" class="regular">{{ car.basicInfo?.model }}, {{ car.basicInfo?.year }}</Heading>
+        </div>
+      </router-link>
+      <div class="flex items-end flex-col justify-between">
+        <Status :status="car.status.current" size="small"/>
+        <p class="text-deep-blue-900 text-lg font-bold">${{ car.pricing?.rates?.daily }}/día</p>
+      </div>
+    </template>
+  </li>
 </template>

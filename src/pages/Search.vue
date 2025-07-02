@@ -204,7 +204,6 @@ export default {
               icon-position="right"
               variant="secondary"
               :outline="true"
-              class="flex-1"
               />
   
             <!-- Modelo -->
@@ -224,9 +223,8 @@ export default {
                 { value: 'Fiesta', label: 'Fiesta' }
               ]"
               icon-position="right"
-              variant="secondary"
+              variant="primary"
               :outline="true"
-              class="flex-1"
               />
           </div>
         </div>

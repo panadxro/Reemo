@@ -1,30 +1,28 @@
 <script>
-import { useUserStore, useAuthStore  } from '@stores'
+import { useUserStore, useAuthStore, useCarStore  } from '@stores'
 import { onMounted, ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { usePaymentStore } from '@/stores/payment.store.js'
-import { useCarStore } from '@/stores/car.store.js' 
 
 import Heading from "@components/atoms/Heading.vue";
 import CardCar from "@components/organisms/cars/CardCar.vue";
 import UserNav from "@components/user/UserNav.vue";
 import RentedCar from "@components/organisms/rental/RentedCar.vue";
+import BackButton from "@components/atoms/BackButton.vue";
+import Input from "@components/molecules/Input.vue";
+import DeletePaymentModal from '@/components/user/DeletePaymentModal.vue';
+import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
+import History from '@/components/user/History.vue'
 import Loading from "@icons/Loading.vue";
 import Arrow from "../icons/Arrow.vue";
-import BackButton from "@components/atoms/BackButton.vue";
-
 import MercadoPago from "@icons/MercadoPago.vue";
 import Uala from "@icons/Uala.vue";
 import PayPal from "@icons/PayPal.vue";
 import CreditCard from "@icons/CreditCard.vue";
-import Input from "@components/molecules/Input.vue";
 import Trash from "@icons/Trash.vue";
 import Plus from "@icons/Plus.vue";
 import Cross from "@icons/Cross.vue";
 import Check from "@icons/Check.vue";
-import DeletePaymentModal from '@/components/user/DeletePaymentModal.vue';
-import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
-import History from '@/components/user/History.vue'
 
 export default {
   name: "UserProfile",
@@ -59,7 +57,7 @@ export default {
 
     const userCars = computed(() => carStore.userCars);
     const loggedUserId = computed(() => authStore.user?.id);
-    const userIdFromRoute = computed(() => route.params.id); 
+    const userIdFromRoute = computed(() => route.params.id);
     const isOwnProfile = computed(() => loggedUserId.value === userIdFromRoute.value);
 
     const displayedPaymentMethods = computed(() => {
@@ -176,8 +174,6 @@ export default {
 </script>
 
 <template>
-  <div class="flex md:flex-1 xs:flex-row-reverse md:flex-row max-h-vh overflow-auto mb-20 md:mb-0">
-    <UserNav v-if="isOwnProfile"/>
     <section class="parent m-2.5 w-full md:max-h-vh md:overflow-hidden">
 
       <!-- Perfil del usuario -->
@@ -239,19 +235,20 @@ export default {
       </div>
 
       <!-- Autos del usuario -->
-      <div class="overflow-hidden flex flex-col gap-5 px-5" :class="isOwnProfile ? 'cars' : 'user-cars'">
-        <div class="flex items-center justify-between">
+      <div class="overflow-hidden flex flex-col gap-5" :class="isOwnProfile ? 'cars' : 'user-cars'">
+        <div class="flex items-end justify-between">
           <Heading :type="2" class="medium text-primary-900 text-center sm:text-left">{{ isOwnProfile ? "Mis autos" : "Vehículos" }}</Heading>
-          <a href="" class="text-primary-900">Ver más</a>
+          <router-link to="/my-cars" class="text-deep-blue-900 font-medium">Ver más</router-link>
         </div>
         <div v-if="carStore.loading" class="flex justify-center py-8">
           <Loading class="w-8 h-8 text-primary-800" />
         </div>
-        <div v-else-if="userCars && userCars.length" class="flex flex-col gap-5 h-full overflow-auto">
+        <div v-else-if="userCars && userCars.length" class="flex flex-col gap-5 h-full overflow-y-auto">
           <CardCar 
-            v-for="car in userCars.slice(0, 4)" 
+            v-for="(car, index) in userCars.slice(0, 4)" 
             :key="car.id" 
             :car="car"
+            :index="index"
             layout="rectangle"
             @click="() => $router.push(`/car/${car.id}`)"
           />
@@ -268,10 +265,10 @@ export default {
       <div
         v-if="!$route.matched.some(route => route.name === 'Chat')"
         :class="isOwnProfile ? 'div-my-user' : 'div-user'"
-        class="bg-deep-blue-900 overflow-hidden rounded-[40px] py-7 px-5 "
+        class="bg-deep-blue-900 overflow-hidden rounded-[40px] py-7 px-5 flex flex-col gap-5"
         >
         <Heading :type="2" class="medium text-white text-center sm:text-left">{{ isOwnProfile ? "Información Personal" : "Información del Usuario"  }}</Heading>
-        <article v-if="isOwnProfile" class="overflow-y-auto h-full flex flex-col gap-5 pr-4 py-4">
+        <article v-if="isOwnProfile" class="overflow-y-auto h-full flex flex-col gap-5 pr-2">
           <div class="flex flex-col gap-2">
             <Heading :type="3" class="regular text-white">Datos Básicos</Heading>
             <ul class="flex flex-col gap-1">
@@ -374,10 +371,10 @@ export default {
       </div>  
 
       <!-- Historial (solo para el usuario logueado) -->
-      <div v-if="isOwnProfile" class="my-history bg-primary-900 flex flex-col rounded-[40px] px-5 py-7 gap-6 overflow-y-auto">
-        <div class="flex items-center justify-between">
+      <div v-if="isOwnProfile" class="my-history bg-primary-900 flex flex-col rounded-[40px] px-5 py-7 gap-6 h-full  overflow-hidden">
+        <div class="flex items-end justify-between">
           <Heading :type="2" class="medium text-white text-center sm:text-left">Historial</Heading>
-          <router-link v-if="rentedCars && rentedCars.length" to="/history" class=" text-white">Ver más</router-link>
+          <router-link to="/rent" class="text-white font-medium">Ver más</router-link>
         </div>
         <History />
       </div>
@@ -401,7 +398,6 @@ export default {
       </div>
       <router-view></router-view>
     </section>
-  </div>
 </template>
 
 <style scoped>

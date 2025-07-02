@@ -1,6 +1,6 @@
 <script>
 import Calendar from '../../atoms/Calendar.vue';
-import { useRentalStore } from '@/stores/rent.store.js';
+import { useRentStore } from '@/stores/rent.store.js';
 import { mapState, mapGetters } from 'pinia';
 
 export default {
@@ -41,12 +41,12 @@ export default {
     };
   },
   computed: {
-    ...mapState(useRentalStore, ['rentalData', 'car']),
-    ...mapGetters(useRentalStore, ['storageKey'])
+    ...mapState(useRentStore, ['rentalData', 'car']),
+    ...mapGetters(useRentStore, ['storageKey'])
   },
   methods: {
     rentalStore() {
-      return useRentalStore();
+      return useRentStore();
     },
 
     getTodayDate() {

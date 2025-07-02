@@ -4,7 +4,7 @@ import { useAuthStore, useUserStore , useCarStore } from '@stores'
 import { useRoute } from 'vue-router';
 import { Loader } from "@googlemaps/js-api-loader";
 import { loadGoogleMaps, initMap } from "../services/google-maps.js";
-import { useRentalStore } from '@/stores/rent.store.js';
+import { useRentStore } from '@/stores/rent.store.js';
 import { addAlert } from '@/services/alerts.js';
 
 import Heading from "../components/atoms/Heading.vue";
@@ -12,8 +12,6 @@ import Pill from "../components/atoms/Pill.vue";
 import Loading from "@icons/Loading.vue";
 import BackButton from "../components/atoms/BackButton.vue";
 import Status from "../components/molecules/Status.vue";
-import Arrow from "../icons/Arrow.vue";
-import Like from "../icons/Like.vue";
 
 import RentalProcess from "@/components/organisms/rental/RentalProcess.vue";
 
@@ -21,7 +19,7 @@ import RentalProcess from "@/components/organisms/rental/RentalProcess.vue";
 const carStore = useCarStore();
 const authStore = useAuthStore();
 const userStore = useUserStore();
-const store = useRentalStore();
+const store = useRentStore();
 
 // Router
 const route = useRoute();
@@ -107,8 +105,6 @@ const setCurrentImage = (image) => {
 const setDefaultImage = (event) => {
   event.target.src = defaultCarImage;
 };
-
-
 
 // Lifecycle hooks
 onMounted(async () => {

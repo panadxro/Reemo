@@ -33,25 +33,25 @@ const authSession = inject('authSession');
     <!-- <button type="button" @click="openUserEdit">Editar</button> -->
     <ul class="flex flex-col gap-3 my-7 md:w-full">
       <li>
-        <NavButton :to="`/user/${authSession?.user?.id}`" title="Mi perfil">
+        <NavButton :to="{ name: 'UserProfile', params: { id: authSession?.user?.id } }" title="Mi perfil">
           <User />
           <span class="hidden md:block">Mi perfil</span>
         </NavButton>
       </li>
       <li>
-        <NavButton to="/documents" title="Documentos">
+        <NavButton :to="{ name: 'Documentation', params: { id: authSession?.user?.id } }" title="Documentos">
           <Credential />
           <span class="hidden md:block">Documentos</span>
         </NavButton>
       </li>
       <li>
-        <NavButton to="/my-cars" title="Mis autos">
+        <NavButton :to="{ name: 'MyCars', params: { id: authSession?.user?.id } }" title="Mis autos">
           <Car />
           <span class="hidden md:block">Mis autos</span>
         </NavButton>
       </li>
       <li>
-        <NavButton to="/rent" title="Historial">
+        <NavButton :to="{ name: 'Rent', params: { id: authSession?.user?.id } }" title="Historial">
           <History />
           <span class="hidden md:block">Historial</span>
         </NavButton>

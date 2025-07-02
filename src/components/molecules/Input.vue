@@ -15,19 +15,27 @@ const props = defineProps({
   placeholder: String,
   iconPosition: {
     type: String,
-    default: 'left', // Puede ser 'left' o 'right'
+    default: 'left', // Puede ser 'left' o 'right',
     validator: (value) => ['left', 'right'].includes(value)
   },
   variant: {
     type: String,
-    default: 'primary', // Puede ser 'primary' o 'secondary'
+    default: 'primary', // Puede ser 'primary' o 'secondary',
     validator: (value) => ['primary', 'secondary'].includes(value)
   },
-  outline: Boolean, // Modo outline (true o false)
-  text: String, // Texto de boton (si el tipo es 'button' o 'submit')
+  outline: Boolean, // Modo outline (true o false),
+  text: String, // Texto de boton (si el tipo es 'button' o 'submit'),
   options: {
-    type: Array, // Tipo de la propiedad options
+    type: Array, // Tipo de la propiedad options,
     default: () => [] // Valor por defecto (array vacío)
+  },
+  label: {
+    type: Boolean,
+    default: false
+  },
+  inputClass: { // Nueva prop para clases personalizadas del input/button
+    type: String,
+    default: ''
   }
 });
 
@@ -35,13 +43,12 @@ const inputRef = ref(null);
 
 const emit = defineEmits(['update:modelValue']);
 
-// Referencia al elemento <select>
 const selectRef = ref(null);
 
-// Clases computadas según el modo y variante
-const inputClasses = computed(() => {
-  const baseClasses = 'flex flex-1 items-center justify-center rounded-2xl py-2.5 px-5 gap-2 border-2 font-semibold';
-  const colorClasses = props.variant === 'primary' 
+// Clases del contenedor (solo layout)
+const containerClasses = computed(() => {
+    const baseClasses = props.inputClass || '';
+  const variantClasses = props.variant === 'primary' 
     ? (
         props.outline 
         ? 'border-deep-blue-600 text-deep-blue-600 bg-white' 
@@ -50,20 +57,27 @@ const inputClasses = computed(() => {
     : (
       props.outline 
       ? 'border-vibrant-light-800 bg-white' 
-      : 'bg-vibrant-light-600 text-deep-blue-900 border-transparent focus:bg-vibrant-light-900'
+      : 'bg-vibrant-light-600 text-deep-blue-900 border-transparent'
+    );
+  return `${baseClasses} ${variantClasses} flex flex-1 items-center justify-center rounded-2xl py-2.5 px-5 gap-2 border-2 font-semibold`;
+});
+
+// Clases del elemento (input/select/button - estilos visuales)
+const elementClasses = computed(() => {
+  const baseClasses = props.inputClass || '';
+  const variantClasses = props.variant === 'primary' 
+    ? (
+        props.outline 
+        ? 'border-deep-blue-600 text-deep-blue-600 bg-white' 
+        : 'bg-deep-blue-600 text-white border-transparent hover:bg-deep-blue-700 focus:opacity-80'
+    ) 
+    : (
+      props.outline 
+      ? 'border-vibrant-light-800 bg-white' 
+      : 'bg-vibrant-light-600 text-deep-blue-900 border-transparent'
     );
 
-  return `${baseClasses} ${colorClasses}`;
-});
-
-// Clases solo para el label (cuando no es select)
-const labelClasses = computed(() => {
-  return props.type === 'select' ? '' : inputClasses.value;
-});
-
-// Clases para el input/select
-const elementClasses = computed(() => {
-  return props.type === 'select' ? inputClasses.value : 'w-full bg-transparent border-none outline-none';
+  return `${baseClasses} ${variantClasses}`;
 });
 
 // Exponer método focus
@@ -73,47 +87,64 @@ const focus = () => {
   }
 };
 
-// Exponer métodos al padre
 defineExpose({
   focus
 });
 </script>
 
 <template>
-  <!-- Input o Select -->
-  <label 
-    v-if="type !== 'button' && type !== 'submit'" 
-    :for="id" 
-    :class="labelClasses"
-  >
-    <slot v-if="iconPosition === 'left'" name="icon"></slot>
+  <div class="flex flex-col gap-1 w-full">
+    <!-- Label arriba -->
+    <label 
+      v-if="label && type !== 'button' && type !== 'submit'" 
+      :for="id" 
+      class="font-semibold text-deep-blue-900"
+    >
+      {{ placeholder }}
+    </label>
 
-    <!-- Input para tipos de texto, número, etc. -->
-    <input 
-      v-if="type !== 'select'"
-      ref="inputRef"
-      :type="type" 
-      :id="id" 
-      :name="name" 
-      :placeholder="placeholder" 
-      @input="$emit('update:modelValue', $event.target.value)"
-      :value="modelValue"
-      autocomplete="off"
-      :class="elementClasses"
-      :aria-label="placeholder"
-    />
+    <!-- Contenedor del input/select -->
+    <label 
+      v-if="type !== 'button' && type !== 'submit' && type !== 'select'" 
+      :for="id" 
+      :class="[
+        containerClasses,
+        { '!flex-col !items-start': label }
+      ]"
+    >
+      <slot v-if="iconPosition === 'left'" name="icon"></slot>
 
+      <!-- Input normal -->
+      <input 
+        v-if="type !== 'select'"
+        ref="inputRef"
+        :type="type" 
+        :id="id" 
+        :name="name" 
+        :placeholder="placeholder" 
+        @input="$emit('update:modelValue', $event.target.value)"
+        :value="modelValue"
+        autocomplete="off"
+        :class="[
+          'w-full border-none outline-none',
+          elementClasses
+        ]"
+        :aria-label="placeholder"
+      />
+
+      
+      <slot v-if="iconPosition === 'right'" name="icon"></slot>
+    </label>
+    
     <!-- Select -->
     <select
-      v-else
+      v-else-if="type === 'select'"
       :id="id"
       :name="name"
       @change="$emit('update:modelValue', $event.target.value)"
       :value="modelValue"
       :aria-label="placeholder"
-      :class="[
-        elementClasses
-      ]"   
+      :class="containerClasses"
       ref="selectRef"
     >
       <option 
@@ -122,32 +153,34 @@ defineExpose({
         disabled 
         :selected="!modelValue"
         class="text-background-600"
-        >
+      >
         {{ placeholder }}
       </option>
       <option 
         v-for="(option, index) in options" 
         :key="index" 
         :value="option.value"
-        :selected="option.value"
-        >
+        :selected="option.value === modelValue"
+      >
         {{ option.label }}
       </option>
     </select>
 
-    <slot v-if="iconPosition === 'right'" name="icon"></slot>
-  </label>
-
-  <!-- Botón cuando el type es 'button' o 'submit' -->
-  <button 
-    v-else 
-    :type="type"
-    :class="inputClasses"
-  >
-    <slot v-if="iconPosition === 'left'" name="icon"></slot>
-    {{ text }}
-    <slot v-if="iconPosition === 'right'" name="icon"></slot>
-  </button>
+    <!-- Botón -->
+    <button 
+      v-else 
+      :type="type"
+      :class="[
+        containerClasses,
+        elementClasses,
+        'cursor-pointer'
+      ]"
+    >
+      <slot v-if="iconPosition === 'left'" name="icon"></slot>
+      {{ text }}
+      <slot v-if="iconPosition === 'right'" name="icon"></slot>
+    </button>
+  </div>
 </template>
 
 <style scoped>

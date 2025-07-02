@@ -22,7 +22,7 @@ export default {
     size: {
       type: String,
       default: "medium", // 'medium' o 'small'
-      validator: (value) => ["medium", "small"].includes(value),
+      validator: (value) => ["medium", "small", "mini"].includes(value),
     }
   },
   computed: {
@@ -60,6 +60,7 @@ export default {
       return {
         'medium': 'px-4 py-2 text-sm rounded-2xl',
         'small': 'px-2.5 py-2 text-xs rounded-lg',
+        'mini': 'px-2 py-1 text-xs rounded-lg',
       }[this.size]
     }
   },
