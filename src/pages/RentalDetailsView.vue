@@ -12,6 +12,8 @@ import Heading from "@components/atoms/Heading.vue";
 import BackButton from "@components/atoms/BackButton.vue";
 import Loading from '@icons/Loading.vue';
 import Status from '@components/molecules/Status.vue';
+
+
 import Velocimetre from '@icons/Velocimetre.vue';
 import Ubication from '@icons/Ubication.vue';
 import Distance from '@icons/Distance.vue';
@@ -329,55 +331,47 @@ onMounted(() => {
 </script>
 
 <template>
-
   <div v-if="isLoading" class="flex flex-col items-center justify-center py-10 w-full">
     <Loading class="h-12 w-12 text-secondary-500" />
   </div>
 
-  <!-- bg-[#eaf7f9] -->
-  <div v-else-if="rentalDetails" class="flex py-6 px-4 gap-4 w-full bg-secondary-100 rounded-3xl">
+  <div v-else-if="rentalDetails" class="flex flex-col lg:flex-row py-4 lg:py-6 px-2 sm:px-4 gap-4 w-full bg-secondary-100 rounded-xl lg:rounded-3xl min-h-screen lg:min-h-auto overflow-y-auto">
 
-    <!-- Panel lateral -->
-    <div class="w-96 h-full flex flex-col gap-4 overflow-hidden overflow-y-auto">
+    <div class="w-full lg:w-96 flex flex-col gap-4 overflow-visible lg:overflow-hidden lg:overflow-y-auto order-1 lg:order-1">
+      
       <div class="flex items-center gap-2">
         <BackButton />
-        <Heading :type="1" class="medium">Detalles del alquiler</Heading>
+        <Heading :type="1" class="medium text-lg sm:text-xl lg:text-2xl">Detalles del alquiler</Heading>
       </div>
 
-      <div class="bg-[#0D0D3C] text-white rounded-2xl p-4 flex flex-col gap-2">
-        <div class="flex justify-between items-center">
-          <span>Orden ID: <strong>#{{ rentalDetails.id.slice(0, 8) }}</strong></span>
-          <!-- <span class="px-2 py-1 rounded-lg text-xs font-semibold capitalize" :class="{
-              'bg-yellow-400 text-[#0D0D3C]': rentalDetails.status === 'pending' || rentalDetails.status === 'returned_by_driver',
-              'bg-blue-500 text-white': rentalDetails.status === 'confirmed' || rentalDetails.status === 'in_progress',
-              'bg-green-500 text-white': rentalDetails.status === 'completed',
-              'bg-red-500 text-white': rentalDetails.status === 'cancelled_by_user' || rentalDetails.status === 'cancelled_by_owner' || rentalDetails.status === 'rejected' || rentalDetails.status === 'expired',
-            }">
-            {{ 
-              rentalDetails.status === "pending" ? "Pendiente" : 
-              rentalDetails.status === "confirmed" ? "Confirmada" : 
-              rentalDetails.status === "rejected" ? "Rechazada" : 
-              rentalDetails.status === "cancelled_by_user" ? "Cancelada por el conductor" : 
-              rentalDetails.status === "cancelled_by_owner" ? "Cancelada por el propietario" : 
-              rentalDetails.status === "returned_by_driver" ? "Devuelta por el conductor" : 
-              rentalDetails.status === "completed" ? "Completado" : 
-              rentalDetails.status === "in_progress" ? "En progreso" : "N/A" }}
-            </span> -->
-            <Status :status="rentalDetails.status"/>
-
+      <div class="bg-[#0D0D3C] text-white rounded-xl lg:rounded-2xl p-3 sm:p-4 flex flex-col gap-2">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+          <span class="text-sm sm:text-base">Orden ID: <strong>#{{ rentalDetails.id.slice(0, 8) }}</strong></span>
+          <Status :status="rentalDetails.status"/>
         </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div><p class="text-background-800 text-sm">Desde:</p> <p class="text-white text-sm">{{ formatDate(rentalDetails.start_time) }}</p></div>
-          <div><p class="text-background-800 text-sm">Hasta:</p> <p class="text-white text-sm">{{ formatDate(rentalDetails.end_time) }}</p></div>
-          <div><p class="text-background-800 text-sm">Tarifa:</p> <p class="text-white text-sm">${{ rentalDetails.total_price?.toFixed() || 'N/A' }}</p></div>
-          <div><p class="text-background-800 text-sm">Método de pago:</p> <p class="text-white text-sm">Transferencia</p></div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+          <div>
+            <p class="text-background-800 text-xs sm:text-sm">Desde:</p> 
+            <p class="text-white text-sm sm:text-base">{{ formatDate(rentalDetails.start_time) }}</p>
+          </div>
+          <div>
+            <p class="text-background-800 text-xs sm:text-sm">Hasta:</p> 
+            <p class="text-white text-sm sm:text-base">{{ formatDate(rentalDetails.end_time) }}</p>
+          </div>
+          <div>
+            <p class="text-background-800 text-xs sm:text-sm">Tarifa:</p> 
+            <p class="text-white text-sm sm:text-base">${{ rentalDetails.total_price?.toFixed() || 'N/A' }}</p>
+          </div>
+          <div>
+            <p class="text-background-800 text-xs sm:text-sm">Método de pago:</p> 
+            <p class="text-white text-sm sm:text-base">Transferencia</p>
+          </div>
         </div>
       </div>
 
-
-      <!-- Cuadro para indicar cual es el proxim que debe seguir determinado usuario para que se etienda mas -->
       <div v-if="nextStepInfo && !showCompletedView" 
-           class="p-4 rounded-2xl border-2 transition-all duration-300"
+           class="p-3 sm:p-4 rounded-xl lg:rounded-2xl border-2 transition-all duration-300"
            :class="{
              'bg-blue-50 border-blue-300': nextStepInfo.type === 'waiting',
              'bg-orange-50 border-orange-300': nextStepInfo.type === 'action-needed',
@@ -386,280 +380,247 @@ onMounted(() => {
              'bg-red-50 border-red-300': nextStepInfo.type === 'cancelled'
            }">
         <div class="flex items-start gap-3">
-          <span class="text-2xl">{{ nextStepInfo.icon }}</span>
+          <span class="text-xl sm:text-2xl">{{ nextStepInfo.icon }}</span>
           <div>
-            <h3 class="font-semibold text-gray-800 mb-1">Próximo paso</h3>
-            <p class="text-gray-700 text-sm leading-relaxed">{{ nextStepInfo.message }}</p>
+            <h3 class="font-semibold text-gray-800 mb-1 text-sm sm:text-base">Próximo paso</h3>
+            <p class="text-gray-700 text-xs sm:text-sm leading-relaxed">{{ nextStepInfo.message }}</p>
           </div>
         </div>
       </div>
 
-
-      <div class="p-4 flex flex-col gap-2" v-if="rentalDetails.driver_id === loggedUser?.id">
-        <div class="flex items-center justify-between">
-        <Heading :type="2" class="medium text-primary-900">Datos del propietario</Heading>
-        <router-link
-                v-if="rentalDetails.owner_id !== loggedUser?.id"
-                :to="`/user/${rentalDetails.owner_id}/chat`"
-                class="cursor-pointer"
-                >
-                <button class="px-3 py-2 bg-primary-900 text-white rounded-lg hover:bg-primary-700 hover:cursor-pointer transition-colors duration-200">
-                  Chat
-                </button>
-              <!-- <Input 
-                type="button"
-                text="Chat"
-                variant="primary"
-                :outline="false"
-                class="cursor-pointer"
-              /> -->
-              </router-link>
-        </div>
-        <router-link :to="`/user/${rentalDetails.owner_id}`" class="flex items-center gap-4 mt-4">
-          <img :src="rentalDetails.ownerData?.photoURL" :alt="rentalDetails.ownerData?.name"
-            class="w-14 h-14 rounded-full" />
-          <div>
-            <p class="font-medium text-primary-900">{{ rentalDetails.ownerData?.name }} {{
-              rentalDetails.ownerData?.lastname}}</p>
-              <p class="text-md text-gray-500">@{{ rentalDetails.ownerData?.username}}</p>
-          </div>
-        </router-link>
-      </div>
-
-        <div class="p-4 flex flex-col gap-2" v-else-if="rentalDetails.owner_id === loggedUser?.id">
-        <div class="flex items-center justify-between">
-        <Heading :type="2" class="medium text-primary-900">Datos del conductor</Heading>
-        <router-link
-                v-if="rentalDetails.driver_id !== loggedUser?.id"
-                :to="`/user/${rentalDetails.driver_id}/chat`"
-                class="cursor-pointer"
-                >
-                <button class="px-3 py-2 bg-primary-900 text-white rounded-lg hover:bg-primary-700 hover:cursor-pointer transition-colors duration-200">
-                  Chat
-                </button>
-              <!-- <Input 
-                type="button"
-                text="Chat"
-                variant="primary"
-                :outline="false"
-                class="cursor-pointer"
-              /> -->
-              </router-link>
-        </div>
-        <router-link :to="`/user/${rentalDetails.driver_id}`" class="flex items-center gap-4 mt-4">
-          <img :src="rentalDetails.driverData?.photoURL" :alt="rentalDetails.driverData?.name"
-            class="w-14 h-14 rounded-full" />
-          <div>
-            <p class="font-medium text-primary-900">{{ rentalDetails.driverData?.name }} {{
-              rentalDetails.driverData?.lastname}}</p>
-              <p class="text-md text-gray-500">@{{ rentalDetails.driverData?.username}}</p>
-          </div>
-        </router-link>
-      </div>
-
-      <router-link :to="`/car/${rentalDetails.vehicleData?.id}`" class="flex items-center gap-2 bg-white rounded-xl justify-between p-4">
-        <div class="flex gap-2">
-          <img :src="rentalDetails.vehicleData?.photos[0]" :alt="rentalDetails.vehicleData?.basicInfo.brand"
-          class="w-16 object-contain" />
-        <div>
-          <p class="text-sm font-semibold text-background-600">{{ rentalDetails.vehicleData?.basicInfo.brand }}</p>
-          <p class="text-lg font-bold text-primary-900">{{ rentalDetails.vehicleData?.basicInfo.model }}</p>
-        </div>
-        </div>
-
-        <div class="text-primary-900 font-semibold text-md">
-          {{ rentalDetails.vehicleData?.basicInfo.licensePlate  }}
+      <div class="p-3 sm:p-4 flex flex-col gap-2" v-if="rentalDetails.driver_id === loggedUser?.id">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <Heading :type="2" class="medium text-primary-900 text-base sm:text-lg">Datos del propietario</Heading>
+          <router-link
+            v-if="rentalDetails.owner_id !== loggedUser?.id"
+            :to="`/user/${rentalDetails.owner_id}/chat`"
+            class="cursor-pointer w-full sm:w-auto"
+          >
+            <button class="w-full sm:w-auto px-3 py-2 bg-primary-900 text-white rounded-lg hover:bg-primary-700 hover:cursor-pointer transition-colors duration-200 text-sm">
+              Chat
+            </button>
+          </router-link>
         </div>
         
+        <router-link :to="`/user/${rentalDetails.owner_id}`" class="flex items-center gap-3 sm:gap-4 mt-2 sm:mt-4">
+          <img :src="rentalDetails.ownerData?.photoURL" :alt="rentalDetails.ownerData?.name"
+            class="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex-shrink-0" />
+          <div class="min-w-0 flex-1">
+            <p class="font-medium text-primary-900 text-sm sm:text-base truncate">
+              {{ rentalDetails.ownerData?.name }} {{ rentalDetails.ownerData?.lastname }}
+            </p>
+            <p class="text-sm text-gray-500 truncate">@{{ rentalDetails.ownerData?.username}}</p>
+          </div>
+        </router-link>
+      </div>
+
+      <div class="p-3 sm:p-4 flex flex-col gap-2" v-else-if="rentalDetails.owner_id === loggedUser?.id">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <Heading :type="2" class="medium text-primary-900 text-base sm:text-lg">Datos del conductor</Heading>
+          <router-link
+            v-if="rentalDetails.driver_id !== loggedUser?.id"
+            :to="`/user/${rentalDetails.driver_id}/chat`"
+            class="cursor-pointer w-full sm:w-auto"
+          >
+            <button class="w-full sm:w-auto px-3 py-2 bg-primary-900 text-white rounded-lg hover:bg-primary-700 hover:cursor-pointer transition-colors duration-200 text-sm">
+              Chat
+            </button>
+          </router-link>
+        </div>
+        
+        <router-link :to="`/user/${rentalDetails.driver_id}`" class="flex items-center gap-3 sm:gap-4 mt-2 sm:mt-4">
+          <img :src="rentalDetails.driverData?.photoURL" :alt="rentalDetails.driverData?.name"
+            class="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex-shrink-0" />
+          <div class="min-w-0 flex-1">
+            <p class="font-medium text-primary-900 text-sm sm:text-base truncate">
+              {{ rentalDetails.driverData?.name }} {{ rentalDetails.driverData?.lastname }}
+            </p>
+            <p class="text-sm text-gray-500 truncate">@{{ rentalDetails.driverData?.username}}</p>
+          </div>
+        </router-link>
+      </div>
+
+      <router-link :to="`/car/${rentalDetails.vehicleData?.id}`" 
+        class="flex items-center gap-2 sm:gap-3 bg-white rounded-xl justify-between p-3 sm:p-4 hover:shadow-md transition-shadow">
+        <div class="flex gap-2 sm:gap-3 min-w-0 flex-1">
+          <img :src="rentalDetails.vehicleData?.photos[0]" :alt="rentalDetails.vehicleData?.basicInfo.brand"
+            class="w-12 sm:w-16 h-12 sm:h-16 object-contain flex-shrink-0" />
+          <div class="min-w-0 flex-1">
+            <p class="text-xs sm:text-sm font-semibold text-background-600 truncate">
+              {{ rentalDetails.vehicleData?.basicInfo.brand }}
+            </p>
+            <p class="text-sm sm:text-lg font-bold text-primary-900 truncate">
+              {{ rentalDetails.vehicleData?.basicInfo.model }}
+            </p>
+          </div>
+        </div>
+        <div class="text-primary-900 font-semibold text-sm sm:text-base flex-shrink-0">
+          {{ rentalDetails.vehicleData?.basicInfo.licensePlate }}
+        </div>
       </router-link>
 
-      <!-- Mensaje de vehículo retirado -->
-      <div v-if="showPickupMessage && loggedUser?.id === rentalDetails?.driver_id" class="bg-green-600 border border-green-700 text-white p-4 rounded-md text-center">
-        <p class="font-semibold">¡El vehículo fue retirado!</p>
-        <p>Recuerda devolverlo antes del {{ formatDate(rentalDetails?.end_time) }}.</p>
+      <div v-if="showPickupMessage && loggedUser?.id === rentalDetails?.driver_id" 
+        class="bg-green-600 border border-green-700 text-white p-3 sm:p-4 rounded-lg text-center">
+        <p class="font-semibold text-sm sm:text-base">¡El vehículo fue retirado!</p>
+        <p class="text-xs sm:text-sm">Recuerda devolverlo antes del {{ formatDate(rentalDetails?.end_time) }}.</p>
       </div>
 
-      <div v-else-if="showPickupMessage && loggedUser?.id === rentalDetails?.owner_id" class="bg-green-600 border border-green-700 text-white p-4 rounded-md text-center">
-        <p class="font-semibold">¡El vehículo fue retirado!</p>
-        <p>{{ rentalDetails?.driverData?.name }} debe devolverlo antes del {{ formatDate(rentalDetails?.end_time) }}.</p>
+      <div v-else-if="showPickupMessage && loggedUser?.id === rentalDetails?.owner_id" 
+        class="bg-green-600 border border-green-700 text-white p-3 sm:p-4 rounded-lg text-center">
+        <p class="font-semibold text-sm sm:text-base">¡El vehículo fue retirado!</p>
+        <p class="text-xs sm:text-sm">{{ rentalDetails?.driverData?.name }} debe devolverlo antes del {{ formatDate(rentalDetails?.end_time) }}.</p>
       </div>
 
-      <!-- Acciones -->
-      <div v-if="!showCompletedView" class="pt-6 border-t border-gray-200 space-y-3">
+      <div v-if="!showCompletedView" class="pt-4 sm:pt-6 border-t border-gray-200 space-y-3">
         <button v-if="canMarkAsPickedUp" @click="handleMarkAsPickedUp" :disabled="actionInProgress"
-          class="hover:cursor-pointer w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
-          <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
+          class="hover:cursor-pointer w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center text-sm sm:text-base">
+          <Loading v-if="actionInProgress" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
           Marcar como auto retirado
         </button>
 
         <button v-if="canMarkAsReturned_Driver" @click="handleMarkAsReturned" :disabled="actionInProgress"
-          class="hover:cursor-pointer w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
-          <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
+          class="hover:cursor-pointer w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center text-sm sm:text-base">
+          <Loading v-if="actionInProgress" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
           Marcar vehículo como devuelto
         </button>
 
         <button v-if="canFinalize_Owner" @click="handleFinalizeRental" :disabled="actionInProgress"
-          class="hover:cursor-pointer w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
-          <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
+          class="hover:cursor-pointer w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center text-sm sm:text-base">
+          <Loading v-if="actionInProgress" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
           Confirmar devolución y finalizar
         </button>
 
         <button v-if="canCancelRental" @click="handleCancelRental" :disabled="actionInProgress"
-          class="hover:cursor-pointer w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center">
-          <Loading v-if="actionInProgress" class="h-5 w-5 mr-2" />
+          class="hover:cursor-pointer w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center text-sm sm:text-base">
+          <Loading v-if="actionInProgress" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
           Cancelar alquiler
         </button>
       </div>
-      <div v-else class="pt-6 border-t border-gray-200 space-y-4 text-center">
-        <p class="text-xl font-semibold text-green-600">¡Alquiler completado!</p>
+
+      <div v-else class="pt-4 sm:pt-6 border-t border-gray-200 space-y-4 text-center">
+        <p class="text-lg sm:text-xl font-semibold text-green-600">¡Alquiler completado!</p>
         <div class="my-4 p-3 bg-gray-100 rounded-lg">
-          <p class="text-sm text-gray-700">Próximamente podrás calificar esta experiencia.</p>
-          <button class="mt-2 text-sm text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline"
+          <p class="text-xs sm:text-sm text-gray-700">Próximamente podrás calificar esta experiencia.</p>
+          <button class="mt-2 text-xs sm:text-sm text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline"
             disabled>
             Calificar alquiler (próximamente)
           </button>
         </div>
         <button @click="router.push(`/dashboard`)"
-          class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
+          class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out text-sm sm:text-base">
           Volver a inicio
         </button>
         <button @click="router.push(`/user/${loggedUser?.id}`)"
-          class="mt-2 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out">
+          class="mt-2 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-150 ease-in-out text-sm sm:text-base">
           Ver mi perfil
         </button>
       </div>
-
     </div>
 
-    <!-- Panel principal -->
-    <div v-if="!showCompletedView" class="flex-1 flex flex-col gap-4 relative">
-
-      <!-- Mapa (placeholder) -->
-      <div class="flex-1 bg-gray-200 rounded-3xl relative overflow-hidden">
+    <div v-if="!showCompletedView" class="flex-1 flex flex-col gap-4 relative order-2 lg:order-2 min-h-[300px] sm:min-h-[400px] lg:min-h-auto">
+      
+      <div class="flex-1 bg-gray-200 rounded-xl lg:rounded-3xl relative overflow-hidden">
         <div id="map" class="absolute inset-0 z-0"></div>
 
-        <!-- Datos del viaje -->
-      <div class="absolute left-1/2 transform -translate-x-1/2 top-8 bg-white rounded-2xl p-4 shadow-lg z-10 w-[90%] max-w-4xl mx-auto">
-        <div class="grid grid-cols-3 gap-4">
-        <div class="bg-vibrant-light-600 rounded-2xl p-4 flex flex-col gap-3 shadow-md">
-          <div class="flex items-center gap-2">
-          <Ubication class="size-6 text-primary-900" />
-          <span class="text-sm font-medium text-primary-900">Ubicación</span>
-          </div>
-          <span class="text-background-600 font-semibold">{{ rentalDetails.vehicleData?.status.currentLocation.address }}</span>
-        </div>
-        <div class="bg-vibrant-light-600 rounded-2xl p-4 flex flex-col gap-3 shadow-md">
-          <div class="flex items-center gap-2">
-          <Velocimetre class="size-6 text-primary-900" />
-          <span class="text-sm font-medium text-primary-900">Velocidad</span>
-          </div>
-          <span class="text-background-600 font-semibold">60 km/h</span>
-        </div>
-        <div class="bg-vibrant-light-600 rounded-2xl p-4 flex flex-col gap-3 shadow-md">
-          <div class="flex items-center gap-2">
-          <Distance class="size-6 text-primary-900" />
-          <span class="text-sm font-medium text-primary-900">Distancia</span>
-          </div>
-          <span class="text-background-600 font-semibold">0.542 km</span>
-        </div>
-        <!-- <div class="bg-vibrant-light-600 rounded-2xl p-4 flex flex-col gap-1 shadow-md">
-          <span class="text-sm font-medium text-primary-900">Última parada</span>
-          <span class="text-background-600 font-semibold">Hace 2hs</span>
-        </div> -->
-        </div>
-      </div>
-        
-        <!-- Chat flotante -->
-        <!-- <div
-          class="absolute bottom-4 right-4 w-80 bg-[#0D0D3C] text-white rounded-2xl p-3 flex flex-col gap-2 shadow-lg">
-          <div class="flex justify-between items-center">
-            <div class="flex items-center gap-2">
-              <img :src="rentalDetails.driverData?.photoURL" :alt="rentalDetails.driverData?.name" alt="avatar"
-                class="w-8 h-8 rounded-full" />
-              <p class="font-semibold">{{rentalDetails.driverData?.name}} {{rentalDetails.driverData?.lastname}}</p>
+        <div class="absolute left-2 sm:left-4 lg:left-1/2 lg:transform lg:-translate-x-1/2 top-4 sm:top-6 lg:top-8 
+                    bg-white rounded-xl lg:rounded-2xl p-3 sm:p-4 shadow-lg z-10 
+                    w-[calc(100%-1rem)] sm:w-[calc(100%-2rem)] lg:w-[90%] lg:max-w-4xl">
+          
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
+            <div class="bg-vibrant-light-600 rounded-lg lg:rounded-2xl p-2 sm:p-3 lg:p-4 flex flex-col gap-1 sm:gap-2 lg:gap-3 shadow-md">
+              <div class="flex items-center gap-1 sm:gap-2">
+                <Ubication class="size-4 sm:size-5 lg:size-6 text-primary-900" />
+                <span class="text-xs sm:text-sm font-medium text-primary-900">Ubicación</span>
+              </div>
+              <span class="text-background-600 font-semibold text-xs sm:text-sm lg:text-base truncate">
+                {{ rentalDetails.vehicleData?.status.currentLocation.address }}
+              </span>
             </div>
-            <button>📞</button>
+            
+            <div class="bg-vibrant-light-600 rounded-lg lg:rounded-2xl p-2 sm:p-3 lg:p-4 flex flex-col gap-1 sm:gap-2 lg:gap-3 shadow-md">
+              <div class="flex items-center gap-1 sm:gap-2">
+                <Velocimetre class="size-4 sm:size-5 lg:size-6 text-primary-900" />
+                <span class="text-xs sm:text-sm font-medium text-primary-900">Velocidad</span>
+              </div>
+              <span class="text-background-600 font-semibold text-xs sm:text-sm lg:text-base">60 km/h</span>
+            </div>
+            
+            <div class="bg-vibrant-light-600 rounded-lg lg:rounded-2xl p-2 sm:p-3 lg:p-4 flex flex-col gap-1 sm:gap-2 lg:gap-3 shadow-md">
+              <div class="flex items-center gap-1 sm:gap-2">
+                <Distance class="size-4 sm:size-5 lg:size-6 text-primary-900" />
+                <span class="text-xs sm:text-sm font-medium text-primary-900">Distancia</span>
+              </div>
+              <span class="text-background-600 font-semibold text-xs sm:text-sm lg:text-base">0.542 km</span>
+            </div>
           </div>
-
-          <div class="bg-[#1B1B52] rounded-xl p-2 text-sm">¡Hola! ¿Podés ayudarme?</div>
-          <div class="bg-[#2A3EF4] rounded-xl p-2 text-sm self-end">Sí, ¿Cuál es el problema?</div>
-
-          <div class="flex mt-2">
-            <input type="text" class="flex-1 p-2 rounded-l-xl bg-white text-black text-sm"
-              placeholder="Escribir mensaje...">
-            <button class="bg-[#2A3EF4] px-4 rounded-r-xl">➤</button>
-          </div>
-        </div> -->
-
-        <!-- Botones flotantes -->
-        <!-- <div class="absolute bottom-4 left-4 flex gap-2">
-          <button class="bg-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg">🔔</button>
-          <button class="bg-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg">💬</button>
-        </div> -->
-
+        </div>
       </div>
     </div>
 
-
-
-
-    <div v-else class="flex-1 flex flex-col items-center justify-center bg-gray-50 rounded-3xl p-8 shadow-inner overflow-hidden">
-
-      <div class="bg-white shadow-2xl rounded-2xl p-6 max-w-2xl w-full text-gray-700 space-y-5 mx-auto">
-        <Heading :type="2" class="text-gray-800">📄 Resumen del alquiler</Heading>
+    <div v-else class="flex-1 flex flex-col items-center justify-center rounded-xl lg:rounded-3xl p-4 sm:p-6 lg:p-8 order-2 lg:order-2">
+      <div class="bg-white shadow-2xl rounded-xl lg:rounded-2xl p-4 sm:p-6 max-w-2xl w-full text-gray-700 space-y-4 sm:space-y-5 mx-auto max-h-full overflow-y-auto">
+        <Heading :type="2" class="text-gray-800 text-lg sm:text-xl lg:text-2xl">📄 Resumen del alquiler</Heading>
 
         <!-- Vehículo -->
-        <div class="border-b pb-4">
-          <h3 class="font-semibold text-lg">🚗 Vehículo</h3>
-          <p><strong>Marca / Modelo:</strong> {{ rentalDetails.vehicleData?.basicInfo.brand }} {{
-            rentalDetails.vehicleData?.basicInfo.model }} ({{ rentalDetails.vehicleData?.basicInfo.year }})</p>
-          <p><strong>Patente:</strong> {{ rentalDetails.vehicleData?.basicInfo.licensePlate }}</p>
-          <p><strong>Transmisión:</strong> {{ rentalDetails.vehicleData?.specifications.transmission }}</p>
-          <p><strong>Combustible:</strong> {{ rentalDetails.vehicleData?.specifications.fuelType }}</p>
-          <p><strong>Extras:</strong> {{ rentalDetails.vehicleData.extras?.join(', ') || 'Ninguno' }}</p>
+        <div class="border-b pb-3 sm:pb-4">
+          <h3 class="font-semibold text-base sm:text-lg">🚗 Vehículo</h3>
+          <div class="text-sm sm:text-base space-y-1">
+            <p><strong>Marca / Modelo:</strong> {{ rentalDetails.vehicleData?.basicInfo.brand }} {{
+              rentalDetails.vehicleData?.basicInfo.model }} ({{ rentalDetails.vehicleData?.basicInfo.year }})</p>
+            <p><strong>Patente:</strong> {{ rentalDetails.vehicleData?.basicInfo.licensePlate }}</p>
+            <p><strong>Transmisión:</strong> {{ rentalDetails.vehicleData?.specifications.transmission }}</p>
+            <p><strong>Combustible:</strong> {{ rentalDetails.vehicleData?.specifications.fuelType }}</p>
+            <p><strong>Extras:</strong> {{ rentalDetails.vehicleData.extras?.join(', ') || 'Ninguno' }}</p>
+          </div>
         </div>
 
         <!-- Participantes -->
-        <div class="border-b pb-4">
-          <h3 class="font-semibold text-lg">👥 Participantes</h3>
-          <p><strong>Propietario:</strong> {{ rentalDetails.ownerData.name }} {{ rentalDetails.ownerData.lastname }}</p>
-          <p><strong>Conductor:</strong> {{ rentalDetails.driverData.name }} {{ rentalDetails.driverData.lastname }}</p>
+        <div class="border-b pb-3 sm:pb-4">
+          <h3 class="font-semibold text-base sm:text-lg">👥 Participantes</h3>
+          <div class="text-sm sm:text-base space-y-1">
+            <p><strong>Propietario:</strong> {{ rentalDetails.ownerData.name }} {{ rentalDetails.ownerData.lastname }}</p>
+            <p><strong>Conductor:</strong> {{ rentalDetails.driverData.name }} {{ rentalDetails.driverData.lastname }}</p>
+          </div>
         </div>
 
         <!-- Fechas -->
-        <div class="border-b pb-4">
-          <h3 class="font-semibold text-lg">📅 Fechas</h3>
-          <p><strong>Desde:</strong> {{ formatDate(rentalDetails.start_time) }}</p>
-          <p><strong>Hasta:</strong> {{ formatDate(rentalDetails.end_time) }}</p>
-          <!-- <p><strong>Duración:</strong> {{ rentalDetails.duration }}</p> -->
+        <div class="border-b pb-3 sm:pb-4">
+          <h3 class="font-semibold text-base sm:text-lg">📅 Fechas</h3>
+          <div class="text-sm sm:text-base space-y-1">
+            <p><strong>Desde:</strong> {{ formatDate(rentalDetails.start_time) }}</p>
+            <p><strong>Hasta:</strong> {{ formatDate(rentalDetails.end_time) }}</p>
+          </div>
         </div>
 
         <!-- Ubicaciones -->
-        <div class="border-b pb-4">
-          <h3 class="font-semibold text-lg">📍 Ubicaciones</h3>
-          <p><strong>Retiro:</strong> {{ rentalDetails.vehicleData?.status.currentLocation.address }}</p>
-          <p><strong>Devolución:</strong> {{ rentalDetails.vehicleData?.status.currentLocation.address }}</p>
+        <div class="border-b pb-3 sm:pb-4">
+          <h3 class="font-semibold text-base sm:text-lg">📍 Ubicaciones</h3>
+          <div class="text-sm sm:text-base space-y-1">
+            <p><strong>Retiro:</strong> {{ rentalDetails.vehicleData?.status.currentLocation.address }}</p>
+            <p><strong>Devolución:</strong> {{ rentalDetails.vehicleData?.status.currentLocation.address }}</p>
+          </div>
         </div>
 
         <!-- Pago -->
-        <div class="border-b pb-4">
-          <h3 class="font-semibold text-lg">💳 Pago</h3>
-          <p><strong>Método:</strong> {{ rentalDetails.payments.payment_method }}</p>
-          <p><strong>ID Transacción:</strong> {{ rentalDetails.payments.transaction_id }}</p>
-          <p><strong>Estado:</strong> {{ rentalDetails.payments.status }}</p>
-          <p><strong>Total pagado:</strong> ${{ rentalDetails.total_price?.toFixed() }}</p>
+        <div class="border-b pb-3 sm:pb-4">
+          <h3 class="font-semibold text-base sm:text-lg">💳 Pago</h3>
+          <div class="text-sm sm:text-base space-y-1">
+            <p><strong>Método:</strong> {{ rentalDetails.payments.payment_method }}</p>
+            <p><strong>ID Transacción:</strong> {{ rentalDetails.payments.transaction_id.toFixed() }}</p>
+            <p><strong>Estado:</strong> {{ rentalDetails.payments.status === 'pending' ? 'Pendiente' : rentalDetails.payments.status === 'completed' ? 'Completado' : 'N/A'  }}</p>
+            <p><strong>Total pagado:</strong> ${{ rentalDetails.total_price?.toFixed() }}</p>
+          </div>
         </div>
 
         <!-- Estado Final -->
         <div>
-          <h3 class="font-semibold text-lg">📌 Estado Final</h3>
-          <p><strong>Estado:</strong> {{ rentalDetails.status }}</p>
-          <p v-if="rentalDetails.notes"><strong>Notas:</strong> {{ rentalDetails.notes }}</p>
+          <h3 class="font-semibold text-base sm:text-lg">📌 Estado Final</h3>
+          <div class="text-sm sm:text-base space-y-1">
+            <p><strong>Estado:</strong> {{ rentalDetails.status === 'completed' ? 'Completado' : 'N/A'}}</p>
+            <!-- <p v-if="rentalDetails.notes"><strong>Notas:</strong> {{ rentalDetails.notes }}</p> -->
+          </div>
         </div>
-
       </div>
     </div>
-    
   </div>
-
 </template>

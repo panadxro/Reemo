@@ -190,7 +190,7 @@ const handleNotificationClick = async (notification) => {
                     </p>
                     <p class="text-xs text-gray-500">
                       Precio Total: <span class="text-xs px-2 py-0.5 rounded bg-green-100 border text-green-700">${{
-                        noti.rentDetails?.total_price?.toFixed(2) || 'N/A' }} </span>
+                        noti.rentDetails?.total_price?.toFixed() || 'N/A' }} </span>
                     </p>
                     <p class="text-xs text-gray-500">
                       Estado:

@@ -61,7 +61,7 @@ export default {
       <div class="sm:flex flex-wrap justify-center gap-4">
         <div class="sm:w-[310px] shadow-custom px-6 py-12 flex flex-col gap-16 rounded-[36px]">
           <article class="flex flex-col gap-2 text-pretty">
-            <Heading :type="3">¿Cómo funciona Reemo?</Heading>
+            <Heading :type="3">¿Cómo funciona <strong>Reemo</strong>?</Heading>
             <p class="text-lg font-regular leading-tight">Aquellos dueños dispuestos a prestar su auto a cambio de dinero, lo registran y las personas que necesitan uno temporalmente, lo alquilan.</p>
             <a href="" class="flex items-center gap-4 py-2 px-4 rounded-xl bg-secondary-100 w-fit">
               Más información
@@ -75,7 +75,7 @@ export default {
         <div class="sm:w-[310px] shadow-custom px-6 py-12 flex flex-col gap-16 rounded-[36px]">
           <article class="flex flex-col gap-2">
             <Heading :type="3">Proceso 100% digital</Heading>
-            <p class="text-lg font-regular leading-tight">En Reemo, todo el proceso es completamente digital y sin complicaciones. Reservá, pagá y obtené tu auto de forma rápida y sencilla.</p>
+            <p class="text-lg font-regular leading-tight">En <strong>Reemo</strong>, todo el proceso es completamente digital y sin complicaciones. Reservá, pagá y obtené tu auto de forma rápida y sencilla.</p>
             <a href="" class="flex items-center gap-4 py-2 px-4 rounded-xl bg-secondary-100 w-fit">
               Más información
             </a>
@@ -88,7 +88,7 @@ export default {
         <div class="sm:w-[310px] shadow-custom px-6 py-12 flex flex-col gap-16 rounded-[36px]">
           <article class="flex flex-col gap-2">
             <Heading :type="3">Impacto en Argentina</Heading>
-            <p class="text-lg font-regular leading-tight">Al alquilar un auto en Reemo, aparte de cuidar tu economía, evitando el cargo de mantener uno propio, ayudas a los dueños que lo publican.</p>
+            <p class="text-lg font-regular leading-tight">Al alquilar un auto en <strong>Reemo</strong>, aparte de cuidar tu economía, evitando el cargo de mantener uno propio, ayudas a los dueños que lo publican.</p>
             <a href="" class="flex items-center gap-4 py-2 px-4 rounded-xl bg-secondary-100 w-fit">
               Más información
             </a>
@@ -101,7 +101,7 @@ export default {
     </section>
 
     <section class="flex flex-col gap-16 mx-4">
-    <Heading :type="2" class="text-center">Con Reemo,<br>tranquilo a todos lados</Heading>
+    <Heading :type="2" class="text-center">Con <strong>Reemo</strong>,<br>tranquilo a todos lados</Heading>
     <div class="flex flex-col items-center justify-center [@media(min-width:1100px)]:flex-row gap-4">
       <article class="bg-primary-900 pl-9 py-11 flex flex-col gap-16 rounded-[40px] w-full group relative">
         <div class="flex flex-col gap-4 w-96">
@@ -145,7 +145,7 @@ export default {
             <div>
                 <Heading :type="3">Contactáte inmediatamente<br class="hidden md:block"/> con el dueño</Heading>
                 <p class="w-full md:w-3/4 text-slate-600 pt-2">
-                    Con Reemo podés hablar por medio de chat con el dueño del auto luego de haber reservado el mismo para ultimar detalles del alquiler
+                    Con <strong>Reemo</strong> podés hablar por medio de chat con el dueño del auto luego de haber reservado el mismo para ultimar detalles del alquiler
                 </p>
             </div>
     
@@ -222,15 +222,15 @@ export default {
     <div class="flex flex-col gap-4 w-10/12 m-auto">
       <Dropdown class="flex flex-col bg-secondary-100 px-8 py-5 rounded-3xl">
         <template #title>
-          <Heading type="5">¿Qué necesito para abrir una cuenta en Reemo?</Heading>
+          <Heading type="5">¿Qué necesito para abrir una cuenta en <strong>Reemo</strong>?</Heading>
         </template>
-        <p class="pt-4">Para registrarte en Reemo, solo necesitás un correo electrónico válido, una contraseña segura y algunos datos personales básicos para configurar tu perfil. Una vez que completes estos pasos, podrás empezar a alquilar o rentar autos en nuestra plataforma.</p>
+        <p class="pt-4">Para registrarte en <strong>Reemo</strong>, solo necesitás un correo electrónico válido, una contraseña segura y algunos datos personales básicos para configurar tu perfil. Una vez que completes estos pasos, podrás empezar a alquilar o rentar autos en nuestra plataforma.</p>
       </Dropdown>
       <Dropdown class="flex flex-col bg-secondary-100 px-8 py-5 rounded-3xl">
         <template #title>
-          <Heading type="5">¿Cuáles son los beneficios de usar Reemo?</Heading>
+          <Heading type="5">¿Cuáles son los beneficios de usar <strong>Reemo</strong>?</Heading>
         </template>
-        <p class="pt-4">Con Reemo, disfrutás de una serie de ventajas tanto si sos propietario como si necesitás un auto temporalmente:</p>
+        <p class="pt-4">Con <strong>Reemo</strong>, disfrutás de una serie de ventajas tanto si sos propietario como si necesitás un auto temporalmente:</p>
         <ul class="pt-2 list-disc list-inside">
           <li><b>Propietarios:</b> Generá ingresos adicionales con tu auto, sin esfuerzo y con total seguridad gracias a nuestros seguros contra todo riesgo.</li>
           <li><b>Usuarios:</b> Alquilá un auto cuando lo necesites, sin tener que asumir los costos de mantenimiento de uno propio.</li>
@@ -240,9 +240,9 @@ export default {
       </Dropdown>
       <Dropdown class="flex flex-col bg-secondary-100 px-8 py-5 rounded-3xl">
         <template #title>
-          <Heading type="5">¿Cómo puedo poner mi auto en alquiler en Reemo?</Heading>
+          <Heading type="5">¿Cómo puedo poner mi auto en alquiler en <strong>Reemo</strong>?</Heading>
         </template>
-        <p class="pt-4">Publicar tu vehículo en Reemo es muy sencillo:</p>
+        <p class="pt-4">Publicar tu vehículo en <strong>Reemo</strong> es muy sencillo:</p>
         <ul class="pt-2 list-disc list-inside">
           <li>Registrate y completá el perfil de tu auto (datos básicos, fotos y documentación).</li>
           <li>Establecé la tarifa por día y la ubicación donde se podrá recoger.</li>
@@ -251,7 +251,7 @@ export default {
       </Dropdown>
       <Dropdown class="flex flex-col bg-secondary-100 px-8 py-5 rounded-3xl">
         <template #title>
-          <Heading type="5">¿Cómo funciona el seguro de los autos en Reemo?</Heading>
+          <Heading type="5">¿Cómo funciona el seguro de los autos en <strong>Reemo</strong>?</Heading>
         </template>
         <p class="pt-4">Todos los vehículos registrados en nuestra plataforma están protegidos por un seguro contra todo riesgo con Zurich, lo que significa que tanto el propietario como el arrendatario están cubiertos en caso de accidentes, daños o robos durante el período de alquiler.</p>
       </Dropdown>
@@ -264,7 +264,7 @@ export default {
   <section>
     <article class="bg-linear-to-r to-primary-900 from-secondary-900 px-9 py-11 w-full rounded-[40px] shadow-custom flex flex-col items-center text-white overflow-hidden gap-4">
       <Experience class="-mt-20"/>
-      <Heading :type="3" class="text-white">¿Qué esperás para vivir la experiencia Reemo?</Heading>
+      <Heading :type="3" class="text-white">¿Qué esperás para vivir la experiencia <strong>Reemo</strong>?</Heading>
       <p>Descargá la app y empezá a alquilar o rentar autos en minutos.</p>
       <QR/>
     </article>
