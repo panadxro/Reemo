@@ -174,7 +174,7 @@ watch(currentUser, (newUser, oldUser) => {
   <div v-else-if="!driverRentalDetail && !ownerRentalDetail" class="text-center text-gray-500 p-4">
     <div class="text-white flex flex-col items-center justify-center">
       <img src="@/assets/car-history.png" alt="History Car" class="max-w-[150px] mx-auto mb-4" />
-      <Heading :type="3" class="text-center">No hay registros de Solicitudes.</Heading>
+      <Heading :type="3" class="text-center">No hay registros de solicitudes.</Heading>
       <router-link to="/search" class="mt-4 px-4 py-2 rounded-lg text-primary-900 bg-secondary-300 hover:bg-primary-700 hover:text-white transition-all duration-300 w-fit font-black">
         <span class="font-bold">Alquilá un auto</span>
       </router-link>
@@ -210,7 +210,7 @@ watch(currentUser, (newUser, oldUser) => {
             <p v-if="driverRentalDetail.vehicleDetails"><span class="font-semibold">Vehículo:</span> {{ driverRentalDetail.vehicleDetails?.basicInfo.brand }} {{ driverRentalDetail.vehicleDetails?.basicInfo.model }}</p>
             <p><span class="font-semibold">Propietario:</span> {{ driverRentalDetail.ownerDetails?.name || 'No disponible' }}</p>
             <p><span class="font-semibold">Inicia:</span> {{ formatDate(driverRentalDetail.start_time) }}</p>
-            <p><span class="font-semibold">Total:</span> ${{ driverRentalDetail.total_price?.toFixed(2) || 'N/A' }}</p>
+            <p><span class="font-semibold">Total:</span> ${{ driverRentalDetail.total_price?.toFixed() || 'N/A' }}</p>
           </div>
 
           <div class="col-span-2 py-2 justify-self-end flex flex-col items-end space-y-2">
@@ -260,7 +260,7 @@ watch(currentUser, (newUser, oldUser) => {
             <p v-if="ownerRentalDetail.vehicleDetails"><strong>Vehículo:</strong> {{ ownerRentalDetail.vehicleDetails?.basicInfo.brand }} {{ ownerRentalDetail.vehicleDetails?.basicInfo.model }}</p>
             <p><strong>Inquilino:</strong> {{ ownerRentalDetail.driverDetails?.name || 'No disponible' }}</p>
             <p><strong>Inicia:</strong> {{ formatDate(ownerRentalDetail.start_time) }}</p>
-            <p><strong>Total:</strong> ${{ ownerRentalDetail.total_price?.toFixed(2) || 'N/A' }}</p>
+            <p><strong>Total:</strong> ${{ ownerRentalDetail.total_price?.toFixed() || 'N/A' }}</p>
           </div>
            <div class="col-span-2 py-2 justify-self-end flex flex-col items-end space-y-2">
             <p v-if="ownerRentalDetail.status === 'pending'" class="text-xs text-yellow-600 text-right">Solicitud pendiente para tu vehículo.</p>

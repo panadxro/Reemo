@@ -102,12 +102,12 @@ onMounted(async () => {
           </div>
         </div>
         <div v-else class="bg-deep-blue-900 text-white p-6 w-full rounded-[40px] py-10 px-6 flex flex-col gap-12">
-          <Heading type="2" class="medium text-white">¡Bienvenido a Reemo, {{ user.personalInfo.firstName }}👋!</Heading>
+          <Heading type="2" class="medium text-white">¡Bienvenido a <strong>Reemo</strong>, {{ user.personalInfo.firstName }}👋!</Heading>
           <p class="text-white">Aquí podés gestionar tus autos y solicitudes de alquiler.🚗✨</p>
         </div>
         <div class="bg-vibrant-light-800 rounded-[40px] p-6 flex flex-col justify-between">
           <h3 class="text-xl font-bold mb-2">¡Tu viaje comienza acá!</h3>
-          <p class="text-gray-700">Alquilá con Reemo fácil, rápido y seguro.</p>
+          <p class="text-gray-700">Alquilá con <strong>Reemo</strong> fácil, rápido y seguro.</p>
           <button class="mt-6 bg-[#0a0a3c] text-white font-medium py-3 rounded-lg">Buscar autos</button>
         </div>
       </div>

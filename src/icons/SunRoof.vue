@@ -5,20 +5,9 @@ export default {
 </script>
 
 <template>
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    x-bind:width="size" 
-    x-bind:height="size" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    x-bind:stroke-width="stroke" 
-    stroke-linecap="round" 
-    stroke-linejoin="round" 
-    width="16" 
-    height="16" 
-    stroke-width="2">
-    <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
-    <path d="M6 6h3.5l2.5 -2.5l2.5 2.5h3.5v3.5l2.5 2.5l-2.5 2.5v3.5h-3.5l-2.5 2.5l-2.5 -2.5h-3.5v-3.5l-2.5 -2.5l2.5 -2.5z"></path>
-  </svg>
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M9.6665 11.6666C9.6665 12.1971 9.87722 12.7058 10.2523 13.0808C10.6274 13.4559 11.1361 13.6666 11.6665 13.6666C12.1969 13.6666 12.7056 13.4559 13.0807 13.0808C13.4558 12.7058 13.6665 12.1971 13.6665 11.6666C13.6665 11.1362 13.4558 10.6275 13.0807 10.2524C12.7056 9.87734 12.1969 9.66663 11.6665 9.66663C11.1361 9.66663 10.6274 9.87734 10.2523 10.2524C9.87722 10.6275 9.6665 11.1362 9.6665 11.6666Z" stroke="#010440" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M7.07827 7.07839H9.75474L11.6665 5.16663L13.5783 7.07839H16.2547V9.75486L18.1665 11.6666L16.2547 13.5784V16.2549H13.5783L11.6665 18.1666L9.75474 16.2549H7.07827V13.5784L5.1665 11.6666L7.07827 9.75486V7.07839Z" stroke="#010440" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
 </template>
