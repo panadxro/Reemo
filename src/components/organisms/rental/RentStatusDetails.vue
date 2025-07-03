@@ -9,6 +9,7 @@ import { fetchRentedCars, fetchLatestActiveOwnedRental, updateRentalStatus } fro
 import { addAlert } from '@/services/alerts';
 import Loading from '@/icons/Loading.vue';
 import Heading from '@/components/atoms/Heading.vue';
+import Status from '@/components/molecules/Status.vue';
 
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore(); 
@@ -173,7 +174,7 @@ watch(currentUser, (newUser, oldUser) => {
   <div v-else-if="!driverRentalDetail && !ownerRentalDetail" class="text-center text-gray-500 p-4">
     <div class="text-white flex flex-col items-center justify-center">
       <img src="@/assets/car-history.png" alt="History Car" class="max-w-[150px] mx-auto mb-4" />
-      <Heading :type="3" class="text-center">No hay registros de Solicitudes.</Heading>
+      <Heading :type="3" class="text-center">No hay registros de solicitudes.</Heading>
       <router-link to="/search" class="mt-4 px-4 py-2 rounded-lg text-primary-900 bg-secondary-300 hover:bg-primary-700 hover:text-white transition-all duration-300 w-fit font-black">
         <span class="font-bold">Alquilá un auto</span>
       </router-link>
@@ -189,9 +190,10 @@ watch(currentUser, (newUser, oldUser) => {
         <div class="flex items-center space-x-4">
           <!-- <div class="rounded-full w-4 h-4 border border-purple-500"></div> -->
           <div class="text-md font-bold">
-            <span class="px-3 py-1 text-xs font-semibold rounded-full capitalize" :class="getStatusClass(driverRentalDetail.status)">
+            <!-- <span class="px-3 py-1 text-xs font-semibold rounded-full capitalize" :class="getStatusClass(driverRentalDetail.status)">
               {{ driverRentalDetail.status.replace('_', ' ') }}
-            </span>
+            </span> -->
+            <Status :status="driverRentalDetail.status" />
           </div>
         </div>
       </div>
@@ -208,7 +210,7 @@ watch(currentUser, (newUser, oldUser) => {
             <p v-if="driverRentalDetail.vehicleDetails"><span class="font-semibold">Vehículo:</span> {{ driverRentalDetail.vehicleDetails?.basicInfo.brand }} {{ driverRentalDetail.vehicleDetails?.basicInfo.model }}</p>
             <p><span class="font-semibold">Propietario:</span> {{ driverRentalDetail.ownerDetails?.name || 'No disponible' }}</p>
             <p><span class="font-semibold">Inicia:</span> {{ formatDate(driverRentalDetail.start_time) }}</p>
-            <p><span class="font-semibold">Total:</span> ${{ driverRentalDetail.total_price?.toFixed(2) || 'N/A' }}</p>
+            <p><span class="font-semibold">Total:</span> ${{ driverRentalDetail.total_price?.toFixed() || 'N/A' }}</p>
           </div>
 
           <div class="col-span-2 py-2 justify-self-end flex flex-col items-end space-y-2">
@@ -226,10 +228,14 @@ watch(currentUser, (newUser, oldUser) => {
           @click="navigateToRentalDetails(driverRentalDetail.id)"
           class="mt-4 w-full bg-[#0a0a3c] hover:bg-secondary-800 text-white font-bold py-2 px-4 rounded-lg transition duration-150 ease-in-out cursor-pointer"
         >
-          Ver Detalles del Alquiler
+          Ver detalles del alquiler
         </button>
       </div>
     </div>
+
+
+
+
 
     <!-- Sección: Vehículos Propios Alquilados -->
     <div v-if="ownerRentalDetail" class="text-black w-full flex flex-col mx-auto mt-6">
@@ -237,9 +243,7 @@ watch(currentUser, (newUser, oldUser) => {
         <div class="flex items-center space-x-4">
           <!-- <div class="rounded-full w-4 h-4 border border-teal-500"></div> -->
           <div class="text-md font-bold">
-            <span class="px-3 py-1 text-xs font-semibold rounded-full capitalize" :class="getStatusClass(ownerRentalDetail.status)">
-              {{ ownerRentalDetail.status.replace('_', ' ') }}
-            </span>
+            <Status :status="ownerRentalDetail.status" />
           </div>
         </div>
       </div>
@@ -256,11 +260,11 @@ watch(currentUser, (newUser, oldUser) => {
             <p v-if="ownerRentalDetail.vehicleDetails"><strong>Vehículo:</strong> {{ ownerRentalDetail.vehicleDetails?.basicInfo.brand }} {{ ownerRentalDetail.vehicleDetails?.basicInfo.model }}</p>
             <p><strong>Inquilino:</strong> {{ ownerRentalDetail.driverDetails?.name || 'No disponible' }}</p>
             <p><strong>Inicia:</strong> {{ formatDate(ownerRentalDetail.start_time) }}</p>
-            <p><strong>Total:</strong> ${{ ownerRentalDetail.total_price?.toFixed(2) || 'N/A' }}</p>
+            <p><strong>Total:</strong> ${{ ownerRentalDetail.total_price?.toFixed() || 'N/A' }}</p>
           </div>
            <div class="col-span-2 py-2 justify-self-end flex flex-col items-end space-y-2">
             <p v-if="ownerRentalDetail.status === 'pending'" class="text-xs text-yellow-600 text-right">Solicitud pendiente para tu vehículo.</p>
-             <div class="flex space-x-2 mt-3">
+             <div class="flex space-x-2 mt-3" v-if="ownerRentalDetail.status === 'pending' && currentUser?.id === ownerRentalDetail.owner_id">
                <button
                  @click="handleRentalAction(ownerRentalDetail.id, 'confirmed', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"
                  class="text-sm px-3 py-1 rounded border text-gray-700 cursor-pointer">Aceptar</button>
@@ -276,7 +280,7 @@ watch(currentUser, (newUser, oldUser) => {
           @click="navigateToRentalDetails(ownerRentalDetail.id)"
           class="mt-4 w-full bg-[#0a0a3c] hover:bg-secondary-800 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out cursor-pointer"
         >
-          Ver Detalles del Alquiler
+          Ver detalles del alquiler
         </button>
       </div>
     </div>

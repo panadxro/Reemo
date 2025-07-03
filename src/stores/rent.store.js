@@ -363,10 +363,10 @@ export const useRentStore = defineStore('rent', {
         status: "pending",
         total_price: this.rentalData.currentTotalPrice,
         payments: {
-          transaction_id: null,
+          transaction_id: Math.random() * (999999999 - 111111111) + 11111,
           amount: this.rentalData.currentTotalPrice,
           payment_method: paymentStore.getPaymentMethodName(this.rentalData.selectedPaymentMethod),
-          status: 'pendiente',
+          status: 'completed',
           timestamp: new Date().toISOString()
         },
       };

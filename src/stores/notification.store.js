@@ -2,8 +2,8 @@ import { defineStore } from "pinia";
 import { fetchUserNotification } from '@/services/rentedCarService';
 import { markNotificationAsRead as markAsReadService, createRentalRequestNotification as createNotificationService } from '@/services/car/notifyRented';
 import { updateRentalStatus as updateRentalStatusService } from '@/services/rentedCarService';
-// Importa useAuthStore si necesitas reaccionar a cambios de autenticación directamente aquí,
-// aunque es más común que el componente App.vue o un watcher global maneje esto.
+// Importa useAuthStore para reaccionar a cambios de autenticación directamente aca,
+// aunque es común que el componente App.vue o un watcher global maneje esto.
 
 export const useNotificationStore = defineStore('notification', {
   state: () => ({

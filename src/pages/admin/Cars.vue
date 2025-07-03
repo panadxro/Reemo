@@ -3,6 +3,8 @@ import { ref, computed, onMounted } from "vue";
 import { useAdminStore } from "@stores";
 import { addAlert } from "../../services/alerts";
 import { formatDate } from '../../libraries/date.js';
+import { createCarValidationNotification } from "../../services/car/notifyRented.js";
+import InvalidationModal from '@components/Admin/InvalidationModal.vue';
 
 import Heading from "@components/atoms/Heading.vue";
 import Loading from "@icons/Loading.vue";
@@ -13,12 +15,14 @@ import SearchIcon from "@icons/Search.vue";
 
 export default {
   name: "AdminCars",
-  components: { Heading, Loading, Status, Input, Popover, SearchIcon },
+  components: { Heading, Loading, Status, Input, Popover, SearchIcon, InvalidationModal },
   data() {
     return {
       openPopoverId: null,
       filter: 'all',
-      searchQuery: ''
+      searchQuery: '',
+      isModalOpen: false, 
+      selectedCarForInvalidation: null,
     };
   },
   setup() {
@@ -68,14 +72,53 @@ export default {
     handleClosePopover() {
       this.openPopoverId = null;
     },
-    async updateValidation(car) {
+    // async updateValidation(car) {
+    //   try {
+    //     const newStatus = car.status.current === 'not-validated' ? 'validated' : 'not-validated';
+
+    //     await this.adminStore.changeCarValidation(car.id, newStatus);
+    //     await createCarValidationNotification(car, newStatus);
+
+    //     car.status = newStatus;
+    //     addAlert("Estado del vehículo actualizado con éxito", "success");
+    //   } catch (error) {
+    //     addAlert("Error al actualizar el estado del vehículo", "error");
+    //   }
+    // },
+    openInvalidationModal(car) {
+      this.selectedCarForInvalidation = car;
+      this.isModalOpen = true;
+      this.handleClosePopover(); // Cerrar el popover al abrir el modal
+    },
+    closeInvalidationModal() {
+      this.isModalOpen = false;
+      this.selectedCarForInvalidation = null;
+    },
+    async confirmInvalidation(reason) {
+      const car = this.selectedCarForInvalidation;
+      if (!car) return;
+
       try {
-        const newStatus = car.status.current === 'not-validated' ? 'validated' : 'not-validated';
-        await this.adminStore.changeCarValidation(car.id, newStatus);
-        car.status = newStatus;
+        // Llamar al store para cambiar el estado a 'not-validated'
+        await this.adminStore.changeCarValidation(car.id, 'not-validated');
+        // Enviar la notificación con el motivo
+        await createCarValidationNotification(car, 'not-validated', reason);
+
+        // Actualizar la UI (asumiendo que el store es reactivo)
         addAlert("Estado del vehículo actualizado con éxito", "success");
       } catch (error) {
         addAlert("Error al actualizar el estado del vehículo", "error");
+      } finally {
+        this.closeInvalidationModal();
+      }
+    },
+    async validateCar(car) {
+      try {
+        await this.adminStore.changeCarValidation(car.id, 'validated');
+        await createCarValidationNotification(car, 'validated');
+        addAlert("Vehículo validado con éxito", "success");
+      } catch (error) {
+        addAlert("Error al validar el vehículo", "error");
       }
     }
   },
@@ -189,7 +232,9 @@ export default {
               :items="[
                 { label: 'Ver auto', to: `/car/${car.id}` },
                 { label: 'Chat', to: `/user/${car.ownerId}/chat` },
-                { label: car.status.current !== 'not-validated' ? 'Invalidar' : 'Validar', action: () => updateValidation(car), class: `car.isValidated ? 'text-red-500' : ''` },
+                car.status.current !== 'not-validated'
+                  ? { label: 'Invalidar', action: () => openInvalidationModal(car), class: 'text-red-500' }
+                  : { label: 'Validar', action: () => validateCar(car) }
               ]"
               :isOpen="openPopoverId === index"
               :popoverId="index"
@@ -200,5 +245,11 @@ export default {
         </tr>        
       </tbody>
     </table>
+    <InvalidationModal
+      :isOpen="isModalOpen"
+      :car="selectedCarForInvalidation"
+      @close="closeInvalidationModal"
+      @confirm="confirmInvalidation"
+    />
   </section>
 </template>

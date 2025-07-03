@@ -19,14 +19,12 @@ import MercadoPago from "@icons/MercadoPago.vue";
 import Uala from "@icons/Uala.vue";
 import PayPal from "@icons/PayPal.vue";
 import CreditCard from "@icons/CreditCard.vue";
-import Trash from "@icons/Trash.vue";
-import Plus from "@icons/Plus.vue";
 import Cross from "@icons/Cross.vue";
 import Check from "@icons/Check.vue";
 
 export default {
   name: "UserProfile",
-  components: { Heading, CardCar, UserNav, RentedCar, Loading, Arrow, BackButton, MercadoPago, Uala, PayPal, CreditCard, Trash, Plus, Input, DeletePaymentModal, Cross, Check, RentStatusDetails, History },
+  components: { Heading, CardCar, UserNav, RentedCar, Loading, Arrow, BackButton, MercadoPago, Uala, PayPal, CreditCard, Input, DeletePaymentModal, Cross, Check, RentStatusDetails, History },
   props: {
     id: {
       type: String,
