@@ -97,7 +97,7 @@ const handleNotificationClick = async (notification) => {
       console.error("Error al marcar la notificación como leída:", error);
     }
   }
-  // Lógica de navegación si es necesario (ej. ir a RentalDetailsView)
+  // Lógica de navegación si es necesario (ej. ir a RentDetails)
   // if (notification.type === 'rent_response' && notification.rent_id) {
   //   router.push(`/rent/${notification.rent_id}`);
   // }

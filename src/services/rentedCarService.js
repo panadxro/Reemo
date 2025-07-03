@@ -448,10 +448,10 @@ export async function fetchUserRentalHistory(userId) {
         const vehicleDetails = carSnap.exists() ? { id: carSnap.id, ...carSnap.data() } : null;
 
         let ownerDetails = null;
-        if (vehicleDetails && vehicleDetails.user_id) {
-          const ownerRef = doc(db, "users", vehicleDetails.user_id);
+        if (vehicleDetails && vehicleDetails.ownerId) {
+          const ownerRef = doc(db, "users", vehicleDetails.ownerId);
           const ownerSnap = await getDoc(ownerRef);
-          ownerDetails = ownerSnap.exists() ? { id: ownerSnap.id, name: ownerSnap.data().name, photoURL: ownerSnap.data().photoURL } : null;
+          ownerDetails = ownerSnap.exists() ? { id: ownerSnap.id, name: ownerSnap.data().personalInfo.firstName, profilePhoto: ownerSnap.data().personalInfo.profilePhoto } : null;
         }
 
         return { ...app, vehicleDetails, ownerDetails };

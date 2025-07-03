@@ -61,7 +61,7 @@ async function initializeMap(details) {
   // Cambiar las coordenadas por la nueva coleccion de "cars"
   if (details && details.vehicleData?.status.currentLocation.location && !mapInitialized.value){
     try {
-      console.log('[RentalDetailsView] Intentando iniciar el mapa');
+      console.log('[RentDetails] Intentando iniciar el mapa');
       await loadGoogleMaps();
       const mapInstance = await initMap('map');
       if (mapInstance) {
@@ -74,7 +74,7 @@ async function initializeMap(details) {
           new Marker({ position: vehicleCoords, map: map.value, title: `${details.vehicleData?.basicInfo.brand} ${details.vehicleData?.basicInfo.model}` });
           mapInitialized.value = true;
         } else {
-          console.warn('[RentalDetailsView]: Coordenadas del vehículo no disponibles o inválidas para centrar el mapa.');
+          console.warn('[RentDetails]: Coordenadas del vehículo no disponibles o inválidas para centrar el mapa.');
         }
       }
     } catch (error) {

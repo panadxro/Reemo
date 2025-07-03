@@ -72,7 +72,7 @@ export default {
       <div class="absolute inset-0 flex items-center justify-center space-x-4">
         <form action="#" @submit.prevent="handleSubmit">
           <label for="photoURL"
-            class="w-24 w-24 aspect-square rounded-full flex items-center justify-center cursor-pointer">
+            class="w-24 aspect-square rounded-full flex items-center justify-center cursor-pointer">
             <AddImg />
             <span class="sr-only">Seleccionar foto</span>
           </label>

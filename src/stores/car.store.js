@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { updateCarAvailability, saveCarData, createCarData, getCarById, getAvailableCars, getUserCars, updateCarAvailabilityAndStatus } from "../services/car";
+import { saveCarData, createCarData, getCarById, getAvailableCars, getUserCars, updateCarValidation } from "../services/car";
 import { uploadVehiclePhoto } from '../services/storage/documents'
 import { useAuthStore } from '@stores';
 
@@ -93,7 +93,6 @@ export const useCarStore = defineStore("car", {
       },
       id: null,
     },
-    userCars: [],
     allAccessoryOptions: [
       { value: 'touchScreen', label: 'Pantalla táctil' },
       { value: 'appleCarPlayAndroidAuto', label: 'Apple CarPlay/Android Auto' },
@@ -183,22 +182,40 @@ export const useCarStore = defineStore("car", {
     },
 
     // No uso updateCar porque no es para actualizar todo el aut, sino solo la disponibilidad
-    async updateAvailability(newAvailability, newStatus = null) {
+    async changeCarAvailability(carId, newStatus, ownerId) {
       try {
-        if (!this.currentCar?.id) throw new Error("No car selected");
+        const response = await updateCarValidation(carId, newStatus);
+        if(response.success) {
+          // Actualizar el auto específico en userCars
+          this.userCars = this.userCars.map(car => {
+            if (car.id === carId) {
+              return {
+                ...car,
+                status: {
+                  ...car.status,
+                  current: newStatus
+                }
+              };
+            }
+            return car;
+          });
+          
+          // Si el auto actual es el que estamos modificando, actualízalo también
+          if (this.currentCar.id === carId) {
+            this.currentCar = {
+              ...this.currentCar,
+              status: {
+                ...this.currentCar.status,
+                current: newStatus
+              }
+            };
+          }
 
-        if (newStatus !== null) {
-          // Actualizar disponibilidad y estado juntos
-          await updateCarAvailabilityAndStatus(this.currentCar.id, newAvailability, newStatus);
-          this.currentCar.status.current = newStatus;
+          await this.loadUserCars(ownerId)
+          return true;
         } else {
-          // Actualizar solodisponibilidad
-          await updateCarAvailability(this.currentCar.id, newAvailability);
+          this.error = response.message || 'Error updating car availabilitation'
         }
-        
-        this.currentCar.availability = newAvailability;
-        
-        return true;
       } catch (error) {
         console.error("Error al actualizar la disponibilidad:", error);
         throw error;

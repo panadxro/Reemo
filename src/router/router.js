@@ -15,7 +15,7 @@ import Chat from "../pages/Chat.vue";
 import UserProfile from "../pages/UserProfile.vue";
 import NotFound from "../pages/NotFound.vue";
 import Notification from "../pages/Notification.vue";
-import RentDetail from '../pages/RentalDetailsView.vue';
+import RentDetail from '../pages/RentDetails.vue';
 import Rent from '../pages/Rent.vue'
 import MyCars from '../pages/MyCars.vue';
 import Documentation from "../pages/Documentation.vue";
@@ -113,9 +113,12 @@ const routes = [
     ],
   },
   {
-    path: '/rent',
+    path: '/rent/:id',
     name: 'Rent',
     component: Rent,
+    props: (route) => ({
+      id: route.params.id,
+    }),
     meta: { needsAuth: true },
   },
   {
@@ -126,16 +129,21 @@ const routes = [
     meta: { needsAuth: true },
   },
   {
-    path: '/my-cars/:id?',
+    path: '/cars/:id',
     name: 'MyCars',
     component: MyCars,
-    props: true,
+    props: (route) => ({
+      id: route.params.id,
+    }),
     meta: { needAuth: true },
   },
   {
-    path: '/documents',
-    name: 'Documents',
-    components: Documentation,
+    path: '/documents/:id',
+    name: 'Documentation',
+    component: Documentation,
+    props: (route) => ({
+      id: route.params.id,
+    }),
     meta: { needAuth: true },
   },
   {

@@ -155,7 +155,7 @@ export default {
           text="Todos"
           variant="secondary"
           class="cursor-pointer flex-0!"
-          :class="filter === 'all' ? ' bg-vibrant-light-900' : ''"
+          :input-class="filter === 'all' ? ' bg-vibrant-light-900' : ''"
           @click="toggleFiltro('all')"
         />
         <Input 
@@ -163,7 +163,7 @@ export default {
           text="Validados"
           variant="secondary"
           class="cursor-pointer flex-0!"
-          :class="filter === 'validados' ? ' bg-vibrant-light-900' : ''"
+          :input-class="filter === 'validados' ? ' bg-vibrant-light-900' : ''"
           @click="toggleFiltro('validados')"
         />
         <Input 
@@ -171,7 +171,7 @@ export default {
           text="Invalidados"
           variant="secondary"
           class="cursor-pointer flex-0!"
-          :class="filter === 'no-validados' ? ' bg-vibrant-light-900' : ''"
+          :input-class="filter === 'no-validados' ? ' bg-vibrant-light-900' : ''"
           @click="toggleFiltro('no-validados')"
         />
       </div>
