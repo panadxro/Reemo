@@ -85,6 +85,30 @@ const routes = [
         name: "Chat",
         component: Chat,
         meta: { needsAuth: true },
+        // Validcacion para que un usuario noi pueda chatear con el mismo. lo redirige a su perfil, capaz se puede crear una página deerror
+        beforeEnter: (to) => {
+
+          // Obtener la sesión del usuario actual
+          const authSessionHistory = sessionStorage.getItem('auth_session_history');
+          const authSession = JSON.parse(authSessionHistory);
+          
+          // Obtener el ID del usuario desde la URL
+          const targetUserId = to.params.id;
+          
+          // Obtener el ID del usuario actual (asumiendo que está en la sesión)
+          const currentUserId = authSession.user?.id || authSession.userId;
+          
+          // Verificar si está intentando chatear consigo mismo
+          if (targetUserId === currentUserId || targetUserId === String(currentUserId)) {
+            // Redireccion
+            return { 
+              path: `/user/${targetUserId}`,
+            };
+          }
+          
+          // Si no es consigo mismo, permitir el acceso (retorna true implícitamente)
+          return true;
+        },
       },
     ],
   },

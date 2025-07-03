@@ -223,7 +223,7 @@ export default {
                 { value: 'Fiesta', label: 'Fiesta' }
               ]"
               icon-position="right"
-              variant="primary"
+              variant="secondary"
               :outline="true"
               />
           </div>
@@ -279,7 +279,7 @@ export default {
           <Input
             type="button"
             @click="applyFilters"
-            text="Aplicar Filtros"
+            text="Aplicar filtros"
             variant="primary"
             class="text-sm"
             :outline="false"

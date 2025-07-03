@@ -2,12 +2,13 @@
 
 import Heading from '@/components/atoms/Heading.vue';
 import Loading from '@/icons/Loading.vue';
+import ReemoIcon from '@/icons/ReemoIcon.vue';
 
 import { useAuthStore } from '@/stores';
 import { useNotificationStore } from '@/stores/notification.store';
 import { addAlert } from '@/services/alerts';
 
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore(); 
@@ -34,20 +35,35 @@ const notifications = computed(() => notificationStore.sortedNotifications); // 
 const isLoading = computed(() => notificationStore.isLoading);
 const errorLoading = computed(() => notificationStore.error);
 
-onMounted(() => {
-  // El listener ya debería estar inicializado por App.vue o un watcher global.
-  // Si por alguna razón no se ha cargado y el usuario está aquí, podemos intentar iniciarlo.
-  if (currentUser.value && currentUser.value.id && !notificationStore.hasLoadedOnce) {
-    console.log("[Notification.vue onMounted] El store no ha cargado, intentando iniciar listener.");
-    notificationStore.initListenerForUser(currentUser.value.id);
-  } else if (!currentUser.value || !currentUser.value.id) {
-     // Si no hay usuario, el store debería estar limpio, pero podemos asegurarlo.
-    if (notificationStore.notifications.length > 0 || notificationStore.isLoading) {
-        notificationStore.clearListenerAndData();
+// onMounted(() => {
+//   // El listener ya debería estar inicializado por App.vue o un watcher global.
+//   // Si por alguna razón no se ha cargado y el usuario está aquí, podemos intentar iniciarlo.
+//   if (currentUser.value && currentUser.value.id && !notificationStore.hasLoadedOnce) {
+//     console.log("[Notification.vue onMounted] El store no ha cargado, intentando iniciar listener.");
+//     notificationStore.initListenerForUser(currentUser.value.id);
+//   } else if (!currentUser.value || !currentUser.value.id) {
+//      // Si no hay usuario, el store debería estar limpio, pero podemos asegurarlo.
+//     if (notificationStore.notifications.length > 0 || notificationStore.isLoading) {
+//         notificationStore.clearListenerAndData();
+//     }
+//     console.warn("[Notification.vue onMounted] No hay usuario autenticado.");
+//   }
+// });
+
+watch(currentUser, (newUser) => {
+  if (newUser && newUser.id) {
+    // Si hay un usuario y el listener no se ha iniciado, lo iniciamos.
+    // El hasLoadedOnce previene que se inicie múltiples veces si el watcher se dispara de nuevo
+    if (!notificationStore.hasLoadedOnce) {
+      console.log("[Notification.vue watch] Usuario detectado, iniciando listener de notificaciones.");
+      notificationStore.initListenerForUser(newUser.id);
     }
-    console.warn("[Notification.vue onMounted] No hay usuario autenticado.");
+  } else {
+    // Si no hay usuario (o se ha deslogueado), limpiamos los datos.
+    console.log("[Notification.vue watch] No hay usuario autenticado, limpiando datos de notificaciones.");
+    notificationStore.clearListenerAndData();
   }
-});
+}, { immediate: true });
 
 const handleRentalAction = async (rentId, newStatus, senderId, vehicleOwnerId) => {
   try {
@@ -61,9 +77,9 @@ const handleRentalAction = async (rentId, newStatus, senderId, vehicleOwnerId) =
 };
 
 const formatDate = (timestamp) => {
-  if (timestamp && timestamp.seconds) { // Para Timestamps de Firestore
+  if (timestamp && timestamp.seconds) { 
     return new Date(timestamp.seconds * 1000).toLocaleString();
-  } else if (typeof timestamp === 'string') { // Para fechas que ya son strings ISO
+  } else if (typeof timestamp === 'string') {
     return new Date(timestamp).toLocaleString();
   }
   return 'Fecha no disponible';
@@ -73,12 +89,9 @@ const handleNotificationClick = async (notification) => {
   if(!notification.read){
     try {
       await notificationStore.markNotificationAsRead(notification.id);
-      // No es estrictamente necesario actualizar localmente `notification.read = true` aquí,
-      // ya que onSnapshot debería recoger el cambio y actualizar la lista `notifications`.
+      // No es estrictamente necesario actualizar localmente `notification.read = true` aca,
+      // ya que onSnapshot tendria que obtener el cambio y actualizar la lista `notifications`.
       // Si la actualización de onSnapshot es muy rápida, el cambio local es redundante.
-      // Si quieres una respuesta visual *inmediata* antes de que onSnapshot actualice, podrías hacerlo:
-      // const notifToUpdate = notifications.value.find(n => n.id === notification.id);
-      // if (notifToUpdate) notifToUpdate.read = true;
     } catch (error) {
       addAlert("Error al marcar la notificación como leída.", "error");
       console.error("Error al marcar la notificación como leída:", error);
@@ -127,11 +140,13 @@ const handleNotificationClick = async (notification) => {
         @click="handleNotificationClick(noti)">
         <!-- Contenedor General para una Notificación -->
         <div class="flex items-start space-x-3">
-          <img v-if="noti.senderDetails?.photoURL" :src="noti.senderDetails?.photoURL" class="w-10 h-10 rounded-full" />
+          <img v-if="noti.senderDetails?.photoURL" :src="noti.senderDetails?.photoURL" :alt="noti.senderDetails?.name || 'Reemo Bot' " class="w-10 h-10 rounded-full" />
           <div v-else
-            class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
-            <h3>{{ noti.senderDetails?.name ? noti.senderDetails.name .charAt(0).toUpperCase() : 'R' }}</h3>
-            <p> {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}</p>
+          class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
+          <!-- <img src="../assets/imagotipo-celeste.png" :alt="noti.senderDetails?.name || 'Reemo Bot' " class="w-10 h-10 rounded-full" /> -->
+          <ReemoIcon class="w-15 h-15 rounded-full" />
+          <!-- <h3>{{ noti.senderDetails?.name ? noti.senderDetails.name .charAt(0).toUpperCase() : 'R' }}</h3> -->
+          <!-- <p> {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}</p> -->
           </div>
           <div class="flex-1">
 
@@ -175,7 +190,7 @@ const handleNotificationClick = async (notification) => {
                     </p>
                     <p class="text-xs text-gray-500">
                       Precio Total: <span class="text-xs px-2 py-0.5 rounded bg-green-100 border text-green-700">${{
-                        noti.rentDetails?.total_price?.toFixed(2) || 'N/A' }} </span>
+                        noti.rentDetails?.total_price?.toFixed() || 'N/A' }} </span>
                     </p>
                     <p class="text-xs text-gray-500">
                       Estado:
@@ -232,7 +247,7 @@ const handleNotificationClick = async (notification) => {
               <div v-if="noti.rentDetails" class="mt-3 bg-gray-100 rounded p-3">
                 <div class="flex items-center space-x-2 mb-2">
                   <img v-if="noti.vehicleDetails?.photos && noti.vehicleDetails.photos.length > 0"
-                    :src="noti.vehicleDetails.photos[0]" :alt="`Imagen de ${noti.vehicleDetails.basicInfo?.brand }`"
+                    :src="noti.vehicleDetails.photos[0]" :alt="`Imagen de ${ noti.vehicleDetails.basicInfo?.brand }`"
                     class="w-12 h-12 rounded-md object-cover" />
                   <div v-else
                     class="w-12 h-12 rounded-md bg-gray-200 flex items-center justify-center text-xs text-gray-400">Sin
@@ -271,10 +286,28 @@ const handleNotificationClick = async (notification) => {
               </div>
             </div>
 
+            <div v-else-if="noti.type === 'car_validated'">
+              <a :href="noti.link" class="text-sm text-gray-700 block">
+                <p class="text-sm text-gray-700">
+                  {{ noti.message || 'Tienes una nueva notificación.' }}
+                </p>
+              </a>
+            </div>
+
+            <div v-else-if="noti.type === 'car_invalidated'">
+              <a :href="noti.link" class="text-sm text-gray-700 block">
+                <p class="text-sm text-gray-700">
+                  {{ noti.message || 'Tienes una nueva notificación.' }}
+                </p>
+              </a>
+            </div>
+
+
+
             <!-- Caso: Otro tipo de notificación (genérico) -->
             <div v-else>
-              <p class="text-sm text-gray-700">{{ noti.message || 'Tienes una nueva notificación.' }}</p>
               <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div>
+              <p class="text-sm text-gray-700">{{ noti.message || 'Tienes una nueva notificación.' }}</p>
             </div>
 
 

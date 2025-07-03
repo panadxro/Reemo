@@ -31,7 +31,7 @@ export default {
           </div>
           
           <div class="flex flex-col gap-4 sm:gap-7">
-            <a class="text-secondary-900 font-bold text-base sm:text-lg" href="#">Sobre Reemo</a>
+            <a class="text-secondary-900 font-bold text-base sm:text-lg" href="#">Sobre <strong>Reemo</strong></a>
             <a class="text-secondary-900 font-bold text-base sm:text-lg" href="#">Beneficios</a>
           </div>
         </div>
@@ -125,9 +125,9 @@ export default {
     <div class="rounded-3xl sm:rounded-[52px] bg-secondary-100 py-4 sm:py-6 lg:py-8">
       <div class="flex flex-col-reverse lg:flex-row justify-between items-start gap-6 m-auto w-full lg:w-11/12 xl:w-10/12 p-4 sm:p-6">
         <article class="flex flex-col gap-2 w-full lg:w-2/3">
-          <Heading :type="6" class="text-sm sm:text-base">&copy; Reemo, 2024. Todos los derechos reservados</Heading>
+          <Heading :type="6" class="text-sm sm:text-base">&copy; <strong>Reemo</strong>, 2024. Todos los derechos reservados</Heading>
           <p class="text-xs sm:text-sm text-gray-500">
-            Reemo S.A. Agente de Servicios de Movilidad - Registro Propio. Secretaría de Transporte de la Nación: Nro. de matrícula 2098. Inscripto ante la Secretaría de Innovación y Tecnología de la Nación como Proveedor de Plataformas Digitales para Alquiler de Vehículos, bajo el número 342, y como Agente Autorizado de Gestión de Alquileres Temporales y Transporte Compartido, bajo el número 278.
+            <strong>Reemo</strong> S.A. Agente de Servicios de Movilidad - Registro Propio. Secretaría de Transporte de la Nación: Nro. de matrícula 2098. Inscripto ante la Secretaría de Innovación y Tecnología de la Nación como Proveedor de Plataformas Digitales para Alquiler de Vehículos, bajo el número 342, y como Agente Autorizado de Gestión de Alquileres Temporales y Transporte Compartido, bajo el número 278.
           </p>
         </article>
         
