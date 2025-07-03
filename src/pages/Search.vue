@@ -204,7 +204,6 @@ export default {
               icon-position="right"
               variant="secondary"
               :outline="true"
-              class="flex-1"
               />
   
             <!-- Modelo -->
@@ -226,7 +225,6 @@ export default {
               icon-position="right"
               variant="secondary"
               :outline="true"
-              class="flex-1"
               />
           </div>
         </div>

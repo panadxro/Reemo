@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
-import { isCarAlreadyRented, submitRentalRequest } from "@services/rentedCarService";
+import { isCarAlreadyRented, submitRentalRequest, fetchUserRentalHistory, fetchUserRentedOutHistory } from "@services/rentedCarService";
 import { addAlert } from "@/services/alerts";
 import { usePaymentStore } from "@/stores/payment.store.js";
 
-export const useRentalStore = defineStore('rental', {
+export const useRentStore = defineStore('rent', {
   state: () => ({
     currentStep: 1,
     car: null,
@@ -23,6 +23,7 @@ export const useRentalStore = defineStore('rental', {
       currentTotalPrice: 0,
       selectedPaymentMethod: null
     },
+    userRents: [],
     acceptTerms: false,
     loading: false,
     errorMessage: "",
@@ -448,5 +449,21 @@ export const useRentalStore = defineStore('rental', {
       }
       this.$reset();
     },
+    // Obtener rentas del usuario
+    async loadUserRents(userId) {
+      try {
+        this.loading = true;
+        const rents = await fetchUserRentalHistory(userId);
+        if (rents) {
+          this.userRents = rents;
+        }
+        console.log(this.userRents)
+      } catch (error) {
+        this.error = error;
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    }
   }
 });

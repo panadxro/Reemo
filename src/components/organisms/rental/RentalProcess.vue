@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { useRentalStore } from '@/stores/rent.store.js';
+import { useRentStore } from '@/stores/rent.store.js';
 import { useRouter } from 'vue-router';
 import { addAlert } from '@/services/alerts';
 import { useAuthStore } from '@stores/auth.store';
@@ -40,7 +40,7 @@ const props = defineProps({
   }
 });
 
-const store = useRentalStore();
+const store = useRentStore();
 const router = useRouter();
 
 const submitting = ref(false);

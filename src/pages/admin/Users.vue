@@ -41,7 +41,7 @@ export default {
       try {
         const newRole = user.role === 'user' ? 'admin' : 'user';
         await this.adminStore.changeUserRole(user.id, newRole);
-        user.role = newRole;
+        // user.role = newRole;
         addAlert("Rol actualizado con éxito", "success");
       } catch (error) {
           addAlert("Error al actualizar el rol", "error");
@@ -52,7 +52,7 @@ export default {
       try {
         const newStatus = user.status === 'not-verified' ? 'verified' : 'not-verified';
         await this.adminStore.changeUserVerification(user.id, newStatus);
-        user.status = newStatus;
+        // user.status = newStatus;
         addAlert("Estado de verificación actualizado con éxito", "success");
       } catch (error) {
           addAlert("Error al actualizar el estado de verificación", "error");
@@ -107,7 +107,7 @@ export default {
           text="Todos"
           variant="secondary"
           class="cursor-pointer flex-0!"
-          :class="filter === 'all' ? ' bg-vibrant-light-900' : ''"
+          :input-class="filter === 'all' ? ' bg-vibrant-light-900' : ''"
           @click="toggleFiltro('all')"
         />
         <Input 
@@ -115,7 +115,7 @@ export default {
           text="Verificados"
           variant="secondary"
           class="cursor-pointer flex-0!"
-          :class="filter === 'verificados' ? ' bg-vibrant-light-900' : ''"
+          :input-class="filter === 'verificados' ? ' bg-vibrant-light-900' : ''"
           @click="toggleFiltro('verificados')"
         />
         <Input 
@@ -123,7 +123,7 @@ export default {
           text="No verificados"
           variant="secondary"
           class="cursor-pointer flex-0! min-w-[150px]!"
-          :class="filter === 'no-verificados' ? ' bg-vibrant-light-900' : ''"
+          :input-class="filter === 'no-verificados' ? ' bg-vibrant-light-900' : ''"
           @click="toggleFiltro('no-verificados')"
         />
       </div>
