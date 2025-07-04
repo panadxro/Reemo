@@ -58,7 +58,7 @@ const handleLogout = () => {
 
     <ul 
       v-else-if="userStore.profileData.role === 'admin'"
-      class="flex bg-secondary-100 h-full md:h-auto p-4 md:flex-col rounded-full justify-center gap-4 md:gap-2 items-center"
+      class="flex bg-secondary-100 h-full md:h-auto !p-4 md:!p-0 md:flex-col rounded-full justify-center gap-4 md:gap-2 items-center"
     >
       <li>
         <router-link to="/">
