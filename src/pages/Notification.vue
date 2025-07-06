@@ -3,16 +3,21 @@
 import Heading from '@/components/atoms/Heading.vue';
 import Loading from '@/icons/Loading.vue';
 import ReemoIcon from '@/icons/ReemoIcon.vue';
+import Input from '../components/molecules/Input.vue';
 
 import { useAuthStore } from '@/stores';
 import { useNotificationStore } from '@/stores/notification.store';
 import { addAlert } from '@/services/alerts';
 
-import { computed, onMounted, watch } from 'vue';
+import { computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
+
 
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore(); 
 const currentUser = computed(() => authStore.user); 
+
+const router = useRouter();
 
 const items = [
   { label: 'Inbox', icon: '📥' },
@@ -97,10 +102,16 @@ const handleNotificationClick = async (notification) => {
       console.error("Error al marcar la notificación como leída:", error);
     }
   }
-  // Lógica de navegación si es necesario (ej. ir a RentDetails)
+  // Lógica de navegación si es necesario (ej. ir a RentalDetailsView)
   // if (notification.type === 'rent_response' && notification.rent_id) {
   //   router.push(`/rent/${notification.rent_id}`);
   // }
+  
+  // Lógica de navegación
+  if (notification.link) {
+    router.push(notification.link);
+  }
+
 }
 
 </script> 
@@ -136,7 +147,7 @@ const handleNotificationClick = async (notification) => {
     <!-- Notifications -->
     <div v-if="!isLoading && notifications.length > 0" class="overflow-y-auto max-h-screen">
       <div v-for="noti in notifications" :key="noti.id"
-        class="overflow-y-auto p-6 border-b last:border-b-0 hover:bg-gray-200 rounded-xl"
+        class="overflow-y-auto p-6 border-b last:border-b-0 hover:bg-gray-200 rounded-xl cursor-pointer"
         @click="handleNotificationClick(noti)">
         <!-- Contenedor General para una Notificación -->
         <div class="flex items-start space-x-3">
@@ -287,7 +298,9 @@ const handleNotificationClick = async (notification) => {
             </div>
 
             <div v-else-if="noti.type === 'car_validated'">
+              <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.createdAt || noti.created_at) }}</div>
               <a :href="noti.link" class="text-sm text-gray-700 block">
+                <h3>{{ noti.title || 'Tienes una nueva notificación.' }}</h3>
                 <p class="text-sm text-gray-700">
                   {{ noti.message || 'Tienes una nueva notificación.' }}
                 </p>
@@ -295,13 +308,38 @@ const handleNotificationClick = async (notification) => {
             </div>
 
             <div v-else-if="noti.type === 'car_invalidated'">
-              <a :href="noti.link" class="text-sm text-gray-700 block">
+              <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.createdAt || noti.created_at) }}</div>
+                <h3>{{ noti.title || 'Tienes una nueva notificación.' }}</h3>
                 <p class="text-sm text-gray-700">
                   {{ noti.message || 'Tienes una nueva notificación.' }}
+                  <!-- <a :href="noti.link" class="text-sm text-red-700 block">Revisar vehiculo</a> -->
                 </p>
-              </a>
+                <div class="flex space-x-2 mt-3 w-2xs h-2xs relative">
+                <Input
+                  type="button"
+                  variant="primary"
+                  text="Revisar"
+                  :href="noti.link"
+                  />
+                </div>
             </div>
 
+            <div v-else-if="noti.type === 'car_updated_for_review'">
+              <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.createdAt || noti.created_at) }}</div>
+              <h3>{{ noti.title || 'Tienes una nueva notificación.' }}</h3>
+              <p class="text-sm text-gray-700">
+                {{ noti.message || 'Un vehículo ha sido actualizado y requiere tu atención.' }}
+              </p>
+              <div class="flex space-x-2 mt-3 w-2xs h-2xs relative">
+              <Input
+                type="button"
+                variant="primary"
+                text="Verificar"
+                :href="noti.link"
+                />
+              </div>
+            </div>
+              
 
 
             <!-- Caso: Otro tipo de notificación (genérico) -->
