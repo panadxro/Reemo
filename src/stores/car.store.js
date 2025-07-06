@@ -2,6 +2,8 @@ import { defineStore } from "pinia";
 import { saveCarData, createCarData, getCarById, getAvailableCars, getUserCars, updateCarValidation } from "../services/car";
 import { uploadVehiclePhoto } from '../services/storage/documents'
 import { useAuthStore } from '@stores';
+import { getDoc, doc, updateDoc } from "firebase/firestore";
+import { db } from "../services/firebase";
 
 export const useCarStore = defineStore("car", {
   state: () => ({
@@ -297,6 +299,28 @@ export const useCarStore = defineStore("car", {
         // Podemos actualizar city/country si los extraemos del place object
       }
     },
+
+    async loadCarById(carId) {
+      const carRef = doc(db, 'cars', carId);
+      const carSnap = await getDoc(carRef)
+      
+      if (carSnap.exists()){
+        // Carga los datos del coche en el estado 'currentCar' del store
+        this.currentCar = { id: carSnap.id, ...carSnap.data() };
+      } else {
+        console.error("No se encontró el vehículo con ID:", carId);
+        throw new Error("Vehículo no encontrado");
+      }
+    },
+
+    async updateCar(carId, carData) {
+      const carRef = doc(db, 'cars', carId);
+      // Asegúrate de no incluir el ID en los datos a actualizar
+      const dataToUpdate = { ...carData };
+      delete dataToUpdate.id;
+      await updateDoc(carRef, dataToUpdate);
+    },
+
   },
 
   getters: {

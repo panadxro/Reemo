@@ -1,5 +1,6 @@
-import { collection, addDoc, Timestamp, doc, updateDoc, query, where, limit, onSnapshot } from "firebase/firestore";
 import { db } from "../../services/firebase.js";
+import { collection, addDoc, Timestamp, doc, updateDoc, query, where, limit, onSnapshot } from "firebase/firestore";
+import { getAdminUser } from "../user/admin.js";
 
 /**
  * @param {string} rentId - El ID del documento de la solicitud de alquiler.
@@ -32,11 +33,13 @@ export async function createRentalRequestNotification(rentId, senderId, receiver
 }
 
 const carValidationStatusNotification = (car, newStatus, message = null) => {
-
   // Generar el contenido de la notificación, ahora pasando el motivo.
   // Asumimos que tienes un archivo de templates como en la sugerencia anterior.
   // Si no, puedes construir el mensaje aquí mismo.
   const title = newStatus === 'validated' ? '¡Tu vehículo ha sido validado!' : 'Se requiere una acción para tu vehículo';
+  const link = newStatus == 'validated'
+    ? `/car/${car.id}`
+    : `/car/register/${car.id}/edit`
   const reason = newStatus === 'validated'
     ? `Buenas noticias. Tu ${car.basicInfo.brand} ${car.basicInfo.model} fue aprobado y ya está visible para alquilar.`
     : `Tu ${car.basicInfo.brand} ${car.basicInfo.model} fue marcado como no validado por el siguiente motivo: "${message}". Por favor, corrige el problema y vuelve a solicitar la validación.`;
@@ -46,7 +49,7 @@ const carValidationStatusNotification = (car, newStatus, message = null) => {
       title: title,
       message: reason,
       type: 'car_validated',
-      link: `/car/${car.id}`, // Enlace a la página de detalles del auto
+      link: link, // Enlace a la página de detalles del auto
     };
   } else { // 'not-validated'
     return {
@@ -54,7 +57,7 @@ const carValidationStatusNotification = (car, newStatus, message = null) => {
       // message: `Tu ${car.basicInfo.brand} ${car.basicInfo.model} fue marcado como no validado. Por favor, revisa los detalles o contacta a soporte para más información.`,
       message: reason,
       type: 'car_invalidated',
-      link: `/car/${car.id}`, // Enlace a la página de detalles del auto
+      link: link // Enlace a la página de detalles del auto
     };
   }
 };
@@ -87,25 +90,44 @@ export const createCarValidationNotification = async (car, newStatus, message = 
   }
 };
 
-// export async function createNotificationValidated(userId, notiData, message){
-//   if(!userId){
-//     console.error('No se puede crear una notificacion sin el id del usuario')
-//     return;
-//   };
 
-//   try {
-//     const notificationData = {
-//       type: 'car_validated',
-//       title: '¡Tu vehículo ha sido validado!',
-//       message: message,
-//       userId: userId,
-//       read: false,
-//     }
-//   } catch (error) {
-    
-//   }
-// }
+/**
+ * Notifica a todos los administradores que un vehículo ha sido actualizado y requiere revisión.
+ * @param {object} updatedCar - El objeto del vehículo que fue actualizado.
+ * @param {object} owner - El objeto del usuario propietario del vehículo.
+ */
 
+export const notifyAdminsOfVehicleUpdate = async (updatedCar, owner) => {
+  if (!updatedCar || !owner) {
+    console.error("Datos insuficientes para crear la notificación de actualización de vehículo.");
+    return;
+  }
+
+  try {
+    const admins = await getAdminUser();
+    if (!admins || admins.length === 0) {
+      console.warn("No se encontraron administradores para notificar.");
+      return;
+    }
+
+    const ownerName = `${owner.personalInfo?.firstName || ''} ${owner.personalInfo?.lastName || ''}`.trim() || 'un usuario';
+    const notificationContent = {
+      title: 'Vehículo actualizado para revisión',
+      message: `El vehículo ${updatedCar.basicInfo.brand} ${updatedCar.basicInfo.model} de ${ownerName} ha sido actualizado y requiere validación nuevamente.`,
+      type: 'car_updated_for_review',
+      link: `/admin/cars`, // Enlace a la página de detalles del auto para que el admin lo revise
+      read: false,
+      created_at: Timestamp.now(),
+    };
+    // link: `/admin/${updatedCar.id}`, // Enlace a la página de detalles del auto para que el admin lo revise
+
+    const promises = admins.map(admin => addDoc(collection(db, 'notifications'), {...notificationContent, receiver_id: admin.id}));
+    await Promise.all(promises);
+  } catch (error) {
+    console.error("Error al crear notificaciones de revisión para administradores:", error);
+    // No relanzamos el error para no bloquear el flujo del usuario, pero lo registramos.
+  }
+}
 
 
 // Cambie el estado de las notificaciones para que esten leídas
