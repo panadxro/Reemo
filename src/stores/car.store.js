@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { saveCarData, createCarData, getCarById, getAvailableCars, getUserCars, updateCarValidation } from "../services/car";
+import { saveCarData, createCarData, getCarById, getAvailableCars, getUserCars, updateCarAvailabilityAndStatus } from "../services/car";
 import { uploadVehiclePhoto } from '../services/storage/documents'
 import { useAuthStore } from '@stores';
 import { getDoc, doc, updateDoc } from "firebase/firestore";
@@ -184,15 +184,16 @@ export const useCarStore = defineStore("car", {
     },
 
     // No uso updateCar porque no es para actualizar todo el aut, sino solo la disponibilidad
-    async changeCarAvailability(carId, newStatus, ownerId) {
+    async changeCarAvailability(carId, newStatus, newAvailability, ownerId) {
       try {
-        const response = await updateCarValidation(carId, newStatus);
+        const response = await updateCarAvailabilityAndStatus(carId, newAvailability, newStatus);
+        
         if(response.success) {
-          // Actualizar el auto específico en userCars
           this.userCars = this.userCars.map(car => {
             if (car.id === carId) {
               return {
                 ...car,
+                availability: newAvailability, 
                 status: {
                   ...car.status,
                   current: newStatus
@@ -202,10 +203,10 @@ export const useCarStore = defineStore("car", {
             return car;
           });
           
-          // Si el auto actual es el que estamos modificando, actualízalo también
-          if (this.currentCar.id === carId) {
+          if (this.currentCar && this.currentCar.id === carId) {
             this.currentCar = {
               ...this.currentCar,
+              availability: newAvailability, 
               status: {
                 ...this.currentCar.status,
                 current: newStatus
@@ -213,15 +214,21 @@ export const useCarStore = defineStore("car", {
             };
           }
 
-          await this.loadUserCars(ownerId)
-          return true;
+          await this.loadUserCars(ownerId);
+          return { success: true };
         } else {
-          this.error = response.message || 'Error updating car availabilitation'
+          this.error = response.message || 'Error updating car availability';
+          return { success: false, message: this.error };
         }
       } catch (error) {
         console.error("Error al actualizar la disponibilidad:", error);
-        throw error;
+        this.error = error.message;
+        return { success: false, message: error.message };
       }
+    },
+
+    async updateAvailability(newAvailability, newStatus, carId, ownerId) {
+      return await this.changeCarAvailability(carId, newStatus, newAvailability, ownerId);
     },
 
     async loadCarById(carId) {

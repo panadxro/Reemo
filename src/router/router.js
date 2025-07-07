@@ -120,7 +120,7 @@ const routes = [
     ],
   },
   {
-    path: '/rent/:id',
+    path: '/rents/:id',
     name: 'Rent',
     component: Rent,
     props: (route) => ({

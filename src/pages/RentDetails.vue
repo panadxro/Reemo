@@ -12,7 +12,7 @@ import Heading from "@components/atoms/Heading.vue";
 import BackButton from "@components/atoms/BackButton.vue";
 import Loading from '@icons/Loading.vue';
 import Status from '@components/molecules/Status.vue';
-
+import Modal from '@components/molecules/Modal.vue';
 
 import Velocimetre from '@icons/Velocimetre.vue';
 import Ubication from '@icons/Ubication.vue';
@@ -28,6 +28,8 @@ const rentalDetails = ref(null);
 const actionInProgress = ref(false);
 const isLoading = ref(true);
 const error = ref(null);
+const showCancelModal = ref(false);
+
 
 const loggedUser = computed(() => authStore.user);
 let unsubscribeRental = null;
@@ -57,6 +59,23 @@ function setupRentalSubscription() {
     throw error;
   }
 }
+
+async function confirmCancelRental() {
+  if (!canCancelRental.value || !rentalDetails.value) return;
+  actionInProgress.value = true;
+  try {
+    const newStatus = isOwner.value ? 'cancelled_by_owner' : 'cancelled_by_user';
+    await updateRentalStatus(rentalId.value, newStatus);
+    addAlert('Alquiler cancelado con éxito.', 'success');
+    showCancelModal.value = false;
+  } catch (err) {
+    console.error("Error al cancelar el alquiler:", err);
+    addAlert('Error al cancelar el alquiler.', 'error');
+  } finally {
+    actionInProgress.value = false;
+  }
+}
+
 async function initializeMap(details) {
   // Cambiar las coordenadas por la nueva coleccion de "cars"
   if (details && details.vehicleData?.status.currentLocation.location && !mapInitialized.value){
@@ -282,20 +301,24 @@ async function handleFinalizeRental() {
   }
 }
 
-async function handleCancelRental() {
-  if (!canCancelRental.value || !rentalDetails.value) return;
-  actionInProgress.value = true;
-  try {
-    const newStatus = isOwner.value ? 'cancelled_by_owner' : 'cancelled_by_user';
-    await updateRentalStatus(rentalId.value, newStatus); // Usamos el servicio existente
-    addAlert('Alquiler cancelado con éxito.', 'success');
-    // El `onSnapshot` listener actualizará `rentalDetails.value` automáticamente.
-  } catch (err) {
-    console.error("Error al cancelar el alquiler:", err);
-    addAlert('Error al cancelar el alquiler.', 'error');
-  } finally {
-    actionInProgress.value = false;
-  }
+// async function handleCancelRental() {
+//   if (!canCancelRental.value || !rentalDetails.value) return;
+//   actionInProgress.value = true;
+//   try {
+//     const newStatus = isOwner.value ? 'cancelled_by_owner' : 'cancelled_by_user';
+//     await updateRentalStatus(rentalId.value, newStatus); // Usamos el servicio existente
+//     addAlert('Alquiler cancelado con éxito.', 'success');
+//     // El `onSnapshot` listener actualizará `rentalDetails.value` automáticamente.
+//   } catch (err) {
+//     console.error("Error al cancelar el alquiler:", err);
+//     addAlert('Error al cancelar el alquiler.', 'error');
+//   } finally {
+//     actionInProgress.value = false;
+//   }
+// }
+
+function openCancelModal() {
+  showCancelModal.value = true;
 }
 
 const showCompletedView = computed(() => {
@@ -490,12 +513,23 @@ onMounted(() => {
           Confirmar devolución y finalizar
         </button>
 
-        <button v-if="canCancelRental" @click="handleCancelRental" :disabled="actionInProgress"
+        <button v-if="canCancelRental" @click="openCancelModal" :disabled="actionInProgress"
           class="hover:cursor-pointer w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2.5 px-4 rounded-lg transition duration-150 ease-in-out disabled:opacity-50 flex items-center justify-center text-sm sm:text-base">
           <Loading v-if="actionInProgress" class="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
           Cancelar alquiler
         </button>
+        <Modal
+          :isOpen="showCancelModal"
+          title="Cancelar alquiler"
+          message="¿Estás seguro de que quieres cancelar este alquiler?"
+          confirmText="Cancelar"
+          cancelText="Mantener"
+          @close="showCancelModal = false"
+          @confirm="confirmCancelRental"
+        />
       </div>
+
+      
 
       <div v-else class="pt-4 sm:pt-6 border-t border-gray-200 space-y-4 text-center">
         <p class="text-lg sm:text-xl font-semibold text-green-600">¡Alquiler completado!</p>

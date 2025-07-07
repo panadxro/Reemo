@@ -392,23 +392,12 @@ export async function fetchUserRentalHistory(userId) {
       rentsCollection,
       where("driver_id", "==", userId),
       where("status", "in", ["completed"]),
-      orderBy("start_time", "desc"),
-    );
-
-    const ownerQuery = query(
-      rentsCollection,
-      where("owner_id", "==", userId),
-      where("status", "in", ["completed"]),
       orderBy("start_time", "desc")
     );
 
-    const [driverSnapshot, ownerSnapshot] = await Promise.all([
-      getDocs(driverQuery),
-      getDocs(ownerQuery),
-    ])
+    const driverSnapshot = await getDocs(driverQuery);
 
     const applicationsData = [];
-    // evitamos ids duplicados
     const seenIds = new Set();
 
     driverSnapshot.docs.forEach((doc) => {
@@ -418,43 +407,48 @@ export async function fetchUserRentalHistory(userId) {
       }
     });
 
-    ownerSnapshot.docs.forEach((doc) => {
-      if (!seenIds.has(doc.id)) {
-        applicationsData.push({ id: doc.id, ...doc.data() });
-        seenIds.add(doc.id);
-      }
-    });
-
-    // Ordenamos la lista combinada por start_time descendente
-    applicationsData.sort((a, b) => {
-      const timeA = a.start_time?.seconds || 0;
-      const timeB = b.start_time?.seconds || 0;
-      return timeB - timeA;
-    });
-    
     if (applicationsData.length === 0) {
       return [];
     }
 
-    // Enriquecer con detalles del vehÃculo
+    // Enriquecer con detalles del vehículo
     const carsData = await Promise.all(
       applicationsData.map(async (app) => {
         if (!app.vehicle_id) {
           console.warn(`Solicitud ${app.id} no tiene vehicle_id.`);
-          return { ...app, vehicleDetails: null, ownerDetails: null };
+          return { ...app, vehicleDetails: null, ownerDetails: null, driverDetails: null };
         }
+
         const carRef = doc(db, "cars", app.vehicle_id);
         const carSnap = await getDoc(carRef);
         const vehicleDetails = carSnap.exists() ? { id: carSnap.id, ...carSnap.data() } : null;
 
         let ownerDetails = null;
-        if (vehicleDetails && vehicleDetails.ownerId) {
-          const ownerRef = doc(db, "users", vehicleDetails.ownerId);
+        let driverDetails = null;
+
+        if (app.owner_id) {
+          const ownerRef = doc(db, "users", app.owner_id);
           const ownerSnap = await getDoc(ownerRef);
-          ownerDetails = ownerSnap.exists() ? { id: ownerSnap.id, name: ownerSnap.data().personalInfo.firstName, profilePhoto: ownerSnap.data().personalInfo.profilePhoto } : null;
+          ownerDetails = ownerSnap.exists() ? { 
+            id: ownerSnap.id, 
+            name: ownerSnap.data().personalInfo?.firstName || 'Sin nombre',
+            lastname: ownerSnap.data().personalInfo?.lastName || '',
+            profilePhoto: ownerSnap.data().personalInfo?.profilePhoto || null
+          } : null;
         }
 
-        return { ...app, vehicleDetails, ownerDetails };
+        if (app.driver_id) {
+          const driverRef = doc(db, "users", app.driver_id);
+          const driverSnap = await getDoc(driverRef);
+          driverDetails = driverSnap.exists() ? { 
+            id: driverSnap.id,
+            name: driverSnap.data().personalInfo?.firstName || 'Sin nombre',
+            lastname: driverSnap.data().personalInfo?.lastName || '',
+            profilePhoto: driverSnap.data().personalInfo?.profilePhoto || null
+          } : null;
+        }
+
+        return { ...app, vehicleDetails, ownerDetails, driverDetails };
       })
     );
 
@@ -472,14 +466,13 @@ export async function fetchUserRentalHistory(userId) {
  */
 export async function fetchUserRentedOutHistory(userId) {
   try {
-    if (!userId) {
-      console.warn("ID de usuario no proporcionado");
+    if (!userId || typeof userId !== 'string') {
+      console.error("ID de usuario inválido:", userId);
       return [];
     }
 
     const rentsCollection = collection(db, "rents");
     
-    // Consulta para obtener los alquileres donde el usuario es el propietario
     const ownerQuery = query(
       rentsCollection,
       where("owner_id", "==", userId),
@@ -494,13 +487,12 @@ export async function fetchUserRentedOutHistory(userId) {
       return [];
     }
 
-    // Procesar los documentos y enriquecerlos
     const enrichedRentals = await Promise.all(
       ownerSnapshot.docs.map(async (document) => {
         try {
           const rentalData = { id: document.id, ...document.data() };
           
-          // Obtener detalles del vehículo
+          // Vehicle details
           let vehicleDetails = null;
           if (rentalData.vehicle_id) {
             const carRef = doc(db, 'cars', rentalData.vehicle_id);
@@ -508,7 +500,7 @@ export async function fetchUserRentedOutHistory(userId) {
             vehicleDetails = carSnap.exists() ? { id: carSnap.id, ...carSnap.data() } : null;
           }
 
-          // Obtener detalles del conductor (inquilino)
+          // Driver details
           let driverDetails = null;
           if (rentalData.driver_id) {
             const driverRef = doc(db, 'users', rentalData.driver_id);
@@ -517,29 +509,60 @@ export async function fetchUserRentedOutHistory(userId) {
               const dData = driverSnap.data();
               driverDetails = {
                 id: driverSnap.id,
-                name: dData.personalInfo?.firstName || dData.personalInfo?.username || dData.email,
-                lastname: dData.personalInfo?.lastName || '',
-                photoURL: dData.personalInfo?.profilePhoto || null
+                name: dData.personalInfo?.firstName || dData.personalInfo?.name || dData.personalInfo?.username || dData.email.split('@')[0],
+                lastname: dData.personalInfo?.lastName || dData.personalInfo?.lastname || '',
+                photoURL: dData.personalInfo?.profilePhoto || dData.personalInfo?.photoURL || null,
+                firstName: dData.personalInfo?.firstName || dData.personalInfo?.name,
+                lastName: dData.personalInfo?.lastName || dData.personalInfo?.lastname,
+                profilePhoto: dData.personalInfo?.profilePhoto || dData.personalInfo?.photoURL
               };
             }
           }
 
-          console.log("fetchUserRentedOutHistory called with userId:", rentalData.owner_id);
+          let ownerDetails = null;
+          if (rentalData.owner_id) {
+            if (rentalData.owner_id === userId) {
+              ownerDetails = {
+                id: userId,
+                name: "Tú",
+                lastname: "",
+                photoURL: null,
+                firstName: "Tú",
+                lastName: "",
+                profilePhoto: null
+              };
+            } else {
+              const ownerRef = doc(db, 'users', rentalData.owner_id);
+              const ownerSnap = await getDoc(ownerRef);
+              if (ownerSnap.exists()) {
+                const oData = ownerSnap.data();
+                ownerDetails = {
+                  id: ownerSnap.id,
+                  name: oData.personalInfo?.firstName || oData.personalInfo?.name || oData.personalInfo?.username || oData.email.split('@')[0],
+                  lastname: oData.personalInfo?.lastName || oData.personalInfo?.lastname || '',
+                  photoURL: oData.personalInfo?.profilePhoto || oData.personalInfo?.photoURL || null,
+                  firstName: oData.personalInfo?.firstName || oData.personalInfo?.name,
+                  lastName: oData.personalInfo?.lastName || oData.personalInfo?.lastname,
+                  profilePhoto: oData.personalInfo?.profilePhoto || oData.personalInfo?.photoURL
+                };
+              }
+            }
+          }
 
           return {
             ...rentalData,
             vehicleDetails,
             driverDetails,
+            ownerDetails,
             isRentedOut: true
           };
         } catch (error) {
-          console.error("Error al enriquecer datos del alquiler:", error);
+          console.error(`Error procesando documento ${document.id}:`, error);
           return null;
         }
       })
     );
 
-    // Filtrar cualquier resultado nulo por errores en el enriquecimiento
     return enrichedRentals.filter(rental => rental !== null);
   } catch (error) {
     console.error("Error al obtener el historial de vehículos rentados por otros:", error);
@@ -667,3 +690,80 @@ export function fetchUserNotification(userId, callback){
 }
 
 
+/**
+ * Obtiene los detalles de una renta específica por su ID
+ * @param {string} rentId - ID de la renta
+ * @returns {Promise<object|null>} - Objeto con los detalles de la renta enriquecidos, o null si no existe
+ */
+export async function fetchRentDetail(rentId) {
+  try {
+    if (!rentId) {
+      console.warn("ID de renta no proporcionado");
+      return null;
+    }
+
+    const rentRef = doc(db, 'rents', rentId);
+    const rentSnap = await getDoc(rentRef);
+
+    if (!rentSnap.exists()) {
+      console.warn(`No se encontró la renta con ID: ${rentId}`);
+      return null;
+    }
+
+    const rentData = { id: rentSnap.id, ...rentSnap.data() };
+
+    // Enriquecer con detalles del vehículo
+    let vehicleDetails = null;
+    if (rentData.vehicle_id) {
+      const carRef = doc(db, 'cars', rentData.vehicle_id);
+      const carSnap = await getDoc(carRef);
+      vehicleDetails = carSnap.exists() ? { id: carSnap.id, ...carSnap.data() } : null;
+    }
+    console.log('vehicleDetails:', vehicleDetails);
+
+    // Enriquecer con detalles del propietario
+    let ownerDetails = null;
+    if (rentData.owner_id) {
+      const ownerRef = doc(db, 'users', rentData.owner_id);
+      const ownerSnap = await getDoc(ownerRef);
+      if (ownerSnap.exists()) {
+        const ownerData = ownerSnap.data();
+        ownerDetails = {
+          id: ownerSnap.id,
+          name: ownerData.personalInfo?.firstName || 'Sin nombre',
+          lastname: ownerData.personalInfo?.lastName || '',
+          photoURL: ownerData.personalInfo?.profilePhoto || null,
+          username: ownerData.personalInfo?.username || ownerData.email
+        };
+      }
+    }
+
+    // Enriquecer con detalles del conductor
+    let driverDetails = null;
+    if (rentData.driver_id) {
+      const driverRef = doc(db, 'users', rentData.driver_id);
+      const driverSnap = await getDoc(driverRef);
+      if (driverSnap.exists()) {
+        const driverData = driverSnap.data();
+        driverDetails = {
+          id: driverSnap.id,
+          name: driverData.personalInfo?.firstName || 'Sin nombre',
+          lastname: driverData.personalInfo?.lastName || '',
+          photoURL: driverData.personalInfo?.profilePhoto || null,
+          username: driverData.personalInfo?.username || driverData.email
+        };
+      }
+    }
+
+    return {
+      ...rentData,
+      vehicleDetails,
+      ownerDetails,
+      driverDetails
+    };
+
+  } catch (error) {
+    console.error("Error al obtener los detalles de la renta:", error);
+    throw error;
+  }
+}

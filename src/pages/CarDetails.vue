@@ -1,18 +1,20 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
-import { useAuthStore, useUserStore , useCarStore } from '@stores'
+import { useAuthStore, useUserStore , useCarStore, useAdminStore } from '@stores'
 import { useRoute } from 'vue-router';
 import { Loader } from "@googlemaps/js-api-loader";
 import { loadGoogleMaps, initMap } from "../services/google-maps.js";
 import { useRentStore } from '@/stores/rent.store.js';
 import { addAlert } from '@/services/alerts.js';
+import { createCarValidationNotification } from "@/services/car/notifyRented.js";
+
 
 import Heading from "../components/atoms/Heading.vue";
 import Pill from "../components/atoms/Pill.vue";
 import Loading from "@icons/Loading.vue";
 import BackButton from "../components/atoms/BackButton.vue";
 import Status from "../components/molecules/Status.vue";
-
+import InvalidationModal from '@components/Admin/InvalidationModal.vue';
 import RentalProcess from "@/components/organisms/rental/RentalProcess.vue";
 
 // Stores
@@ -20,6 +22,7 @@ const carStore = useCarStore();
 const authStore = useAuthStore();
 const userStore = useUserStore();
 const store = useRentStore();
+const adminStore = useAdminStore();
 
 // Router
 const route = useRoute();
@@ -40,7 +43,9 @@ const currentImage = ref(null);
 const carOwner = ref(null); // Nuevo estado para el dueño del carro
 const isCarAvailable = ref(false); // Estado para disponibilidad del auto
 const defaultCarImage = "/src/assets/default-car.jpg";
-const defaultUserImage = "/src/assets/User.png"
+const defaultUserImage = "/src/assets/User.png";
+const isModalOpen = ref(false);
+const selectedCarForInvalidation = ref(null);
 
 // Computed
 const car = computed(() => carStore.currentCar);
@@ -85,13 +90,34 @@ const saveAvailability = async () => {
     
     const currentStatus = isCarAvailable.value ? 'available' : 'not-available';
     
-    await carStore.updateAvailability({
+    // Preparar los datos de disponibilidad
+    const availabilityData = {
       schedule: { ...carStore.availability.schedule },
       hours: { ...carStore.availability.hours }
-    }, currentStatus);
+    };
     
-    addAlert('Disponibilidad y estado actualizados correctamente', 'success');
+    const carId = carStore.currentCar?.id;
+    const ownerId = carStore.currentCar?.ownerId; 
+    
+    if (!carId) {
+      throw new Error('No se encontró el ID del auto');
+    }
+    
+    // Llamar al método correcto del store
+    const result = await carStore.updateAvailability(
+      availabilityData,
+      currentStatus,
+      carId,
+      ownerId
+    );
+    
+    if (result.success) {
+      addAlert('Disponibilidad y estado actualizados correctamente', 'success');
+    } else {
+      addAlert(result.message || 'Error al actualizar la información', 'error');
+    }
   } catch (error) {
+    console.error('Error en saveAvailability:', error);
     addAlert('Error al actualizar la información', 'error');
   } finally {
     loading.value = false;
@@ -105,6 +131,53 @@ const setCurrentImage = (image) => {
 const setDefaultImage = (event) => {
   event.target.src = defaultCarImage;
 };
+
+
+
+
+
+const openInvalidationModal = (car) => {
+  selectedCarForInvalidation.value = car;
+  isModalOpen.value = true;
+};
+
+const closeInvalidationModal = () => {
+  isModalOpen.value = false;
+  selectedCarForInvalidation.value = null;
+};
+
+const confirmInvalidation = async (reason) => {
+  const car = selectedCarForInvalidation.value;
+  if (!car) return;
+
+  try {
+    await adminStore.changeCarValidation(car.id, 'not-validated');
+    await createCarValidationNotification(car, 'not-validated', reason);
+
+    await carStore.loadCarById(carId);
+
+    addAlert("Estado del vehículo actualizado con éxito", "success");
+  } catch (error) {
+    addAlert("Error al actualizar el estado del vehículo", "error");
+  } finally {
+    closeInvalidationModal();
+  }
+};
+
+const validateCar = async (car) => {
+  try {
+    await adminStore.changeCarValidation(car.id, 'validated');
+    await createCarValidationNotification(car, 'validated');
+
+    await carStore.loadCarById(carId);
+
+    addAlert("Vehículo validado con éxito", "success");
+  } catch (error) {
+    addAlert("Error al validar el vehículo", "error");
+  }
+}
+
+
 
 // Lifecycle hooks
 onMounted(async () => {
@@ -309,12 +382,56 @@ watch(car, (newCar) => {
     <div v-if="authStore.user?.id !== carStore.car.ownerId" class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-y-scroll">
       
       <RentalProcess 
-        v-if="!loading && !errorMsg && carStore.car && authStore.user?.id "
+        v-if="!loading && !errorMsg && carStore.car && authStore.user?.id && user?.role !== 'admin'"
         :car-id="carStore.car.id"
         :user-id="authStore.user.id"
         :is-car-rented="store.isRented"
       />  
+
+      <div v-if="user?.role === 'admin'" class="mt-6">
+        <Heading type="3" class="regular text-white">Datos del seguro</Heading>
+        <ul class="font-semibold text-white mt-4">
+          <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700">
+            <p>Compañía:</p>
+            <span>{{ car.insurance?.company === 'san_cristobal' 
+                          ? 'San Cristóbal' 
+                          : car.insurance?.company === 'la_caja' 
+                            ? 'La Caja' 
+                            : car.insurance?.company === 'federacion_patronal' 
+                              ? 'Federación Patronal' 
+                                : car.insurance?.company === 'sancor' 
+                                  ? 'Sancor' 
+                                    : car.insurance?.company === 'allianz' 
+                                      ? 'Allianz' 
+                                        : car.insurance?.company === 'mercantil' 
+                                          ? 'Mercantil' 
+                                            : car.insurance?.company === 'triunfo' 
+                                              ? 'Triunfo' : 'N/A'}}</span>
+          </li>
+          <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700">
+            <p>Tipo:</p>
+            <span>{{ car.insurance?.type === 'total' 
+                          ? 'Todo riesgo' 
+                          : car.insurance?.type === 'terceros_completo' 
+                            ? 'Terceros completo' 
+                            : car.insurance?.type === 'terceros_basico' 
+                              ? 'Terceros básico' 
+                                : car.insurance?.type === 'granizo' 
+                                  ? 'Todo riesgo + granizo' : 'N/A' }}</span>
+          </li>
+          <li class="flex items-center py-4 justify-between">
+            <p>Número:</p>
+            <span>{{ car.insurance?.number }}</span>
+          </li>
+        </ul>
+        <button @click="car.status?.current === 'not-validated' ? validateCar(car) : openInvalidationModal(car)"
+          class="mt-4 text-white py-3 px-6 rounded-lg font-semibold bg-secondary-700 transition-colors duration-300 w-fit hover:bg-deep-blue-700 hover:cursor-pointer"
+        >
+          <span>{{ car.status?.current === 'not-validated' ? 'Validar' : 'Invalidar'}}</span>
+        </button>
+      </div>
     </div>
+    
 
     <div v-else-if="authStore.user?.id === car.ownerId" class="mt-6">
   <div class="w-full bg-deep-blue-900 rounded-[23px] p-6">
@@ -322,7 +439,7 @@ watch(car, (newCar) => {
       
 
       <div>
-        <Heading type="5" class="mb-4 text-white">Días disponibles</Heading>
+        <Heading type="3" class="regular mb-4 text-white">Días disponibles</Heading>
         <div class="flex justify-center gap-4">
           <div 
             v-for="(day, index) in days" 
@@ -397,21 +514,33 @@ watch(car, (newCar) => {
 
       <button
         @click="saveAvailability"
-        class="mt-4 text-white py-3 px-6 rounded-lg font-semibold bg-secondary-700 transition-colors duration-300 w-fit hover:bg-deep-blue-700 hover:cursor-pointer"
+        class="mt-4 text-white py-3 px-6 rounded-lg font-semibold bg-secondary-700 transition-colors duration-300 w-fit hover:bg-deep-blue-700 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         :disabled="loading"
       >
-        <span v-if="!loading">Guardar cambios</span>
-        <span v-else class="h-5 w-5 mx-auto" >Guardando...</span>
+        {{ loading ? 'Guardando...' : 'Guardar Disponibilidad' }}
       </button>
     </div>
   </div>
-</div>
+    </div>
 
-    <span v-if="store.isRented && !carStore.isUserOwner"
+    
+
+
+
+
+
+
+    <!-- <span v-if="store.isRented && !carStore.isUserOwner"
       class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">
       {{ carStore.isUserOwner ? 'Tu auto ya está alquilado' : 'Este auto ya está alquilado' }}
-    </span>
+    </span> -->
   </div>
   </div>
+  <InvalidationModal
+      :isOpen="isModalOpen"
+      :car="selectedCarForInvalidation"
+      @close="closeInvalidationModal"
+      @confirm="confirmInvalidation"
+    />
 
 </template>
