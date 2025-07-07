@@ -7,12 +7,17 @@ import router from '@router/router';
 import { useUserStore } from '@stores';
 import { useNotificationStore } from '@stores/notification.store'
 
-
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: {
       id: null,
-      email: null
+      email: null,
+      firstName: null,
+      lastName: null,
+      name: null,
+      lastname: null,
+      profilePhoto: null,
+      username: null
     },
     loading: false,
     error: null,
@@ -26,6 +31,38 @@ export const useAuthStore = defineStore('auth', {
     key: 'auth_session',
     storage: localStorage,
     pick: ['user', 'isLoggedIn']
+  },
+  getters: {
+    userDisplayName: (state) => {
+      if (state.user.firstName && state.user.lastName) {
+        return `${state.user.firstName} ${state.user.lastName}`;
+      }
+      if (state.user.name && state.user.lastname) {
+        return `${state.user.name} ${state.user.lastname}`;
+      }
+      if (state.user.firstName) {
+        return state.user.firstName;
+      }
+      if (state.user.name) {
+        return state.user.name;
+      }
+      if (state.user.username) {
+        return state.user.username;
+      }
+      if (state.user.email) {
+        return state.user.email.split('@')[0];
+      }
+      return 'Usuario';
+    },
+    userFirstName: (state) => {
+      return state.user.firstName || state.user.name || state.user.username || 'Usuario';
+    },
+    userLastName: (state) => {
+      return state.user.lastName || state.user.lastname || '';
+    },
+    userProfilePhoto: (state) => {
+      return state.user.profilePhoto;
+    }
   },
   actions: {
     init() {
@@ -50,11 +87,19 @@ export const useAuthStore = defineStore('auth', {
           this.user = {            
             id: newUserData.id,
             email: newUserData.email,
+            // Inicializar campos del perfil
+            firstName: null,
+            lastName: null,
+            name: null,
+            lastname: null,
+            profilePhoto: null,
+            username: null
           };
           this.isLoggedIn = true;          
 
           if (!userStore.profileData.personalInfo.userName) {
-            await userStore.loadUserProfile(newUserData.id); // Cargamos el perfil
+            await userStore.loadUserProfile(newUserData.id); 
+            this.updateUserProfile(userStore.profileData);
           }
 
           this.unsubscribeReadNotification = readNotification(
@@ -65,7 +110,16 @@ export const useAuthStore = defineStore('auth', {
           );
         
         } else {
-          this.user = { id: null, email: null };
+          this.user = { 
+            id: null, 
+            email: null,
+            firstName: null,
+            lastName: null,
+            name: null,
+            lastname: null,
+            profilePhoto: null,
+            username: null
+          };
           this.isLoggedIn = false;
           // userStore.resetProfile();
           // Detener el listener de notificaciones si el usuario se desloguea
@@ -76,10 +130,26 @@ export const useAuthStore = defineStore('auth', {
         }
       })
     },
+    
+    updateUserProfile(profileData) {
+      if (profileData && profileData.personalInfo) {
+        this.user = {
+          ...this.user,
+          firstName: profileData.personalInfo.firstName || null,
+          lastName: profileData.personalInfo.lastName || null,
+          name: profileData.personalInfo.name || profileData.personalInfo.firstName || null,
+          lastname: profileData.personalInfo.lastname || profileData.personalInfo.lastName || null,
+          profilePhoto: profileData.personalInfo.profilePhoto || profileData.personalInfo.photoURL || null,
+          username: profileData.personalInfo.username || profileData.personalInfo.userName || null
+        };
+      }
+    },
+
     updateAuthSessionHistory(value) {
       // Actualiza el valor de auth_session_history en sessionStorage
       sessionStorage.setItem('auth_session_history', value);
     },
+    
     async loginUser(credentials) {
       if (this.isSubmitting) {
         console.warn("Intento de login mientras ya se está procesando")
@@ -101,13 +171,23 @@ export const useAuthStore = defineStore('auth', {
         
         this.user = {
           id: userCredential.user.uid,
-          email: userCredential.user.email
+          email: userCredential.user.email,
+          firstName: null,
+          lastName: null,
+          name: null,
+          lastname: null,
+          profilePhoto: null,
+          username: null
         }
         this.isLoggedIn = true
         this.updateAuthSessionHistory(localStorage.getItem('auth_session') || '');
         subscribeToAuthState((user)=>{})
         const userStore = useUserStore();
         await userStore.loadUserProfile(this.user.id);
+        
+        // Actualizar datos del perfil en auth después de cargar
+        this.updateUserProfile(userStore.profileData);
+        
         router.push(`/user/${this.user.id}`);
         addAlert("!Bienvenido a Reemo!", "success")
         return userCredential
@@ -121,6 +201,7 @@ export const useAuthStore = defineStore('auth', {
         }, 3000)
       }
     },
+    
     async registerUser(credentials){
       if (this.isSubmitting) {
         console.warn("Intento de registro mientras ya se está procesando")
@@ -139,7 +220,13 @@ export const useAuthStore = defineStore('auth', {
         })
         this.user = {
           id: userCredential.user.uid,
-          email: userCredential.user.email
+          email: userCredential.user.email,
+          firstName: null,
+          lastName: null,
+          name: null,
+          lastname: null,
+          profilePhoto: null,
+          username: null
         }
         this.isLoggedIn = true
         this.updateAuthSessionHistory(localStorage.getItem('auth_session') || '');
@@ -156,6 +243,7 @@ export const useAuthStore = defineStore('auth', {
         }, 3000)
       }
     },
+    
     async logout() {
       // Logica de logout
       try {
@@ -175,6 +263,7 @@ export const useAuthStore = defineStore('auth', {
         throw error;
       }
     },
+    
     handleLoginError(error) {
       const errorCode = error.errorCode
       switch (errorCode) {

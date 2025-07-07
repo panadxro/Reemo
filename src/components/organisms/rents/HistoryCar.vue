@@ -1,8 +1,11 @@
 <script setup>
+import { ref, computed } from 'vue';
 import defaultCarImage from '@/assets/Car-Img.png';
 import defaultUserImage from '@/assets/User.png';
 import Heading from '@components/atoms/Heading.vue'
 import Status from '@components/molecules/Status.vue';
+
+import { useAuthStore } from '@/stores';
 
 const props = defineProps({
   rent: {
@@ -16,6 +19,7 @@ const props = defineProps({
 });
 
 const car = props.rent;
+const authStore = useAuthStore();
 
 const setDefaultImage = (event) => {
   event.target.src = defaultCarImage.value;
@@ -33,6 +37,8 @@ const formatPrice = (price) => {
         maximumFractionDigits: 0
       });
 };
+
+const isMyCar = computed(() => car.owner_id === authStore.user?.id);
 </script>
 
 <template>
@@ -45,9 +51,15 @@ const formatPrice = (price) => {
         class="object-cover rounded-lg w-25 h-15"
       />
       <img 
-        v-if="car.ownerId !== car.driver_id"
+        v-if="!isMyCar"
         :src="car.ownerDetails?.profilePhoto || defaultUserImage" 
         :alt="car.ownerDetails?.name + ' ' + car.ownerDetails?.lastName"
+        class="absolute bottom-0 right-1 w-8 h-8 object-cover rounded-full bg-white"
+      />
+      <img 
+        v-else
+        :src="car.driverDetails?.photoURL || defaultUserImage" 
+        :alt="car.driverDetails?.name + ' ' + car.driverDetails?.lastName"
         class="absolute bottom-0 right-1 w-8 h-8 object-cover rounded-full bg-white"
       />
     </div>
@@ -55,13 +67,16 @@ const formatPrice = (price) => {
     <div class="flex flex-col justify-between py-2 text-gray-500 font-medium text-xs">
       <Heading :type="4" class="small">
         {{ car.vehicleDetails.basicInfo?.brand || 'Marca no disponible' }} 
-        {{ car.vehicleDetails.basicInfo?.year || 'Año no disponible' }}
+        {{ car.vehicleDetails.basicInfo?.model || 'Modelo no disponible' }}
       </Heading>
       <p>{{ formatDate(car.end_time) }}</p>
-      <p>ARS${{ formatPrice(car.payments.amount || 0) }}</p>
-<!--       <p v-if="car.ownerId !== car.driver_id">
-        Alquilado a {{ car.driverDetails?.name }} {{car.driverDetails?.lastname || '' }}</p> -->
-      <p>Alquilado por {{ car.ownerDetails?.name }}</p>
+      <p>${{ formatPrice(car.payments.amount || 0) }}</p>
+      <p v-if="isMyCar">
+        Alquilado a {{ car.driverDetails?.name }} {{ car.driverDetails?.lastname || '' }}
+      </p>
+      <p v-else>
+        Alquilado por {{ car.ownerDetails?.name }} {{ car.ownerDetails?.lastname || '' }}
+      </p>
     </div>
   </li>
 </template>

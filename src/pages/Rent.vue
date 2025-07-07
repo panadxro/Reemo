@@ -7,6 +7,7 @@ import Heading from '@components/atoms/Heading.vue';
 import BackButton from '@components/atoms/BackButton.vue';
 import HistoryCar from '@components/organisms/rents/HistoryCar.vue';
 import ViewRent from '../components/organisms/rents/ViewRent.vue';
+import Loading from '@icons/Loading.vue';
 
 const rentStore = useRentStore();
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
@@ -47,17 +48,19 @@ onMounted(async () => {
             v-for="(rent) in userRents" 
             :key="rent.id" 
             :rent="rent" 
-            @click="handleCarClick(rent)"
+            @click="handleRentClick(rent)"
           />
         </ul>
       </div>
     </div>
-<!--     <ViewRent 
+    <ViewRent 
       v-if="selectedRent"
       :rentId="selectedRent.id"
     />
     <div v-else>
-      <p>Selecciona un auto para ver los detalles</p>
-    </div> -->
+     <div class="flex items-center">
+          <Loading role="status" class="h-6 w-6" />
+        </div>
+    </div>
   </section>
 </template>
