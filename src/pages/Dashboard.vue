@@ -29,24 +29,22 @@ const props = defineProps({
   }
 });
 
-const isOwnDashboard = computed(() => {
-  return authSession.value?.id === props.id;
-});
+
 
 onMounted(async () => {
   try {
     loading.value = true;
 
     await userStore.loadUserProfile(authSession.user.id);
-    console.log('User data fetched successfully:', userStore.profileData);
+    //console.log('User data fetched successfully:', userStore.profileData);
 
     // Cargar autos para disponibles para alquilar
     await carStore.loadAvailableCars(authSession.user.id);
-    console.log('Available cars fetched successfully:', carStore.availableCars);
+    //console.log('Available cars fetched successfully:', carStore.availableCars);
 
     // Cargar autos del usuario
     await carStore.loadUserCars(authSession.user.id);
-    console.log('Autos del usuario', carStore.userCars)
+    //console.log('Autos del usuario', carStore.userCars)
   } catch (error) {
     console.error('Error fetching user data:', error);
   } finally {
@@ -80,9 +78,21 @@ onMounted(async () => {
         </router-link>   
       </div>
       <div class="flex gap-5 h-full">
-        <div v-if="userCars.length > 0" class="bg-vibrant-light-600 rounded-[40px] w-full py-10 px-6 flex flex-col justify-between">
+        <div class="w-full bg-primary-700 rounded-[40px] p-6 flex flex-col gap-4">
+          <Heading type="2" class="medium text-white">Solicitudes</Heading>
+          <RentStatusDetails />
+        </div>
+        <div class="bg-vibrant-light-800 rounded-[40px] p-6 flex flex-col justify-between">
+          <h3 class="text-xl font-bold mb-2">¡Tu viaje comienza acá!</h3>
+          <p class="text-gray-700">Alquilá con <strong>Reemo</strong> fácil, rápido y seguro.</p>
+          <button class="mt-6 bg-[#0a0a3c] text-white font-medium py-3 rounded-lg">Buscar autos</button>
+        </div>
+      </div>
+    </div>
+    <div class="my-profile bg-white border-3 border-vibrant-light-600 rounded-[40px] p-6 items-center flex flex-col justify-between">
+      <div v-if="userCars.length > 0" class="flex flex-col gap-8">
           <Heading type="2" class="medium">Resumen de actividad</Heading>
-          <div class="flex justify-between text-center h-full items-center">
+          <div class="grid grid-cols-2 text-center h-full items-center gap-4">
             <div class="flex-1">
               <p class="text-2xl font-bold">12</p>
               <p class="text-sm text-gray-500">Alquileres</p>
@@ -105,23 +115,6 @@ onMounted(async () => {
           <Heading type="2" class="medium text-white">¡Bienvenido a <strong>Reemo</strong>, {{ user.personalInfo.firstName }}👋!</Heading>
           <p class="text-white">Aquí podés gestionar tus autos y solicitudes de alquiler.🚗✨</p>
         </div>
-        <div class="bg-vibrant-light-800 rounded-[40px] p-6 flex flex-col justify-between">
-          <h3 class="text-xl font-bold mb-2">¡Tu viaje comienza acá!</h3>
-          <p class="text-gray-700">Alquilá con <strong>Reemo</strong> fácil, rápido y seguro.</p>
-          <button class="mt-6 bg-[#0a0a3c] text-white font-medium py-3 rounded-lg">Buscar autos</button>
-        </div>
-      </div>
-    </div>
-    <div class="my-profile bg-white border-3 border-vibrant-light-600 rounded-[40px] p-6 items-center flex flex-col justify-between">
-      <!-- <img :src="user.personalInfo.profilePhoto" :alt="user.personalInfo.firstName" class="w-28 h-28 rounded-full" />
-      <Heading type="2" class="medium">{{ user.personalInfo.firstName }} {{ user.personalInfo.lastName }}</Heading>
-      <p class="font-bold">@{{ user.personalInfo.username }}</p>
-      <router-link :to="`/user/${authSession.user.id}`" class="flex items-center px-5 py-2.5 bg-vibrant-light-900 text-white w-fit rounded-2xl hover:bg-vibrant-light-800 transition-colors duration-300">
-        Ver perfil
-      </router-link> -->
-        <div v-if="isOwnDashboard" class="">
-          <RentStatusDetails />
-        </div>
     </div>
     <div class="cars flex flex-col gap-6 overflow-hidden">
       <div class="flex justify-between items-end">
@@ -130,9 +123,10 @@ onMounted(async () => {
       </div>
       <div class="flex flex-col gap-2 h-full overflow-y-auto pr-2">
         <CardCar 
-          v-for="car in availableCars" 
+          v-for="(car, index) in availableCars" 
           :key="car.id" 
           :car="car"
+          :index="index"
           layout="rectangle"
         />
       </div>

@@ -2,6 +2,7 @@
 import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch } from 'vue';
 import { useAuthStore, useUserStore, useCarStore } from '@stores'
 import { loadGoogleMaps, initAutocomplete } from "../services/google-maps.js";
+import { notifyAdminsOfVehicleUpdate } from '../services/car/notifyRented.js';
 
 import { useRouter } from "vue-router";
 import { addAlert } from "../services/alerts.js";
@@ -21,8 +22,15 @@ import Locate from "@icons/Locate.vue";
 import History from "@icons/History.vue";
 import Images from "@icons/Images.vue";
 import Secure from "@icons/Secure.vue";
-import Search from "@icons/Search.vue"
-import Cross from "@icons/Cross.vue"
+import Search from "@icons/Search.vue";
+import Cross from "@icons/Cross.vue";
+
+const props = defineProps({
+  id: {
+    type: String,
+    default: null
+  }
+})
 
 const router = useRouter();
 
@@ -44,6 +52,8 @@ const authSession = JSON.parse(authSessionHistory);
 
 const currentStep = ref(0);
 const autocompleteInitialized = ref(false);
+
+const isEditMode = computed(() => !!props.id);
 
 const justifyClass = computed(() => ({
   'justify-start': currentStep.value <= 1,
@@ -186,7 +196,7 @@ const validateStep = (step) => {
       return true;
 
     case 5: // Fotos del vehículo
-      if (!status.value.description || !filePreviews.photo1File) {
+      if (!status.value.description || (!filePreviews.photo1File && !filePreviews.photo1)) {
         addAlert('Por favor completa la descripción y sube al menos una foto', 'error');
         return false;
       }
@@ -307,16 +317,18 @@ const handleSubmit = async () => {
     if (!carId) throw new Error("Missing car ID");
 
     // 2. Subir fotos
-    const photoUrls = [];
+    // const photoUrls = [];
+    const finalPhotoUrls = [...(photos.value || [])];
     for (let i = 0; i < 4; i++) {
       const photoKey = `photo${i+1}`;
       if (filePreviews[`${photoKey}File`]) {
-        photoUrls[i] = await carStore.uploadCarPhoto(
+        const newUrl= await carStore.uploadCarPhoto(
           authStore.user.id,
           filePreviews[`${photoKey}File`],
           carStore.currentCar.id,
           i
         );
+        finalPhotoUrls[i] = newUrl;
       }
     }
 
@@ -335,14 +347,31 @@ const handleSubmit = async () => {
       pricing: { ...pricing.value },
       insurance: { ...insurance.value },
       availability: { ...availability.value },
-      photos: photoUrls.filter(url => url)
+      photos: finalPhotoUrls.filter(url => url)
     };
 
    // 4. Guardar en Firestore (primera creación real)
-   await carStore.saveCar(carData);
+   // await carStore.saveCar(carData);
 
+  // addAlert('¡Vehículo registrado con éxito!', 'success');
+  // router.push(`/car/${carStore.currentCar.id}`);
+  if (isEditMode.value) {
+    await carStore.updateCar(props.id, carData);
+
+    // Notificar a los administradores que el vehículo fue actualizado
+    if (!userStore.profileData.id) {
+      await userStore.loadUserProfile(authStore.user.id);
+    }
+    await notifyAdminsOfVehicleUpdate(carData, userStore.profileData);
+
+    addAlert('¡Vehiculo actualizado con exito!', 'success');
+    router.push(`/car/${props.id}`);
+  } else {
+    await carStore.saveCar(carData);
     addAlert('¡Vehículo registrado con éxito!', 'success');
     router.push(`/car/${carStore.currentCar.id}`);
+  }
+
     
   } catch (error) {
     console.error('Error al registrar vehículo:', error);
@@ -373,19 +402,45 @@ onMounted(async () => {
     
     // await geoStore.loadProvinciasYLocalidades();
     // await carStore.initializeCar(authSession.user.id);
-    if (!carStore.currentCar.id) {
-      carStore.initializeCar();
-    }
+    // if (!carStore.currentCar.id) {
+    //   carStore.initializeCar();
+    // }
 
     // Cargar accesorios existentes si los hay
-    if (features.value?.accessories) {
-      selectedAccessories.value = allAccessoryOptions.value.filter(
-        option => features.value.accessories.includes(option.value)
-      );
+    // if (features.value?.accessories) {
+    //   selectedAccessories.value = allAccessoryOptions.value.filter(
+    //     option => features.value.accessories.includes(option.value)
+    //   );
+    // }
+
+    if(isEditMode.value){
+      // MODO EDICIÓN: Cargar datos del vehículo existente
+      loading.value = true;
+      await carStore.loadCarById(props.id)
+
+      // Poblar estado local (accesorios, previsualización de fotos)
+      if (features.value?.accessories) {
+        selectedAccessories.value = allAccessoryOptions.value.filter(
+          option => features.value.accessories.includes(option.value)
+        );
+      }
+      if(photos.value && photos.value.length > 0){
+        photos.value.forEach((url, index) => {
+          const photoKey = `photo${index + 1}`;
+          filePreviews[photoKey] = url;
+        });
+      }
+      loading.value = false;
+    } else {
+      // MODO REGISTRO: Inicializar un vehículo nuevo
+      if (!carStore.currentCar.id) {
+        carStore.initializeCar();
+      }
     }
+
   } catch (error) {
     console.error("Initialization error:", error);
-    addAlert('Error al cargar los datos del vehículo', 'error');
+    addAlert(isEditMode.value ? 'Error al cargar los datos para editar.' : 'Error al inicializar el registro.', 'error');
     router.push('/'); // Redirige si hay error
   }
 });
@@ -429,7 +484,9 @@ onBeforeUnmount(() => {
     <aside class="flex flex-col gap-8 w-full max-w-[425px]">
       <div class="flex flex-col gap-2">
         <div class="flex gap-2 items-center">
-        <Heading type="1" class="large text-deep-blue-900 font-extrabold!">Registrar vehículo</Heading>
+        <Heading type="1" class="large text-deep-blue-900 font-extrabold!">
+         {{ isEditMode ? 'Editar vehiculo' : 'Registrar vehiculo' }}
+        </Heading>
         </div>
         <p class="text-sm max-w-[420px]">Subscribí tu vehículo a la plataforma y haz que trabaje por vos.</p>
       </div>
@@ -632,9 +689,10 @@ onBeforeUnmount(() => {
                 id="transmission"
                 placeholder="Transmisión"
                 :options="[
-                  { value: 'Automática', label: 'Automática' },
+                  { value: 'Automatico', label: 'Automatico' },
                   { value: 'Manual', label: 'Manual' },
-                  { value: 'CVT', label: 'CVT' }                ]"
+                  { value: 'CVT', label: 'CVT' }                
+                ]"
                 icon-position="right"
                 variant="secondary"
                 :outline="true"
@@ -762,10 +820,10 @@ onBeforeUnmount(() => {
               </template>
             </Input>
 
-            <div class="w-full h-[120px] bg-background-700 flex flex-col items-center justify-center text-background-600 rounded-[23px]">
+            <!-- <div class="w-full h-[120px] bg-background-700 flex flex-col items-center justify-center text-background-600 rounded-[23px]">
               <h4 class="font-semibold">Mapa</h4>
               <p>Esto hacelo vos Yoel</p>
-            </div>
+            </div> -->
 
             <div class="w-full h-full bg-vibrant-light-700 flex flex-col items-center justify-center rounded-[23px] p-4">
               <Heading type="5" class="mb-6">Días activo</Heading>
@@ -1060,10 +1118,11 @@ onBeforeUnmount(() => {
             v-if="currentStep < sections.length - 1"
             class="cursor-pointer"
           />
+          <!-- :text="loading ? 'Procesando...' : 'Finalizar'" -->
           <Input
             :type="currentStep === 6 ? 'submit' : 'button'"
-            :text="loading ? 'Procesando...' : 'Finalizar'"
             variant="primary"
+            :text="loading ? 'Procesando...' : (isEditMode ? 'Guardar Cambios': 'Finalizar')"
             :class="loading ? 'cursor-not-allowed bg-deep-blue-900' : 'cursor-pointer'"
             :disabled="loading"
             v-if="currentStep === sections.length - 1"

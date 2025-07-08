@@ -46,10 +46,10 @@ export const updateCarAvailabilityAndStatus = async (carId, newAvailability, new
       availability: newAvailability,
       "status.current": newStatus
     });
-    return true;
+    return { success: true };
   } catch (error) {
-    console.error("Error updating car availability and status:", error);
-    throw error;
+    console.error("Error actualizando disponibilidad y estado:", error);
+    return { success: false, message: error.message };
   }
 };
 

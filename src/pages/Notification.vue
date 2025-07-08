@@ -3,16 +3,21 @@
 import Heading from '@/components/atoms/Heading.vue';
 import Loading from '@/icons/Loading.vue';
 import ReemoIcon from '@/icons/ReemoIcon.vue';
+import Input from '../components/molecules/Input.vue';
 
 import { useAuthStore } from '@/stores';
 import { useNotificationStore } from '@/stores/notification.store';
 import { addAlert } from '@/services/alerts';
 
-import { computed, onMounted, watch } from 'vue';
+import { computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
+
 
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore(); 
 const currentUser = computed(() => authStore.user); 
+
+const router = useRouter();
 
 const items = [
   { label: 'Inbox', icon: '📥' },
@@ -97,10 +102,16 @@ const handleNotificationClick = async (notification) => {
       console.error("Error al marcar la notificación como leída:", error);
     }
   }
-  // Lógica de navegación si es necesario (ej. ir a RentDetails)
+  // Lógica de navegación si es necesario (ej. ir a RentalDetailsView)
   // if (notification.type === 'rent_response' && notification.rent_id) {
   //   router.push(`/rent/${notification.rent_id}`);
   // }
+  
+  // Lógica de navegación
+  if (notification.link) {
+    router.push(notification.link);
+  }
+
 }
 
 </script> 
@@ -136,22 +147,23 @@ const handleNotificationClick = async (notification) => {
     <!-- Notifications -->
     <div v-if="!isLoading && notifications.length > 0" class="overflow-y-auto max-h-screen">
       <div v-for="noti in notifications" :key="noti.id"
-        class="overflow-y-auto p-6 border-b last:border-b-0 hover:bg-gray-200 rounded-xl"
+        class="overflow-y-auto p-6 border-b last:border-b-0 hover:bg-gray-200 rounded-xl cursor-pointer"
         @click="handleNotificationClick(noti)">
         <!-- Contenedor General para una Notificación -->
         <div class="flex items-start space-x-3">
-          <img v-if="noti.senderDetails?.photoURL" :src="noti.senderDetails?.photoURL" :alt="noti.senderDetails?.name || 'Reemo Bot' " class="w-10 h-10 rounded-full" />
+          <img v-if="noti.senderDetails?.photoURL" :src="noti.senderDetails?.photoURL"
+            :alt="noti.senderDetails?.name || 'Reemo Bot' " class="w-10 h-10 rounded-full" />
           <div v-else
-          class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
-          <!-- <img src="../assets/imagotipo-celeste.png" :alt="noti.senderDetails?.name || 'Reemo Bot' " class="w-10 h-10 rounded-full" /> -->
-          <ReemoIcon class="w-15 h-15 rounded-full" />
-          <!-- <h3>{{ noti.senderDetails?.name ? noti.senderDetails.name .charAt(0).toUpperCase() : 'R' }}</h3> -->
-          <!-- <p> {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}</p> -->
+            class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
+            <!-- <img src="../assets/imagotipo-celeste.png" :alt="noti.senderDetails?.name || 'Reemo Bot' " class="w-10 h-10 rounded-full" /> -->
+            <ReemoIcon class="w-15 h-15 rounded-full" />
+            <!-- <h3>{{ noti.senderDetails?.name ? noti.senderDetails.name .charAt(0).toUpperCase() : 'R' }}</h3> -->
+            <!-- <p> {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}</p> -->
           </div>
           <div class="flex-1">
 
             <!-- Emcabezado general -->
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-start">
               <p class="text-sm">
                 <span v-if="!noti.read" class="inline-block w-2 h-2 mr-2 rounded-full bg-red-500"
                   title="No leído"></span>
@@ -159,124 +171,112 @@ const handleNotificationClick = async (notification) => {
                   }}</span>
                 <!-- <span> {{ noti.message }} </span> -->
               </p>
+              <span class="text-xs text-gray-400 px-3.5">{{ formatDate(noti.created_at) }}</span>
             </div>
 
             <!-- Contenido específico por tipo de notificación -->
             <!-- Solicitud de Alquiler (para el propietario del vehículo) -->
-            <div v-if="noti.type === 'rent_request'">
-              <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div>
-              <p class="text-sm text-gray-700">
-                {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}
-                <span class="font-medium">{{ noti.vehicleDetails?.basicInfo?.brand || '' }} {{ noti.vehicleDetails?.basicInfo?.model ||
-                  'Vehículo no especificado' }}</span>.
-              </p>
-              <!-- File info -->
-              <div v-if="noti.rentDetails" class="mt-3 bg-gray-100 rounded p-3">
-                <div class="flex items-center space-x-2 bg-gray-100 rounded px-2 py-1 mt-3">
-                  <img v-if="noti.type === 'rent_request' && noti.vehicleDetails?.photos"
-                    :src="noti.vehicleDetails.photos[1]" :alt="noti.vehicleDetails.basicInfo?.brand"
-                    class="w-12 h-12 rounded-full" />
+            <router-link to="/dashboard" v-if="noti.type === 'rent_request'" class="bg-white rounded-xl shadow p-4 flex flex-col gap-3 mt-2">
+
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <img v-if="noti.vehicleDetails?.photos" :src="noti.vehicleDetails.photos[1]"
+                    :alt="noti.vehicleDetails.basicInfo?.brand" class="w-12 h-12 rounded-full object-cover" />
                   <div v-else
-                    class="h-6 w-6 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
+                    class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-white text-lg font-bold">
                     {{ noti.senderDetails?.name ? noti.senderDetails.name.charAt(0).toUpperCase() : 'R' }}
                   </div>
+
                   <div>
-                    <p class="text-sm font-medium text-gray-800">
-                      {{ noti.vehicleDetails?.basicInfo?.brand || 'N/A' }} {{ noti.vehicleDetails?.basicInfo?.model || 'N/A' }}
+                    <p class="font-semibold text-gray-800">
+                      {{ noti.vehicleDetails?.basicInfo?.brand }} {{ noti.vehicleDetails?.basicInfo?.model }}
                     </p>
                     <p class="text-xs text-gray-500">
-                      Desde: {{ formatDate(noti.rentDetails?.start_time) }} Hasta: {{
-                      formatDate(noti.rentDetails.end_time) }}
-                    </p>
-                    <p class="text-xs text-gray-500">
-                      Precio Total: <span class="text-xs px-2 py-0.5 rounded bg-green-100 border text-green-700">${{
-                        noti.rentDetails?.total_price?.toFixed() || 'N/A' }} </span>
-                    </p>
-                    <p class="text-xs text-gray-500">
-                      Estado:
-                      <span class="font-semibold" :class="{
-                            'text-yellow-600': noti.rentDetails.status === 'pending',
-                            'text-green-600': noti.rentDetails.status === 'confirmed',
-                            'text-red-600': noti.rentDetails.status === 'rejected' || noti.rentDetails.status === 'cancelled_by_user' || noti.rentDetails.status === 'cancelled_by_owner',
-                            'text-blue-600': noti.rentDetails.status === 'completed',
-                            'text-indigo-600': noti.rentDetails.status === 'in_progress',
-                          }">
-                        {{ 
-                          noti.rentDetails.status === "pending" ? "Pendiente" : 
-                          noti.rentDetails.status === "confirmed" ? "Confirmada" : 
-                          noti.rentDetails.status === "rejected" ? "Rechazada" : 
-                          noti.rentDetails.status === "cancelled_by_user" ? "Cancelada por el conductor" : 
-                          noti.rentDetails.status === "cancelled_by_owner" ? "Cancelada por el propietario" : 
-                          noti.rentDetails.status === "completed" ? "Completado" : 
-                          noti.rentDetails.status === "in_progress" ? "En progreso" : "N/A" }}
-                      </span>
+                      Desde: {{ formatDate(noti.rentDetails?.start_time) }} <br>
+                      Hasta: {{ formatDate(noti.rentDetails?.end_time) }}
                     </p>
                   </div>
-                  <!-- <span class="text-xs text-gray-400 ml-auto">Edited {{ noti.archivo.edicion }}</span> -->
-                  <span class="text-xs text-gray-400 ml-auto">Edited 12 mins ago</span>
                 </div>
-                <!-- <p class="text-xs text-gray-600">
-                  Desde: {{ formatDate(noti.rentDetails.start_time) }}
-                </p>
-                <p class="text-xs text-gray-600">
-                  Hasta: {{ formatDate(noti.rentDetails.end_time) }}
-                </p>
-                <p class="text-xs text-gray-600">
-                  Precio Total: ${{ noti.rentDetails.total_price?.toFixed(2) || 'N/A' }}
-                </p> -->
-                <div v-if="noti.type === 'rent_request' && noti.rentDetails" class="flex space-x-2 mt-3">
-                  <div v-if="noti.rentDetails.status === 'pending'" class="flex space-x-2 mt-3">
-                    <button
-                      @click="handleRentalAction(noti.rent_id, 'confirmed', noti.sender_id, noti.receiver_id, noti.rentDetails.vehicle_id)"
-                      class="text-sm px-3 py-1 rounded border text-gray-700 cursor-pointer">Aceptar</button>
-                    <button
-                      @click="handleRentalAction(noti.rent_id, 'rejected', noti.sender_id, noti.receiver_id, noti.rentDetails.vehicle_id)"
-                      class="text-sm px-3 py-1 rounded bg-black text-white cursor-pointer">Rechazar</button>
-                  </div>
-                </div>
+
               </div>
 
-            </div>
+              <!-- Precio y estado -->
+              <div class="flex items-center justify-between text-sm mt-1">
+                <p>
+                  <span class="font-medium text-gray-600">Precio:</span>
+                  <span class="px-2 py-0.5 text-green-700 ml-1">
+                    ${{ noti.rentDetails?.total_price?.toFixed() }}
+                  </span>
+                </p>
+                <p>
+                  <span class="font-medium text-gray-600">Estado:</span>
+                  <span :class="{
+                    'text-yellow-600': noti.rentDetails.status === 'pending',
+                    'text-green-600': noti.rentDetails.status === 'confirmed',
+                    'text-red-600': ['rejected', 'cancelled_by_user', 'cancelled_by_owner'].includes(noti.rentDetails.status),
+                    'text-blue-600': noti.rentDetails.status === 'completed',
+                    'text-indigo-600': noti.rentDetails.status === 'in_progress',
+                  }" class="font-semibold ml-1">
+                    {{
+                    noti.rentDetails.status === 'pending' ? 'Pendiente' :
+                    noti.rentDetails.status === 'confirmed' ? 'Confirmada' :
+                    noti.rentDetails.status === 'rejected' ? 'Rechazada' :
+                    noti.rentDetails.status === 'cancelled_by_user' ? 'Cancelada por conductor' :
+                    noti.rentDetails.status === 'cancelled_by_owner' ? 'Cancelada por propietario' :
+                    noti.rentDetails.status === 'completed' ? 'Completada' :
+                    noti.rentDetails.status === 'in_progress' ? 'En progreso' : 'N/A'
+                    }}
+                  </span>
+                </p>
+              </div>
+
+            </router-link>
+
 
             <!-- Caso: Respuesta a Solicitud de Alquiler (para el conductor que solicitó) -->
-            <div v-else-if="noti.type === 'rent_response'">
-              <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div>
-              <p class="text-sm text-gray-700">
-                {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}
-              </p>
-              <div v-if="noti.rentDetails" class="mt-3 bg-gray-100 rounded p-3">
-                <div class="flex items-center space-x-2 mb-2">
+            <router-link to="/dashboard" v-else-if="noti.type === 'rent_response'" class="bg-white rounded-xl shadow p-4 flex flex-col gap-3 mt-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
                   <img v-if="noti.vehicleDetails?.photos && noti.vehicleDetails.photos.length > 0"
-                    :src="noti.vehicleDetails.photos[0]" :alt="`Imagen de ${ noti.vehicleDetails.basicInfo?.brand }`"
-                    class="w-12 h-12 rounded-md object-cover" />
+                    :src="noti.vehicleDetails.photos[0]" :alt="`Imagen de ${noti.vehicleDetails.basicInfo?.brand}`"
+                    class="w-12 h-12 rounded-full object-cover" />
                   <div v-else
-                    class="w-12 h-12 rounded-md bg-gray-200 flex items-center justify-center text-xs text-gray-400">Sin
-                    foto</div>
+                    class="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-white text-lg font-bold">
+                    🚗
+                  </div>
+
                   <div>
-                    <p class="text-sm font-medium text-gray-800">
-                      {{ noti.vehicleDetails?.basicInfo?.brand || 'N/A' }} {{ noti.vehicleDetails?.basicInfo?.model || 'N/A' }}
+                    <p class="font-semibold text-gray-800">
+                      {{ noti.vehicleDetails?.basicInfo?.brand || 'N/A' }} {{ noti.vehicleDetails?.basicInfo?.model ||
+                      'N/A' }}
                     </p>
                     <p class="text-xs text-gray-500">
                       Estado:
-                      <span class="font-semibold" :class="{
-                            'text-yellow-600': noti.rentDetails.status === 'pending',
-                            'text-green-600': noti.rentDetails.status === 'confirmed',
-                            'text-red-600': noti.rentDetails.status === 'rejected' || noti.rentDetails.status === 'cancelled_by_user' || noti.rentDetails.status === 'cancelled_by_owner',
-                            'text-blue-600': noti.rentDetails.status === 'completed',
-                            'text-indigo-600': noti.rentDetails.status === 'in_progress',
-                          }">
-                        {{ 
-                          noti.rentDetails.status === "pending" ? "Pendiente" : 
-                          noti.rentDetails.status === "confirmed" ? "Confirmada" : 
-                          noti.rentDetails.status === "rejected" ? "Rechazada" : 
-                          noti.rentDetails.status === "cancelled_by_user" ? "Cancelada por el conductor" : 
-                          noti.rentDetails.status === "cancelled_by_owner" ? "Cancelada por el propietario" : 
-                          noti.rentDetails.status === "completed" ? "Completada" : 
-                          noti.rentDetails.status === "in_progress" ? "En progreso" : "N/A" }}
+                      <span :class="{
+                        'text-yellow-600': noti.rentDetails.status === 'pending',
+                        'text-green-600': noti.rentDetails.status === 'confirmed',
+                        'text-red-600': ['rejected', 'cancelled_by_user', 'cancelled_by_owner'].includes(noti.rentDetails.status),
+                        'text-blue-600': noti.rentDetails.status === 'completed',
+                        'text-indigo-600': noti.rentDetails.status === 'in_progress',
+                      }" class="font-semibold ml-1">
+                        {{
+                          noti.rentDetails.status === 'pending' ? 'Pendiente' :
+                          noti.rentDetails.status === 'confirmed' ? 'Confirmada' :
+                          noti.rentDetails.status === 'rejected' ? 'Rechazada' :
+                          noti.rentDetails.status === 'cancelled_by_user' ? 'Cancelada por el conductor' :
+                          noti.rentDetails.status === 'cancelled_by_owner' ? 'Cancelada por el propietario' :
+                          noti.rentDetails.status === 'completed' ? 'Completada' :
+                          noti.rentDetails.status === 'in_progress' ? 'En progreso' : 'N/A'
+                        }}
                       </span>
                     </p>
                   </div>
                 </div>
+
+              </div>
+
+              <!-- Fechas -->
+              <div class="flex justify-between text-sm mt-1">
                 <p class="text-xs text-gray-600">
                   Desde: {{ formatDate(noti.rentDetails.start_time) }}
                 </p>
@@ -284,29 +284,84 @@ const handleNotificationClick = async (notification) => {
                   Hasta: {{ formatDate(noti.rentDetails.end_time) }}
                 </p>
               </div>
-            </div>
+            </router-link>
 
-            <div v-else-if="noti.type === 'car_validated'">
-              <a :href="noti.link" class="text-sm text-gray-700 block">
+            <!-- Caso: Validacion de vehiculo (para el conductor cargo un vehiculo) -->
+            <div v-else-if="noti.type === 'car_validated'" class="flex items-center justify-between">
+              <div>
+                <h3 class="font-semibold text-gray-800">
+                  {{ noti.title || 'Tienes una nueva notificación.' }}
+                </h3>
                 <p class="text-sm text-gray-700">
                   {{ noti.message || 'Tienes una nueva notificación.' }}
                 </p>
-              </a>
+              </div>
+
+              <router-link :to="noti.link"
+                class="ml-3 bg-secondary-700 hover:bg-primary-900 text-white p-2 rounded-full transition"
+                title="Revisar vehículo">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </router-link>
             </div>
 
-            <div v-else-if="noti.type === 'car_invalidated'">
-              <a :href="noti.link" class="text-sm text-gray-700 block">
+            <!-- Caso: invalidacion de vehiculo (para el conductor cargo un vehiculo) -->
+            <div v-else-if="noti.type === 'car_invalidated'" class="flex items-center justify-between">
+              <div>
+                <h3 class="font-semibold text-gray-800">
+                  {{ noti.title || 'Tienes una nueva notificación.' }}
+                </h3>
                 <p class="text-sm text-gray-700">
                   {{ noti.message || 'Tienes una nueva notificación.' }}
                 </p>
-              </a>
+              </div>
+
+              <!-- <router-link :to="noti.link" class="ml-3 text-primary-600 hover:text-primary-800 transition"
+                title="Ver detalle">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </router-link> -->
+
+              <router-link :to="noti.link"
+                class="ml-3 bg-secondary-700 hover:bg-primary-900 text-white p-2 rounded-full transition"
+                title="Revisar vehículo">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </router-link>
+            </div>
+
+            <!-- Caso: Revision de vehiculo por un admin (para el propietario del vehiculo) -->
+            <div v-else-if="noti.type === 'car_updated_for_review'" class="flex items-center justify-between">
+              <div>
+                <h3 class="font-semibold text-gray-800">
+                  {{ noti.title || 'Tienes una nueva notificación.' }}
+                </h3>
+                <p class="text-sm text-gray-700">
+                  {{ noti.message || 'Tienes una nueva notificación.' }}
+                </p>
+              </div>
+
+              <router-link :to="noti.link"
+                class="ml-3 bg-secondary-700 hover:bg-primary-900 text-white p-2 rounded-full transition"
+                title="Ver detalles">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </router-link>
             </div>
 
 
 
             <!-- Caso: Otro tipo de notificación (genérico) -->
             <div v-else>
-              <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div>
+              <!-- <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div> -->
               <p class="text-sm text-gray-700">{{ noti.message || 'Tienes una nueva notificación.' }}</p>
             </div>
 

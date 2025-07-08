@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia';
-import { isCarAlreadyRented, submitRentalRequest, fetchUserRentalHistory, fetchUserRentedOutHistory } from "@services/rentedCarService";
+import { isCarAlreadyRented, submitRentalRequest, fetchUserRentalHistory, fetchUserRentedOutHistory , fetchRentDetail } from "@services/rentedCarService";
 import { addAlert } from "@/services/alerts";
 import { usePaymentStore } from "@/stores/payment.store.js";
+
 
 export const useRentStore = defineStore('rent', {
   state: () => ({
@@ -24,6 +25,7 @@ export const useRentStore = defineStore('rent', {
       selectedPaymentMethod: null
     },
     userRents: [],
+    rent: null,
     acceptTerms: false,
     loading: false,
     errorMessage: "",
@@ -41,6 +43,19 @@ export const useRentStore = defineStore('rent', {
       }
       return false;
     },
+
+    rentedByMe() {
+    return this.userRents.filter(rent => rent.rentType === 'rented_by_me');
+  },
+  
+  rentedToOthers() {
+    return this.userRents.filter(rent => rent.rentType === 'rented_to_others');
+  },
+  
+  allRentsSorted() {
+    return this.userRents.sort((a, b) => 
+      new Date(b.start_time) - new Date(a.start_time)
+    )},
     
     paymentMethod() {
       return this.rentalData.selectedPaymentMethod;
@@ -450,20 +465,72 @@ export const useRentStore = defineStore('rent', {
       this.$reset();
     },
     // Obtener rentas del usuario
-    async loadUserRents(userId) {
+   async loadUserRents(userId) {
       try {
         this.loading = true;
-        const rents = await fetchUserRentalHistory(userId);
-        if (rents) {
-          this.userRents = rents;
-        }
-        console.log(this.userRents)
+        
+        // Cargar ambos tipos de rentas en paralelo
+        const [rentedByMe, rentedToMe] = await Promise.all([
+          fetchUserRentalHistory(userId),     
+          fetchUserRentedOutHistory(userId)   
+        ]);
+        
+        const combinedRents = [
+          ...(rentedByMe || []).map(rent => ({ ...rent, rentType: 'rented_by_me' })),
+          ...(rentedToMe || []).map(rent => ({ ...rent, rentType: 'rented_to_others' }))
+        ];
+        
+        this.userRents = combinedRents.sort((a, b) => 
+          new Date(b.start_time) - new Date(a.start_time)
+        );
+        
+        console.log('Todas las rentas cargadas:', {
+          total: this.userRents.length,
+          rentedByMe: rentedByMe?.length || 0,
+          rentedToOthers: rentedToMe?.length || 0
+        });
+        
       } catch (error) {
+        console.error('Error cargando rentas:', error);
         this.error = error;
         throw error;
       } finally {
         this.loading = false;
       }
+    },
+
+    async loadRent(rentId) {
+  try {
+    this.loading = true;
+    
+    const rentDetail = this.userRents.find(rent => rent.id === rentId);
+    
+    if (rentDetail) {
+      this.rent = rentDetail;
+    } else {
+      // Si no está en userRents, obtener desde el servicio
+      const fetchedRentDetail = await fetchRentDetail(rentId);
+      if (fetchedRentDetail) {
+        this.rent = fetchedRentDetail;
+        // Opcionalmente, agregar al cache local
+        this.userRents.push(fetchedRentDetail);
+      } else {
+        throw new Error('Renta no encontrada');
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error cargando detalle de renta:', error);
+    this.rent = null;
+    throw error;
+  } finally {
+    this.loading = false;
+  }
+},
+    
+    // Limpiar el detalle de la renta
+    clearRentDetail() {
+      this.rent = null;
     }
   }
 });

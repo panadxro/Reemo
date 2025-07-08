@@ -21,7 +21,7 @@ export default {
       openPopoverId: null,
       filter: 'all',
       searchQuery: '',
-      isModalOpen: false, 
+      isModalOpen: false,
       selectedCarForInvalidation: null,
     };
   },
