@@ -58,6 +58,13 @@ const routes = [
     meta: { needsAuth: true},
   },
   {
+    path: "/car/register/:id/edit",
+    name: 'CarEdit',
+    component: CarRegister,
+    props: true,
+    meta: { requiresAuth: true }
+  },
+  {
     path: "/car/:id",
     name: "CarDetails",
     component: CarDetails,
@@ -113,7 +120,7 @@ const routes = [
     ],
   },
   {
-    path: '/rent/:id',
+    path: '/rents/:id',
     name: 'Rent',
     component: Rent,
     props: (route) => ({

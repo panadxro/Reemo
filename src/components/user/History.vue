@@ -84,7 +84,7 @@ onMounted(() => {
       :key="rent.id" 
       :car="rent.vehicleDetails || rent"
       :rent="rent"
-      @click="router.push(`/rent/${rent.id}`)" />
+      @click="router.push(`/rents/${rent.id}`)" />
   </ul>
   
   <template v-else>

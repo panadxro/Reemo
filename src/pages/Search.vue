@@ -326,7 +326,7 @@ export default {
 
         <div v-else class="flex-1 overflow-y-auto pr-2">
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-            <CardCar v-for="(car, index) in filteredCars" :key="car.id" :car="car" />
+            <CardCar v-for="(car, index) in filteredCars" :key="car.id" :car="car" :index="index" />
           </div>
         </div>
       </div>

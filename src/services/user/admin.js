@@ -1,4 +1,4 @@
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, query, where } from "firebase/firestore";
 import { db } from "../firebase";
 
 export async function getUsers() {
@@ -26,5 +26,23 @@ export async function updateVerification(userId, newStatus) {
   } catch (error) {
     console.error("Error al actualizar la validación del usuario:", error);
     return { success: false, message: "Error al actualizar la validación del usuario" };
+  }
+}
+
+export const getAdminUser = async () => {
+  try {
+    const userRef = collection(db, 'users');
+    const q = query(userRef, where("role", "==", "admin"));
+    const querySnap = await getDocs(q);
+
+    const admins = [];
+    querySnap.forEach((doc) => {
+      admins.push({ id: doc.id, ...doc.data() });
+    });
+
+    return admins;
+  } catch (error) {
+    console.error("Error al obtener los usuarios administradores:", error);
+    throw error;
   }
 }
