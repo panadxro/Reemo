@@ -19,7 +19,7 @@ const authSession = inject('authSession');
 </script>
 
 <template>
-  <aside class="md:bg-vibrant-light-600 m-2.5 md:py-12 md:px-5 flex flex-col items-center gap-2 rounded-[40px] md:min-w-[250px] fixed md:relative right-0  h-full md:h-auto justify-center">
+  <aside class="md:bg-vibrant-light-600 md:m-2.5 md:px-5 flex flex-col md:items-center gap-2 md:rounded-[40px] md:min-w-[250px] md:relative h-full md:h-auto md:justify-center overflow-x-auto">
     <img 
       v-if="profileData.personalInfo.profilePhoto" 
       class="hidden md:block w-20 aspect-square rounded-full bg-vibrant-light-800" 
@@ -30,32 +30,40 @@ const authSession = inject('authSession');
     <p class="hidden md:block text-sm text-gray-500">
       @{{ profileData.personalInfo.username }}
     </p>
-    <!-- <button type="button" @click="openUserEdit">Editar</button> -->
-    <ul class="flex flex-col gap-3 my-7 md:w-full">
-      <li>
+
+    <ul class="user-nav flex md:flex-col gap-3 md:my-7 !w-full !pb-2.5 md:!pb-0">
+      <li class="!min-w-fit">
         <NavButton :to="{ name: 'UserProfile', params: { id: authSession?.user?.id } }" title="Mi perfil">
           <User />
-          <span class="hidden md:block">Mi perfil</span>
+          <span>Mi perfil</span>
         </NavButton>
       </li>
-      <li>
+      <li class="!min-w-fit">
         <NavButton :to="{ name: 'Documentation', params: { id: authSession?.user?.id } }" title="Documentos">
           <Credential />
-          <span class="hidden md:block">Documentos</span>
+          <span>Documentos</span>
         </NavButton>
       </li>
-      <li>
+      <li class="!min-w-fit">
         <NavButton :to="{ name: 'MyCars', params: { id: authSession?.user?.id } }" title="Mis autos">
           <Car />
-          <span class="hidden md:block">Mis autos</span>
+          <span>Mis autos</span>
         </NavButton>
       </li>
-      <li>
+      <li class="!min-w-fit">
         <NavButton :to="{ name: 'Rent', params: { id: authSession?.user?.id } }" title="Historial">
           <History />
-          <span class="hidden md:block">Historial</span>
+          <span>Historial</span>
         </NavButton>
       </li>
     </ul>
   </aside>
 </template>
+
+<style scope>
+  .user-nav {
+  scrollbar-color: deeppink indigo;
+  scrollbar-width: thin;
+  scrollbar-gutter: auto;
+  }
+</style>
