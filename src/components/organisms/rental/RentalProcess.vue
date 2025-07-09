@@ -15,6 +15,7 @@ import Heading from '@/components/atoms/Heading.vue';
 import Loading from '@/icons/Loading.vue';
 import Input from '@/components/molecules/Input.vue';
 import RentalSuccess from '@/components/organisms/rental/RentalSuccess.vue';
+import Modal from '@/components/molecules/Modal.vue';
 
 import MercadoPago from '@/icons/MercadoPago.vue';
 import Uala from '@/icons/Uala.vue';
@@ -119,9 +120,9 @@ async function handleSubmit() {
   }
 }
 
-function handleCloseSuccessModal() {
+function handleViewProfileOwner() {
   showSuccess.value = false;
-  router.push({ name: 'CarDetails', params: { id: carStore.car.id} });  
+  router.push({ name: 'UserProfile', params: { id: store.car?.ownerId } });
 }
 
 function handleViewAlert() {
@@ -650,12 +651,23 @@ onMounted(async () => {
       />
     </div>
 
-      <RentalSuccess
+      <!-- <RentalSuccess
         v-if="showSuccess"
         :rental-id="store.car?.id"
-        @close-modal="handleCloseSuccessModal"
+        @close-modal="handleViewProfileOwner"
         @view-profile="handleViewAlert"
-      />
+      /> -->
+
+     <Modal
+      :is-open="showSuccess"
+      title="¡Solicitud Enviada!"
+      message="Tu solicitud de alquiler ha sido enviada correctamente. El propietario será notificado y se pondrá en contacto contigo pronto."
+      :image="carStore.car?.photos?.[0]"
+      primary-button-text="Ver mis alquileres"
+      secondary-button-text="Ver perfil del dueño"
+      @primary-action="handleViewAlert"
+      @secondary-action="handleViewProfileOwner"
+    />
 
   </div>
 </template>

@@ -27,7 +27,7 @@ const selectedPayment = ref(null);
 
 const handlePaymentClick = (method) => {
   selectedPayment.value = method;
-  console.log(selectedPayment.value)
+  console.log("metodo seleccionado", selectedPayment.value)
 }
 
 onMounted(async () => {
@@ -233,7 +233,10 @@ onMounted(async () => {
           :key="index" 
           @click="handlePaymentClick(method)"
           class="flex flex-row items-center gap-2 border-2 border-vibrant-light-900 w-full px-4 py-3 rounded-2xl cursor-pointer"
-          :class="{ 'border-vibrant-blue-900': selectedPayment?.walletId === method.walletId || selectedPayment?.cardNumber === method.cardNumber }"
+          :class="{ 
+            'bg-vibrant-light-600': selectedPayment === method,
+            'bg-white': selectedPayment !== method 
+          }"
           >
           <PaymentMethod :method="method.walletType" 
         />

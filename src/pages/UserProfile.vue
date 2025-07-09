@@ -165,7 +165,8 @@ export default {
       paymentMethodToDelete,
       confirmDeletePaymentMethod,
       carStore,
-      userCars
+      userCars,
+      loggedUserId
     };
   }
 }
@@ -236,7 +237,7 @@ export default {
       <div class="overflow-hidden flex flex-col gap-5" :class="isOwnProfile ? 'cars' : 'user-cars'">
         <div class="flex items-end justify-between">
           <Heading :type="2" class="medium text-primary-900 text-center sm:text-left">{{ isOwnProfile ? "Mis autos" : "Vehículos" }}</Heading>
-          <router-link to="/my-cars" class="text-deep-blue-900 font-medium">Ver más</router-link>
+          <router-link :to="`/cars/${loggedUserId}`" class="text-deep-blue-900 font-medium">Ver más</router-link>
         </div>
         <div v-if="carStore.loading" class="flex justify-center py-8">
           <Loading class="w-8 h-8 text-primary-800" />
@@ -284,7 +285,7 @@ export default {
               </li>
               <li class="flex justify-between items-center">
                 <Heading :type="6" class="text-sm font-bold text-white">Estado</Heading>
-                <p class="text-sm text-white/50">{{ userStore.profileData.profileCompleted == true ? 'Verificado' : 'No Verificado'}}</p>
+                <p class="text-sm text-white/50">{{ userStore.status == 'verified' ? 'Verificado' : 'No verificado'}}</p>
               </li>
             </ul>
           </div>
@@ -372,7 +373,7 @@ export default {
       <div v-if="isOwnProfile" class="my-history bg-primary-900 flex flex-col rounded-[40px] px-5 py-7 gap-6 h-full  overflow-hidden">
         <div class="flex items-end justify-between">
           <Heading :type="2" class="medium text-white text-center sm:text-left">Historial</Heading>
-          <router-link to="/rent" class="text-white font-medium">Ver más</router-link>
+          <router-link  :to="`/rents/${loggedUserId}`" class="text-white font-medium">Ver más</router-link>
         </div>
         <History />
       </div>

@@ -25,6 +25,7 @@ const layoutMap = {
   '/ForgotPassword': 'simple',
   '/onboarding': 'simple',
   '/car/register': 'simple',
+  '/car/edit': 'simple',
   
   // Rutas con layout de dashboard (con sidebar)
   '/dashboard': 'dashboard',

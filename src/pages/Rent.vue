@@ -48,6 +48,7 @@ onMounted(async () => {
             v-for="(rent) in userRents" 
             :key="rent.id" 
             :rent="rent" 
+            :isSelected="selectedRent?.id === rent.id"
             @click="handleRentClick(rent)"
           />
         </ul>

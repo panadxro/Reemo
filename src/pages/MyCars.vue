@@ -7,13 +7,16 @@ import Heading from "@components/atoms/Heading.vue";
 import BackButton from "@components/atoms/BackButton.vue";
 import ViewCar from '../components/organisms/cars/ViewCar.vue';
 import Input from '../components/molecules/Input.vue';
+import { useAuthStore } from '../stores/auth.store';
 
 const carStore = useCarStore();
 const authSession = inject('authSession');
+const authStore = useAuthStore();
 
 const selectedCar = ref(null);
 
 const userCars = computed(() => carStore.userCars);
+const isVerified = computed(() => authStore.userStatus === 'verified');
 
 const handleCarClick = (car) => {
   selectedCar.value = car;
@@ -21,7 +24,9 @@ const handleCarClick = (car) => {
 
 onMounted(async () => {
   try {
-    await carStore.loadUserCars(authSession.user?.id);
+    await carStore.loadUserCars(authSession?.user?.id);
+
+    console.log("Datos del usurtaio authStore:", authStore?.user);
 
     // Seleccionar el primer auto al cargar la página
     if (carStore.userCars.length > 0) {
@@ -48,11 +53,13 @@ onMounted(async () => {
             :key="car.id" 
             :car="car" 
             :index="index"
+            :isSelected="selectedCar?.id === car.id"
             layout="rectangle"
             @click="handleCarClick(car)"
           />
         </ul>
-        <router-link to="/car/register">
+        <p v-if="!isVerified" class="text-center text-white">Tu usuario debe estar verificado para publicar vehículos</p>
+        <router-link :to="{name: 'CarRegister'}" >
           <Input
             type="button"
             variant="primary"

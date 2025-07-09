@@ -522,8 +522,8 @@ onMounted(() => {
           :isOpen="showCancelModal"
           title="Cancelar alquiler"
           message="¿Estás seguro de que quieres cancelar este alquiler?"
-          confirmText="Cancelar"
-          cancelText="Mantener"
+          confirmText="Si, cancelar"
+          cancelText="No, mantener"
           @close="showCancelModal = false"
           @confirm="confirmCancelRental"
         />
