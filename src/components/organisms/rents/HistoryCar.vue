@@ -15,6 +15,10 @@ const props = defineProps({
   rental: {
     type: Object,
     default: null
+  },
+  isSelected: {  
+    type: Boolean,
+    default: false
   }
 });
 
@@ -42,7 +46,11 @@ const isMyCar = computed(() => car.owner_id === authStore.user?.id);
 </script>
 
 <template>
-  <li class="bg-white flex gap-2 min-h-25 rounded-xl shadow-sm px-2.5 py-2 cursor-pointer hover:shadow-md transition-shadow">
+  <li class="flex gap-2 min-h-25 rounded-xl shadow-sm px-2.5 py-2 cursor-pointer hover:shadow-md transition-shadow"
+    :class="{
+      'bg-vibrant-light-600': isSelected,  
+      'bg-white': !isSelected    
+    }">
     <div class="relative flex items-center">
       <Status class="absolute top-0 left-1" size="mini" :status="car.vehicleDetails.status.current" />
       <img 

@@ -27,6 +27,10 @@ export default {
         type: String,
         default: 'square', // 'square' o 'rectangle'
         validator: value => ['square', 'rectangle'].includes(value)
+      },
+      isSelected: {  
+        type: Boolean,
+        default: false
       }
     },
     setup() {
@@ -142,8 +146,12 @@ export default {
 
   <li
     v-else
-    class="flex items-center bg-white px-5 py-4 rounded-3xl justify-between border-2 border-vibrant-light-600 w-full cursor-pointer"
-  >
+    class="flex items-center px-5 py-4 rounded-3xl justify-between border-2 border-vibrant-light-600 w-full cursor-pointer"
+    :class="{
+      'bg-vibrant-light-600': isSelected,  
+      'bg-white': !isSelected    
+    }"
+      >
     <template v-if="$route.matched.some(route => route.name === 'MyCars')">
       <div  class="flex items-center flex-1 gap-2">
         <img 

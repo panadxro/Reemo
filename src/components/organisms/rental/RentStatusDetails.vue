@@ -229,8 +229,8 @@ watch(currentUser, (newUser, oldUser) => {
             :isOpen="showCancelModal"
             title="Cancelar solicitud"
             message="¿Estás seguro de que quieres cancelar esta solicitud?"
-            confirmText="Cancelar"
-            cancelText="Mantener"
+            confirmText="Si, cancelar"
+            cancelText="No, mantener"
             @close="showCancelModal = false"
             @confirm="confirmCancelDriverApplication"
           />
