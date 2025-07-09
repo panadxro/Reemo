@@ -121,18 +121,18 @@ html {
       "Helvetica Neue",
       sans-serif;
   }
-  ::-webkit-scrollbar {
-    width: 8px;
-    margin: 100px;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: #a7ebef;
-    border-radius: 16px;
-    box-shadow: unset 0 0 0 3px #ffffff;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: #4fd8df;
-  }
+/*     ::-webkit-scrollbar {
+      width: 8px;
+      margin: 100px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #a7ebef;
+      border-radius: 16px;
+      box-shadow: unset 0 0 0 3px #ffffff;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #4fd8df;
+    } */
 
   .no-scroll {
     overflow: hidden;

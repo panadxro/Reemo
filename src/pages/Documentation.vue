@@ -41,17 +41,17 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="flex flex-col gap-5 m-2.5 w-full md:max-h-vh md:overflow-hidden">
-    <div class="flex items-center gap-5">
+  <section class="flex flex-col gap-5 md:m-2.5 w-full md:max-h-vh md:overflow-hidden">
+    <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0">
       <BackButton />
       <Heading :type="1" class="medium">Mis documentos</Heading>
     </div>
-    <div class="flex flex-row gap-4">
+    <div class="flex flex-row gap-4 overflow-x-auto md:overflow-y-visible min-h-fit pb-2 md:pb-0">
       <Input 
         type="button"
         text="Identificación"
         variant="secondary"
-        class="cursor-pointer rounded-2xl !w-fit"
+        class="cursor-pointer rounded-2xl !min-w-fit"
         :input-class="currentStep === 0 ? ' bg-vibrant-light-900' : ''"
         @click="currentStep = 0"
       />
@@ -59,7 +59,7 @@ onMounted(async () => {
         type="button"
         text="Licencia de conducir"
         variant="secondary"
-        class="cursor-pointer rounded-2xl !w-fit"
+        class="cursor-pointer rounded-2xl !min-w-fit"
         :input-class="currentStep === 1 ? ' bg-vibrant-light-900' : ''"
         @click="currentStep = 1"
       />
@@ -67,13 +67,13 @@ onMounted(async () => {
         type="button"
         text="Métodos de pago"
         variant="secondary"
-        class="cursor-pointer rounded-2xl !w-fit"
+        class="cursor-pointer rounded-2xl !min-w-fit"
         :input-class="currentStep === 2 ? ' bg-vibrant-light-900' : ''"
         @click="currentStep = 2"
       />
     </div>
     <article class="flex h-full overflow-hidden">
-      <form v-if="currentStep === 0" class="flex flex-col gap-5 h-full w-full pr-2 overflow-y-auto">
+      <form v-if="currentStep === 0" class="flex flex-col gap-5 h-full w-full md:pr-2 overflow-y-auto">
         <legend class="text-deep-blue-900 font-semibold text-xl">Información personal</legend>
         <div class="flex gap-5">
           <Input
@@ -158,7 +158,7 @@ onMounted(async () => {
           </div>
         </div>
       </form>
-      <form v-if="currentStep === 1" class="flex flex-col gap-5 h-full w-full pr-2 overflow-y-auto">
+      <form v-if="currentStep === 1" class="flex flex-col gap-5 h-full w-full md:pr-2 overflow-y-auto">
         <legend class="text-deep-blue-900 font-semibold text-xl">Datos de registro</legend>
         <div class="flex gap-5">
           <Input
@@ -227,7 +227,7 @@ onMounted(async () => {
           </div>
         </div>
       </form>
-      <ul v-if="currentStep === 2" class="flex flex-col gap-5 h-full w-full !pr-2 overflow-y-auto">
+      <ul v-if="currentStep === 2" class="flex flex-col gap-5 h-full w-full md:!pr-2 overflow-y-auto">
         <li 
           v-for="(method, index) in user.paymentMethods || []"
           :key="index" 

@@ -128,22 +128,22 @@ watch(() => props.rentId, (newRentId) => {
 }, { immediate: true });
 
 onMounted(() => {
-  console.log('driverDetails', rentalDetails.value?.driverDetails);
-  console.log('ownerDetails:', rentalDetails.value?.ownerDetails);
-  console.log('authStore user:', authStore.user);
+  // console.log('driverDetails', rentalDetails.value?.driverDetails);
+  // console.log('ownerDetails:', rentalDetails.value?.ownerDetails);
+  // console.log('authStore user:', authStore.user);
   loadRentData(props.rentId);
 });
 </script>
 
 <template>
-  <div class="flex-1 flex flex-col bg-gray-50 rounded-3xl p-8 shadow-inner overflow-hidden">
-    <div v-if="loading" class="flex justify-center items-center h-full">
+  <div class="flex-1 flex flex-col rounded-[40px] px-6 py-5 gap-5 overflow-hidden w-full border-vibrant-light-600 border-2">
+    <template v-if="loading">
       <p>Cargando detalles del alquiler...</p>
-    </div>
+    </template>
     
-    <div v-else-if="rentalDetails">
-      <Heading :type="2" class="text-gray-800">📄 Resumen del Alquiler</Heading>
-      <div class="bg-white shadow-2xl rounded-2xl p-6 w-full text-gray-700 space-y-5 overflow-y-auto">
+    <template v-else-if="rentalDetails">
+      <Heading :type="2" class="regular">📄 Resumen del Alquiler</Heading>
+      <div class="w-full overflow-y-auto">
 
         <!-- Vehículo -->
         <div class="border-b pb-4">
@@ -237,10 +237,10 @@ onMounted(() => {
           <p><strong>Estado:</strong> {{ getStatusText(rentalDetails.status) }}</p>
         </div>
       </div>
-    </div>
+    </template>
     
-    <div v-else class="flex justify-center items-center h-full">
+    <template v-else>
       <p>No se pudieron cargar los detalles del alquiler</p>
-    </div>
+    </template>
   </div>
 </template>

@@ -77,22 +77,9 @@ onMounted(async () => {
           </Input>
         </router-link>   
       </div>
-      <div class="flex gap-5 h-full">
-        <div class="w-full bg-primary-700 rounded-[40px] p-6 flex flex-col gap-4">
-          <Heading type="2" class="medium text-white">Solicitudes</Heading>
-          <RentStatusDetails />
-        </div>
-        <div class="bg-vibrant-light-800 rounded-[40px] p-6 flex flex-col justify-between">
-          <h3 class="text-xl font-bold mb-2">¡Tu viaje comienza acá!</h3>
-          <p class="text-gray-700">Alquilá con <strong>Reemo</strong> fácil, rápido y seguro.</p>
-          <button class="mt-6 bg-[#0a0a3c] text-white font-medium py-3 rounded-lg">Buscar autos</button>
-        </div>
-      </div>
-    </div>
-    <div class="my-profile bg-white border-3 border-vibrant-light-600 rounded-[40px] p-6 items-center flex flex-col justify-between">
-      <div v-if="userCars.length > 0" class="flex flex-col gap-8">
+      <div v-if="userCars.length > 0" class="bg-vibrant-light-600 rounded-[40px] w-full py-10 px-6 flex flex-col justify-between h-full">
           <Heading type="2" class="medium">Resumen de actividad</Heading>
-          <div class="grid grid-cols-2 text-center h-full items-center gap-4">
+          <div class="flex justify-between text-center h-full items-center">
             <div class="flex-1">
               <p class="text-2xl font-bold">12</p>
               <p class="text-sm text-gray-500">Alquileres</p>
@@ -116,6 +103,7 @@ onMounted(async () => {
           <p class="text-white">Aquí podés gestionar tus autos y solicitudes de alquiler.🚗✨</p>
         </div>
     </div>
+    
     <div class="cars flex flex-col gap-6 overflow-hidden">
       <div class="flex justify-between items-end">
         <Heading type="2" class="medium">Autos más cercanos a tu zona</Heading>
@@ -131,11 +119,14 @@ onMounted(async () => {
         />
       </div>
     </div>
-    <div class="tracking bg-[#0d0d0d] rounded-[40px] text-white py-6 px-8 h-full">
-      <div class="flex justify-between items-center">
-        <Heading type="2" class="medium text-white">Tracking</Heading>
-        <a href="#" class="text-vibrant-light-900 font-semibold">Ver más</a>
-      </div>
+    <div class="bg-vibrant-light-800 rounded-[40px] p-6 flex flex-col justify-between tracking">
+      <h3 class="text-xl font-bold mb-2">¡Tu viaje comienza acá!</h3>
+      <p class="text-gray-700">Alquilá con <strong>Reemo</strong> fácil, rápido y seguro.</p>
+      <button class="mt-6 bg-[#0a0a3c] text-white font-medium py-3 rounded-lg">Buscar autos</button>
+    </div>
+    <div class="my-profile w-full bg-deep-blue-900 rounded-[40px] p-6 flex flex-col gap-4 overflow-hidden">
+      <Heading type="2" class="medium text-white">Solicitudes pendientes</Heading>
+      <RentStatusDetails />
     </div>
   </div>
 </template>
@@ -149,16 +140,10 @@ onMounted(async () => {
     grid-column-gap: 20px;
     grid-row-gap: 20px;
 
-    .dash { grid-area: 1 / 1 / 2 / 9; }
-    .my-profile { grid-area: 1 / 9 / 2 / 13; }
+    .dash { grid-area: 1 / 1 / 2 / 8; }
+    .my-profile { grid-area: 1 / 8 / 2 / 13; }
     .cars { grid-area: 2 / 1 / 3  / 8; }
     .tracking { grid-area: 2 / 8 / 3 / 13; }
   }
-}
-.tracking {
-  background-image: url('/src/assets/Traking.png');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
 }
 </style>

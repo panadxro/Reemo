@@ -179,7 +179,7 @@ watch(currentUser, (newUser, oldUser) => {
     </div>
   </div>
 
-    <div v-else class="space-y-6">
+  <ul v-else class="flex flex-col gap-4 overflow-y-auto !pr-2">
   <!-- Driver Rental Detail -->
   <li v-if="driverRentalDetail" class="bg-white flex gap-2 min-h-25 rounded-2xl px-2.5 py-2">
     <div class="relative flex items-center">
@@ -325,6 +325,6 @@ watch(currentUser, (newUser, oldUser) => {
       </div>
     </div>
   </li>
-</div>
+</ul>
 
 </template>

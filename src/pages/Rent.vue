@@ -35,19 +35,20 @@ onMounted(async () => {
 
 <template>
   <!-- <History /> -->
-  <section class="m-2.5 w-full md:max-h-vh md:overflow-hidden flex">
-    <div class="flex flex-col gap-4 w-100">
-      <div class="flex items-center gap-5">
+  <section class="md:m-2.5 w-full md:max-h-vh md:overflow-hidden flex gap-5">
+    <div class="flex flex-col gap-4 w-full md:w-auto">
+      <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0">
         <BackButton />
         <Heading :type="1" class="medium">Historial</Heading>
       </div>
-      <div class="p-5 rounded-[40px] bg-deep-blue-900 flex flex-col gap-4 w-96 h-full overflow-hidden">
-        <ul class="h-full flex flex-col gap-4 overflow-y-auto !pr-2">
+      <div class="md:p-5 md:rounded-[40px] md:bg-deep-blue-900 flex flex-col gap-4 w-full md:w-85 h-full overflow-hidden">
+        <ul class="h-full flex flex-col gap-4 overflow-y-auto !pr-2 w-full">
           <HistoryCar 
             v-if="userRents"
-            v-for="(rent) in userRents" 
+            v-for="(rent, index) in userRents" 
             :key="rent.id" 
             :rent="rent" 
+            :index="index"
             @click="handleRentClick(rent)"
           />
         </ul>
@@ -56,11 +57,12 @@ onMounted(async () => {
     <ViewRent 
       v-if="selectedRent"
       :rentId="selectedRent.id"
+      class="hidden md:flex"
     />
     <div v-else>
-     <div class="flex items-center">
-          <Loading role="status" class="h-6 w-6" />
-        </div>
+     <div class="hidden md:flex items-center">
+        <Loading role="status" class="h-6 w-6" />
+      </div>
     </div>
   </section>
 </template>

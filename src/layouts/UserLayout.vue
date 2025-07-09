@@ -19,10 +19,6 @@ const showUserNav = computed(() => {
   return route.params.id === loggedUser.value?.id;
 });
 
-onMounted(() => {
-  console.log("Hola")
-});
-
 provide('loggedUser', loggedUser);
 provide('authSession', authSession);
 </script>
@@ -30,7 +26,7 @@ provide('authSession', authSession);
 <template>
   <div class="w-full md:h-screen overflow-auto">
     <main class="flex flex-col relative md:flex-row-reverse md:min-h-screen md:max-h-screen md:p-2.5 bg-white 2xl:rounded-[40px]">
-      <div class="flex md:flex-1 xs:flex-row-reverse md:flex-row max-h-vh overflow-auto mb-20 md:mb-0">
+      <div class="flex md:flex-1 flex-col md:flex-row max-h-vh overflow-auto mb-20 md:mb-0 mt-15 md:mt-0 gap-5 md:gap-0  p-2.5 md:p-0">
         <UserNav v-if="showUserNav"/>
         <slot />
       </div>

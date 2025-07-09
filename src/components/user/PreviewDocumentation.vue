@@ -44,8 +44,8 @@ const getColorByWalletType = (walletType) => {
 </script>
 
 <template>
-  <aside class="md:bg-vibrant-light-600 mx-2.5 md:py-8 md:px-5 flex flex-col gap-2 rounded-[40px] max-w-[250px] min-w-[250px]">
-    <template v-if="currentStep === 0">
+  <aside class="md:bg-vibrant-light-600 mx-2.5 md:py-8 md:px-5 flex flex-col gap-2 rounded-[40px] max-w-[250px] min-w-[250px] absolute top-0 left-0 h-full z-10 md:static">
+    <template v-if="currentStep === 0 || window.innerWidth < 768">
       <Heading :type="3" class="regular">Documento nacional</Heading>
       <img v-if="user.documents.dniFront" :src="user.documents.dniFront" alt="DNI Frontal" class="w-full aspect-video object-cover rounded-sm">
       <div v-else class="bg-background-800 w-full aspect-video rounded-2xl"></div>
@@ -71,7 +71,7 @@ const getColorByWalletType = (walletType) => {
         </ul>
       </div>
     </template>
-    <template v-if="currentStep === 1">
+    <template v-if="currentStep === 1  || window.innerWidth < 768">
       <Heading :type="3" class="regular">Licencia de conducir</Heading>
       <img v-if="user.documents.driverLicenseFront" :src="user.documents.driverLicenseFront" alt="Licencia de conducir frontal" class="w-full aspect-video object-cover rounded-sm">
       <div v-else class="bg-background-800 w-full aspect-video rounded-2xl"></div>
@@ -97,34 +97,34 @@ const getColorByWalletType = (walletType) => {
         </ul>
       </div>
     </template>
-    <template v-if="currentStep === 2">
-      <Heading :type="3" class="regular">Método de pago</Heading>
-      <div 
-        v-if="payment"
-        class="w-full aspect-video rounded-2xl flex items-center justify-center p-4"
-        :class="getColorByWalletType(payment.walletType)" 
-      >
-        <PaymentMethod :method="payment?.walletType"/> 
-
-      </div>
-      <ul class="flex flex-col gap-2 overflow-y-auto overflow-x-hidden">
-        <ul v-if="payment.walletId">
-          <span class="text-xs font-medium text-background-600">Alias</span>
-          <p class="font-semibold">{{ payment?.walletId || 'No disponible'}}</p>
+    <template v-if="currentStep === 2 || window.innerWidth < 768">
+        <Heading :type="3" class="regular">Método de pago</Heading>
+        <div 
+          v-if="payment"
+          class="w-full aspect-video rounded-2xl flex items-center justify-center p-4"
+          :class="getColorByWalletType(payment.walletType)" 
+        >
+          <PaymentMethod :method="payment?.walletType"/> 
+  
+        </div>
+        <ul class="flex flex-col gap-2 overflow-y-auto overflow-x-hidden">
+          <ul v-if="payment.walletId">
+            <span class="text-xs font-medium text-background-600">Alias</span>
+            <p class="font-semibold">{{ payment?.walletId || 'No disponible'}}</p>
+          </ul>
+          <ul v-if="payment.cardNumber">
+            <span class="text-xs font-medium text-background-600">Número de documento</span>
+            <p class="font-semibold">{{ payment?.cardNumber || 'No disponible'}}</p>
+          </ul>
+          <ul v-if="payment.cardholder">
+            <span class="text-xs font-medium text-background-600">Titular de tarjeta</span>
+            <p class="font-semibold">{{ payment?.cardholder || 'No disponible'}}</p>
+          </ul>
+          <ul v-if="payment.expiryDate">
+            <span class="text-xs font-medium text-background-600">Fecha de vencimiento (MM/AA)</span>
+            <p class="font-semibold">{{ payment?.expiryDate || 'No disponible'}}</p>
+          </ul>
         </ul>
-        <ul v-if="payment.cardNumber">
-          <span class="text-xs font-medium text-background-600">Número de documento</span>
-          <p class="font-semibold">{{ payment?.cardNumber || 'No disponible'}}</p>
-        </ul>
-        <ul v-if="payment.cardholder">
-          <span class="text-xs font-medium text-background-600">Titular de tarjeta</span>
-          <p class="font-semibold">{{ payment?.cardholder || 'No disponible'}}</p>
-        </ul>
-        <ul v-if="payment.expiryDate">
-          <span class="text-xs font-medium text-background-600">Fecha de vencimiento (MM/AA)</span>
-          <p class="font-semibold">{{ payment?.expiryDate || 'No disponible'}}</p>
-        </ul>
-      </ul>
     </template>
   </aside>
 </template>
