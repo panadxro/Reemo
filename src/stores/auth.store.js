@@ -17,7 +17,8 @@ export const useAuthStore = defineStore('auth', {
       name: null,
       lastname: null,
       profilePhoto: null,
-      username: null
+      username: null,
+      status: null 
     },
     loading: false,
     error: null,
@@ -30,7 +31,7 @@ export const useAuthStore = defineStore('auth', {
   persist: {
     key: 'auth_session',
     storage: localStorage,
-    pick: ['user', 'isLoggedIn']
+    pick: ['user', 'isLoggedIn'] 
   },
   getters: {
     userDisplayName: (state) => {
@@ -62,6 +63,9 @@ export const useAuthStore = defineStore('auth', {
     },
     userProfilePhoto: (state) => {
       return state.user.profilePhoto;
+    },
+    userStatus: (state) => {
+      return state.user.status || 'not-verified';
     }
   },
   actions: {
@@ -69,31 +73,26 @@ export const useAuthStore = defineStore('auth', {
       if (this.isInitialized) return;
       this.isInitialized = true;
 
-      // limpiar listener anterior
       if(this.unsubscribeReadNotification){
-        // this.unsubscribeReadNotification();
         this.unsubscribeReadNotification = null;
       }
 
-      // Leer el valor de auth_session de localStorage
       const authSessionValue = localStorage.getItem('auth_session');
       sessionStorage.setItem('auth_session_history', authSessionValue || '');
 
-      // Suscribirse a cambios de autenticación
       subscribeToAuthState(async (newUserData) => {
-        // console.log('Firebase auth state changed:', newUserData);
         const userStore = useUserStore();
         if (newUserData.id) {
           this.user = {            
             id: newUserData.id,
             email: newUserData.email,
-            // Inicializar campos del perfil
             firstName: null,
             lastName: null,
             name: null,
             lastname: null,
             profilePhoto: null,
-            username: null
+            username: null,
+            status: 'not-verified' 
           };
           this.isLoggedIn = true;          
 
@@ -118,13 +117,12 @@ export const useAuthStore = defineStore('auth', {
             name: null,
             lastname: null,
             profilePhoto: null,
-            username: null
+            username: null,
+            status: null 
           };
           this.isLoggedIn = false;
-          // userStore.resetProfile();
-          // Detener el listener de notificaciones si el usuario se desloguea
+          
           if(this.unsubscribeReadNotification){
-            // this.unsubscribeReadNotification();
             this.unsubscribeReadNotification = null;
           }
         }
@@ -132,21 +130,22 @@ export const useAuthStore = defineStore('auth', {
     },
     
     updateUserProfile(profileData) {
-      if (profileData && profileData.personalInfo) {
-        this.user = {
-          ...this.user,
-          firstName: profileData.personalInfo.firstName || null,
-          lastName: profileData.personalInfo.lastName || null,
-          name: profileData.personalInfo.name || profileData.personalInfo.firstName || null,
-          lastname: profileData.personalInfo.lastname || profileData.personalInfo.lastName || null,
-          profilePhoto: profileData.personalInfo.profilePhoto || profileData.personalInfo.photoURL || null,
-          username: profileData.personalInfo.username || profileData.personalInfo.userName || null
-        };
-      }
-    },
+  if (profileData && profileData.personalInfo) {
+    this.user = {
+      ...this.user,
+      firstName: profileData.personalInfo.firstName || null,
+      lastName: profileData.personalInfo.lastName || null,
+      name: profileData.personalInfo.firstName || null, 
+      lastname: profileData.personalInfo.lastName || null, 
+      profilePhoto: profileData.personalInfo.profilePhoto || null,
+      username: profileData.personalInfo.username || null,
+      status: profileData.status || 'not-verified' 
+    };
+    console.log("Perfil de usuario actualizado:", this.user);
+  }
+},
 
     updateAuthSessionHistory(value) {
-      // Actualiza el valor de auth_session_history en sessionStorage
       sessionStorage.setItem('auth_session_history', value);
     },
     
@@ -177,7 +176,8 @@ export const useAuthStore = defineStore('auth', {
           name: null,
           lastname: null,
           profilePhoto: null,
-          username: null
+          username: null,
+          status: null 
         }
         this.isLoggedIn = true
         this.updateAuthSessionHistory(localStorage.getItem('auth_session') || '');
@@ -185,7 +185,6 @@ export const useAuthStore = defineStore('auth', {
         const userStore = useUserStore();
         await userStore.loadUserProfile(this.user.id);
         
-        // Actualizar datos del perfil en auth después de cargar
         this.updateUserProfile(userStore.profileData);
         
         router.push(`/user/${this.user.id}`);
@@ -226,7 +225,8 @@ export const useAuthStore = defineStore('auth', {
           name: null,
           lastname: null,
           profilePhoto: null,
-          username: null
+          username: null,
+          status: null 
         }
         this.isLoggedIn = true
         this.updateAuthSessionHistory(localStorage.getItem('auth_session') || '');
@@ -245,7 +245,6 @@ export const useAuthStore = defineStore('auth', {
     },
     
     async logout() {
-      // Logica de logout
       try {
         await logout()
         this.updateAuthSessionHistory(localStorage.getItem('auth_session') || '');

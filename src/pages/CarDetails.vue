@@ -16,6 +16,7 @@ import BackButton from "../components/atoms/BackButton.vue";
 import Status from "../components/molecules/Status.vue";
 import InvalidationModal from '@components/Admin/InvalidationModal.vue';
 import RentalProcess from "@/components/organisms/rental/RentalProcess.vue";
+import VerifyValidation from "@/components/user/VerifyValidation.vue";
 
 // Stores
 const carStore = useCarStore();
@@ -52,6 +53,9 @@ const car = computed(() => carStore.currentCar);
 const user = computed(() => userStore.profileData)
 const loggedUser = computed(() => authStore.user);
 const availability = computed(() => carStore.availability);
+const isAvailabilityDisabled = computed(() => {
+  return car.value?.status?.current !== 'not-available' && car.value?.status?.current !== 'available';
+});
 
 // Computed para obtener los datos del dueño del auto
 const ownerData = computed(() => {
@@ -81,10 +85,14 @@ const timeOptions = ref(
 );
 
 const toggleDay = (dayKey) => {
+  if (isAvailabilityDisabled.value) return; 
   carStore.availability.schedule[dayKey] = !carStore.availability.schedule[dayKey];
 };
-
 const saveAvailability = async () => {
+  if (isAvailabilityDisabled.value) {
+    addAlert('No puedes cambiar la disponibilidad mientras el auto no esté validado', 'error');
+    return;
+  }
   try {
     loading.value = true;
     
@@ -432,19 +440,27 @@ watch(car, (newCar) => {
   <div class="w-full bg-deep-blue-900 rounded-[23px] p-6">
     <div class="flex flex-col gap-6">
       
-
-      <div>
+      <div class="flex flex-col gap-6">
         <Heading type="3" class="regular mb-4 text-white">Días disponibles</Heading>
+         <VerifyValidation
+          v-if="isAvailabilityDisabled"
+          title="No se puede cambiar la disponibilidad"
+          message="Tu vehículo debe estar validado para cambiar su disponibilidad. Por favor, contacta al soporte si necesitas ayuda."
+          :show="isAvailabilityDisabled"
+          type="normalYellow"
+          />
+
         <div class="flex justify-center gap-4">
           <div 
             v-for="(day, index) in days" 
             :key="index"
-            class="w-10 h-10 rounded-full flex items-center justify-center cursor-pointer font-semibold transition-all"
+            class="w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all"
             :class="{
-              'bg-secondary-700 text-white': availability.schedule[day.storeKey],
-              'bg-deep-blue-700 text-white': !availability.schedule[day.storeKey]
+              'bg-secondary-700 text-white cursor-pointer': availability.schedule[day.storeKey] && !isAvailabilityDisabled,
+              'bg-deep-blue-700 text-white cursor-pointer': !availability.schedule[day.storeKey] && !isAvailabilityDisabled,
+              'bg-gray-400 text-gray-600 cursor-not-allowed opacity-50': isAvailabilityDisabled
             }"
-            @click="toggleDay(day.storeKey)"
+            @click="!isAvailabilityDisabled && toggleDay(day.storeKey)"
           >
             {{ day.label }}
           </div>
@@ -458,7 +474,8 @@ watch(car, (newCar) => {
             <select 
               id="start-time" 
               v-model="availability.hours.startTime"
-              class="p-2 rounded-lg border border-gray-300 bg-white"
+              :disabled="isAvailabilityDisabled"
+              class="p-2 rounded-lg border border-gray-300 bg-white disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed"
             >
               <option 
                 v-for="time in timeOptions" 
@@ -475,7 +492,8 @@ watch(car, (newCar) => {
             <select 
               id="end-time" 
               v-model="availability.hours.endTime"
-              class="p-2 rounded-lg border border-gray-300 bg-white"
+              :disabled="isAvailabilityDisabled"
+              class="p-2 rounded-lg border border-gray-300 bg-white disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed"
             >
               <option 
                 v-for="time in timeOptions" 
@@ -500,17 +518,19 @@ watch(car, (newCar) => {
           <input 
             type="checkbox" 
             v-model="isCarAvailable"
+            :disabled="isAvailabilityDisabled"
             class="sr-only peer"
           >
-          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary-700">
+          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          :class="{ 'peer-disabled:bg-gray-400': isAvailabilityDisabled }">
           </div>
         </label>
       </div>
 
       <button
         @click="saveAvailability"
-        class="mt-4 text-white py-3 px-6 rounded-lg font-semibold bg-secondary-700 transition-colors duration-300 w-fit hover:bg-deep-blue-700 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-        :disabled="loading"
+        class="mt-4 text-white py-3 px-6 rounded-lg font-semibold bg-secondary-700 transition-colors duration-300 w-fit hover:bg-deep-blue-700 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
+        :disabled="loading || isAvailabilityDisabled"
       >
         {{ loading ? 'Guardando...' : 'Guardar Disponibilidad' }}
       </button>
