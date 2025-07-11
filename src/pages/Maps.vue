@@ -189,7 +189,7 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
   <section class="w-full overflow-hidden m-2.5 flex gap-5">
     <div 
       v-if="selectedCar"
-      class="fixed overflow-y-hidden inset-0 md:static z-60 bg-white md:bg-transparent md:backdrop-blur-0 md:shadow-none transition-all duration-300 ease-in-out transform md:translate-x-0 md:opacity-100 flex flex-col md:w-1/3 h-full gap-4"
+      class="fixed overflow-y-hidden inset-0 md:static z-60 bg-white md:bg-transparent px-2.5 py-5 pb-23 md:backdrop-blur-0 md:shadow-none transition-all duration-300 ease-in-out transform md:translate-x-0 md:opacity-100 flex flex-col md:w-1/3 h-full gap-4"
       :class="{
         'translate-x-0 opacity-100': selectedCar,
         'translate-x-full opacity-0': !selectedCar
@@ -202,7 +202,7 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
           <p class="text-lg font-semibold text-gray-800">{{ selectedCar.pricing.rates.daily }}/día</p>
         </div>
           <!-- Botón de cerrar -->
-          <button @click="closeCarDetails" class=" hover:bg-vibrant-light-700 focus:bg-vibrant-light-800 rounded-full p-2 z-20 cursor-pointer">
+          <button @click="closeCarDetails" class=" hover:bg-vibrant-light-700 focus:bg-vibrant-light-800 rounded-full p-2 z-1 cursor-pointer">
             <Cross :size="24"/>
           </button>
         </div>
@@ -221,7 +221,7 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
           </div>
   
           <!-- Galería -->
-          <div class="flex flex-1 justify-between gap-2 w-full h-24">
+          <div class="md:flex flex-1 justify-between gap-2 w-full h-24 hidden">
             <img v-for="(image, index) in selectedCar.photos"
               :key="index"
               :src="image"
@@ -267,12 +267,13 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
         />
       
     </div>
+    
     <div class="flex-1 relative h-full overflow-hidden rounded-3xl md:p-5">
       <!-- Mapa -->
       <div id="map" class="absolute inset-0 w-full h-full z-10"></div>
       <!-- Buscador dentro del mapa -->
       <div 
-        class="absolute top-10 left-1/2 transform -translate-x-1/3 w-80 z-50"
+        class="absolute top-10 w-full flex z-50 justify-center flex-row-reverse"
         @click.away="showSuggestions = false"
         >
         <Input
@@ -284,6 +285,7 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
           placeholder="Buscar un auto..."
           icon-position="left"
           variant="secondary"
+          class="!w-fit"
           :outline="false"
           @focusin="showSuggestions = true" @click.stop
           >
@@ -293,12 +295,16 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
         </Input>
         <div 
           v-if="showSuggestions"
-          class="bg-white mt-2 rounded-lg shadow-lg border border-gray-200 overflow-hidden">
-          <button 
+          class="relative">
+          <Input
+            type="button"
             @click="useMyLocation"
-            class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">
-            📍 Utilizar mi ubicación
-          </button>
+            text="📍Utilizar mi ubicación"
+            variant="secondary"
+            :outline="true"
+            input-class="w-fit !min-w-[290px]"
+            class="cursor-pointer absolute top-15 z-20 left-0"
+          />
         </div>
       </div>
     </div>

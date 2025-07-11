@@ -42,7 +42,7 @@ onMounted(async () => {
         <Heading :type="1" class="medium">Historial</Heading>
       </div>
       <div class="md:p-5 md:rounded-[40px] md:bg-deep-blue-900 flex flex-col gap-4 w-full md:w-85 h-full overflow-hidden">
-        <ul class="h-full flex flex-col gap-4 overflow-y-auto !pr-2 w-full">
+        <ul class="box-deep h-full flex flex-col gap-4 overflow-y-auto !pr-1 w-full">
           <HistoryCar 
             v-if="userRents"
             v-for="(rent, index) in userRents" 
@@ -59,10 +59,5 @@ onMounted(async () => {
       :rentId="selectedRent.id"
       class="hidden md:flex"
     />
-    <div v-else>
-     <div class="hidden md:flex items-center">
-        <Loading role="status" class="h-6 w-6" />
-      </div>
-    </div>
   </section>
 </template>

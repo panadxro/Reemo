@@ -78,7 +78,7 @@ onMounted(() => {
     </div>
   </template>
   
-  <ul v-else-if="combinedHistory.length > 0" class="flex flex-col gap-5 overflow-y-auto h-full !pr-2">
+  <ul v-else-if="combinedHistory.length > 0" class="box-deep flex flex-col gap-5 overflow-y-auto h-full !pr-2">
     <HistoryCar 
       v-for="rent in combinedHistory" 
       :key="rent.id" 

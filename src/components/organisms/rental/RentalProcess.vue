@@ -188,7 +188,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="relative">
+  <div class="relative overflow-y-auto pr-6">
     <div class="space-y-6">
       <!-- Header con paso actual -->
       <RentalHeader 
@@ -219,121 +219,77 @@ onMounted(async () => {
         </template>
         
         <!-- Paso 2: Términos y condiciones -->
-        <section v-else-if="store.currentStep === 2" class="text-white">
-          <div class="my-8">
-            <Heading type="3" class="text-white py-4">
-              Pagos
-            </Heading>
-      
-            <div>
-              <Heading type="5" class="text-white mb-2">
-                Depósito de seguridad
-              </Heading>
-              <p>
-                Antes del inicio de la reserva, se realiza un depósito de seguridad reembolsable. Este monto puede variar según el vehículo, y será devuelto una vez finalizada la reserva, siempre y cuando no se reporten daños o infracciones.
-              </p>
+        <section v-else-if="store.currentStep === 2" class="text-white flex flex-col gap-6">
+          <article class="flex flex-col gap-4">
+            <Heading type="4" class="regular text-white">Pagos</Heading>
+            <div class="flex flex-col gap-2">
+              <Heading type="5" class="small text-white">Depósito de seguridad</Heading>
+              <p class="text-gray-400">Antes del inicio de la reserva, se realiza un depósito de seguridad reembolsable. Este monto puede variar según el vehículo, y será devuelto una vez finalizada la reserva, siempre y cuando no se reporten daños o infracciones.</p>
             </div>
       
-            <div>
-              <Heading type="5" class="text-white mb-2 mt-4">
-                Cobros adicionales
-              </Heading>
-              <p>
-                Se pueden aplicar cargos extras por combustible, limpieza excesiva, infracciones de tránsito, o cualquier daño ocasionado durante el período de uso.
-              </p>
+            <div class="flex flex-col gap-2">
+              <Heading type="5" class="small text-white">Cobros adicionales</Heading>
+              <p class="text-gray-400">Se pueden aplicar cargos extras por combustible, limpieza excesiva, infracciones de tránsito, o cualquier daño ocasionado durante el período de uso.</p>
             </div>
 
-            <div>
-              <Heading type="5" class="text-white mb-2 mt-4">
-                Facturación
-              </Heading>
-              <p>
-                Una vez confirmado la reserva y el pago, vas a recibir una factura electrónica en tu correo registrado.
-              </p>
+            <div class="flex flex-col gap-2">
+              <Heading type="5" class="small text-white">Facturación</Heading>
+              <p class="text-gray-400">Una vez confirmado la reserva y el pago, vas a recibir una factura electrónica en tu correo registrado.</p>
             </div>
-          </div>
+          </article>
           
-          <div class="my-8">
-            <Heading type="3" class="text-white py-4">
-              Tiempos de reserva
-            </Heading>
+          <article class="flex flex-col gap-4">
+            <Heading type="4" class="regular text-white">Tiempos de reserva</Heading>
       
-            <div>
-              <Heading type="5" class="text-white mb-2">
-                Tiempos estipulados
-              </Heading>
-              <p>
-                Al elegir fecha de retiro y de devolución, el usuario se compromete con el propietario para devolverlo en tiempo y forma.
-              </p>
+            <div class="flex flex-col gap-2">
+              <Heading type="5" class="small text-white">Tiempos estipulados</Heading>
+              <p class="text-gray-400">Al elegir fecha de retiro y de devolución, el usuario se compromete con el propietario para devolverlo en tiempo y forma.</p>
             </div>
       
-            <div>
-              <Heading type="5" class="text-white mb-2 mt-4">
-                Exceso de tiempo
-              </Heading>
-              <p>
-                Al exceder el tiempo elegido, se cobra una tarifa adicional de $10.000 por cada hora.
-              </p>
+            <div class="flex flex-col gap-2">
+              <Heading type="5" class="small text-white">Exceso de tiempo</Heading>
+              <p class="text-gray-400">Al exceder el tiempo elegido, se cobra una tarifa adicional de $10.000 por cada hora.</p>
             </div>
-          </div>
+          </article>
       
-          <div class="my-8">
-            <Heading type="3" class="text-white py-4">
-              Política de cancelación
-            </Heading>
+          <article class="flex flex-col gap-4">
+            <Heading type="4" class="regular text-white">Política de cancelación</Heading>
       
-            <div>
-              <Heading type="5" class="text-white mb-2">
-                Cancelación del propietario
-              </Heading>
-              <p>
-                Vas a recibir un reembolso completo si el dueño cancela después de haber aceptado la reserva.
-              </p>
+            <div class="flex flex-col gap-2">
+              <Heading type="5" class="small text-white">Cancelación del propietario</Heading>
+              <p class="text-gray-400">Vas a recibir un reembolso completo si el dueño cancela después de haber aceptado la reserva.</p>
             </div>
       
-            <div>
-              <Heading type="5" class="text-white mb-2 mt-4">
-                Cancelación del arrendatario
-              </Heading>
-              <p>
-                Estos son los precios que deberás abonar en caso de que canceles la reserva dependiendo el tiempo de antelación.
-              </p>
+            <div class="flex flex-col gap-2">
+              <Heading type="5" class="small text-white">Cancelación del arrendatario</Heading>
+              <p class="text-gray-400">Estos son los precios que deberás abonar en caso de que canceles la reserva dependiendo el tiempo de antelación.</p>
       
-              <article class="grid gap-4 mt-4">
-                <div class="flex justify-between items-center">
-                  <p>48 hs o más antes del alquiler</p>
-                  <p>Sin coste</p> 
-                </div>
-                <div class="flex justify-between items-center">
-                  <p>24-47 hs antes del alquiler</p>
-                  <div class="flex justify-between items-center gap-4">
-                    <span class="text-gray-300">25%</span>
-                    <p>${{ store.formatPrice(store.calculatePercentage(25)) }}</p>
-                  </div>
-                </div>
-                <div class="flex justify-between items-center">
-                  <p>3-23 hs antes del alquiler</p>
-                  <div class="flex justify-between items-center gap-4">
-                    <span class="text-gray-300">40%</span>
-                    <p>${{ store.formatPrice(store.calculatePercentage(40)) }}</p>
-                  </div>
-                </div>
-                <div class="flex justify-between items-center">
-                  <p>3-0 hs antes del alquiler</p>
-                  <div class="flex justify-between items-center gap-4">
-                    <span class="text-gray-300">100%</span>
-                    <p>${{ store.formatPrice(store.calculatePercentage(100)) }}</p>
-                  </div>
-                </div>
-              </article>
+              <ul class="grid gap-4">
+                <li class="flex justify-between items-center">
+                  <p class="text-gray-400">48 hs o más antes del alquiler</p>
+                  <p class="text-gray-400">Sin coste</p> 
+                </li>
+                <li class="flex justify-between items-center">
+                  <p class="text-gray-400">24-47 hs antes del alquiler</p>
+                  <p class="text-gray-400"><span class="text-gray-300 mr-4">25%</span>${{ store.formatPrice(store.calculatePercentage(25)) }}</p>
+                </li>
+                <li class="flex justify-between items-center">
+                  <p class="text-gray-400">3-23 hs antes del alquiler</p>
+                  <p class="text-gray-400"><span class="text-gray-300 mr-4">40%</span>${{ store.formatPrice(store.calculatePercentage(40)) }}</p>
+                </li>
+                <li class="flex justify-between items-center">
+                  <p class="text-gray-400">3-0 hs antes del alquiler</p>
+                  <p class="text-gray-400"><span class="text-gray-300 mr-4">100%</span>${{ store.formatPrice(store.calculatePercentage(100)) }}</p>
+                </li>
+              </ul>
             </div>
-          </div>
+          </article>
         </section>
         
         <!-- Paso 3: Selección de método de pago -->
         <div v-else-if="store.currentStep === 3" class="rounded-xl space-y-4">
           <div class="flex items-center justify-between">
-            <Heading :type="3" class="text-white py-4">Formas de pago</Heading>
+            <Heading type="4" class="regular text-white">Formas de pago</Heading>
             <div v-if="store.loading" class="flex items-center">
               <Loading role="status" class="h-6 w-6" />
             </div>
@@ -395,8 +351,8 @@ onMounted(async () => {
             </div>
           </div>
           
-          <div v-else-if="!store.loading && paymentStore.paymentMethods.length === 0" class="text-center py-4 text-gray-300">
-            <p>No tenés métodos de pago guardados</p>
+          <div v-else-if="!store.loading && paymentStore.paymentMethods.length === 0" class="text-center text-gray-300">
+            <p class="text-gray-400">No tenés métodos de pago guardados</p>
           </div>
           
           <div 
@@ -413,7 +369,7 @@ onMounted(async () => {
           </div>
           
           <div v-if="paymentStore.showNewPaymentForm" class="mt-6">
-            <Heading :type="4" class="text-white py-4">Nuevo método de pago</Heading>
+            <Heading :type="4" class="regular text-white">Nuevo método de pago</Heading>
             
             <div class="flex gap-4 mb-6">
               <div 
@@ -602,7 +558,7 @@ onMounted(async () => {
                 </div>
               </div>
               
-              <div v-else class="text-center py-4">
+              <div v-else class="text-center">
                 <p class="text-gray-500">No se ha seleccionado método de pago</p>
                 <button 
                   @click="store.goToStep(3)"
@@ -615,7 +571,7 @@ onMounted(async () => {
           </div>
           
           <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 text-sm">
-            <h3 class="font-bold mb-2 text-yellow-800">Información importante:</h3>
+            <h3 class="font-bold text-yellow-800">Información importante:</h3>
             <ul class="list-disc pl-5 space-y-1 text-yellow-700">
               <li>Presenta tu licencia de conducir vigente al momento del retiro</li>
               <li>Toma fotografías del vehículo antes de usarlo para evitar conflictos. En caso de encontrar daños, informar al dueño del vehículo</li>

@@ -6,6 +6,7 @@ import DefaultLayout from '@layouts/DefaultLayout.vue'
 import SimpleLayout from "@layouts/SimpleLayout.vue"
 import DashboardLayout from '@layouts/DashboardLayout.vue'
 import UserLayout from '@layouts/UserLayout.vue'
+import MapsLayout from '@layouts/MapsLayout.vue'
 import Alert from './components/atoms/Alert.vue';
 
 const route = useRoute()
@@ -15,6 +16,7 @@ const layoutComponents = {
   simple: markRaw(SimpleLayout),
   dashboard: markRaw(DashboardLayout),
   user: markRaw(UserLayout),
+  map: markRaw(MapsLayout)
 }
 
 // Mapeo de rutas a tipos de layout
@@ -30,14 +32,14 @@ const layoutMap = {
   '/dashboard': 'dashboard',
   '/admin': 'dashboard',
   '/search': 'dashboard',
-  '/map': 'dashboard',
+  '/map': 'map',
   '/car/': 'dashboard',
   '/notification': 'dashboard',
   
   // Rutas con layout de usuario (sin sidebar y usernav) 
   '/user': 'user',
   '/rent': 'user',
-  '/cars/': 'user',
+  '/cars': 'user',
   '/documents': 'user',
   
   // Por defecto (con navbar y footer)
@@ -59,82 +61,82 @@ watch(() => route.path, (path) => {
 </script>
 
 <template>
-  <div class="2xl:max-w-5/6 m-auto">
     <component :is="currentLayout">
       <router-view />
     </component>
-  </div>
   <Alert />
 </template>
 
 <style>
 html {
-    font-family:
-      "Onest",
-      Monaco,
-      Lucida Console,
-      "Courier New",
-      Courier,
-      monospace;
-    background: #fff;
-    letter-spacing: -0.025rem;
-  }
+  font-family:
+    "Onest",
+    Monaco,
+    Lucida Console,
+    "Courier New",
+    Courier,
+    monospace;
+  background: #fff;
+  letter-spacing: -0.025rem;
+}
 
-  body,
-  figure {
-    margin: 0;
-    padding: 0;
-  }
+body,
+figure {
+  margin: 0;
+  padding: 0;
+}
 
-  a {
-    text-decoration: none;
-  }
+a {
+  text-decoration: none;
+}
 
-  ul {
-    list-style: none;
-    padding: 0;
-  }
+ul {
+  list-style: none;
+  padding: 0;
+}
 
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
 
-  h1,
-  h2,
-  h3,
-  h4 {
-    margin: 0;
-    font-family:
-      "Onest",
-      sans-serif,
-      system-ui,
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      Roboto,
-      Oxygen,
-      Ubuntu,
-      Cantarell,
-      "Open Sans",
-      "Helvetica Neue",
-      sans-serif;
-  }
-/*     ::-webkit-scrollbar {
-      width: 8px;
-      margin: 100px;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #a7ebef;
-      border-radius: 16px;
-      box-shadow: unset 0 0 0 3px #ffffff;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #4fd8df;
-    } */
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-family:
+    "Onest",
+    sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Open Sans",
+    "Helvetica Neue",
+    sans-serif;
+}
 
-  .no-scroll {
-    overflow: hidden;
-  }
+.no-scroll {
+  overflow: hidden;
+}
+
+#app {
+  background-color: #000;
+}
+
+.box-white {
+  scrollbar-color: #CAF3F5 #FFFFFF;
+}
+.box-deep {
+  scrollbar-color: #143968 #010440;
+}
+.box-vibrant {
+  scrollbar-color: #A7EBEF #CAF3F5;
+}
 </style>

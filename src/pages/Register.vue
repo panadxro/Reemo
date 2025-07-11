@@ -11,6 +11,7 @@ import FacebookIcon from "../icons/FacebookIcon.vue";
 import Input from "../components/molecules/Input.vue";
 import Mail from "../icons/Mail.vue";
 import Password from "../icons/Password.vue";
+import BackButton from "../components/atoms/BackButton.vue";
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -58,8 +59,10 @@ const handleSubmit = async () => {
 <template>
   <form
     action="#" @submit.prevent="handleSubmit" autocomplete="off"
-    class="flex flex-col max-w-lg px-16 py-12 bg-deep-blue-900 rounded-[40px] shadow-lg gap-9"
+    class="flex flex-col justify-center md:max-w-lg md:px-16 px-2.5 py-12 bg-deep-blue-900 md:rounded-[40px] shadow-lg gap-4 md:gap-8 w-full h-screen md:h-auto" 
     >
+
+    <BackButton class="flex md:absolute top-10 left-10" color="#FFFFFF"/>
     <Reemo color="#FFFFFF" />
     <div class="flex flex-col gap-5">
       <Heading :type="1" class="font-extrabold! text-background-900! large">Registrate</Heading>
@@ -67,7 +70,7 @@ const handleSubmit = async () => {
     </div>
 
     <div class="flex flex-col gap-5">
-      <div class="flex justify-between gap-10">
+      <div class="flex justify-between gap-4 md:gap-10">
         <a href="/" class="flex items-center w-full justify-center gap-2 py-2.5 px-5 bg-background-900 font-semibold rounded-2xl"> <Google/> Google </a>
         <a href="/" class="flex items-center w-full justify-center gap-2 p-2 bg-background-900 font-semibold rounded-2xl"> <FacebookIcon/> Facebook </a>
       </div>

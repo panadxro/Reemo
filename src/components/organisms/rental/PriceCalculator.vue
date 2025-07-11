@@ -135,38 +135,36 @@ export default {
 </script>
 
 <template>
-  <div class="px-4">
-    <div class="space-y-2 text-white">
-      <div class="flex justify-between pt-2">
-        <span>Tiempo total</span>
-        <span v-if="startDate && endDate">
-          {{ formatRentalTime(rentalHours) }}
-        </span>
-        <span v-else class="text-gray-400">-</span>
-      </div>
+  <ul class="flex flex-col gap-4 text-white">
+    <li class="flex justify-between">
+      <span>Tiempo total</span>
+      <span v-if="startDate && endDate">
+        {{ formatRentalTime(rentalHours) }}
+      </span>
+      <span v-else class="text-gray-400">-</span>
+    </li>
 
-      <div class="flex justify-between pt-2">
-        <span>Precio</span>
-        <span v-if="startDate && endDate">${{ formatPrice(basePrice) }}</span>
-        <span v-else class="text-gray-400">$0</span>
-      </div>
+    <li class="flex justify-between">
+      <span>Precio</span>
+      <span v-if="startDate && endDate">${{ formatPrice(basePrice) }}</span>
+      <span v-else class="text-gray-400">$0</span>
+    </li>
 
-      <div class="flex justify-between pt-2">
-        <span>Impuestos</span>
-        <span v-if="startDate && endDate">${{ formatPrice(taxes) }}</span>
-        <span v-else class="text-gray-400">$0</span>
-      </div>
+    <li class="flex justify-between">
+      <span>Impuestos</span>
+      <span v-if="startDate && endDate">${{ formatPrice(taxes) }}</span>
+      <span v-else class="text-gray-400">$0</span>
+    </li>
 
-      <div class="flex justify-between pt-2">
-        <span>Seguro</span>
-        <span>${{ formatPrice(insuranceFee) }}</span>
-      </div>
+    <li class="flex justify-between">
+      <span>Seguro</span>
+      <span>${{ formatPrice(insuranceFee) }}</span>
+    </li>
 
-      <div v-if="showTotal" class="flex justify-between pt-2 font-bold text-lg border-t border-background-600">
-        <span>Total</span>
-        <span v-if="startDate && endDate">${{ formatPrice(totalPrice) }}</span>
-        <span v-else class="text-gray-400">-</span>
-      </div>
-    </div>
-  </div>
+    <li v-if="showTotal" class="flex justify-between font-bold text-lg border-t border-background-600">
+      <span>Total</span>
+      <span v-if="startDate && endDate">${{ formatPrice(totalPrice) }}</span>
+      <span v-else class="text-gray-400">-</span>
+    </li>
+  </ul>
 </template>

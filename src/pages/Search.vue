@@ -19,10 +19,11 @@ import PriceRange from "../components/molecules/PriceRange.vue";
 import CheckboxFilter from "../components/atoms/CheckboxFilter.vue";
 import Repeat from "@icons/Repeat.vue";
 import SearchIcon from "@icons/Search.vue";
+import BackButton from "@components/atoms/BackButton.vue";
 
 export default {
   name: "Search",
-  components: { Heading, CardCar, AddIcon, Loading, AddressInput, Input, Arrow, PriceRange, CheckboxFilter, FilterIcon, Repeat, SearchIcon },
+  components: { Heading, CardCar, AddIcon, Loading, AddressInput, Input, Arrow, PriceRange, CheckboxFilter, FilterIcon, Repeat, SearchIcon, BackButton },
   data() {
     return {
       loggedUser: {
@@ -173,7 +174,7 @@ export default {
     </button>
 
     <div 
-      class="bg-vibrant-light-700 rounded-[40px] md:px-5 pr-2! pb-4! md:py-9 h-full transition-all duration-300 lg:w-1/4 xl:w-1/5 lg:min-w-[320px] overflow-hidden flex flex-col gap-5"
+      class="bg-vibrant-light-600 rounded-[40px] md:px-5 pr-2! pb-4! md:py-9 h-full transition-all duration-300 lg:w-1/4 xl:w-1/5 lg:min-w-[320px] overflow-hidden flex flex-col gap-5"
       :class=" showFilters ? 'fixed lg:relative inset-0 z-39' : 'hidden lg:block'"
     >
       <div class="flex items-center justify-between">
@@ -182,7 +183,7 @@ export default {
           <Repeat/>
         </button>
       </div>
-      <div class="h-full overflow-y-auto pr-3 flex flex-col gap-5 relative">
+      <div class="box-vibrant h-full overflow-y-auto pr-3 flex flex-col gap-5 relative">
         <!-- marca -->
         <div class="flex flex-col gap-2">
           <Heading :type="3" class="small hidden">Marca del vehículo</Heading>
@@ -288,32 +289,31 @@ export default {
       </div>
     </div>
 
-
-      <div class="w-full lg:w-3/4 xl:w-4/5 overflow-hidden flex flex-col h-full">
-        
-        <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-4">
-
-          <Heading :type="1" class="text-xl lg:text-2xl text-start flex-1 lg:mt-0">Autos disponibles</Heading>     
-          <router-link 
-            to="/maps?focusSearch=true"
+    <div class="w-full lg:w-3/4 xl:w-4/5 overflow-hidden flex flex-col h-full gap-3">
+      <div class="flex items-center gap-5 gap-y-1.5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0 flex-wrap">
+        <BackButton />
+        <Heading :type="1" class="text-xl lg:text-2xl text-start flex-1 lg:mt-0">Autos disponibles</Heading>     
+        <router-link 
+          to="/maps?focusSearch=true"
+          class="flex-1 md:flex-0 min-w-full md:min-w-0"
+          >
+          <Input
+            type="text"
+            id="searchInput"
+            name="searchInput"
+            placeholder="Buscar por ubicación..."
+            icon-position="left"
+            input-class="!w-full md:!w-fit"
+            class="items-end justify-center !flex-1 !min-w-full"
+            variant="secondary"
+            :outline="false"
             >
-            <Input
-              type="text"
-              id="searchInput"
-              name="searchInput"
-              placeholder="Buscar por ubicación..."
-              class="lg:w-1/2 mb-2 lg:mb-0 w-fit!"
-              icon-position="left"
-              variant="secondary"
-              :outline="false"
-              >
-              <template #icon>
-                <SearchIcon />
-              </template>
-            </Input>
-          </router-link>     
-          
-          </div>
+            <template #icon>
+              <SearchIcon />
+            </template>
+          </Input>
+        </router-link>      
+      </div>
   
         <p v-if="filteredCars.length == 0 && !loading" class="text-lg text-red-700 font-bold pt-4">
           No se encontraron autos con esas características
@@ -324,7 +324,7 @@ export default {
           <span class="sr-only">Cargando...</span>
         </div>
 
-        <div v-else class="flex-1 overflow-y-auto pr-2">
+        <div v-else class="box-white flex-1 overflow-y-auto md:pr-2 pt-8 md:pt-0">
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3">
             <CardCar v-for="(car, index) in filteredCars" :key="car.id" :car="car" :index="index" />
           </div>

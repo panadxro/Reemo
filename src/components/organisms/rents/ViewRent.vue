@@ -143,7 +143,7 @@ onMounted(() => {
     
     <template v-else-if="rentalDetails">
       <Heading :type="2" class="regular">📄 Resumen del Alquiler</Heading>
-      <div class="w-full overflow-y-auto">
+      <div class="box-white w-full overflow-y-auto">
 
         <!-- Vehículo -->
         <div class="border-b pb-4">

@@ -5,10 +5,9 @@ import { useUserStore, useCarStore } from '@/stores';
 import Heading from '@/components/atoms/Heading.vue';
 import Input from '@/components/molecules/Input.vue';
 import SearchIcon from '@/icons/Search.vue';
-import Status from '@/components/molecules/Status.vue';
 import CardCar from '../components/organisms/cars/CardCar.vue';
 import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
-
+import ReemoIcon from '@/icons/ReemoIcon.vue';
 
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
@@ -21,15 +20,6 @@ const loading = ref(false);
 const user = computed(() => userStore.profileData);
 const availableCars = computed(() => carStore.availableCars);
 const userCars = computed(() => carStore.userCars);
-
-const props = defineProps({
-  id: {
-    type: String,
-    required: true,
-  }
-});
-
-
 
 onMounted(async () => {
   try {
@@ -54,11 +44,38 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="parent w-full md:max-h-vh md:min-h-vh md:overflow-y-auto p-2.5">
-    <div class="dash flex flex-col gap-5">
-      <div class="flex items-end justify-between">
+  <div class="parent w-full md:max-h-vh md:min-h-vh p-2.5">
+    <div class="dash flex flex-col gap-5 ">
+      <div class="flex md:items-end justify-between flex-col md:flex-row gap-5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0">
+        <div class="flex md:hidden items-center justify-between">
+          <img 
+            v-if="user.personalInfo.profilePhoto" 
+            :src="user.personalInfo.profilePhoto" 
+            alt="User Profile Picture" 
+            class="w-8 h-8 rounded-full object-cover flex"
+          >
+          <img 
+            v-else 
+            src="../../assets/images/default-profile.png" 
+            alt="Default Profile Picture" 
+            class="w-8 h-8 rounded-full object-cover"
+          >
+          <div class="flex items-center justify-between gap-4">
+            <ReemoIcon class="w-10 h-10" color="#4FD8DF" />
+            <Input
+              type="button"
+              text="Descargar app"
+              icon-position="left"
+              variant="secondary"
+              :outline="false"
+              class="!w-fit"
+              input-class="w-fit md:w-auto"
+              />
+          </div>
+        </div>
         <Heading type="1" class="large">Dashboard</Heading>
         <router-link 
+          class="hidden md:flex"
           to="/maps?focusSearch=true"
           >
           <Input
@@ -66,7 +83,7 @@ onMounted(async () => {
             id="searchInput"
             name="searchInput"
             placeholder="Buscar por ubicación..."
-            class="lg:w-1/2 mb-2 lg:mb-0 w-fit!"
+            input-class="w-full"
             icon-position="left"
             variant="secondary"
             :outline="false"
@@ -77,9 +94,28 @@ onMounted(async () => {
           </Input>
         </router-link>   
       </div>
-      <div v-if="userCars.length > 0" class="bg-vibrant-light-600 rounded-[40px] w-full py-10 px-6 flex flex-col justify-between h-full">
+      <router-link 
+        class="flex md:hidden mt-10"
+        to="/maps?focusSearch=true"
+        >
+        <Input
+          type="text"
+          id="searchInput"
+          name="searchInput"
+          placeholder="Buscar por ubicación..."
+          input-class="w-full"
+          icon-position="left"
+          variant="secondary"
+          :outline="false"
+          >
+          <template #icon>
+            <SearchIcon />
+          </template>
+        </Input>
+      </router-link>
+      <div v-if="userCars.length > 0" class="bg-vibrant-light-600 rounded-[40px] w-full py-10 px-6 flex flex-col justify-between gap-5 h-full">
           <Heading type="2" class="medium">Resumen de actividad</Heading>
-          <div class="flex justify-between text-center h-full items-center">
+          <div class="flex justify-between text-center h-full flex-wrap">
             <div class="flex-1">
               <p class="text-2xl font-bold">12</p>
               <p class="text-sm text-gray-500">Alquileres</p>
@@ -109,7 +145,7 @@ onMounted(async () => {
         <Heading type="2" class="medium">Autos más cercanos a tu zona</Heading>
         <a href="#" class="text-vibrant-light-900 font-semibold">Ver más</a>
       </div>
-      <div class="flex flex-col gap-2 h-full overflow-y-auto pr-2">
+      <div class="box-white flex flex-col gap-2 h-full overflow-y-auto pr-2">
         <CardCar 
           v-for="(car, index) in availableCars" 
           :key="car.id" 
@@ -144,6 +180,19 @@ onMounted(async () => {
     .my-profile { grid-area: 1 / 8 / 2 / 13; }
     .cars { grid-area: 2 / 1 / 3  / 8; }
     .tracking { grid-area: 2 / 8 / 3 / 13; }
+  }
+}
+
+@media (width < 768px) {
+  .parent {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .dash { order: 1; }
+    .my-profile { order: 2; }
+    .cars { order: 3; }
+    .tracking { order: 4; }
   }
 }
 </style>
