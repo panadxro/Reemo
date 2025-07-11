@@ -99,7 +99,7 @@ export default {
 
 <template>
     <section class="w-full p-2.5 flex flex-col gap-6 overflow-hidden">
-    <Heading :type="1" class="medium">Administrar Usuarios</Heading>
+    <Heading :type="1" class="medium">Administrar usuarios</Heading>
     <div class="flex justify-between items-center">
       <div class="flex flex-row gap-4">
         <Input 
@@ -153,7 +153,7 @@ export default {
           <th class="py-2.5 px-5 flex-none w-24">Accion</th>
         </tr>
       </thead>
-      <tbody class="flex flex-col gap-5 h-full overflow-y-scroll pr-2">
+      <tbody class="box-white flex flex-col gap-5 h-full overflow-y-scroll pr-2">
         <tr 
           v-for="(user, index) in userFilter" :key="user.id"
           class="flex w-full max-h-16 border-2 border-secondary-100 rounded-xl font-semibold"

@@ -147,7 +147,7 @@ export default {
 
 <template>
   <section class="w-full p-2.5 flex flex-col gap-6 overflow-hidden">
-    <Heading :type="1" class="medium">Administrar Vehículos</Heading>
+    <Heading :type="1" class="medium">Administrar vehículos</Heading>
     <div class="flex justify-between items-center">
       <div class="flex flex-row gap-4">
         <Input 
@@ -203,7 +203,7 @@ export default {
           <th class="py-2.5 px-5 flex-none w-24">Accion</th>
         </tr>
       </thead>
-      <tbody class="flex flex-col gap-5 h-full overflow-y-scroll pr-2">
+      <tbody class="box-white flex flex-col gap-5 h-full overflow-y-scroll pr-2">
         <tr 
           v-for="(car, index) in carsFilter" 
           :key="car.id" 

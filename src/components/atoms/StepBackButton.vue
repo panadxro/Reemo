@@ -16,7 +16,7 @@ export default {
   },
   computed: {
     shouldShow() {
-      return this.currentStep > 0;
+      return this.currentStep > 1;
     }
   },
   methods: {
@@ -33,8 +33,8 @@ export default {
   <button
     v-if="shouldShow"
     @click="handleClick" 
-    class="flex items-center p-2 cursor-pointer rounded-full transition-colors duration-100 bg-background-700 hover:bg-background-800" 
+    class="flex items-center p-2 cursor-pointer rounded-full transition-colors duration-100 hover:bg-background-800/30" 
     title="Volver al paso anterior">
-    <Arrow direction="left"/>
+    <Arrow direction="left" color="#FFFFFF"/>
   </button>
 </template>

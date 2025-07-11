@@ -11,7 +11,7 @@ export const useRentStore = defineStore('rent', {
     loggedUser: null,
     rented: false,
     sections: [
-      { id: 1, title: 'Selecciona las fechas' },
+      { id: 1, title: 'Selecciona fecha de alquiler' },
       { id: 2, title: 'Información' },
       { id: 3, title: 'Método de pago' },
       { id: 4, title: 'Confirma tu reserva' }

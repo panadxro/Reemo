@@ -5,7 +5,7 @@ import FooterLayout from '@/components/Footer.vue'
 
 <template>
   <Navbar class="fixed" />
-  <main class="flex flex-col min-h-screen mt-20 mx-auto">
+  <main class="flex flex-col min-h-screen">
     <slot />
   </main>
   <FooterLayout />

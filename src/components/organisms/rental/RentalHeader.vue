@@ -1,10 +1,12 @@
 <script>
 import StepBackButton from "@/components/atoms/StepBackButton.vue";
+import Heading from "@/components/atoms/Heading.vue";
 
 export default {
   name: 'RentalHeader',
   components: {
-    StepBackButton
+    StepBackButton, 
+    Heading
   },
   props: {
     currentStep: {
@@ -37,9 +39,10 @@ export default {
       <StepBackButton 
         :current-step="currentStep"
         :prev-step="prevStep"
+        :class="prevStep == 1 ? 'hidden' : ''"
       />
-      <h2 class="text-xl font-bold">{{ currentTitle }}</h2>
+      <Heading type="3" class="regular text-white">{{ currentTitle }}</Heading>
     </div>
-    <p class="text-white">{{ stepIndicator }}</p>
+    <p class="text-white font-semibold">{{ stepIndicator }}</p>
   </div>
 </template>

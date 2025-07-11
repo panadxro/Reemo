@@ -358,16 +358,16 @@ onMounted(() => {
     <Loading class="h-12 w-12 text-secondary-500" />
   </div>
 
-  <div v-else-if="rentalDetails" class="flex flex-col lg:flex-row py-4 lg:py-6 px-2 sm:px-4 gap-4 w-full bg-secondary-100 rounded-xl lg:rounded-3xl min-h-screen lg:min-h-auto overflow-y-auto">
+  <div v-else-if="rentalDetails" class="flex flex-col lg:flex-row m-2.5 py-4 lg:py-6 px-2 sm:px-4 gap-4 w-full bg-secondary-100 rounded-xl lg:rounded-3xl min-h-screen lg:min-h-auto overflow-y-auto">
 
-    <div class="w-full lg:w-96 flex flex-col gap-4 overflow-visible lg:overflow-hidden lg:overflow-y-auto order-1 lg:order-1">
+    <div class="box-vibrant w-full lg:w-96 flex flex-col gap-4 overflow-visible lg:overflow-hidden lg:overflow-y-auto pr-2 order-1 lg:order-1">
       
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-5 fixed top-0 left-0 right-0 z-10 bg-white md:bg-vibrant-light-700 px-2.5 md:px-0 py-3 md:py-0 md:sticky">
         <BackButton />
         <Heading :type="1" class="medium text-lg sm:text-xl lg:text-2xl">Detalles del alquiler</Heading>
       </div>
 
-      <div class="bg-[#0D0D3C] text-white rounded-xl lg:rounded-2xl p-3 sm:p-4 flex flex-col gap-2">
+      <div class="bg-deep-blue-900 text-white rounded-xl lg:rounded-2xl p-3 sm:p-4 flex flex-col gap-2">
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
           <span class="text-sm sm:text-base">Orden ID: <strong>#{{ rentalDetails.id.slice(0, 8) }}</strong></span>
           <Status :status="rentalDetails.status"/>
@@ -591,8 +591,8 @@ onMounted(() => {
       </div>
     </div>
 
-    <div v-else class="flex-1 flex flex-col items-center justify-center rounded-xl lg:rounded-3xl p-4 sm:p-6 lg:p-8 order-2 lg:order-2">
-      <div class="bg-white shadow-2xl rounded-xl lg:rounded-2xl p-4 sm:p-6 max-w-2xl w-full text-gray-700 space-y-4 sm:space-y-5 mx-auto max-h-full overflow-y-auto">
+    <div v-else class="flex-1 flex flex-col items-center justify-center order-2 lg:order-2">
+      <div class="box-white bg-white rounded-xl p-4 sm:p-6 w-full text-gray-700 mx-auto max-h-full overflow-y-auto">
         <Heading :type="2" class="text-gray-800 text-lg sm:text-xl lg:text-2xl">📄 Resumen del alquiler</Heading>
 
         <!-- Vehículo -->

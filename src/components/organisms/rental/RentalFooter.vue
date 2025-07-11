@@ -1,5 +1,10 @@
 <script>
+import Input from "@/components/molecules/Input.vue";
+
 export default {
+  components: {
+    Input
+  },
   props: {
     totalAmount: {
       type: Number,
@@ -29,17 +34,19 @@ export default {
 
 <template>
   <div class="flex justify-between items-center mt-8 p-4 rounded-xl sticky bottom-0 left-0 right-0 bg-deep-blue-800/30 shadow-sm shadow-primary-800 z-1 backdrop-blur-xl">
-    <div class="text-white font-bold text-2xl">
+    <div class="text-white font-bold text-2xl w-full">
       Total: ${{ Math.round(totalAmount).toLocaleString('es-AR') }}
     </div>
-
-    <button
-      class="bg-white text-[#010440] rounded-xl px-5 py-3 font-bold transition-all duration-300  hover:bg-[#c0e8ea] hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+    <Input
+      type="button"
+      id="confirm"
+      name="confirm"
+      class="items-end !w-fit"
+      input-class="w-fit"
+      :text="buttonText"
       :disabled="isDisabled"
       @click="handleClick"
-    >
-      {{ buttonText }}
-    </button>
+    />
   </div>
 </template>
 

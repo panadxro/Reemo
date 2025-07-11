@@ -28,8 +28,8 @@ export default {
 </script>
 
 <template>
-  <div class="w-11/12 sm:w-10/12 m-auto bg-white rounded-3xl flex flex-col gap-32">
-    <section class="flex flex-col items-center justify-between xl:flex-row xl:justify-center gap-16 mx-4">
+  <div class="bg-white flex flex-col gap-32 pt-20">
+    <section class="flex flex-col items-center justify-between xl:flex-row xl:justify-center md:gap-16 px-4 md:px-0 md:max-w-3/4">
       <div class="flex flex-col gap-4">
         <h1 class="font-medium leading-tight text-5xl block mb-4 sm:text-6xl w-[95%] sm:w-full text-pretty text-center xl:text-start pt-4 xl:pt-0"><b>Conectando autos,</b><br/> impulsando<br/> oportunidades</h1>
         <div class="sm:flex gap-2 hidden justify-center xl:justify-start">
@@ -48,9 +48,9 @@ export default {
       <ConectingCars/>
     </section>
 
-    <section class="flex flex-col items-center gap-8 sm:gap-12 sm:w-10/12 m-auto mx-4">
+    <section class="flex flex-col items-center gap-8 sm:gap-12 sm:w-10/12 md:max-w-3/4 md:mx-auto mx-4">
       <ZurichxReemo/>
-      <article class="flex flex-col items-center gap-3">
+      <article class="flex flex-col items-center gap-3 w-full">
         <Heading :type="2" class="text-center">Seguros contra todo riesgo Zurich</Heading>
         <p class="text-center max-w-[570px]">Ofrecemos seguros contra todo riesgo con Zurich, para que puedas disfrutar de tu viaje con total tranquilidad.</p>
         <a href="" class="flex items-center gap-4 py-2 px-4 rounded-xl bg-secondary-100 w-fit">
@@ -100,11 +100,11 @@ export default {
       </div>
     </section>
 
-    <section class="flex flex-col gap-16 mx-4">
+    <section class="flex flex-col gap-16 px-4 md:items-center">
     <Heading :type="2" class="text-center">Con <strong>Reemo</strong>,<br>tranquilo a todos lados</Heading>
-    <div class="flex flex-col items-center justify-center [@media(min-width:1100px)]:flex-row gap-4">
+    <div class="flex flex-col items-center justify-center md:flex-row gap-4 md:max-w-1/2">
       <article class="bg-primary-900 pl-9 py-11 flex flex-col gap-16 rounded-[40px] w-full group relative">
-        <div class="flex flex-col gap-4 w-96">
+        <div class="flex flex-col gap-4 md:w-full">
           <Heading :type="3" class="text-white">Publicá tu vehículo</Heading>
           <p class="text-lg font-regular leading-tight text-slate-400">Registrá tu auto en menos de 10 minutos y dejalo listo para ser alquilado.</p>
         </div>
@@ -117,7 +117,7 @@ export default {
         </a>
       </article>
       <article class="bg-linear-to-r to-secondary-300 from-secondary-100 pl-9 py-11 flex flex-col gap-16 rounded-[40px] w-full group relative">
-        <div class="flex flex-col gap-4 w-96">
+        <div class="flex flex-col gap-4 md:w-full">
           <Heading :type="3">Alquilá un auto</Heading>
           <p class="text-lg font-regular leading-tight text-slate-600">Conseguí un vehículo que se adapte a vos y comenzá a disfrutarlo.</p>
         </div>
@@ -132,18 +132,18 @@ export default {
     </div>
   </section>
 
-  <section class="flex flex-col gap-16 mx-4">
-    <div class="flex flex-col items-center gap-4">
+  <section class="flex flex-col gap-16 px-4 md:px-0 items-center md:max-w-3/4">
+    <div class="flex flex-col items-center gap-4 w-full">
       <Heading :type="2" class="text-center ">🚙<br/>Alquileres express</Heading>
       <p class="inline">Rápidos, seguros y confiables</p>
       <NotificationExpress/>
     </div>
 
-    <div class="flex flex-col gap-5">
+    <div class="flex flex-col gap-5 w-full">
       <article class="pl-9 py-11 w-full rounded-[20px] md:rounded-[40px] shadow-custom flex flex-col lg:flex-row">
         <div class="flex flex-col justify-between flex-1 gap-8">
             <div>
-                <Heading :type="3">Contactáte inmediatamente<br class="hidden md:block"/> con el dueño</Heading>
+                <Heading :type="3">Contactate inmediatamente<br class="hidden md:block"/> con el dueño</Heading>
                 <p class="w-full md:w-3/4 text-slate-600 pt-2">
                     Con <strong>Reemo</strong> podés hablar por medio de chat con el dueño del auto luego de haber reservado el mismo para ultimar detalles del alquiler
                 </p>
@@ -176,10 +176,10 @@ export default {
     </div>
   </section>
 
-  <section class="flex flex-col gap-16 mx-4">
+  <section class="flex flex-col gap-16 px-4 md:px-0 md:max-w-3/4">
     <div class="flex flex-col items-center gap-4">
       <Heading :type="2" class="text-center ">🚙<br/>Gran variedad</Heading>
-      <p class="inline">Conseguí un auto que se adapte a tus necesidades</p>
+      <p class="text-center">Conseguí un auto que se adapte a tus necesidades</p>
     </div>
 
     <div class="flex flex-col gap-5 w-full">
@@ -207,8 +207,8 @@ export default {
           </article>
         </div>
 
-        <article class="bg-secondary-100 pl-9 py-11 flex flex-col flex-1 rounded-[40px] w-full group relative overflow-hidden ">
-          <Heading :type="3" class="z-100">Todas las marcas <br/>y todos los modelos</Heading>
+        <article class="bg-secondary-100 pl-9 py-11 flex flex-col flex-1 rounded-[40px] w-full group relative overflow-hidden gap-10 md:gap-0">
+          <Heading :type="3">Todas las marcas <br/>y todos los modelos</Heading>
           <div class="flex flex-row-reverse">
             <Brands class="-m-20"/>
           </div>
@@ -217,9 +217,9 @@ export default {
     </div>
   </section>
 
-  <section class="flex flex-col gap-5 items-center mx-4">
+  <section class="flex flex-col gap-5 items-center px-4 md:px-0 md:max-w-3/4">
     <Heading :type="2" class="text-center">Preguntas frecuentes</Heading>
-    <div class="flex flex-col gap-4 w-10/12 m-auto">
+    <div class="flex flex-col gap-4 md:w-10/12 m-auto">
       <Dropdown class="flex flex-col bg-secondary-100 px-8 py-5 rounded-3xl">
         <template #title>
           <Heading type="5">¿Qué necesito para abrir una cuenta en <strong>Reemo</strong>?</Heading>
@@ -261,7 +261,8 @@ export default {
       <LongArrow color="#FFFFFF" direction="right"/>
     </a>
   </section>
-  <section>
+
+  <section class="flex flex-col gap-5 items-center px-4 md:px-0 md:max-w-3/4">
     <article class="bg-linear-to-r to-primary-900 from-secondary-900 px-9 py-11 w-full rounded-[40px] shadow-custom flex flex-col items-center text-white overflow-hidden gap-4">
       <Experience class="-mt-20"/>
       <Heading :type="3" class="text-white">¿Qué esperás para vivir la experiencia <strong>Reemo</strong>?</Heading>

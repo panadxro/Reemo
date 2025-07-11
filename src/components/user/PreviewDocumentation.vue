@@ -1,6 +1,4 @@
 <script setup>
-import { ref } from 'vue';
-
 import Heading from '@components/atoms/Heading.vue';
 import PaymentMethod from '@components/atoms/PaymentMethod.vue';
 
@@ -45,11 +43,11 @@ const getColorByWalletType = (walletType) => {
 
 <template>
   <aside class="md:bg-vibrant-light-600 mx-2.5 md:py-8 md:px-5 flex flex-col gap-2 rounded-[40px] max-w-[250px] min-w-[250px] absolute top-0 left-0 h-full z-10 md:static">
-    <template v-if="currentStep === 0 || window.innerWidth < 768">
+    <template v-if="currentStep === 0">
       <Heading :type="3" class="regular">Documento nacional</Heading>
       <img v-if="user.documents.dniFront" :src="user.documents.dniFront" alt="DNI Frontal" class="w-full aspect-video object-cover rounded-sm">
       <div v-else class="bg-background-800 w-full aspect-video rounded-2xl"></div>
-      <div class="flex flex-col gap-2 overflow-y-auto">
+      <div class="box-vibrant flex flex-col gap-2 overflow-y-auto">
         <Heading :type="4" class="regular">{{user.personalInfo.firstName}} {{ user.personalInfo.lastName }}</Heading>
         <ul class="flex flex-col gap-2">
           <ul>
@@ -71,11 +69,11 @@ const getColorByWalletType = (walletType) => {
         </ul>
       </div>
     </template>
-    <template v-if="currentStep === 1  || window.innerWidth < 768">
+    <template v-if="currentStep === 1 ">
       <Heading :type="3" class="regular">Licencia de conducir</Heading>
       <img v-if="user.documents.driverLicenseFront" :src="user.documents.driverLicenseFront" alt="Licencia de conducir frontal" class="w-full aspect-video object-cover rounded-sm">
       <div v-else class="bg-background-800 w-full aspect-video rounded-2xl"></div>
-      <div class="flex flex-col gap-2 overflow-y-auto">
+      <div class="box-vibrant flex flex-col gap-2 overflow-y-auto">
         <Heading :type="4" class="regular">{{user.personalInfo.firstName}} {{ user.personalInfo.lastName }}</Heading>
         <ul class="flex flex-col gap-2">
           <ul>
@@ -97,7 +95,7 @@ const getColorByWalletType = (walletType) => {
         </ul>
       </div>
     </template>
-    <template v-if="currentStep === 2 || window.innerWidth < 768">
+    <template v-if="currentStep === 2">
         <Heading :type="3" class="regular">Método de pago</Heading>
         <div 
           v-if="payment"
@@ -107,7 +105,7 @@ const getColorByWalletType = (walletType) => {
           <PaymentMethod :method="payment?.walletType"/> 
   
         </div>
-        <ul class="flex flex-col gap-2 overflow-y-auto overflow-x-hidden">
+        <ul class="box-vibrant flex flex-col gap-2 overflow-y-auto overflow-x-hidden">
           <ul v-if="payment.walletId">
             <span class="text-xs font-medium text-background-600">Alias</span>
             <p class="font-semibold">{{ payment?.walletId || 'No disponible'}}</p>

@@ -249,12 +249,12 @@ watch(car, (newCar) => {
 
 <template>
   <div class="w-full flex flex-col md:flex-row">
-    <section v-if="car.id" class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
-      <div class="flex items-center gap-5">
+    <section v-if="car.id" class="w-full flex flex-col gap-4 overflow-hidden">
+      <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0">
         <BackButton />
-        <Heading :type="1" class="medium">Alquilar auto</Heading>
+        <Heading :type="1" class="medium">Detalles del vehículo</Heading>
       </div>
-      <article class="flex flex-col gap-9 bg-background-900 overflow-auto px-5">
+      <article class="box-white flex flex-col gap-9 bg-background-900 overflow-auto px-2.5">
         <div class="flex flex-col gap-5">
           <!-- Imagen principal del carrusel -->
           <figure class="my-auto w-full max-h-64 mx-auto overflow-hidden rounded-2xl relative">
@@ -270,7 +270,7 @@ watch(car, (newCar) => {
           </figure>
   
           <!-- Miniaturas debajo de la imagen principal -->
-          <div v-if="car.photos?.length > 1" class="flex justify-between gap-2.5">
+          <div v-if="car.photos?.length > 1" class="flex justify-between gap-2.5 overflow-hidden overflow-x-auto">
             <img 
               v-for="(image, index) in car.photos" 
               :key="index" 
@@ -333,15 +333,15 @@ watch(car, (newCar) => {
             <span>{{ car.specifications?.fuelType }}</span>
           </li>
         </ul>
-        <div class="flex flex-col gap-4">
+        <div v-if="car.status?.description" class="flex flex-col gap-4">
           <Heading :type="2" class="medium">Descripción</Heading>
           <p class="break-words">
             {{ car.status?.description }}
           </p>
         </div>
-        <div class="flex flex-col gap-4">
+        <div v-if="car.features?.accessories" class="flex flex-col gap-4">
           <Heading :type="2" class="medium">Accesorios</Heading>
-          <div  class="flex flex-wrap gap-2 text-gray-700">
+          <div class="flex flex-wrap gap-2 text-gray-700">
             <Pill v-for="(accessory, index) in car.features?.accessories" :key="index" :accessory="accessory" :name="accessory" />
   
           </div>
@@ -355,12 +355,6 @@ watch(car, (newCar) => {
         <Loading role="status" class="h-6 w-6 text-blue-500" />
       </div>
   </section>
-
-  <!-- <section v-else-if="loading" class="w-full h-full flex items-center justify-center">
-    <div v-if="carStore.loading" class="flex justify-center items-center h-64">
-      <Loading role="status" class="h-6 w-6 text-blue-500" />
-    </div>
-  </section> -->
   
   <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
     <p>{{ carStore.errorMessage }}</p>
@@ -370,7 +364,7 @@ watch(car, (newCar) => {
     <p v-if="errorMsg">{{ errorMsg || 'No se encontró el vehículo' }}</p>
   </section>
   
-  <div class="m-2.5 w-full flex flex-col gap-3">
+  <div class="md:m-2.5 p-2.5 w-full flex flex-col gap-3">
     <div class="map-container">
       <div 
         id="map"
@@ -379,7 +373,8 @@ watch(car, (newCar) => {
       ></div>
     </div>
   
-    <div v-if="authStore.user?.id !== carStore.car.ownerId" class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-y-scroll">
+    <div v-if="authStore.user?.id !== carStore.car.ownerId" class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-hidden flex flex-col gap-5">
+      <Heading type="2" class="medium text-white">Alquilar vehículo</Heading>
       
       <RentalProcess 
         v-if="!loading && !errorMsg && carStore.car && authStore.user?.id && user?.role !== 'admin'"
@@ -522,18 +517,6 @@ watch(car, (newCar) => {
     </div>
   </div>
     </div>
-
-    
-
-
-
-
-
-
-    <!-- <span v-if="store.isRented && !carStore.isUserOwner"
-      class="bg-red-100 text-red-800 text-base font-medium me-2 px-2.5 py-0.5 rounded-sm border border-red-400">
-      {{ carStore.isUserOwner ? 'Tu auto ya está alquilado' : 'Este auto ya está alquilado' }}
-    </span> -->
   </div>
   </div>
   <InvalidationModal

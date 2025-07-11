@@ -116,7 +116,7 @@ export default {
       class="flex flex-col h-full"
     >
       <div class="relative w-full overflow-hidden">
-        <div class="absolute top-3 left-3 z-10">
+        <div class="absolute top-3 left-3 z-1">
           <Status :status="car.status.current" />
         </div>
 

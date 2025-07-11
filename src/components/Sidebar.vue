@@ -24,14 +24,14 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <nav class="flex md:bg-secondary-100 flex-col justify-between w-full md:w-fit xs:max-h-3.5 md:min-h-full xs:mx-auto md:m-2.5 p-4 md:py-12 rounded-full fixed md:relative bottom-0 left-0 z-3">
+  <nav class="flex md:bg-vibrant-light-600 flex-col justify-between w-full md:w-fit xs:max-h-3.5 md:min-h-full xs:mx-auto md:m-2.5 p-4 md:py-12 rounded-full fixed md:relative bottom-0 left-0 z-3">
     <ul 
       v-if="userStore.profileData.role === 'user'"
-      class="flex bg-secondary-100 h-full md:h-auto !p-4 md:!p-0 md:flex-col rounded-full justify-center gap-4 md:gap-2 items-center"
+      class="flex bg-vibrant-light-600 h-full md:h-auto !p-2.5 md:!p-0 md:flex-col rounded-full justify-center gap-4 md:gap-2 items-center"
     >
-      <li>
+      <li class="hidden md:block">
         <router-link to="/">
-          <ReemoIcon class="hidden md:block w-10 h-10 text-vibrant-light-600" />
+          <ReemoIcon class="w-10 h-10 text-vibrant-light-600" />
         </router-link>
       </li>
       <li>
@@ -58,7 +58,7 @@ const handleLogout = () => {
 
     <ul 
       v-else-if="userStore.profileData.role === 'admin'"
-      class="flex bg-secondary-100 h-full md:h-auto !p-4 md:!p-0 md:flex-col rounded-full justify-center gap-4 md:gap-2 items-center"
+      class="flex bg-vibrant-light-600 h-full md:h-auto !p-2.5 md:!p-0 md:flex-col rounded-full justify-center gap-4 md:gap-2 items-center"
     >
       <li>
         <router-link to="/">

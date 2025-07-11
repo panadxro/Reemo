@@ -36,6 +36,10 @@ const props = defineProps({
   inputClass: { // Nueva prop para clases personalizadas del input/button
     type: String,
     default: ''
+  },
+  disabled: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -109,7 +113,8 @@ defineExpose({
       :for="id" 
       :class="[
         containerClasses,
-        { '!flex-col !items-start': label }
+        { '!flex-col !items-start': label },
+        { 'cursor-not-allowed opacity-50': disabled }
       ]"
     >
       <slot v-if="iconPosition === 'left'" name="icon"></slot>
@@ -127,7 +132,8 @@ defineExpose({
         autocomplete="off"
         :class="[
           'w-full border-none outline-none',
-          elementClasses
+          elementClasses,
+          { 'cursor-not-allowed opacity-50 text-gray-500': disabled }
         ]"
         :aria-label="placeholder"
       />
@@ -144,7 +150,10 @@ defineExpose({
       @change="$emit('update:modelValue', $event.target.value)"
       :value="modelValue"
       :aria-label="placeholder"
-      :class="containerClasses"
+      :class="[
+        containerClasses,
+        { 'cursor-not-allowed opacity-50': disabled }
+      ]"
       ref="selectRef"
     >
       <option 
@@ -173,8 +182,10 @@ defineExpose({
       :class="[
         containerClasses,
         elementClasses,
-        'cursor-pointer'
+        {'cursor-pointer' : !disabled },
+        { 'cursor-not-allowed opacity-50': disabled }
       ]"
+      :disabled="disabled"
     >
       <slot v-if="iconPosition === 'left'" name="icon"></slot>
       {{ text }}

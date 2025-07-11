@@ -83,7 +83,7 @@ watch(() => props.carId, async (newId) => {
 </script>
 
 <template>
-  <article class="flex flex-col gap-9 bg-background-900 md:border-vibrant-light-900 overflow-y-auto w-full h-full px-5">
+  <article class="box-white flex flex-col gap-9 bg-background-900 md:border-vibrant-light-900 overflow-y-auto w-full h-full">
     <template v-if="loading">
       <!-- Skeleton Loading -->
       <div class="animate-pulse h-full">

@@ -5,7 +5,7 @@ export default {
 </script>
 
 <template>
-  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="426" height="443" viewBox="0 0 426 443" fill="none" class="group">
+  <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="500" height="443" viewBox="0 0 426 443" fill="none" class="group">
     <rect x="214.729" y="96.0986" width="211.271" height="287.935" rx="28.5261" fill="#010440" class="transition-transform duration-300 ease-out group-hover:translate-x-2 group-hover:-translate-y-2"/>
     <rect x="292.284" y="124.625" width="56.1607" height="8.02296" rx="1.78288" fill="#2B2E6D" class="transition-transform duration-300 ease-out group-hover:translate-x-2 group-hover:-translate-y-2"/>
     <rect x="240.581" y="296.673" width="137.282" height="9.80584" rx="1.78288" fill="#2B2E6D" class="transition-transform duration-300 ease-out group-hover:translate-x-2 group-hover:-translate-y-2"/>

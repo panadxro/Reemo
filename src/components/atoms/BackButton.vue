@@ -8,14 +8,21 @@ export default {
       this.$router.back(); // Regresa a la página anterior
     },
   },
+  props: {
+    color: {
+      type: String,
+      default: "#010440",
+    },
+  },
 };
 </script>
 
 <template>
   <button
+    type="button"
     @click="goBack" 
-    class="flex items-center p-2 cursor-pointer rounded-full transition-colors duration-100 hover:bg-background-700" 
+    class="flex items-center p-2 cursor-pointer rounded-full transition-colors duration-100 hover:bg-background-700/30" 
     title="Go back">
-    <Arrow direction="left"/>
+    <Arrow direction="left" :color="color"/>
   </button>
 </template>

@@ -225,7 +225,7 @@ export default {
               </li>
             </ul>
 
-            <p class="text-primary-900 text-sm md:text-md leading-relaxed h-[60px] 2xl:h-full overflow-y-auto overflow-hidden">
+            <p class="text-primary-900 text-sm md:text-md leading-relaxed h-[60px] 2xl:h-full">
               {{ showProfile?.email || 'Este usuario no ha proporcionado una biografía.' }}
             </p>
           </div>
@@ -241,7 +241,7 @@ export default {
         <div v-if="carStore.loading" class="flex justify-center py-8">
           <Loading class="w-8 h-8 text-primary-800" />
         </div>
-        <div v-else-if="userCars && userCars.length" class="flex flex-col gap-5 h-full overflow-y-auto">
+        <div v-else-if="userCars && userCars.length" class="box-white flex flex-col gap-5 h-full overflow-y-auto">
           <CardCar 
             v-for="(car, index) in userCars.slice(0, 4)" 
             :key="car.id" 
@@ -266,7 +266,7 @@ export default {
         class="bg-deep-blue-900 overflow-hidden rounded-[40px] py-7 px-5 flex flex-col gap-5"
         >
         <Heading :type="2" class="medium text-white text-center sm:text-left">{{ isOwnProfile ? "Información Personal" : "Información del Usuario"  }}</Heading>
-        <article v-if="isOwnProfile" class="overflow-y-auto h-full flex flex-col gap-5 pr-2">
+        <article v-if="isOwnProfile" class="box-deep overflow-y-auto h-full flex flex-col gap-5 pr-2">
           <div class="flex flex-col gap-2">
             <Heading :type="3" class="regular text-white">Datos Básicos</Heading>
             <ul class="flex flex-col gap-1">
@@ -309,7 +309,7 @@ export default {
             </ul>
           </div>
         </article>
-        <article v-else class="overflow-y-auto h-full flex flex-col gap-5 pr-4 py-4">
+        <article v-else class="box-vibrant overflow-y-auto h-full flex flex-col gap-5 pr-4 py-4">
           <div class="flex flex-col gap-2">
             <Heading :type="3" class="regular text-white">Verificación</Heading>
             <ul class="flex flex-col gap-2">

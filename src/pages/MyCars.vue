@@ -34,14 +34,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="md:m-2.5 w-full md:max-h-vh md:overflow-hidden flex">
+  <section class="md:m-2.5 w-full md:max-h-vh md:overflow-hidden flex gap-5">
     <div class="flex flex-col gap-4 w-full md:w-100">
       <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0">
         <BackButton />
         <Heading :type="1" class="medium">Mis autos</Heading>
       </div>
       <div class="md:p-5 md:rounded-[40px] md:bg-deep-blue-900 flex flex-col gap-4 w-full md:w-96 h-full overflow-hidden relative">
-        <ul class="min-h-full md:min-h-auto h-full flex flex-col gap-4 overflow-y-auto !pr-2 mb-15 md:mb-0">
+        <ul class="box-deep min-h-full md:min-h-auto h-full flex flex-col gap-4 overflow-y-auto !pr-2 mb-15 md:mb-0">
           <CardCar 
             v-if="userCars"
             v-for="(car, index) in userCars" 
@@ -52,7 +52,6 @@ onMounted(async () => {
             @click="handleCarClick(car)"
           />
         </ul>
-        <a href="/car/register">Hola</a>
         <router-link to="/car/register">
           <Input
             type="button"
@@ -69,7 +68,7 @@ onMounted(async () => {
       :carId="selectedCar.id"
       class="hidden md:flex"
     />
-    <div v-else>
+    <div v-else class="hidden md:flex items-center justify-center w-full h-full">
       <p>Selecciona un auto para ver los detalles</p>
     </div>
   </section>
