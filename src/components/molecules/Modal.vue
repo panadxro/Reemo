@@ -27,9 +27,25 @@ export default {
     cancelText: {
       type: String,
       default: "Cancelar"
+    },
+    image: {
+      type: String,
+      default: null
+    },
+    showTwoButtons: {
+      type: Boolean,
+      default: true
+    },
+    primaryButtonText: {
+      type: String,
+      default: null
+    },
+    secondaryButtonText: {
+      type: String,
+      default: null
     }
   },
-  emits: ["close", "confirm"],
+  emits: ["close", "confirm", "primary-action", "secondary-action"],
   setup(props, { emit }) {
     const onClose = () => {
       emit("close");
@@ -38,10 +54,20 @@ export default {
     const onConfirm = () => {
       emit("confirm");
     };
+
+    const onPrimaryAction = () => {
+      emit("primary-action");
+    };
+
+    const onSecondaryAction = () => {
+      emit("secondary-action");
+    };
     
     return {
       onClose,
-      onConfirm
+      onConfirm,
+      onPrimaryAction,
+      onSecondaryAction
     };
   }
 }
@@ -49,7 +75,7 @@ export default {
 
 <template>
   <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center">
-    <!--Para poder cerrarlo al tocaer afuera -->
+    <!--Para poder cerrarlo al tocar afuera -->
     <div class="absolute inset-0 bg-black/60" @click="onClose"></div>
     
     <div class="relative bg-white rounded-[40px] p-6 w-full max-w-md mx-4 z-10">
@@ -64,35 +90,57 @@ export default {
           </button>
         </div>
 
+        <!-- Imagen condicional -->
+        <div v-if="image" class="text-center mb-6">
+          <img :src="image" alt="Modal image" class="w-24 h-24 mx-auto rounded-full object-cover">
+        </div>
+
         <div class="mb-6">
           <p class="text-primary-700">{{ message }}</p>
         </div>
 
-        <div class="flex gap-3 justify-center">
-            <!-- <button 
-              @click="onConfirm" 
-              class="px-4 py-2 w-full bg-white text-primary-900 rounded-lg hover:bg-white/70 transition-colors hover:cursor-pointer"
-            >
-              {{ confirmText }}
-            </button> -->
-            <Input
+        <!-- Botones condicionales -->
+        <div v-if="showTwoButtons && !primaryButtonText" class="flex gap-3 justify-center">
+          <Input
             @click="onConfirm"
             type="button"
             variant="primary"
             :text="confirmText"
           />
-          <!-- <button 
-            @click="onClose" 
-            class="px-4 py-2 w-full text-white rounded-lg hover:cursor-pointer hover:bg-white/10 transition-colors"
-          >
-            {{ cancelText }}
-          </button> -->
           <Input
-            @click="onConfirm"
+            @click="onClose"
             type="button"
             variant="secondary"
             outline
             :text="cancelText"
+          />
+        </div>
+
+        <div v-else-if="primaryButtonText" class="space-y-3 sm:space-y-0 sm:flex sm:space-x-4">
+          <Input
+            @click="onPrimaryAction"
+            type="button"
+            variant="primary"
+            :text="primaryButtonText"
+            class="w-full sm:w-auto flex-1"
+          />
+          <Input
+            @click="onSecondaryAction"
+            type="button"
+            variant="secondary"
+            outline
+            :text="secondaryButtonText || 'Cerrar'"
+            class="w-full sm:w-auto flex-1"
+          />
+        </div>
+
+        <!-- Botón único -->
+        <div v-else class="flex justify-center">
+          <Input
+            @click="onClose"
+            type="button"
+            variant="primary"
+            :text="confirmText"
           />
         </div>
       </div>

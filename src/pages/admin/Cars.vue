@@ -114,8 +114,8 @@ export default {
     },
     async validateCar(car) {
       try {
-        await this.adminStore.changeCarValidation(car.id, 'validated');
-        await createCarValidationNotification(car, 'validated');
+        await this.adminStore.changeCarValidation(car.id, 'available');
+        await createCarValidationNotification(car, 'available');
         addAlert("Vehículo validado con éxito", "success");
       } catch (error) {
         addAlert("Error al validar el vehículo", "error");

@@ -39,7 +39,7 @@ const carValidationStatusNotification = (car, newStatus, message = null) => {
   const title = newStatus === 'validated' ? '¡Tu vehículo ha sido validado!' : 'Se requiere una acción para tu vehículo';
   const link = newStatus == 'validated'
     ? `/car/${car.id}`
-    : `/car/register/${car.id}/edit`
+    : `/car/edit/${car.id}`
   const reason = newStatus === 'validated'
     ? `Buenas noticias. Tu ${car.basicInfo.brand} ${car.basicInfo.model} fue aprobado y ya está visible para alquilar.`
     : `Tu ${car.basicInfo.brand} ${car.basicInfo.model} fue marcado como no validado por el siguiente motivo: "${message}". Por favor, corrige el problema y vuelve a solicitar la validación.`;

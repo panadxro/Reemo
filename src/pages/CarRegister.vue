@@ -3,7 +3,7 @@ import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch } f
 import { useAuthStore, useUserStore, useCarStore } from '@stores'
 import { loadGoogleMaps, initAutocomplete } from "../services/google-maps.js";
 import { notifyAdminsOfVehicleUpdate } from '../services/car/notifyRented.js';
-
+import { vpicService } from '../services/car/vpicApi.js';
 import { useRouter } from "vue-router";
 import { addAlert } from "../services/alerts.js";
 
@@ -52,6 +52,42 @@ const authSession = JSON.parse(authSessionHistory);
 
 const currentStep = ref(0);
 const autocompleteInitialized = ref(false);
+
+// Variables que agregue para la api de vehiculos
+const vehicleMakes = ref([]);
+const vehicleModels = ref([]);
+const loadingMakes = ref(false);
+const loadingModels = ref(false);
+
+// Funciones que agregue para la api de vehiculos
+const loadMakes = async () => {
+  loadingMakes.value = true;
+  try {
+    vehicleMakes.value = await vpicService.getBrands();
+  } catch (error) {
+    console.error('Error loading makes:', error);
+    addAlert('Error al cargar las marcas de vehículos', 'error');
+  } finally {
+    loadingMakes.value = false;
+  }
+};
+
+const loadModels = async (makeName) => {
+  if (!makeName) {
+    vehicleModels.value = [];
+    return;
+  }
+  
+  loadingModels.value = true;
+  try {
+    vehicleModels.value = await vpicService.getModelsForMake(makeName);
+  } catch (error) {
+    console.error('Error loading models:', error);
+    addAlert('Error al cargar los modelos para esta marca', 'error');
+  } finally {
+    loadingModels.value = false;
+  }
+};
 
 const isEditMode = computed(() => !!props.id);
 
@@ -433,10 +469,17 @@ onMounted(async () => {
       loading.value = false;
     } else {
       // MODO REGISTRO: Inicializar un vehículo nuevo
-      if (!carStore.currentCar.id) {
-        carStore.initializeCar();
-      }
+      // if (!carStore.currentCar.id) {
+      //   carStore.initializeCar();
+      // }
     }
+
+    await loadMakes();
+  
+    // No se si esta bien esto, despues lo revisamos con Yoe
+  if (isEditMode.value && basicInfo.value.brand) {
+    await loadModels(basicInfo.value.brand);
+  }
 
   } catch (error) {
     console.error("Initialization error:", error);
@@ -470,6 +513,16 @@ watch(currentStep, async (newStep) => {
       console.error("Error al inicializar autocompletado de dirección en CarRegister:", error);
       addAlert('No se pudo inicializar la búsqueda de direcciones.', 'error');
     }
+  }
+});
+
+// Otro watch para detectar cambios en la marca que se seleccionr
+watch(() => basicInfo.value.brand, (newBrand) => {
+  if (newBrand) {
+    basicInfo.value.model = '';
+    loadModels(newBrand);
+  } else {
+    vehicleModels.value = [];
   }
 });
 
@@ -543,38 +596,34 @@ onBeforeUnmount(() => {
                 name="brand"
                 id="brand"
                 placeholder="Marca"
-                :options="[
-                  { value: 'Toyota', label: 'Toyota' },
-                  { value: 'Volkswagen', label: 'Volkswagen' },
-                  { value: 'Ford', label: 'Ford' },
-                  { value: 'Chevrolet', label: 'Chevrolet' },
-                  { value: 'Fiat', label: 'Fiat' },
-                  { value: 'Renault', label: 'Renault' },
-                  { value: 'Peugeot', label: 'Peugeot' }
-                ]"
+                :options="vehicleMakes"
                 icon-position="right"
                 variant="secondary"
                 :outline="true"
+                :disabled="loadingMakes"
                 class="w-full"
-              />
+              >
+                <template #icon v-if="loadingMakes">
+                  <Loading />
+                </template>
+              </Input>
               <Input
                 type="select"
                 v-model="basicInfo.model"
                 name="model"
                 id="model"
                 placeholder="Modelo"
-                :options="[
-                  { value: 'Corolla', label: 'Corolla' },
-                  { value: 'Hilux', label: 'Hilux' },
-                  { value: 'Etios', label: 'Etios' },
-                  { value: 'SW4', label: 'SW4' },
-                  { value: 'Yaris', label: 'Yaris' }
-                ]"
+                :options="vehicleModels"
                 icon-position="right"
                 variant="secondary"
                 :outline="true"
+                :disabled="loadingModels || !basicInfo.brand"
                 class="w-full"
-              />            
+              >
+                <template #icon v-if="loadingModels">
+                  <Loading />
+                </template>
+              </Input>            
             </div>
             <div class="flex gap-5">
               <Input

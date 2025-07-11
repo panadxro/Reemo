@@ -1,27 +1,41 @@
 <script setup>
 import { useCarStore } from '@stores'
 import { onMounted, computed, ref, inject } from 'vue';
+import { addAlert } from "@services/alerts.js";
 
 import CardCar from "@components/organisms/cars/CardCar.vue";
 import Heading from "@components/atoms/Heading.vue";
 import BackButton from "@components/atoms/BackButton.vue";
 import ViewCar from '../components/organisms/cars/ViewCar.vue';
 import Input from '../components/molecules/Input.vue';
+import { useAuthStore } from '../stores/auth.store';
+import VerifyValidation from '../components/user/VerifyValidation.vue';
 
 const carStore = useCarStore();
 const authSession = inject('authSession');
+const authStore = useAuthStore();
 
 const selectedCar = ref(null);
 
 const userCars = computed(() => carStore.userCars);
+const isVerified = computed(() => authStore.userStatus === 'verified');
 
 const handleCarClick = (car) => {
   selectedCar.value = car;
 };
 
+const handleRegisterClick = () => {
+  if (!isVerified.value) {
+    addAlert("El usuario no esta verificado. Aguardá la verificación", "error");
+    return;
+  }
+};
+
 onMounted(async () => {
   try {
-    await carStore.loadUserCars(authSession.user?.id);
+    await carStore.loadUserCars(authSession?.user?.id);
+
+    console.log("Datos del usurtaio authStore:", authStore?.user);
 
     // Seleccionar el primer auto al cargar la página
     if (carStore.userCars.length > 0) {
@@ -48,19 +62,47 @@ onMounted(async () => {
             :key="car.id" 
             :car="car" 
             :index="index"
+            :isSelected="selectedCar?.id === car.id"
             layout="rectangle"
             @click="handleCarClick(car)"
           />
-        </ul>
-        <router-link to="/car/register">
-          <Input
-            type="button"
-            variant="primary"
-            text="Registrar nuevo vehículo"
-            input-class="fixed md:static bottom-25 left-0 right-0 z-10 w-[calc(100%-2.5rem)] md:w-full mx-auto md:mx-0"
-            :outline="false"
+        </ul>        
+        <VerifyValidation
+          v-if="!isVerified"
+          title="Verificación requerida"
+          message="Para registrar un nuevo vehículo, debés verificar tu cuenta."
+          :show="!isVerified"
+          type="normalYellow"
           />
-        </router-link>
+
+        <div class="w-full">
+          <router-link 
+            v-if="isVerified" 
+            :to="{name: 'CarRegister'}"
+            class="block w-full"
+          >
+            <Input
+              type="button"
+              variant="primary"
+              text="Registrar nuevo vehículo"
+              class="w-full"
+              :outline="false"
+            />
+          </router-link>
+
+          <!-- Botón deshabilitado para usuarios no verificados -->
+          <div v-else class="w-full">
+            <Input
+              type="button"
+              variant="secondary"
+              text="Registrar nuevo vehículo"
+              class="w-full opacity-50 !hover:cursor-not-allowed"
+              :outline="true"
+              :disabled="true"
+              @click="handleRegisterClick"
+            />
+          </div>
+        </div>
       </div>
     </div>
     <ViewCar 

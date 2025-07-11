@@ -238,8 +238,11 @@ onMounted(async () => {
           v-for="(method, index) in user.paymentMethods || []"
           :key="index" 
           @click="handlePaymentClick(method)"
-          class="flex flex-row items-center gap-2 border-2 border-vibrant-light-600 w-full px-4 py-3 rounded-2xl cursor-pointer"
-          :class="{ 'border-vibrant-blue-900': selectedPayment?.walletId === method.walletId || selectedPayment?.cardNumber === method.cardNumber }"
+          class="flex flex-row items-center gap-2 border-2 border-vibrant-light-900 w-full px-4 py-3 rounded-2xl cursor-pointer"
+          :class="{ 
+            'bg-vibrant-light-600': selectedPayment === method,
+            'bg-white': selectedPayment !== method 
+          }"
           >
           <PaymentMethod :method="method.walletType" 
         />

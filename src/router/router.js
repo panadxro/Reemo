@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "@/stores";
 
 import Home from "../pages/Home.vue";
 import Login from "../pages/Login.vue";
@@ -56,9 +57,17 @@ const routes = [
     component: CarRegister,
     name: "CarRegister",
     meta: { needsAuth: true},
+    beforeEnter: (to, from, next) => {
+    const authStore = useAuthStore();
+    if (authStore.userStatus !== 'verified') {
+      next({ name: 'Profile' });
+    } else {
+      next();
+    }
+  }
   },
   {
-    path: "/car/register/:id/edit",
+    path: "/car/edit/:id",
     name: 'CarEdit',
     component: CarRegister,
     props: true,

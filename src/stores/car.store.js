@@ -64,12 +64,7 @@ export const useCarStore = defineStore("car", {
         },
         securityDeposit: null,
       },
-      photos: {
-        photo1: null,
-        photo2: null,
-        photo3: null,
-        photo4: null
-      },
+      photos: [],
       availability: {
         schedule: {
           monday: false,
@@ -135,17 +130,17 @@ export const useCarStore = defineStore("car", {
   }),
 
   actions: {
-    async initializeCar() {
-      try {
-        this.loading = true;
-        this.currentCar.id = createCarData();
-      } catch (error) {
-        this.error = error;
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
+    // async initializeCar() {
+    //   try {
+    //     this.loading = true;
+    //     this.currentCar.id = createCarData();
+    //   } catch (error) {
+    //     this.error = error;
+    //     throw error;
+    //   } finally {
+    //     this.loading = false;
+    //   }
+    // },
 
     async saveCar(carData) {
       try {

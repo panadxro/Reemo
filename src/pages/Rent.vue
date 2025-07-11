@@ -49,6 +49,7 @@ onMounted(async () => {
             :key="rent.id" 
             :rent="rent" 
             :index="index"
+            :isSelected="selectedRent?.id === rent.id"
             @click="handleRentClick(rent)"
           />
         </ul>
