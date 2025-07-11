@@ -47,6 +47,9 @@ const router = useRouter();
 const submitting = ref(false);
 const showSuccess = ref(false);
 
+const isVerified = computed(() => authStore.userStatus === 'verified');
+
+const isAvailable = computed(() => carStore.status.current === 'available');
 
 const dateTimeValues = computed(() => ({
   rentedFromDate: store.rentalData.rentedFromDate,
@@ -128,6 +131,12 @@ function handleViewProfileOwner() {
 function handleViewAlert() {
   showSuccess.value = false;
   router.push({ name: 'Dashboard', params: { id: authStore.user.id } }); 
+}
+
+function handleCarNotAvailable() {
+  addAlert('El auto no está disponible para reservar en este momento.', 'error');
+  // Opcional: redirigir a la página de búsqueda o listado de autos
+  // router.push({ name: 'Cars' });
 }
 
 onMounted(async () => {    
@@ -646,8 +655,12 @@ onMounted(async () => {
         :button-text="store.currentStep === 4 ? 'Confirmar reserva' : 'Continuar'"
         :is-disabled="store.isNextDisabled"
         :is-confirmation="store.currentStep === 4"
+        :is-verified="isVerified"
+        :is-available="isAvailable"
+        :show-verification-warning="true"
         @continue="store.nextStep"
         @confirm="handleSubmit"
+        @car-not-available="handleCarNotAvailable"
       />
     </div>
 

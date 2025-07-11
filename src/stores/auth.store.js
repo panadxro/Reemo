@@ -139,7 +139,7 @@ export const useAuthStore = defineStore('auth', {
       lastname: profileData.personalInfo.lastName || null, 
       profilePhoto: profileData.personalInfo.profilePhoto || null,
       username: profileData.personalInfo.username || null,
-      status: profileData.personalInfo.status || 'not-verified' 
+      status: profileData.status || 'not-verified' 
     };
     console.log("Perfil de usuario actualizado:", this.user);
   }

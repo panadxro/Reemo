@@ -21,10 +21,11 @@ import PayPal from "@icons/PayPal.vue";
 import CreditCard from "@icons/CreditCard.vue";
 import Cross from "@icons/Cross.vue";
 import Check from "@icons/Check.vue";
+import VerifyValidation from "@/components/user/VerifyValidation.vue";
 
 export default {
   name: "UserProfile",
-  components: { Heading, CardCar, UserNav, RentedCar, Loading, Arrow, BackButton, MercadoPago, Uala, PayPal, CreditCard, Input, DeletePaymentModal, Cross, Check, RentStatusDetails, History },
+  components: { Heading, CardCar, UserNav, RentedCar, Loading, Arrow, BackButton, MercadoPago, Uala, PayPal, CreditCard, Input, DeletePaymentModal, Cross, Check, RentStatusDetails, History, VerifyValidation },
   props: {
     id: {
       type: String,
@@ -57,6 +58,7 @@ export default {
     const loggedUserId = computed(() => authStore.user?.id);
     const userIdFromRoute = computed(() => route.params.id);
     const isOwnProfile = computed(() => loggedUserId.value === userIdFromRoute.value);
+    const isVerified = computed(() => authStore.userStatus === 'verified');
 
     const displayedPaymentMethods = computed(() => {
       if (!paymentStore.paymentMethods.length) return [];
@@ -166,6 +168,7 @@ export default {
       confirmDeletePaymentMethod,
       carStore,
       userCars,
+      isVerified,
       loggedUserId
     };
   }
@@ -181,8 +184,31 @@ export default {
           <BackButton />
           <Heading v-if="showProfile && showProfile.personalInfo" :type="1" class="medium">{{ isOwnProfile ? "Mi perfil" : showProfile.personalInfo.username }}</Heading>
         </div>
-        <article  class="bg-secondary-100 h-full rounded-[40px] px-6 py-5 flex flex-col md:flex-row items-center gap-5">
-          <img 
+        <article  class="bg-secondary-100 h-full rounded-[40px] px-6 py-5 flex flex-col gap-5 overflow-y-auto">
+          <div v-if="isOwnProfile" class="w-full">
+          <VerifyValidation
+          v-if="!isVerified"
+          title="Perfil en proceso de validación"
+          message="Tu perfil está siendo revisado por nuestro equipo. El proceso puede demorar algunos días. 
+          Te notificaremos cuando esté completo."
+          class="!text-black"
+          :show="!isVerified"
+          type="brightYellow"
+          />
+
+          <VerifyValidation
+            v-else
+            title="Perfil verificado"
+            message="Tu perfil fue verificado con éxito. Ahoras podés disfrutar la aplicación al 100% ¡Gracias por completar tu perfil!"
+            class="!text-black"
+            :show="isVerified"
+            type="green"
+          />
+
+          
+        </div>
+          <div class="flex flex-col md:flex-row items-center gap-5">
+            <img 
             v-if="showProfile && showProfile.personalInfo && showProfile.personalInfo.profilePhoto"
             class="w-32 md:w-24 lg:w-32 aspect-square rounded-full object-cover bg-vibrant-light-800"
             :src="showProfile.personalInfo.profilePhoto"
@@ -227,8 +253,9 @@ export default {
             </ul>
 
             <p class="text-primary-900 text-sm md:text-md leading-relaxed h-[60px] 2xl:h-full overflow-y-auto overflow-hidden">
-              {{ showProfile?.email || 'Este usuario no ha proporcionado una biografía.' }}
+              {{ showProfile?.email || 'Este usuario no ha proporcionado un mail.' }}
             </p>
+          </div>
           </div>
         </article>
       </div>
