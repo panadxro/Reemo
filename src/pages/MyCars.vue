@@ -1,6 +1,7 @@
 <script setup>
 import { useCarStore } from '@stores'
 import { onMounted, computed, ref, inject } from 'vue';
+import { addAlert } from "@services/alerts.js";
 
 import CardCar from "@components/organisms/cars/CardCar.vue";
 import Heading from "@components/atoms/Heading.vue";
@@ -8,6 +9,7 @@ import BackButton from "@components/atoms/BackButton.vue";
 import ViewCar from '../components/organisms/cars/ViewCar.vue';
 import Input from '../components/molecules/Input.vue';
 import { useAuthStore } from '../stores/auth.store';
+import VerifyValidation from '../components/user/VerifyValidation.vue';
 
 const carStore = useCarStore();
 const authSession = inject('authSession');
@@ -20,6 +22,13 @@ const isVerified = computed(() => authStore.userStatus === 'verified');
 
 const handleCarClick = (car) => {
   selectedCar.value = car;
+};
+
+const handleRegisterClick = () => {
+  if (!isVerified.value) {
+    addAlert("El usuario no esta verificado. Aguardá la verificación", "error");
+    return;
+  }
 };
 
 onMounted(async () => {
@@ -58,16 +67,43 @@ onMounted(async () => {
             @click="handleCarClick(car)"
           />
         </ul>
-        <p v-if="!isVerified" class="text-center text-white">Tu usuario debe estar verificado para publicar vehículos</p>
-        <router-link :to="{name: 'CarRegister'}" >
-          <Input
-            type="button"
-            variant="primary"
-            text="Registrar nuevo vehículo"
-            class="w-full"
-            :outline="false"
+        
+        <VerifyValidation
+          v-if="!isVerified"
+          title="Verificación requerida"
+          message="Para registrar un nuevo vehículo, debés verificar tu cuenta."
+          :show="!isVerified"
+          type="normalYellow"
           />
-        </router-link>
+
+        <div class="w-full">
+          <router-link 
+            v-if="isVerified" 
+            :to="{name: 'CarRegister'}"
+            class="block w-full"
+          >
+            <Input
+              type="button"
+              variant="primary"
+              text="Registrar nuevo vehículo"
+              class="w-full"
+              :outline="false"
+            />
+          </router-link>
+
+          <!-- Botón deshabilitado para usuarios no verificados -->
+          <div v-else class="w-full">
+            <Input
+              type="button"
+              variant="secondary"
+              text="Registrar nuevo vehículo"
+              class="w-full opacity-50 !hover:cursor-not-allowed"
+              :outline="true"
+              :disabled="true"
+              @click="handleRegisterClick"
+            />
+          </div>
+        </div>
       </div>
     </div>
     <ViewCar 
