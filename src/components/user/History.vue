@@ -80,11 +80,11 @@ onMounted(() => {
   
   <ul v-else-if="combinedHistory.length > 0" class="box-deep flex flex-col gap-5 overflow-y-auto h-full !pr-2">
     <HistoryCar 
-      v-for="rent in combinedHistory" 
+      v-for="(rent, index) in combinedHistory" 
       :key="rent.id" 
-      :car="rent.vehicleDetails || rent"
       :rent="rent"
-      @click="router.push(`/rents/${rent.id}`)" />
+      :index="index"
+      @click="router.push({ name: 'RentDetail', params: { id: rent.id } })" />
   </ul>
   
   <template v-else>

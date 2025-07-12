@@ -1,160 +1,153 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref, useAttrs } from 'vue';
 
 const props = defineProps({
-  modelValue: {
-    type: [String, Number],
-    default: ''
-  },
+  modelValue: { type: [String, Number, Boolean, Array], default: '' },
   type: {
     type: String,
-    default: 'text'
+    default: 'text',
+    validator: (value) => [
+      'text', 'number', 'email', 'password', 'tel', 'url',
+      'date', 'time', 'checkbox', 'radio', 'file',
+      'button', 'submit', 'reset', 'select'
+    ].includes(value)
   },
   id: String,
   name: String,
   placeholder: String,
-  iconPosition: {
-    type: String,
-    default: 'left', // Puede ser 'left' o 'right',
-    validator: (value) => ['left', 'right'].includes(value)
-  },
-  variant: {
-    type: String,
-    default: 'primary', // Puede ser 'primary' o 'secondary',
-    validator: (value) => ['primary', 'secondary'].includes(value)
-  },
-  outline: Boolean, // Modo outline (true o false),
-  text: String, // Texto de boton (si el tipo es 'button' o 'submit'),
-  options: {
-    type: Array, // Tipo de la propiedad options,
-    default: () => [] // Valor por defecto (array vacío)
-  },
-  label: {
-    type: Boolean,
-    default: false
-  },
-  inputClass: { // Nueva prop para clases personalizadas del input/button
-    type: String,
-    default: ''
-  },
-  disabled: {
-    type: Boolean,
-    default: false
-  }
+  iconPosition: { type: String, default: 'left', validator: (value) => ['left', 'right'].includes(value) },
+  variant: { type: String, default: 'primary', validator: (value) => ['primary', 'secondary'].includes(value) },
+  outline: Boolean,
+  text: String,
+  options: { type: Array, default: () => [] },
+  label: { type: Boolean, default: false },
+  inputClass: { type: String, default: '' },
+  disabled: { type: Boolean, default: false },
+  readonly: { type: Boolean, default: false },
+  required: { type: Boolean, default: false },
+  autocomplete: { type: String, default: 'off' },
+  autofocus: { type: Boolean, default: false },
+  min: { type: [String, Number], default: undefined },
+  max: { type: [String, Number], default: undefined },
+  step: { type: [String, Number], default: undefined },
+  pattern: { type: String, default: undefined },
+  minlength: { type: Number, default: undefined },
+  maxlength: { type: Number, default: undefined }
 });
 
+const emit = defineEmits(['update:modelValue', 'focus', 'blur', 'click']);
+const attrs = useAttrs();
 const inputRef = ref(null);
 
-const emit = defineEmits(['update:modelValue']);
+// Clases base comunes
+const baseClasses = computed(() => [
+  props.inputClass,
+  'flex flex-1 items-center justify-center rounded-2xl py-2.5 px-5 gap-2 border-2 font-semibold',
+  { '!flex-col !items-start': props.label && !['button', 'submit', 'select'].includes(props.type) },
+  { '!cursor-not-allowed opacity-50': props.disabled }
+]);
 
-const selectRef = ref(null);
-
-// Clases del contenedor (solo layout)
-const containerClasses = computed(() => {
-    const baseClasses = props.inputClass || '';
-  const variantClasses = props.variant === 'primary' 
-    ? (
-        props.outline 
-        ? 'border-deep-blue-600 text-deep-blue-600 bg-white' 
-        : 'bg-deep-blue-600 text-white border-transparent hover:bg-deep-blue-700 focus:opacity-80'
-    ) 
-    : (
-      props.outline 
-      ? 'border-vibrant-light-800 bg-white' 
-      : 'bg-vibrant-light-600 text-deep-blue-900 border-transparent'
-    );
-  return `${baseClasses} ${variantClasses} flex flex-1 items-center justify-center rounded-2xl py-2.5 px-5 gap-2 border-2 font-semibold`;
+// Clases de variante
+const variantClasses = computed(() => {
+  const variants = {
+    primary: {
+      outline: 'border-deep-blue-600 text-deep-blue-600 bg-white',
+      normal: 'bg-deep-blue-600 text-white border-transparent hover:bg-deep-blue-700'
+    },
+    secondary: {
+      outline: 'border-vibrant-light-800 bg-white',
+      normal: 'bg-vibrant-light-600 text-deep-blue-900 border-transparent'
+    }
+  };
+  
+  return variants[props.variant][props.outline ? 'outline' : 'normal'];
 });
 
-// Clases del elemento (input/select/button - estilos visuales)
-const elementClasses = computed(() => {
-  const baseClasses = props.inputClass || '';
-  const variantClasses = props.variant === 'primary' 
-    ? (
-        props.outline 
-        ? 'border-deep-blue-600 text-deep-blue-600 bg-white' 
-        : 'bg-deep-blue-600 text-white border-transparent hover:bg-deep-blue-700 focus:opacity-80'
-    ) 
-    : (
-      props.outline 
-      ? 'border-vibrant-light-800 bg-white' 
-      : 'bg-vibrant-light-600 text-deep-blue-900 border-transparent'
-    );
+// Clases del contenedor
+const containerClasses = computed(() => [
+  ...baseClasses.value,
+  variantClasses.value
+]);
 
-  return `${baseClasses} ${variantClasses}`;
-});
+// Clases del elemento (input/select/button)
+const elementClasses = computed(() => [
+  props.type === 'select' ? 'w-full' : 'w-full border-none outline-none bg-transparent',
+  { 'cursor-not-allowed opacity-50 text-gray-500': props.disabled },
+  props.type === 'button' || props.type === 'submit' ? variantClasses.value : ''
+]);
 
-// Exponer método focus
-const focus = () => {
-  if (inputRef.value) {
-    inputRef.value.focus();
-  }
-};
+// Métodos expuestos
+const focus = () => inputRef.value?.focus();
+const blur = () => inputRef.value?.blur();
 
-defineExpose({
-  focus
-});
+defineExpose({ focus, blur,  });
 </script>
 
 <template>
   <div class="flex flex-col gap-1 w-full">
-    <!-- Label arriba -->
+    <!-- Label -->
     <label 
-      v-if="label && type !== 'button' && type !== 'submit'" 
+      v-if="label && !['button', 'submit', 'select'].includes(type)" 
       :for="id" 
       class="font-semibold text-deep-blue-900"
     >
       {{ placeholder }}
     </label>
 
-    <!-- Contenedor del input/select -->
+    <!-- Input normal -->
     <label 
-      v-if="type !== 'button' && type !== 'submit' && type !== 'select'" 
-      :for="id" 
+      v-if="!['button', 'submit', 'select'].includes(type)"
       :class="[
-        containerClasses,
-        { '!flex-col !items-start': label },
-        { 'cursor-not-allowed opacity-50': disabled }
+        containerClasses, 
+        { 'cursor-text': type === 'text' || type === 'email' || type === 'tel' || type === 'password' }
       ]"
+      @click.stop="focus()"
     >
-      <slot v-if="iconPosition === 'left'" name="icon"></slot>
-
-      <!-- Input normal -->
-      <input 
-        v-if="type !== 'select'"
-        ref="inputRef"
-        :type="type" 
-        :id="id" 
-        :name="name" 
-        :placeholder="placeholder" 
-        @input="$emit('update:modelValue', $event.target.value)"
-        :value="modelValue"
-        autocomplete="off"
-        :class="[
-          'w-full border-none outline-none',
-          elementClasses,
-          { 'cursor-not-allowed opacity-50 text-gray-500': disabled }
-        ]"
-        :aria-label="placeholder"
-      />
-
+      <slot v-if="iconPosition === 'left'" name="icon" />
       
-      <slot v-if="iconPosition === 'right'" name="icon"></slot>
-    </label>
-    
+      <input
+        ref="inputRef"
+        :type="type"
+        :id="id"
+        :name="name"
+        :placeholder="placeholder"
+        :disabled="disabled"
+        :readonly="readonly"
+        :required="required"
+        :autocomplete="autocomplete"
+        :autofocus="autofocus"
+        :min="min"
+        :max="max"
+        :step="step"
+        :minlength="minlength"
+        :maxlength="maxlength"
+        :pattern="pattern"
+        :value="modelValue"
+        @input="$emit('update:modelValue', $event.target.value)"
+        @focus="$emit('focus', $event)"
+        @blur="$emit('blur', $event)"
+        v-bind="attrs"
+        :class="[
+          elementClasses,
+          { 'text-gray-900': disabled }
+        ]"
+      />
+      
+      <slot v-if="iconPosition === 'right'" name="icon" />
+  </label>
+
     <!-- Select -->
     <select
       v-else-if="type === 'select'"
       :id="id"
       :name="name"
-      @change="$emit('update:modelValue', $event.target.value)"
+      :disabled="disabled"
+      :required="required"
+      :autofocus="autofocus"
+      v-bind="attrs"
       :value="modelValue"
-      :aria-label="placeholder"
-      :class="[
-        containerClasses,
-        { 'cursor-not-allowed opacity-50': disabled }
-      ]"
-      ref="selectRef"
+      @change="$emit('update:modelValue', $event.target.value)"
+      :class="containerClasses"
     >
       <option 
         v-if="placeholder" 
@@ -176,43 +169,63 @@ defineExpose({
     </select>
 
     <!-- Botón -->
-    <button 
-      v-else 
+    <button
+      v-else
       :type="type"
-      :class="[
-        containerClasses,
-        elementClasses,
-        {'cursor-pointer' : !disabled },
-        { 'cursor-not-allowed opacity-50': disabled }
-      ]"
       :disabled="disabled"
+      v-bind="attrs"
+      @click="$emit('click', $event)"
+      class="hover:cursor-pointer"
+      :class="containerClasses"
     >
-      <slot v-if="iconPosition === 'left'" name="icon"></slot>
+      <slot v-if="iconPosition === 'left'" name="icon" />
       {{ text }}
-      <slot v-if="iconPosition === 'right'" name="icon"></slot>
+      <slot v-if="iconPosition === 'right'" name="icon" />
     </button>
   </div>
 </template>
 
 <style scoped>
-/* Estilos específicos para el select */
-select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 0.5rem center;
-  background-size: 1.5em;
-  padding-right: 2.5rem;
-  cursor: pointer;
-  width: 100%;
-}
 
 /* Estilos para inputs normales */
 input:not([type='select']) {
   border: none;
   outline: none;
   flex: 1;
+}
+
+select {
+  cursor: pointer;
+}
+::picker(select) {
+  border: 2px solid #A7EBEF;
+}
+::picker(select) {
+  margin-block: .25em;
+  border-radius: 1rem;
+  scrollbar-width: none;
+  scrollbar-color: #CAF3F5 #ffffff;
+}
+select::picker-icon {
+  transition: 0.4s rotate;
+  content: url("/src/icons/Dropdown.png");
+  max-width: 1.5rem;
+  max-height: 1.5rem;
+}
+select:open::picker-icon {
+  rotate: 180deg;
+}
+select option:hover {
+  background-color: #A7EBEF !important;
+}
+select option:checked {
+  background-color: #DBFAFC;
+}
+option {
+    padding: 0.5rem 1rem 0.5rem 1rem;
+}
+select option::checkmark {
+  order:1;
+  content: "✅";
 }
 </style>

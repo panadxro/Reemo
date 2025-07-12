@@ -141,7 +141,7 @@ const handleSubmit = async () => {
       :text="authStore.loading ? 'Cargando...' : 'Registrarse'"
       :iconPosition="'left'"
       :variant="'primary'"
-      :class="authStore.loading ? 'cursor-not-allowed bg-deep-blue-700' : 'cursor-pointer'"
+      :disabled="authStore.loading"
     >
     </Input>
     <p class="text-xs text-background-900 text-center font-regular">

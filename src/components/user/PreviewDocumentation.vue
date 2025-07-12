@@ -42,7 +42,7 @@ const getColorByWalletType = (walletType) => {
 </script>
 
 <template>
-  <aside class="md:bg-vibrant-light-600 mx-2.5 md:py-8 md:px-5 flex flex-col gap-2 rounded-[40px] max-w-[250px] min-w-[250px] absolute top-0 left-0 h-full z-10 md:static">
+  <aside class="md:bg-vibrant-light-700 mx-2.5 md:py-8 md:px-5 flex flex-col gap-2 rounded-[40px] max-w-[250px] min-w-[250px] absolute top-0 left-0 h-full z-10 md:static">
     <template v-if="currentStep === 0">
       <Heading :type="3" class="regular">Documento nacional</Heading>
       <img v-if="user.documents.dniFront" :src="user.documents.dniFront" alt="DNI Frontal" class="w-full aspect-video object-cover rounded-sm">

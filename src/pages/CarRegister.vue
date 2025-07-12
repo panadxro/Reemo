@@ -386,11 +386,7 @@ const handleSubmit = async () => {
       photos: finalPhotoUrls.filter(url => url)
     };
 
-   // 4. Guardar en Firestore (primera creación real)
-   // await carStore.saveCar(carData);
 
-  // addAlert('¡Vehículo registrado con éxito!', 'success');
-  // router.push(`/car/${carStore.currentCar.id}`);
   if (isEditMode.value) {
     await carStore.updateCar(props.id, carData);
 
@@ -435,19 +431,6 @@ onMounted(async () => {
     if (!authSession.user.id) {
       throw new Error("User not authenticated");
     }
-    
-    // await geoStore.loadProvinciasYLocalidades();
-    // await carStore.initializeCar(authSession.user.id);
-    // if (!carStore.currentCar.id) {
-    //   carStore.initializeCar();
-    // }
-
-    // Cargar accesorios existentes si los hay
-    // if (features.value?.accessories) {
-    //   selectedAccessories.value = allAccessoryOptions.value.filter(
-    //     option => features.value.accessories.includes(option.value)
-    //   );
-    // }
 
     if(isEditMode.value){
       // MODO EDICIÓN: Cargar datos del vehículo existente
@@ -467,11 +450,6 @@ onMounted(async () => {
         });
       }
       loading.value = false;
-    } else {
-      // MODO REGISTRO: Inicializar un vehículo nuevo
-      // if (!carStore.currentCar.id) {
-      //   carStore.initializeCar();
-      // }
     }
 
     await loadMakes();
@@ -490,12 +468,6 @@ onMounted(async () => {
 
 watch(currentStep, async (newStep) => {  
   if (newStep === 3 && !autocompleteInitialized.value) {  
-    // const addressInput = document.getElementById('carRegisterAddressInput');
-    // if(!addressInput){
-    //   console.warn('[CarRegister] input de dirección no encontrado', addressInput);
-    //   setTimeout(() => {}, 100);
-    //   return;
-    // }
     try {
       await loadGoogleMaps();
       initAutocomplete('carRegisterAddressInput', (placeData) => {
@@ -625,7 +597,8 @@ onBeforeUnmount(() => {
                 </template>
               </Input>            
             </div>
-            <div class="flex gap-5">
+            
+            <div class="flex justify-between gap-5">
               <Input
                 type="select"
                 v-model.number="basicInfo.year"
@@ -636,17 +609,15 @@ onBeforeUnmount(() => {
                   value: 2010 + i,
                   label: (2010 + i).toString()
                 }))"
-                icon-position="right"
                 variant="secondary"
                 :outline="true"
-                class="flex flex-25!"
               />
               <Input
                 type="select"
                 v-model="basicInfo.type"
                 name="type"
                 id="type"
-                placeholder="Tipo de chasis"
+                placeholder="Chasis"
                 :options="[
                   { value: 'Sedan', label: 'Sedán' },
                   { value: 'Hatchback', label: 'Hatchback' },
@@ -654,10 +625,8 @@ onBeforeUnmount(() => {
                   { value: 'Pickup', label: 'Pickup' },
                   { value: 'Van', label: 'Van' }
                 ]"
-                icon-position="right"
                 variant="secondary"
                 :outline="true"
-                class="flex flex-45!"
               /> 
               <Input
                 type="select"
@@ -673,10 +642,8 @@ onBeforeUnmount(() => {
                   { value: 'Azul', label: 'Azul' },
                   { value: 'Plateado', label: 'Plateado' }
                 ]"
-                icon-position="right"
                 variant="secondary"
                 :outline="true"
-                class="flex flex-30!"
               /> 
             </div>  
             <div class="flex gap-5">

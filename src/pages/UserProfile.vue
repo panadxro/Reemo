@@ -184,78 +184,55 @@ export default {
           <BackButton />
           <Heading v-if="showProfile && showProfile.personalInfo" :type="1" class="medium">{{ isOwnProfile ? "Mi perfil" : showProfile.personalInfo.username }}</Heading>
         </div>
-        <article  class="bg-secondary-100 h-full rounded-[40px] px-6 py-5 flex flex-col gap-5 overflow-y-auto">
-          <div v-if="isOwnProfile" class="w-full">
-          <VerifyValidation
-          v-if="!isVerified"
-          title="Perfil en proceso de validación"
-          message="Tu perfil está siendo revisado por nuestro equipo. El proceso puede demorar algunos días. 
-          Te notificaremos cuando esté completo."
-          class="!text-black"
-          :show="!isVerified"
-          type="brightYellow"
-          />
-
-          <VerifyValidation
-            v-else
-            title="Perfil verificado"
-            message="Tu perfil fue verificado con éxito. Ahoras podés disfrutar la aplicación al 100% ¡Gracias por completar tu perfil!"
-            class="!text-black"
-            :show="isVerified"
-            type="green"
-          />
-
-          
-        </div>
-          <div class="flex flex-col md:flex-row items-center gap-5">
+        <article class="bg-secondary-100 h-full md:flex-row rounded-[40px] items-center justify-center px-6 py-5 flex flex-col gap-5 overflow-hidden">
             <img 
             v-if="showProfile && showProfile.personalInfo && showProfile.personalInfo.profilePhoto"
-            class="w-32 md:w-24 lg:w-32 aspect-square rounded-full object-cover bg-vibrant-light-800"
+            class="md:h-full aspect-square rounded-full object-cover bg-vibrant-light-800"
             :src="showProfile.personalInfo.profilePhoto"
             :alt="`Perfil de ${showProfile?.personalInfo?.username || 'usuario'}`" 
-          />
-          <div class="flex flex-col justify-between h-full  gap-2 md:gap-0">
-            <div class="flex justify-between items-center">
-              <Heading :type="2" class="medium text-primary-900 text-center sm:text-left"
-                v-if="showProfile && showProfile.personalInfo">
-                {{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }}
-              </Heading>
-              <router-link
-                v-if="!isOwnProfile && showProfile && showProfile.personalInfo && showProfile.personalInfo.id !== id"
-                :to="`/user/${id}/chat`"
-                class="cursor-pointer"
-                >
-              <Input 
-                type="button"
-                text="Chat"
-                variant="primary"
-                :outline="false"
-                class="cursor-pointer"
-              />
-              </router-link>
+            />
+            <div class="flex flex-col justify-evenly items-center md:items-baseline h-full md:gap-0 overflow-y-auto ">
+              <div class="flex justify-center md:justify-between items-center">
+                <Heading :type="2" class="medium text-primary-900 text-center "
+                  v-if="showProfile && showProfile.personalInfo">
+                  {{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }}
+                </Heading>
+                <router-link
+                  v-if="!isOwnProfile && showProfile && showProfile.personalInfo && showProfile.personalInfo.id !== id"
+                  :to="`/user/${id}/chat`"
+                  class="cursor-pointer"
+                  >
+                <Input 
+                  type="button"
+                  text="Chat"
+                  variant="primary"
+                  :outline="false"
+                  class="cursor-pointer"
+                />
+                </router-link>
+              </div>
+              <p class="text-primary-900 text-sm md:text-md leading-relaxed">{{ showProfile?.email || 'Este usuario no ha proporcionado un mail.' }}</p>
+              <div v-if="isOwnProfile" class="w-full">
+                <VerifyValidation
+                v-if="!isVerified"
+                title="Perfil en proceso de validación"
+                message="Tu perfil está siendo revisado por nuestro equipo. El proceso puede demorar algunos días. 
+                Te notificaremos cuando esté completo."
+                class="!text-black"
+                :show="!isVerified"
+                type="brightYellow"
+                />
+
+                <VerifyValidation
+                  v-else
+                  title="Perfil verificado"
+                  message="Tu perfil fue verificado con éxito. Ahoras podés disfrutar la aplicación al 100%."
+                  class="!text-black"
+                  :show="isVerified"
+                  type="green"
+                />
+              </div>
             </div>
-
-            <ul class="flex items-center gap-2.5">
-              <li class="flex flex-col bg-vibrant-light-600 rounded-xl px-2.5 py-2.5 w-16 h-16">
-                <Heading :type="3" class="medium text-primary-900 leading-none">{{ showProfile?.tripsCount || '0' }}</Heading>
-                <p class="text-xs sm:text-sm text-background-600">Viajes</p>
-              </li>
-
-              <li class="flex flex-col bg-vibrant-light-600 rounded-xl px-2.5 py-2.5 h-16">
-                <Heading :type="3" class="medium text-primary-900 leading-none">{{ showProfile?.rating?.toFixed(1) || '0.0' }}</Heading>
-                <p class="text-xs sm:text-sm text-background-600">Estrellas</p>
-              </li>
-
-              <li class="flex flex-col bg-vibrant-light-600 rounded-xl px-2.5 py-2.5 h-16">
-                <Heading :type="3" class="medium text-primary-900 leading-none">Rol</Heading>
-                <p class="text-xs sm:text-sm text-background-600">{{ showProfile?.role === 'owner' ? 'Arrendador' : 'Arrendatario' }}</p>
-              </li>
-            </ul>
-            <p class="text-primary-900 text-sm md:text-md leading-relaxed h-[60px] 2xl:h-full overflow-y-auto overflow-hidden">
-              {{ showProfile?.email || 'Este usuario no ha proporcionado un mail.' }}
-            </p>
-          </div>
-          </div>
         </article>
       </div>
 
@@ -292,10 +269,10 @@ export default {
         :class="isOwnProfile ? 'div-my-user' : 'div-user'"
         class="bg-deep-blue-900 overflow-hidden rounded-[40px] py-7 px-5 flex flex-col gap-5"
         >
-        <Heading :type="2" class="medium text-white text-center sm:text-left">{{ isOwnProfile ? "Información Personal" : "Información del Usuario"  }}</Heading>
+        <Heading :type="2" class="medium text-white text-center sm:text-left">{{ isOwnProfile ? "Información personal" : "Información del Usuario"  }}</Heading>
         <article v-if="isOwnProfile" class="box-deep overflow-y-auto h-full flex flex-col gap-5 pr-2">
           <div class="flex flex-col gap-2">
-            <Heading :type="3" class="regular text-white">Datos Básicos</Heading>
+            <Heading :type="3" class="regular text-white">Datos básicos</Heading>
             <ul class="flex flex-col gap-1">
               <li class="flex justify-between items-center">
                 <Heading :type="6" class="text-sm font-bold text-white">Nombre</Heading>
@@ -330,7 +307,7 @@ export default {
                 <p class="text-sm text-white/50">{{ showProfile?.address?.street || 'No especificado' }}</p>
               </li>
               <li class="flex justify-between items-center">
-                <Heading :type="6" class="text-sm font-bold text-white">Código Postal</Heading>
+                <Heading :type="6" class="text-sm font-bold text-white">Código postal</Heading>
                 <p class="text-sm text-white/50">{{ showProfile?.address?.postalCode || 'No especificado' }}</p>
               </li>
             </ul>

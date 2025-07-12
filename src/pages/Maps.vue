@@ -2,18 +2,18 @@
 import { ref, onMounted, watch, computed  } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from "@/stores/auth.store.js";
-
 import { getAvailableCars } from "@/services/car";
 import { updateCars, initAutocomplete, updateMapMarkers, loadGoogleMaps, initMap, getCurrentLocation } from "../services/google-maps.js";
-
 import { addAlert } from "@/services/alerts.js";
+
 import Heading from "@components/atoms/Heading.vue";
 import comentarioIcon from '@/assets/marcador.png';
 import Loading from "@icons/Loading.vue";
 import Input from "@components/molecules/Input.vue";
 import SearchIcon from "@icons/Search.vue";
 import Status from "@components/molecules/Status.vue";
-import Cross from '../icons/Cross.vue';
+import BackButton from "@components/atoms/BackButton.vue";
+import Arrow from "@icons/Arrow.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -187,23 +187,24 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
 
 <template>
   <section class="w-full overflow-hidden m-2.5 flex gap-5">
+
     <div 
       v-if="selectedCar"
-      class="fixed overflow-y-hidden inset-0 md:static z-60 bg-white md:bg-transparent px-2.5 py-5 pb-23 md:backdrop-blur-0 md:shadow-none transition-all duration-300 ease-in-out transform md:translate-x-0 md:opacity-100 flex flex-col md:w-1/3 h-full gap-4"
+      class="box-white fixed overflow-y-hidden inset-0 md:static z-60 bg-white px-2.5 py-5 pb-23 md:pb-2.5 md:backdrop-blur-0 md:shadow-none transition-all duration-300 ease-in-out transform md:translate-x-0 md:opacity-100 flex flex-col md:w-1/3 h-full gap-4 md:rounded-3xl"
       :class="{
         'translate-x-0 opacity-100': selectedCar,
         'translate-x-full opacity-0': !selectedCar
       }">
 
         <!-- Estado y editar -->
-      <div class="flex justify-between items-center">
+      <div class="flex justify-between items-start">
         <div  class="flex gap-4 items-end">
           <Heading :type="1" class="medium">{{ selectedCar.basicInfo.brand }} {{ selectedCar.basicInfo.model }} {{ selectedCar.basicInfo.year }}</Heading>
           <p class="text-lg font-semibold text-gray-800">{{ selectedCar.pricing.rates.daily }}/día</p>
         </div>
           <!-- Botón de cerrar -->
           <button @click="closeCarDetails" class=" hover:bg-vibrant-light-700 focus:bg-vibrant-light-800 rounded-full p-2 z-1 cursor-pointer">
-            <Cross :size="24"/>
+            <Arrow direction="right"/>
           </button>
         </div>
         <div class="flex-1 overflow-hidden overflow-y-auto flex flex-col pr-2 gap-5">
@@ -270,11 +271,11 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
     
     <div class="flex-1 relative h-full overflow-hidden rounded-3xl md:p-5">
       <!-- Mapa -->
-      <div id="map" class="absolute inset-0 w-full h-full z-10"></div>
+      <div id="map" class="absolute inset-0 w-full h-full z-3" @click.away="showSuggestions = false"></div>
+      <BackButton class="absolute z-5 top-5 left-5" color="#FFFFFF"/>
       <!-- Buscador dentro del mapa -->
       <div 
-        class="absolute top-10 w-full flex z-50 justify-center flex-row-reverse"
-        @click.away="showSuggestions = false"
+        class="absolute top-20 md:top-10 w-full flex z-4 justify-center flex-row-reverse h-0.5"
         >
         <Input
           ref="searchInputRef"
@@ -287,6 +288,7 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
           variant="secondary"
           class="!w-fit"
           :outline="false"
+          :autofocus="true"
           @focusin="showSuggestions = true" @click.stop
           >
           <template #icon>
@@ -303,7 +305,7 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
             variant="secondary"
             :outline="true"
             input-class="w-fit !min-w-[290px]"
-            class="cursor-pointer absolute top-15 z-20 left-0"
+            class="cursor-pointer absolute top-8 z-20 left-0"
           />
         </div>
       </div>

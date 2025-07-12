@@ -60,6 +60,7 @@ onMounted(async () => {
             alt="Default Profile Picture" 
             class="w-8 h-8 rounded-full object-cover"
           >
+
           <div class="flex items-center justify-between gap-4">
             <ReemoIcon class="w-10 h-10" color="#4FD8DF" />
             <Input
@@ -143,7 +144,8 @@ onMounted(async () => {
     <div class="cars flex flex-col gap-6 overflow-hidden">
       <div class="flex justify-between items-end">
         <Heading type="2" class="medium">Autos más cercanos a tu zona</Heading>
-        <a href="#" class="text-vibrant-light-900 font-semibold">Ver más</a>
+        <router-link to="/search" class="text-vibrant-light-900 font-semibold cursor-pointer">Ver más
+        </router-link>
       </div>
       <div class="box-white flex flex-col gap-2 h-full overflow-y-auto pr-2">
         <CardCar 
