@@ -140,4 +140,15 @@ h4 {
 .box-vibrant {
   scrollbar-color: #A7EBEF #CAF3F5;
 }
+select:focus {
+  outline: none;
+}
+
+select,
+::picker(select) {
+  appearance: base-select !important;
+}
+select option:first-of-type {
+  display: none;
+}
 </style>

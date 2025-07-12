@@ -22,7 +22,7 @@ export default {
     type="button"
     @click="goBack" 
     class="flex items-center p-2 cursor-pointer rounded-full transition-colors duration-100 hover:bg-background-700/30" 
-    title="Go back">
+    title="Ir a la página anterior">
     <Arrow direction="left" :color="color"/>
   </button>
 </template>

@@ -54,8 +54,8 @@ const sections = ref([
   { title: 'Datos personales', icon: markRaw(User) },
   { title: 'Documentación', icon: markRaw(Documentation) },
   { title: 'Ubicación', icon: markRaw(Location) },
-  { title: 'Método de Pago', icon: markRaw(Payment) },
-  { title: 'Términos y Condiciones', icon: markRaw(Clipboard) }
+  { title: 'Método de pago', icon: markRaw(Payment) },
+  { title: 'Términos y condiciones', icon: markRaw(Clipboard) }
 ])
 
 const handleFileChange = async (event, field) => {
@@ -238,10 +238,10 @@ onBeforeUnmount(() => {
                 id="gender"
                 placeholder="Genero"
                 :options="[
-                  { value: 'male', label: 'Masculino' },
-                  { value: 'female', label: 'Femenino' },
-                  { value: 'other', label: 'Otro' },
-                  { value: 'prefer-not-to-say', label: 'Prefiero no decir' },
+                  { value: 'Masculino', label: 'Masculino' },
+                  { value: 'Femenino', label: 'Femenino' },
+                  { value: 'Otro', label: 'Otro' },
+                  { value: 'No especificado', label: 'Prefiero no decir' },
                 ]"
                 icon-position="right"
                 variant="secondary"
@@ -405,7 +405,7 @@ onBeforeUnmount(() => {
         <!-- Paso 4: Método de Pago -->
         <router-view v-if="currentStep === 3" class="step">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large text-white! font-extrabold!">Método de Pago</Heading>
+            <Heading type="2" class="large text-white! font-extrabold!">Método de pago</Heading>
             <Loading v-if="loading" role="status" />
           </div>
           <div class="flex flex-col gap-5">
@@ -480,7 +480,7 @@ onBeforeUnmount(() => {
         <!-- Paso 5: Términos y Condiciones -->
         <router-view v-if="currentStep === 4" class="step">
           <div class="flex gap-4 items-center">
-            <Heading type="2" class="large text-white! font-extrabold!">Términos y Condiciones</Heading>
+            <Heading type="2" class="large text-white! font-extrabold!">Términos y condiciones</Heading>
             <Loading v-if="loading" role="status" />
           </div>
           <div class="flex gap-2 items-center">

@@ -56,15 +56,7 @@ const routes = [
     path: "/car/register",
     component: CarRegister,
     name: "CarRegister",
-    meta: { needsAuth: true},
-    beforeEnter: (to, from, next) => {
-    const authStore = useAuthStore();
-    if (authStore.userStatus !== 'verified') {
-      next({ name: 'Profile' });
-    } else {
-      next();
-    }
-  }
+    meta: { needsAuth: true}
   },
   {
     path: "/car/edit/:id",

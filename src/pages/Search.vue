@@ -1,181 +1,233 @@
-<script>
-import { getAvailableCars } from "../services/car";
-import { subscribeToAuthState } from "../services/auth.js";
-import { subscribeToNewPublication } from "../services/publication.js";
+<script setup>
+import { ref, reactive, onMounted, watch, nextTick, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { getAvailableCars } from "../services/car"
+import { subscribeToAuthState } from "../services/auth.js"
+import { subscribeToNewPublication } from "../services/publication.js"
+import { useAuthStore } from '@stores'
+import { vpicService } from '../services/car/vpicApi.js'
+import { addAlert } from "../services/alerts.js"
 
-import { updateCars, initAutocomplete, loadGoogleMaps,getCurrentLocation } from "../services/google-maps.js";
-import { filterByPreferences } from "../services/filterService.js";
+import { updateCars, initAutocomplete, loadGoogleMaps, getCurrentLocation } from "../services/google-maps.js"
+import { filterByPreferences } from "../services/filterService.js"
 
-import AddressInput from "@/components/organisms/google-maps/AddressInput.vue";
+import AddressInput from "@/components/organisms/google-maps/AddressInput.vue"
 
-import Heading from "@components/atoms/Heading.vue";
-import CardCar from "@components/organisms/cars/CardCar.vue";
-import AddIcon from "@icons/AddIcon.vue";
-import Loading from "@icons/Loading.vue";
-import Input from "../components/molecules/Input.vue";
+import Heading from "@components/atoms/Heading.vue"
+import CardCar from "@components/organisms/cars/CardCar.vue"
+import AddIcon from "@icons/AddIcon.vue"
+import Loading from "@icons/Loading.vue"
+import Input from "../components/molecules/Input.vue"
 import Arrow from '@icons/Arrow.vue'
 import FilterIcon from '@icons/FilterIcon.vue'
-import PriceRange from "../components/molecules/PriceRange.vue";
-import CheckboxFilter from "../components/atoms/CheckboxFilter.vue";
-import Repeat from "@icons/Repeat.vue";
-import SearchIcon from "@icons/Search.vue";
-import BackButton from "@components/atoms/BackButton.vue";
+import PriceRange from "../components/molecules/PriceRange.vue"
+import CheckboxFilter from "../components/atoms/CheckboxFilter.vue"
+import Repeat from "@icons/Repeat.vue"
+import SearchIcon from "@icons/Search.vue"
+import BackButton from "@components/atoms/BackButton.vue"
 
-export default {
-  name: "Search",
-  components: { Heading, CardCar, AddIcon, Loading, AddressInput, Input, Arrow, PriceRange, CheckboxFilter, FilterIcon, Repeat, SearchIcon, BackButton },
-  data() {
-    return {
-      loggedUser: {
-        id: null,
-        email: null,
-      },
-      cars: [],
-      searchQuery: "",
-      searchLocation: "",
-      filteredCars: [],
-      map: null,
-      markers: [],
-      loading: false,
-      chassisTypes: ["Sedan", "Van", "SUV", "Pickup", "Minivan", "Coupe"],
-      selectedChassis: [],
-      savedFilters: null,
-      optionsTransmission: ["Ambos", "Manual", "Automatico"],
-      selectedTransmission: [],
-      showFilters: false, 
-      filters: {
-        transmission: '',
-        brand: '',
-        model: '',
-        minPrice: 20000,
-        maxPrice: 100000,
-        chassis: [],
-      }
-    };
-  },
-  methods: {
-    async fetchCars() {
-      this.loading = true;
-      try {
-        this.cars = await getAvailableCars(this.loggedUser.id);
-        this.filteredCars = this.cars;
-      } catch (error) {
-        console.error("Error al buscar autos:", error);
-      } finally {
-        this.loading = false;
-      }
-    },
-    goToCarDetails(carId) {
-      this.$router.push({ name: "CarDetails", params: { id: carId } });
-    },
-    handlePlaceSelected({ formattedAddress, location }) {
-      this.searchQuery = formattedAddress;
-      this.searchLocation = location;
-      this.applyFilters();
-    },
+const router = useRouter()
 
-    useMyLocation(){
-      getCurrentLocation(this.handlePlaceSelected);
-    },
+const loggedUser = reactive({
+  id: null,
+  email: null,
+})
 
-    applyFilters() {
-      let carsToFilter = [];
+const cars = ref([])
+const searchQuery = ref("")
+const searchLocation = ref("")
+const filteredCars = ref([])
+const map = ref(null)
+const markers = ref([])
+const loading = ref(false)
+const showFilters = ref(false)
 
-      if (this.searchLocation && this.searchLocation.lat && this.searchLocation.lng) {
-        carsToFilter = updateCars(this.cars, this.searchLocation, this.map);
-      } else {
-        console.warn("⚠️ No se aplicó filtro por ubicación");
-        carsToFilter = this.cars;
-      }
+const chassisTypes = ["Sedan", "Van", "SUV", "Pickup", "Minivan", "Coupe"]
+const selectedChassis = ref([])
+const savedFilters = ref(null)
+const optionsTransmission = ["Ambos", "Manual", "Automatico"]
+const selectedTransmission = ref([])
+const authStore = useAuthStore();
 
-      // luego filtramos por preferencias
-      this.filteredCars = filterByPreferences(carsToFilter, this.filters);
-      this.saveFiltersToLocalStorage();
-      
-      if (window.innerWidth < 1000) {
-        this.showFilters = false;
-      }
-    },
-    saveFiltersToLocalStorage() {
-      localStorage.setItem('filters', JSON.stringify(this.filters));
-    },
-    loadFiltersFromLocalStorage() {
-      const savedFilters = localStorage.getItem('filters');
-      if (savedFilters) {
-        this.filters = JSON.parse(savedFilters);
-        this.applyFilters();
-      }
-    },
-    resetFilters() {
-      this.filters = {
-        minPrice: 20000,
-        maxPrice: 100000,
-        brand: "",
-        model: "",
-        chassis: [],
-        transmission: "",
-      };
-      this.searchLocation = "";
-      this.applyFilters();
-      localStorage.removeItem('filters');
-    },
-    toggleFilters() {
-      if (window.innerWidth < 1024) {
-        this.showFilters = !this.showFilters;
-      }
-    },
-  },
-  async mounted() {
-    await loadGoogleMaps();
-    initAutocomplete('searchInput', this.handlePlaceSelected);
+// Variables para la API de vehículos
+const vehicleMakes = ref([])
+const vehicleModels = ref([])
+const loadingMakes = ref(false)
+const loadingModels = ref(false)
 
-    // getCurrentLocation((location) => {
-    //   this.searchLocation = location;
-    //   this.applyFilters()
-    // })
+const filters = reactive({
+  transmission: '',
+  brand: '',
+  model: '',
+  minPrice: 20000,
+  maxPrice: 100000,
+  chassis: [],
+})
 
-    const savedFilters = localStorage.getItem("filters");
-    if (savedFilters) {
-      this.filters = JSON.parse(savedFilters);
-    }
+const isVerified = computed(() => authStore.userStatus === 'verified');
 
-    subscribeToAuthState((newUserData) => {
-      this.loggedUser = newUserData;
-      this.fetchCars();
-    });
-
-    subscribeToNewPublication((newCars) => {
-      this.cars = newCars;
-    });
-    
-    this.showFilters = window.innerWidth >= 1024;
-
-    window.addEventListener('resize', () => {
-      this.showFilters = window.innerWidth >= 1024;
-    });
-  },
-  watch: {
-    'filters.brand'(newBrand, oldBrand) {
-      if (newBrand !== oldBrand) {
-        this.filters.model = "";
-      }
-    }
-  },
+// Funciones para la API de vehículos
+const loadMakes = async () => {
+  loadingMakes.value = true;
+  try {
+    vehicleMakes.value = await vpicService.getBrands();
+  } catch (error) {
+    console.error('Error loading makes:', error);
+    addAlert('Error al cargar las marcas de vehículos', 'error');
+  } finally {
+    loadingMakes.value = false;
+  }
 };
+
+const loadModels = async (makeName) => {
+  if (!makeName) {
+    vehicleModels.value = [];
+    return;
+  }
+  
+  loadingModels.value = true;
+  try {
+    vehicleModels.value = await vpicService.getModelsForMake(makeName);
+  } catch (error) {
+    console.error('Error loading models:', error);
+    addAlert('Error al cargar los modelos para esta marca', 'error');
+  } finally {
+    loadingModels.value = false;
+  }
+};
+
+// Methods
+const fetchCars = async () => {
+  loading.value = true
+  try {
+    cars.value = await getAvailableCars(loggedUser.id)
+    filteredCars.value = cars.value
+  } catch (error) {
+    console.error("Error al buscar autos:", error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const goToCarDetails = (carId) => {
+  router.push({ name: "CarDetails", params: { id: carId } })
+}
+
+const handleRegisterClick = () => {
+  if (!isVerified.value) {
+    addAlert("El usuario no esta verificado. Aguardá la verificación", "error");
+    return;
+  }
+  router.push({ name: 'CarRegister' });
+}
+
+const handlePlaceSelected = ({ formattedAddress, location }) => {
+  searchQuery.value = formattedAddress
+  searchLocation.value = location
+  applyFilters()
+}
+
+const useMyLocation = () => {
+  getCurrentLocation(handlePlaceSelected)
+}
+
+const applyFilters = () => {
+  let carsToFilter = []
+
+  if (searchLocation.value && searchLocation.value.lat && searchLocation.value.lng) {
+    carsToFilter = updateCars(cars.value, searchLocation.value, map.value)
+  } else {
+    console.warn("⚠️ No se aplicó filtro por ubicación")
+    carsToFilter = cars.value
+  }
+
+  // luego filtramos por preferencias
+  filteredCars.value = filterByPreferences(carsToFilter, filters)
+  
+  if (window.innerWidth < 1000) {
+    showFilters.value = false
+  }
+}
+
+
+
+const resetFilters = () => {
+  Object.assign(filters, {
+    minPrice: 20000,
+    maxPrice: 100000,
+    brand: "",
+    model: "",
+    chassis: [],
+    transmission: "",
+  })
+  searchLocation.value = ""
+  vehicleModels.value = []
+  applyFilters()
+  localStorage.removeItem('filters')
+}
+
+const toggleFilters = () => {
+  if (window.innerWidth < 1024) {
+    showFilters.value = !showFilters.value
+  }
+}
+
+onMounted(async () => {
+  await loadGoogleMaps()
+  initAutocomplete('searchInput', handlePlaceSelected)
+
+  // Cargar marcas al iniciar
+  await loadMakes()
+
+  // getCurrentLocation((location) => {
+  //   searchLocation.value = location
+  //   applyFilters()
+  // })
+
+  const savedFilters = localStorage.getItem("filters")
+  if (savedFilters) {
+    const parsedFilters = JSON.parse(savedFilters)
+    Object.assign(filters, parsedFilters)
+    // Si hay una marca guardada, cargar sus modelos
+    if (filters.brand) {
+      await loadModels(filters.brand)
+    }
+    applyFilters()
+  }
+
+  subscribeToAuthState((newUserData) => {
+    Object.assign(loggedUser, newUserData)
+    fetchCars()
+  })
+
+  subscribeToNewPublication((newCars) => {
+    cars.value = newCars
+  })
+  
+  showFilters.value = window.innerWidth >= 1024
+
+  window.addEventListener('resize', () => {
+    showFilters.value = window.innerWidth >= 1024
+  })
+})
+
+watch(() => filters.brand, async (newBrand, oldBrand) => {
+  if (newBrand !== oldBrand) {
+    filters.model = ""
+    if (newBrand) {
+      await loadModels(newBrand)
+    } else {
+      vehicleModels.value = []
+    }
+  }
+})
 </script>
 
 <template>
   <section class="w-full md:min-h-full relative flex p-2.5 gap-5">
-    <button 
-      @click="toggleFilters" 
-      class="lg:hidden fixed bottom-5 right-5 bg-primary-500 text-white p-3 rounded-full shadow-lg z-40"
-    >
-      <FilterIcon/>
-    </button>
-
     <div 
-      class="bg-vibrant-light-600 rounded-[40px] md:px-5 pr-2! pb-4! md:py-9 h-full transition-all duration-300 lg:w-1/4 xl:w-1/5 lg:min-w-[320px] overflow-hidden flex flex-col gap-5"
-      :class=" showFilters ? 'fixed lg:relative inset-0 z-39' : 'hidden lg:block'"
+      class="bg-vibrant-light-600 md:rounded-[40px] md:px-5 pr-2! md:py-9 h-full transition-all duration-300 lg:w-1/4 xl:w-1/5 lg:min-w-[320px] overflow-hidden flex flex-col gap-5 px-2.5 py-5"
+      :class=" showFilters ? 'fixed lg:relative inset-0 z-4' : 'hidden lg:block'"
     >
       <div class="flex items-center justify-between">
         <Heading :type="2" class="regular mt-2">Filtrar vehículo</Heading>
@@ -183,49 +235,37 @@ export default {
           <Repeat/>
         </button>
       </div>
-      <div class="box-vibrant h-full overflow-y-auto pr-3 flex flex-col gap-5 relative">
+      <div class="box-vibrant h-full overflow-y-auto md:pr-3 flex flex-col gap-5 relative">
         <!-- marca -->
         <div class="flex flex-col gap-2">
           <Heading :type="3" class="small hidden">Marca del vehículo</Heading>
           <div class="flex flex-col sm:flex-row gap-2 text-sm">
             <!-- Marca -->
             <Input
-              type="select"
-              v-model="filters.brand"
-              name="brand"
-              id="brand"
-              placeholder="Marca"
-              :options="[
-                { value: 'Honda', label: 'Honda' },
-                { value: 'Toyota', label: 'Toyota' },
-                { value: 'Ford', label: 'Ford' },
-                { value: 'Chevrolet', label: 'Chevrolet' },
-                { value: 'Volkswagen', label: 'Volkswagen' }
-              ]"
-              icon-position="right"
-              variant="secondary"
-              :outline="true"
+                type="select"
+                v-model="filters.brand"
+                name="brand"
+                id="brand"
+                placeholder="Marca"
+                :options="vehicleMakes"
+                icon-position="right"
+                variant="secondary"
+                :outline="true"
+                :disabled="loadingMakes"
               />
   
             <!-- Modelo -->
             <Input
-              type="select"
-              v-model="filters.model"
-              :disabled="!filters.brand"
-              name="model"
-              id="model"
-              placeholder="Modelo"
-              :options="[
-                { value: 'Civic', label: 'Civic' },
-                { value: 'CR-V', label: 'CR-V' },
-                { value: 'Corolla', label: 'Corolla' },
-                { value: 'Yaris', label: 'Yaris' },
-                { value: 'Focus', label: 'Focus' },
-                { value: 'Fiesta', label: 'Fiesta' }
-              ]"
-              icon-position="right"
-              variant="secondary"
-              :outline="true"
+                type="select"
+                v-model="filters.model"
+                :disabled="!filters.brand || loadingModels"
+                name="model"
+                id="model"
+                placeholder="Modelo"
+                :options="vehicleModels"
+                icon-position="right"
+                variant="secondary"
+                :outline="true"
               />
           </div>
         </div>
@@ -233,7 +273,7 @@ export default {
         <!-- rango de precio -->
         <div>
           <Heading :type="3" class="small">Rango de precio</Heading>
-          <div class="px-1 lg:mx-4">
+          <div class="mx-4 lg:mx-4">
             <PriceRange :min="20000" :max="100000" v-model="filters" />
           </div>
         </div>
@@ -290,29 +330,49 @@ export default {
     </div>
 
     <div class="w-full lg:w-3/4 xl:w-4/5 overflow-hidden flex flex-col h-full gap-3">
-      <div class="flex items-center gap-5 gap-y-1.5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0 flex-wrap">
+      <div class="flex items-center gap-5 gap-y-1.5 fixed md:static top-0 left-0 right-0 z-3 bg-white px-2.5 md:px-0 py-3 md:py-0 flex-wrap">
         <BackButton />
-        <Heading :type="1" class="text-xl lg:text-2xl text-start flex-1 lg:mt-0">Autos disponibles</Heading>     
-        <router-link 
-          to="/maps?focusSearch=true"
-          class="flex-1 md:flex-0 min-w-full md:min-w-0"
-          >
-          <Input
-            type="text"
-            id="searchInput"
-            name="searchInput"
-            placeholder="Buscar por ubicación..."
-            icon-position="left"
-            input-class="!w-full md:!w-fit"
-            class="items-end justify-center !flex-1 !min-w-full"
-            variant="secondary"
-            :outline="false"
+        <Heading :type="1" class="text-xl lg:text-2xl text-start flex-1 lg:mt-0">Autos disponibles</Heading>  
+        <div class="flex justify-between items-center gap-2 w-full md:w-auto">
+          <a 
+            href="/car/register"
+            class="hidden md:flex"
             >
-            <template #icon>
-              <SearchIcon />
-            </template>
-          </Input>
-        </router-link>      
+            <Input
+              type="button"
+              variant="primary"
+              text="Registrar vehículo"
+              class="!w-fit"
+              :outline="false"
+            />    
+          </a>
+          <router-link 
+            to="/maps?focusSearch=true"
+            class="flex-1 w-full md:min-w-0"
+            >
+            <Input
+              type="text"
+              id="searchInput"
+              name="searchInput"
+              placeholder="Buscar por ubicación..."
+              icon-position="left"
+              input-class="!w-full md:!w-fit"
+              class="items-end justify-center !flex-1"
+              variant="secondary"
+              :outline="false"
+              >
+              <template #icon>
+                <SearchIcon />
+              </template>
+            </Input>
+          </router-link>    
+          <button 
+            @click="toggleFilters" 
+            class="lg:hidden bg-vibrant-light-600 p-3 rounded-full"
+          >
+            <FilterIcon/>
+          </button>  
+        </div>
       </div>
   
         <p v-if="filteredCars.length == 0 && !loading" class="text-lg text-red-700 font-bold pt-4">

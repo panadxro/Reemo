@@ -123,9 +123,8 @@ export default {
       :text="authStore.loading ? 'Cargando...' : 'Iniciar sesión'"
       :iconPosition="'left'"
       :variant="'primary'"
-      :class="authStore.loading ? 'cursor-not-allowed bg-deep-blue-700' : 'cursor-pointer'"
-    >
-    </Input>
+      :disabled="authStore.loading"
+    />
     <p class="text-xs text-background-900 text-center font-regular">
       ¿No tenés una cuenta? 
       <router-link to="/register" class="text-primary font-bold">

@@ -140,7 +140,7 @@ export default {
     </div>
 
     <div class="flex flex-col gap-5 w-full">
-      <article class="pl-9 py-11 w-full rounded-[20px] md:rounded-[40px] shadow-custom flex flex-col lg:flex-row">
+      <article class="px-9 py-11 w-full rounded-[20px] md:rounded-[40px] shadow-custom flex flex-col lg:flex-row">
         <div class="flex flex-col justify-between flex-1 gap-8">
             <div>
                 <Heading :type="3">Contactate inmediatamente<br class="hidden md:block"/> con el dueño</Heading>
@@ -155,7 +155,7 @@ export default {
             </a>
         </div>
         
-        <div class="flex justify-center lg:justify-end mt-8 md:mt-0 md:mr-16">
+        <div class="hidden md:flex justify-center lg:justify-end mt-8 md:mt-0 md:mr-16">
             <RentsExpress class="w-full max-w-[300px] md:max-w-md md:w-auto" />
         </div>
     </article>
