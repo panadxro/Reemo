@@ -184,57 +184,71 @@ export function subscribeToRentalDetails(rentalId, callback) {
   return unsubscribe;
 }
 
+
+// Lógica para enriquecer los datos del alquiler (probablemente ya la tienes en tus funciones fetch)
+async function enrichRentalData(rentalData) {
+  if (!rentalData) return null;
+  
+  // Usamos Promise.all para obtener los detalles en paralelo
+  const [vehicleDoc, ownerDoc, driverDoc] = await Promise.all([
+    rentalData.vehicle_id ? getDoc(doc(db, 'cars', rentalData.vehicle_id)) : Promise.resolve(null),
+    rentalData.owner_id ? getDoc(doc(db, 'users', rentalData.owner_id)) : Promise.resolve(null),
+    rentalData.driver_id ? getDoc(doc(db, 'users', rentalData.driver_id)) : Promise.resolve(null)
+  ]);
+
+  
+  const ownerData = ownerDoc.data();
+  const driverData = driverDoc.data();
+  console.log('Datos del conductor: ', ownerData?.personalInfo.profilePhoto)
+  
+  return {
+    ...rentalData,
+    vehicleDetails: vehicleDoc?.exists() ? { id: vehicleDoc.id, ...vehicleDoc.data() } : null,
+    ownerDetails: ownerDoc?.exists() ? { 
+      id: ownerDoc.id, 
+      name: ownerData.personalInfo?.username || ownerData.email || 'Conductor Desconocido',
+      photoURL: ownerData.personalInfo?.profilePhoto || null,
+      ...ownerDoc.data() } : null,
+      
+    driverDetails: driverDoc?.exists() ? {
+      id: driverDoc.id,
+      name: driverData.personalInfo?.username || driverData.email || 'Conductor Desconocido',
+      photoURL: driverData.personalInfo?.profilePhoto || null,
+      ...driverDoc.data() } : null,
+  };
+}
+
 /**
  * Obtiene el último alquiler activo o pendiente del usuario como conductor.
  * @param {string} userId - ID del usuario (conductor).
  * @returns {Promise<Array<object>>} - Un array con el último alquiler enriquecido, o un array vacío si no hay.
  */
-export async function fetchRentedCars(userId) {
-  try {
-    const rentsCollection = collection(db, "rents");
-    const q = query(
-      rentsCollection,
-      where("driver_id", "==", userId),
-      // Ordenar por fecha de inicio, las más recientes primero
-      where("status", "in", ["pending", "confirmed", "in_progress"]),
-      orderBy("start_time", "desc"),
-      limit(1)
-    );
+export async function fetchRentedCars(userId, callback) {
+ const q = query(
+    collection(db, 'rents'),
+    where('driver_id', '==', userId),
+    where('status', 'in', ['pending', 'confirmed', 'in_progress']),
+    orderBy('start_time', 'desc'),
+  );
 
-    const querySnapshot = await getDocs(q);
-    if (querySnapshot.empty){
-      return [];
+  const unsubscribe = onSnapshot(q, async (snapshot) => {
+    if (snapshot.empty) {
+      callback(null, null);
+      return;
     }
+    
+    const rentalDoc = snapshot.docs[0];
+    const rentalData = { id: rentalDoc.id, ...rentalDoc.data() };
+    const detailedRental = await enrichRentalData(rentalData);
 
-    const singleDoc = querySnapshot.docs[0];
-    const appData = { id: singleDoc.id, ...singleDoc.data() };
+    callback(detailedRental, null);
 
-    let vehicleDetails = null;
-    let ownerDetails = null;
+  }, (error) => {
+    console.error("Error en el listener de RentedCars: ", error);
+    c(null, error);
+  });
 
-    if(appData.vehicle_id){
-      const carRef = doc(db, 'cars', appData.vehicle_id);
-      const carSnap = await getDoc(carRef);
-      vehicleDetails = carSnap.exists() ? { id: carSnap.id, ...carSnap.data() } : null;
-      console.log('[RentStatusDetails.vue] vehicleDetails:', vehicleDetails)
-
-      if(vehicleDetails && vehicleDetails.ownerId ){
-        const ownerRef = doc(db, 'users', vehicleDetails.ownerId );
-        const ownerSnap = await getDoc(ownerRef);
-        const uData = ownerSnap.data();
-        ownerDetails = ownerSnap.exists() ? {id: ownerSnap.id, name: uData.personalInfo?.firstName, lastname: uData.personalInfo?.lastName, photoURL: uData.personalInfo?.profilePhoto, } : null;
-      }
-    } else {
-      console.warn(`La solicitud ${appData.id} no tiene vehicle_id.`);
-      // Devolver la aplicación sin detalles del vehículo si no hay vehicle_id
-      return [{ ...appData, vehicleDetails: null, ownerDetails: null }];
-    }
-
-    return [{ ...appData, vehicleDetails, ownerDetails }];
-  } catch (error) {
-    console.error("Error al obtener las solicitudes de alquiler del conductor:", error);
-    throw error;
-  }
+  return unsubscribe; 
 }
 
 /**
@@ -243,53 +257,33 @@ export async function fetchRentedCars(userId) {
  * @param {string} ownerId - ID del usuario (propietario).
  * @returns {Promise<object|null>} - El ultimo alquiler enriquecido, o null si no hay.
  */
-export async function fetchLatestActiveOwnedRental(ownerId){
-  try {
+
+export async function fetchLatestActiveOwnedRental(ownerId, callback){
+  // try {
     const rentsCollection = collection(db, "rents");
     const q = query(
       rentsCollection,
       where("owner_id", "==", ownerId),
       where("status", "in", ["pending", "confirmed", "in_progress"]),
-      orderBy("timestamp", "desc"), // Usar timestamp de creación de la solicitud para "más reciente"
-      limit(1)
+      orderBy("timestamp", "desc"),
     );
 
-    const querySnapshot = await getDocs(q);
-    if (querySnapshot.empty) {
-      return null; // No hay alquileres activos/pendientes para los vehículos de este propietario
-    }
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      if (snapshot.empty) {
+        callback(null, null)
+        return;
+      };
 
-    const rentalDoc = querySnapshot.docs[0];
-    const rentalData = { id: rentalDoc.id, ...rentalDoc.data() };
+      const rentalDoc = snapshot.docs[0];
+      const rentalData = { id: rentalDoc.id, ...rentalDoc.data() };
+      const detailedRental = await enrichRentalData(rentalData);
 
-    // Enriquecer con detalles del vehículo
-    let vehicleDetails = null;
-    if (rentalData.vehicle_id) {
-      const carRef = doc(db, 'cars', rentalData.vehicle_id);
-      const carSnap = await getDoc(carRef);
-      vehicleDetails = carSnap.exists() ? { id: carSnap.id, ...carSnap.data() } : null;
-    }
-
-    // Enriquecer con detalles del conductor (inquilino)
-    let driverDetails = null;
-    if (rentalData.driver_id) {
-      const driverRef = doc(db, 'users', rentalData.driver_id);
-      const driverSnap = await getDoc(driverRef);
-      if (driverSnap.exists()) {
-        const dData = driverSnap.data();
-        // Asegúrate de que la ruta a personalInfo y sus campos sea correcta
-        driverDetails = {
-          id: driverSnap.id,
-          name: dData.personalInfo?.username || dData.email || 'Conductor Desconocido',
-          photoURL: dData.personalInfo?.profilePhoto || null
-        };
-      }
-    }
-    return { ...rentalData, vehicleDetails, driverDetails };
-  } catch (error) {
-    console.error("Error al obtener el último alquiler activo del propietario:", error);
-    throw error;
-  }
+      callback(detailedRental, null)
+    }, (error) => {
+      console.error('Error en el listener de Owned Rentals', error)
+      callback(null, error)
+    });
+    return unsubscribe;
 
 }
 

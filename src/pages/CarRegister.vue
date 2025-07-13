@@ -513,7 +513,7 @@ onBeforeUnmount(() => {
          {{ isEditMode ? 'Editar vehiculo' : 'Registrar vehiculo' }}
         </Heading>
         </div>
-        <p class="text-sm max-w-[420px]">Subscribí tu vehículo a la plataforma y haz que trabaje por vos.</p>
+        <p class="text-sm max-w-[420px]">{{ isEditMode ? 'Gestioná y actualizá los datos de tu vehículo disponible para alquiler' : 'Subscribí tu vehículo a la plataforma y haz que trabaje por vos.'}}</p>
       </div>
       <ul 
         class="flex flex-col gap-[40px] max-w-[420px] w-full h-[495px] rounded-lg px-2 overflow-hidden transition-all duration-300 ease-in-out"

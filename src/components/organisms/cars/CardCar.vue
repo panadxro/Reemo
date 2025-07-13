@@ -1,3 +1,4 @@
+
 <script>
 import { addAlert } from "@services/alerts.js";
 import { useCarStore } from "@stores";
@@ -104,6 +105,11 @@ export default {
             addAlert("Error al actualizar el estado de disponibilidad", "error");
             console.log(error)
         }
+      },
+
+      goToEditCar(carId){
+        this.$router.push({ name: 'CarEdit', params: { id: carId } });
+        // this.$emit(`/car/register/${car.id}/edit`);
       }
     }
 }
@@ -168,6 +174,7 @@ export default {
       <Popover 
         :items="[
           { label: 'Ver detalles', action: () => goToCarDetails(car.id) },
+          { label: 'Editar', action: () => goToEditCar(car.id) },
           { label: car.status.current == 'not-available' ? 'Habilitar' : 'Deshabilitar', action: () => updateAvailability(car), class: car.status.current !== 'not-available' ? 'text-red-500' : '' },
         ]"
         :isOpen="openPopoverId === index"

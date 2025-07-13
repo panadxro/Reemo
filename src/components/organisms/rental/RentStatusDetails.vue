@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 
 import { useAuthStore } from '@/stores';
 import { useRouter } from 'vue-router';
@@ -13,7 +13,7 @@ import Status from '@/components/molecules/Status.vue';
 import Input from '@/components/molecules/Input.vue';
 import Modal from '@/components/molecules/Modal.vue';
 
-const authStore = useAuthStore();
+const authStore = useAuthStore(); 
 const notificationStore = useNotificationStore(); 
 // const rentalApplications = ref([]);
 const router = useRouter();
@@ -24,53 +24,83 @@ const errorLoading = ref(null);
 const showCancelModal = ref(false);
 const pendingCancelId = ref(null);
 
+const driverUnsubscribe = ref(null);
+const ownerUnsubscribe = ref(null);
+
 const currentUser = computed(() => authStore.user);
 const notifications = computed(() => notificationStore.sortedNotifications);
 
-const loadRentalData = async () => {
+// const loadRentalData = async () => {
   //console.log('[RentStatusDetails] loadRentalData llamado.');
-  if (!currentUser.value || !currentUser.value.id) {
-    console.warn('[RentStatusDetails] Usuario no encontrado o sin ID. currentUser:', currentUser.value);
-    errorLoading.value = "Usuario no encontrado";
+  // if (!currentUser.value || !currentUser.value.id) {
+  //   console.warn('[RentStatusDetails] Usuario no encontrado o sin ID. currentUser:', currentUser.value);
+  //   errorLoading.value = "Usuario no encontrado";
+  //   driverRentalDetail.value = null;
+  //   ownerRentalDetail.value = null;
+  //   isLoading.value = false;
+  //   return;
+  // }
+  //console.log('[RentStatusDetails] Estableciendo isLoading a true. Usuario ID:', currentUser.value.id);
+
+  // Función para limpiar los listeners y resetear los datos
+  const cleanupListeners = () => {
+    if (driverUnsubscribe.value) {
+      // driverUnsubscribe.value();
+      driverUnsubscribe.value = null;
+    }
+    if (ownerUnsubscribe.value) {
+      // ownerUnsubscribe.value();
+      ownerUnsubscribe.value = null;
+    }
     driverRentalDetail.value = null;
     ownerRentalDetail.value = null;
     isLoading.value = false;
-    return;
-  }
-  //console.log('[RentStatusDetails] Estableciendo isLoading a true. Usuario ID:', currentUser.value.id);
+    errorLoading.value = null;
+  };
+  // Función para configurar los listeners en tiempo real
+  const setupListeners = (userId) => {
+  cleanupListeners(); // Limpia listeners anteriores antes de crear nuevos
+
   isLoading.value = true;
   errorLoading.value = null;
-  driverRentalDetail.value = null;
-  ownerRentalDetail.value = null;
+  // Listener para alquileres como conductor
+  driverUnsubscribe.value = fetchRentedCars(userId, (data, error) => {
+    if (error) {
+      console.error('[RentStatusDetails] Error en listener de conductor:', error);
+      errorLoading.value = 'No se pudo cargar tu solicitud de alquiler.';
+      driverRentalDetail.value = null;
+    } else {
+      driverRentalDetail.value = data;
+    }
+    // Solo dejamos de cargar cuando ambos listeners han respondido al menos una vez
+    if (ownerUnsubscribe.value) isLoading.value = false;
+  });
 
-  try {
-    const userId = currentUser.value.id;
-    //console.log('[RentStatusDetails] id de currentUser:', userId);
-
-    // Cargar ambos conjuntos de datos en paralelo
-    const [driverRentals, ownerRental] = await Promise.all([
-      fetchRentedCars(userId), // Devuelve un array, tomamos el primero si existe
-      fetchLatestActiveOwnedRental(userId) // Devuelve un objeto o null
-    ]);
-
-    driverRentalDetail.value = driverRentals && driverRentals.length > 0 ? driverRentals[0] : null;
-    ownerRentalDetail.value = ownerRental;
-    //console.log('[RentStatusDetails] fetchRentedCars (driver) completado. Resultado:', JSON.parse(JSON.stringify(driverRentalDetail.value)));
-    //console.log('[RentStatusDetails] fetchLatestActiveOwnedRental (owner) completado. Resultado:', JSON.parse(JSON.stringify(ownerRentalDetail.value)));
-  } catch (error) {
-    console.error('[RentStatusDetails.vue] Error al cargar solicitudes de alquiler: ', error);
-    errorLoading.value = 'No se pudieron cargar las solicitudes de alquiler';
-  } finally {
-    isLoading.value = false;
-  }
+  // Listener para alquileres como propietario
+  ownerUnsubscribe.value = fetchLatestActiveOwnedRental(userId, (data, error) => {
+    if (error) {
+      console.error('[RentStatusDetails] Error en listener de propietario:', error);
+      errorLoading.value = 'No se pudo cargar la solicitud de tu vehículo.';
+      ownerRentalDetail.value = null;
+    } else {
+      ownerRentalDetail.value = data;
+    }
+    // Solo dejamos de cargar cuando ambos listeners han respondido al menos una vez
+    if (driverUnsubscribe.value) isLoading.value = false;
+  });
 };
 
-const handleRentalAction = async (rentId, newStatus, senderId, vehicleOwnerId) => {
-  try {
-    await notificationStore.handleRentalAction({ rentId, newStatus, senderId, vehicleOwnerId });
-    addAlert(`Solicitud ${newStatus === 'confirmed' ? 'aceptada' : 'rechazada'} correctamente.`, 'success');
-    // El store se encarga de la lógica de actualizar el estado y enviar notificaciones de feedback.
-  } catch (error) {
+const handleRentalAction = async (rentId, newStatus, driverId, ownerId) => {
+    try {
+      // 1. Actualizamos el estado directamente.
+      await updateRentalStatus(rentId, newStatus);
+      
+      // 2. Mantenemos la lógica de notificaciones.
+      await notificationStore.handleRentalAction({ rentId, newStatus, senderId: driverId, vehicleOwnerId: ownerId });
+
+      addAlert(`Solicitud ${newStatus === 'confirmed' ? 'aceptada' : 'rechazada'} correctamente.`, 'success');
+      // El listener en tiempo real actualizará la UI automáticamente.
+    }  catch (error) {
     console.error("Error al procesar la solicitud de alquiler:", error);
     addAlert("Error al procesar la accion", "error");
   }
@@ -90,11 +120,10 @@ const confirmCancelDriverApplication = async () => {
     await updateRentalStatus(rentalId, 'cancelled_by_user');
     addAlert("Solicitud de alquiler cancelada correctamente.", "success");
 
-    if (driverRentalDetail.value && driverRentalDetail.value.id === rentalId) {
-      driverRentalDetail.value.status = 'cancelled_by_user';
-    }
-    // podriamos notificar al propietario sobre la cancelación.
-    // Esto requeriría una función similar a createRentalRequestNotification
+    // if (driverRentalDetail.value && driverRentalDetail.value.id === rentalId) {
+    //   driverRentalDetail.value.status = 'cancelled_by_user';
+    // }
+
   } catch (error) {
     console.error('[RentStatusDetails.vue] Error al cancelar la solicitud', error);
     addAlert("Error al cancelar la solicitud", "error");
@@ -123,40 +152,23 @@ const formatPrice = (price) => {
       });
 };
 
-onMounted (() => {
-  // Es importante que authStore.init() se llame en un lugar central de tu aplicación
-  if(!authStore.isInitialized){
-    console.warn("[RentStatusDetails] authStore no está inicializado. Asegúrate de llamar a authStore.init() al inicio de la aplicación.");
-  }
-
-  // if (currentUser.value && currentUser.value.id && !notificationStore.hasLoadedOnce) {
-  //   //console.log("[Notification.vue onMounted] El store no ha cargado, intentando iniciar listener.");
-  //   notificationStore.initListenerForUser(currentUser.value.id);
-  // } else if (!currentUser.value || !currentUser.value.id) {
-  //    // Si no hay usuario, el store debería estar limpio, pero podemos asegurarlo.
-  //   if (notificationStore.notifications.length > 0 || notificationStore.isLoading) {
-  //       notificationStore.clearListenerAndData();
-  //   }
-  //   console.warn("[Notification.vue onMounted] No hay usuario autenticado.");
-  // }
-});
-
+// Observa cambios en el usuario (login/logout) para iniciar o detener los listeners
 watch(currentUser, (newUser, oldUser) => {
-  //console.log('[RentStatusDetails] Watch currentUser. Nuevo ID:', newUser?.id, 'Antiguo ID:', oldUser?.id);
-  if(newUser?.id) {
-    loadRentalData();
-  } else if(oldUser?.id && !newUser?.id) {
-    // El usuario se ha deslogueado o el ID ha desaparecido (por ejemplo, al finalizar la inicialización y no hay usuario)
-    //console.log('[RentStatusDetails] currentUser ya no tiene ID (o nunca tuvo). Limpiando solicitudes.');
-    driverRentalDetail.value = null;
-    ownerRentalDetail.value = null;
-    isLoading.value = false; 
-    errorLoading.value = null;
-  } else if (!newUser?.id && authStore.isInitialized && !isLoading.value && !errorLoading.value) {
-    // Si el store está inicializado, no hay usuario, y no estamos ya cargando/con error, significa que no hay datos que cargar.
-    isLoading.value = false;
+  if (newUser && newUser.id) {
+    // Si hay un nuevo usuario (o es el mismo pero se recarga), configuramos los listeners
+    if (newUser.id !== oldUser?.id) {
+      setupListeners(newUser.id);
+    }
+  } else {
+    // Si no hay usuario (logout), limpiamos todo
+    cleanupListeners();
   }
 }, { immediate: true });
+
+// Limpiar los listeners cuando el componente se desmonte para evitar fugas de memoria
+onUnmounted(() => {
+  cleanupListeners();
+});
 
 </script>
 
@@ -223,7 +235,7 @@ watch(currentUser, (newUser, oldUser) => {
             variant="secondary"
             outline
             text="Cancelar solicitud"
-            @click="cancelDriverApplication(driverRentalDetail.id)"
+            @click.stop="cancelDriverApplication(driverRentalDetail.id)"
           />
           <Modal
             :isOpen="showCancelModal"
