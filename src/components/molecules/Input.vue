@@ -9,7 +9,7 @@ const props = defineProps({
     validator: (value) => [
       'text', 'number', 'email', 'password', 'tel', 'url',
       'date', 'time', 'checkbox', 'radio', 'file',
-      'button', 'submit', 'reset', 'select'
+      'button', 'submit', 'reset', 'select', 'month'
     ].includes(value)
   },
   id: String,

@@ -410,18 +410,18 @@ onBeforeUnmount(() => {
           </div>
           <div class="flex flex-col gap-5">
     
-            <DropdownForm color="#FFFFFF" title="Tarjeta de crédito/débito" :dropdown-id="'tarjeta'" :section-id="'section-3'" :is-initial="true">
+            <DropdownForm color="#FFFFFF" title="Agregar tarjeta" :dropdown-id="'tarjeta'" :section-id="'section-3'" :is-initial="true">
               <Input 
                 type="text"
                 placeholder="Titular de tarjeta"
-                v-model="paymentMethods.credit_card.cardHolder"
+                v-model="paymentMethods[0].cardHolder"
                 :variant="'secondary'"
                 :outline="false"
                 />
                 <Input
                   type="text"
                   placeholder="Número de tarjeta"
-                  v-model="paymentMethods.credit_card.cardNumber"
+                  v-model="paymentMethods[0].cardNumber"
                   :variant="'secondary'"
                   :outline="false"
                 />
@@ -429,50 +429,18 @@ onBeforeUnmount(() => {
                 <Input 
                   type="date"
                   placeholder="Fecha de vencimiento"
-                  v-model="paymentMethods.credit_card.expirationDate"
+                  v-model="paymentMethods[0].expirationDate"
                   :variant="'secondary'"
                   :outline="false"
                 />
                 <Input
                   type="password"
                   placeholder="CVV"
-                  v-model="paymentMethods.credit_card.cvv"
+                  v-model="paymentMethods[0].cvv"
                   :variant="'secondary'"
                   :outline="false"
                 />
               </div>
-            </DropdownForm>
-
-            <DropdownForm color="#FFFFFF" title="Billetera Digital" :dropdown-id="'billetera'" :section-id="'section-3'" >
-              <Input 
-                type="select"
-                placeholder="Tipo de billetera"
-                :options="[
-                  {value: 'mercadopago', label: 'Mercado Pago'},
-                  {value: 'uala', label: 'Ualá'},
-                  {value: 'otra', label:'Otra'}
-                ]"
-                v-model="paymentMethods.digital_wallet.walletType"
-                variant="secondary"
-                :outline="false"
-                />
-              <Input
-                type="text"
-                placeholder="CVU o Alias"
-                v-model="paymentMethods.digital_wallet.walletId"
-                variant="secondary"
-                :outline="false"
-              />
-            </DropdownForm>
-
-            <DropdownForm color="#FFFFFF" title="Paypal" :dropdown-id="'paypal'" :section-id="'section-3'"  @dropdown-toggle="'handleDropdownToggle'">
-              <Input 
-                type="email"
-                placeholder="Email de PayPal"
-                v-model="paymentMethods.paypal.email"
-                :variant="'secondary'"
-                :outline="false"
-                />
             </DropdownForm>
           </div>
         </router-view>

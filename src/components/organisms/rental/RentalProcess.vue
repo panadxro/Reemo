@@ -17,10 +17,7 @@ import Input from '@/components/molecules/Input.vue';
 import RentalSuccess from '@/components/organisms/rental/RentalSuccess.vue';
 import Modal from '@/components/molecules/Modal.vue';
 
-import MercadoPago from '@/icons/MercadoPago.vue';
-import Uala from '@/icons/Uala.vue';
-import PayPal from '@/icons/PayPal.vue';
-import CreditCard from '@/icons/CreditCard.vue';
+import PaymentMethod from '@/components/atoms/PaymentMethod.vue';
 
 const authStore = useAuthStore();
 const carStore = useCarStore();
@@ -68,29 +65,42 @@ function formatPrice(price) {
   return store.formatPrice(price);
 }
 
-function getPaymentMethodName(method) {
-  return paymentStore.getPaymentMethodName(method);
+function updatePaymentType(selectedBrand) {
+  const brandTypeMap = {
+    'Visa': 'bank',
+    'Mastercard': 'bank',
+    'Uala': 'digital_wallet',
+    'PayPal': 'digital_wallet',
+    'Mercado Pago': 'digital_wallet',
+    'Lemon': 'digital_wallet',
+    'Modo': 'digital_wallet'
+  };
+  paymentStore.newPaymentMethod.type = brandTypeMap[selectedBrand] || 'bank';
 }
 
-function getPaymentDetails(method) {
-  return paymentStore.getPaymentDetails(method);
-}
+// function getPaymentMethodName(method) {
+//   return paymentStore.getPaymentMethodName(method);
+// }
 
-function getPaymentIcon(method) {
-  if (!method) return null;
+// function getPaymentDetails(method) {
+//   return paymentStore.getPaymentDetails(method);
+// }
+
+// function getPaymentIcon(method) {
+//   if (!method) return null;
   
-  if (method.type === 'credit_card') {
-    return CreditCard;
-  } else if (method.type === 'paypal') {
-    return PayPal;
-  } else if (method.walletType === 'uala') {
-    return Uala;
-  } else if (method.walletType === 'mercadopago') {
-    return MercadoPago;
-  }
+//   if (method.type === 'credit_card') {
+//     return CreditCard;
+//   } else if (method.type === 'paypal') {
+//     return PayPal;
+//   } else if (method.brand === 'uala') {
+//     return Uala;
+//   } else if (method.brand === 'mercadopago') {
+//     return MercadoPago;
+//   }
   
-  return CreditCard; 
-}
+//   return CreditCard; 
+// }
 
 function totalUpdated(total) {
   store.rentalData.currentTotalPrice = total;
@@ -198,7 +208,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="relative overflow-y-auto pr-6">
+  <div class="relative overflow-y-auto pr-6 box-deep">
     <div class="space-y-6">
       <!-- Header con paso actual -->
       <RentalHeader 
@@ -319,30 +329,14 @@ onMounted(async () => {
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 flex items-center justify-center p-1 rounded-xl bg-white">
-                    <MercadoPago v-if="method.walletType === 'mercadopago'"/>
-                    <Uala v-if="method.walletType === 'uala'"/>
-                    <PayPal v-if="method.type === 'paypal'"/>
-                    <CreditCard v-if="method.type === 'credit_card'"/>
+                    <PaymentMethod :method="method.brand" class="h-6 w-6" />
                   </div>
                   <div>
                     <p class="font-medium text-white">
-                      {{
-                        method.type === 'credit_card' 
-                          ? 'Tarjeta terminada en ' + method.cardNumber.slice(-4) 
-                          : method.type === 'paypal' 
-                            ? 'PayPal' 
-                            : method.walletType === 'uala' 
-                              ? 'Ualá' 
-                              : method.walletType === 'mercadopago' 
-                                ? 'Mercado Pago'
-                                  : method.walletType === 'otra' 
-                                  ? 'Otra' 
-                                    : method.walletType || 'Otro método'
-                      }}
+                      {{ method.brand }}
                     </p>
-                    <p class="text-sm text-gray-300">
-                      {{ method.type === 'credit_card' ? method.cardholder : 
-                        method.type === 'digital_wallet' ? method.walletId : method.email }}
+                    <p v-if="method.cardNumber" class="text-sm text-gray-400">
+                      •••• •••• •••• {{ String(method.cardNumber).slice(-4) }}
                     </p>
                   </div>
                 </div>
@@ -378,96 +372,60 @@ onMounted(async () => {
             </div>
           </div>
           
-          <div v-if="paymentStore.showNewPaymentForm" class="mt-6">
-            <Heading :type="4" class="regular text-white">Nuevo método de pago</Heading>
+          <div v-if="paymentStore.showNewPaymentForm" class="mt-6 flex flex-col gap-4">
+            <Heading :type="4" class="regular text-white ">Nuevo método de pago</Heading>
             
-            <div class="flex gap-4 mb-6">
-              <div 
-                @click="paymentStore.selectedPaymentMethodType = 'credit_card'" 
-                class="flex-1 p-3 border rounded-xl cursor-pointer text-center transition-all text-white"
-                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': paymentStore.selectedPaymentMethodType === 'credit_card', 'border-gray-600': paymentStore.selectedPaymentMethodType !== 'credit_card'}"
-              >
-                Tarjeta
-              </div>
-              <div 
-                @click="paymentStore.selectedPaymentMethodType = 'digital_wallet'" 
-                class="flex-1 p-3 border rounded-xl cursor-pointer text-center transition-all text-white"
-                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': paymentStore.selectedPaymentMethodType === 'digital_wallet', 'border-gray-600': paymentStore.selectedPaymentMethodType !== 'digital_wallet'}"
-              >
-                Billetera Virtual
-              </div>
-              <div 
-                @click="paymentStore.selectedPaymentMethodType = 'paypal'" 
-                class="flex-1 p-3 border rounded-xl cursor-pointer text-center transition-all text-white"
-                :class="{'border-vibrant-light-900 bg-deep-blue-900 bg-opacity-20': paymentStore.selectedPaymentMethodType === 'paypal', 'border-gray-600': paymentStore.selectedPaymentMethodType !== 'paypal'}"
-              >
-                PayPal
-              </div>
-            </div>
-            
-            <div v-if="paymentStore.selectedPaymentMethodType === 'credit_card'" class="space-y-4">
+            <div class="flex flex-col gap-4">
+              <Input 
+                type="select"
+                placeholder="Selecciona una marca"
+                :options="[
+                  {value: 'Visa', label: 'Visa', type: 'bank'},
+                  {value: 'Mastercard', label: 'Mastercard', type: 'bank'},
+                  {value: 'Uala', label: 'Ualá', type: 'digital_wallet'},
+                  {value: 'PayPal', label: 'PayPal', type: 'digital_wallet'},
+                  {value: 'Mercado Pago', label: 'Mercado Pago', type: 'digital_wallet'},
+                  {value: 'Lemon', label: 'Lemon', type: 'digital_wallet'},
+                  {value: 'Modo', label: 'Modo', type: 'digital_wallet'}
+                ]"
+                v-model="paymentStore.newPaymentMethod.brand"
+                @update:modelValue="updatePaymentType"
+                variant="secondary"
+                :outline="false"
+              />
+
               <Input 
                 type="text"
                 placeholder="Titular de tarjeta"
-                v-model="paymentStore.newPaymentMethod.credit_card.cardholder"
-                :variant="'secondary'"
+                v-model="paymentStore.newPaymentMethod.cardHolder"
+                variant="secondary"
                 :outline="false"
               />
+              
               <Input 
                 type="text"
-                placeholder="Número de tarjeta"
-                v-model="paymentStore.newPaymentMethod.credit_card.cardNumber"
-                :variant="'secondary'"
+                placeholder="Número de tarjeta (16 dígitos)"
+                v-model="paymentStore.newPaymentMethod.cardNumber"
+                variant="secondary"
                 :outline="false"
               />
+              
               <div class="flex gap-5">
                 <Input 
                   type="month"
                   placeholder="MM/AA"
-                  v-model="paymentStore.newPaymentMethod.credit_card.expiryDate"
-                  :variant="'secondary'"
+                  v-model="paymentStore.newPaymentMethod.expiryDate"
+                  variant="secondary"
                   :outline="false"
                 />
                 <Input
                   type="password"
                   placeholder="CVV"
-                  v-model="paymentStore.newPaymentMethod.credit_card.cvv"
-                  :variant="'secondary'"
+                  v-model="paymentStore.newPaymentMethod.cvv"
+                  variant="secondary"
                   :outline="false"
                 />
               </div>
-            </div>
-            
-            <div v-if="paymentStore.selectedPaymentMethodType === 'digital_wallet'" class="space-y-4">
-              <!-- {value: 'otra', label:'Otra'} -->
-              <Input 
-                type="select"
-                placeholder="Tipo de billetera"
-                :options="[
-                  {value: 'mercadopago', label: 'Mercado Pago'},
-                  {value: 'uala', label: 'Ualá'},
-                  ]"
-                v-model="paymentStore.newPaymentMethod.digital_wallet.walletType"
-                variant="secondary"
-                :outline="false"
-              />
-              <Input
-                type="text"
-                placeholder="CVU o Alias"
-                v-model="paymentStore.newPaymentMethod.digital_wallet.walletId"
-                variant="secondary"
-                :outline="false"
-              />
-            </div>
-            
-            <div v-if="paymentStore.selectedPaymentMethodType === 'paypal'" class="space-y-4">
-              <Input 
-                type="email"
-                placeholder="Email de PayPal"
-                v-model="paymentStore.newPaymentMethod.paypal.email"
-                :variant="'secondary'"
-                :outline="false"
-              />
             </div>
             
             <div class="flex gap-4 mt-6">
@@ -478,7 +436,7 @@ onMounted(async () => {
                 Cancelar
               </button>
               <button 
-                @click="paymentStore.saveNewPaymentMethod(userId)" 
+                @click="paymentStore.saveNewPaymentMethod(authStore.user.id)" 
                 :disabled="!paymentStore.isFormValid || store.loading"
                 class="flex-1 py-3 px-4 bg-vibrant-light-900 text-deep-blue-900 rounded-xl font-medium hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
               >
@@ -557,13 +515,14 @@ onMounted(async () => {
             >
               <div v-if="paymentMethod" class="flex items-center gap-3">
                 <div class="rounded-xl bg-white p-2 shadow-sm">
-                  <component :is="getPaymentIcon(paymentMethod)" class="h-6 w-6" />
+                  <PaymentMethod :method="paymentMethod.brand" class="h-6 w-6" />
                 </div>
                 
                 <div>
-                  <p class="font-medium">{{ getPaymentMethodName(paymentMethod) }}</p>
+                  <p class="font-medium">{{ paymentMethod.brand }}</p>
                   <p class="text-sm text-gray-400">
-                    {{ getPaymentDetails(paymentMethod) }}
+                    <!-- {{ getPaymentDetails(paymentMethod) }} -->
+                      •••• •••• •••• {{ paymentMethod.cardNumber.slice(-4) }}
                   </p>
                 </div>
               </div>

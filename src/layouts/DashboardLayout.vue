@@ -1,7 +1,8 @@
 <script setup>
-import { provide, ref, computed } from 'vue';
-import Sidebar from '@/components/Sidebar.vue';
+import { provide, computed, defineAsyncComponent } from 'vue';
 import { useAuthStore } from '@stores';
+
+const Sidebar = defineAsyncComponent(() => import('@/components/Sidebar.vue'));
 
 const authStore = useAuthStore();
 
@@ -16,9 +17,9 @@ provide('authSession', authSession);
 
 <template>
   <div class="w-full md:h-screen overflow-auto">
-    <main class="flex flex-col relative md:flex-row-reverse !min-h-screen md:max-h-screen md:p-2.5 bg-white 2xl:rounded-[40px] py-20 md:m-0 2xl:max-w-5/6 2xl:m-auto">
-      <slot />
-      <Sidebar/>
+    <main class="flex flex-col relative md:flex-row !min-h-screen md:max-h-screen md:p-2.5 bg-white 2xl:rounded-[40px] py-20 md:m-0 2xl:max-w-5/6 2xl:m-auto">
+      <Sidebar class="sidebar"/>
+      <slot/>
     </main>
   </div>
 </template>

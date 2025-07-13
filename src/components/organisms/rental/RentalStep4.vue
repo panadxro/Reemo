@@ -152,7 +152,7 @@ export default {
         paypal: PayPal,
         credit_card: CreditCard
       };
-      return icons[paymentMethod.walletType || paymentMethod.type];
+      return icons[paymentMethod.brand || paymentMethod.type];
     },
     
     getPaymentMethodName(paymentMethod) {
@@ -165,7 +165,7 @@ export default {
       };
       return paymentMethod.type === 'credit_card' 
         ? `${names.credit_card} (**** ${paymentMethod.cardNumber.slice(-4)})` 
-        : names[paymentMethod.walletType || paymentMethod.type];
+        : names[paymentMethod.brand || paymentMethod.type];
     },
     
     getPaymentDetails(paymentMethod) {

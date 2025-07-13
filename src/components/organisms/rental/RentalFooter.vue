@@ -104,7 +104,7 @@ export default {
 </script>
 
 <template>
-  <div class="sticky bottom-0 left-0 right-0 z-10">
+  <div class="sticky bottom-0 left-0 right-0 z-4">
     <VerifyValidation
           v-if="!isVerified"
           title="Verificación requerida"

@@ -25,19 +25,25 @@ export async function createUserProfile( uid, email ) {
       postalCode: ''
     },
     paymentMethods: {
-      credit_card: {
-        cardNumber: '',
-        cardHolder: '',
-        expirationDate: '',
-        cvv: ''
-      },
-      paypal: {
-        email: ''
-      },
-      digital_wallet: {
-        walletId: '',
-        walletType: ''
-      }
+      // credit_card: {
+      //   cardNumber: '',
+      //   cardHolder: '',
+      //   expirationDate: '',
+      //   cvv: ''
+      // },
+      // paypal: {
+      //   email: ''
+      // },
+      // digital_wallet: {
+      //   walletId: '',
+      //   brand: ''
+      // }
+      type:'',
+      brand:'',
+      cardNumber:'',
+      cardHolder:'',
+      cvv:'',
+      expiryDate:'',
     },
     agreements: {
       acceptedTerms: false,

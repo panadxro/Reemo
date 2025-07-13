@@ -1,10 +1,10 @@
 <script setup>
-import { provide, computed, onMounted } from 'vue';
+import { provide, computed, defineAsyncComponent } from 'vue';
 import { useAuthStore } from '@stores';
 import { useRoute } from 'vue-router';
 
-import Sidebar from '@/components/Sidebar.vue';
-import UserNav from '@components/user/UserNav.vue'
+const Sidebar = defineAsyncComponent(() => import('@/components/Sidebar.vue'));
+const UserNav = defineAsyncComponent(() => import('@/components/user/UserNav.vue'));
 
 const authStore = useAuthStore();
 const route = useRoute();

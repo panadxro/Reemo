@@ -71,7 +71,7 @@ export default {
       newPaymentMethod: {
         digital_wallet: {
           type: 'digital_wallet',
-          walletType: '',
+          brand: '',
           walletId: ''
         },
         credit_card: {
@@ -158,7 +158,7 @@ export default {
             isValid = paymentData.cardholder && paymentData.cardNumber && paymentData.expiryDate && paymentData.cvv;
             break;
           case 'digital_wallet':
-            isValid = paymentData.walletType && paymentData.walletId;
+            isValid = paymentData.brand && paymentData.walletId;
             break;
           case 'paypal':
             isValid = paymentData.email;
@@ -192,7 +192,7 @@ export default {
         // Ocultar el formulario
         this.showNewPaymentForm = false;
         this.newPaymentMethod = {
-          digital_wallet: { type: 'digital_wallet', walletType: '', walletId: '' },
+          digital_wallet: { type: 'digital_wallet', brand: '', walletId: '' },
           credit_card: { type: 'credit_card', cardholder: '', cardNumber: '', expiryDate: '', cvv: '' },
           paypal: { type: 'paypal', email: '' }
         };
@@ -213,7 +213,7 @@ export default {
         case 'credit_card':
           return `card-${method.cardNumber}`;
         case 'digital_wallet':
-          return `wallet-${method.walletType}-${method.walletId}`;
+          return `wallet-${method.brand}-${method.walletId}`;
         case 'paypal':
           return `paypal-${method.email}`;
         default:
@@ -266,7 +266,7 @@ export default {
         case 'credit_card':
           return paymentData.cardholder && paymentData.cardNumber && paymentData.expiryDate && paymentData.cvv;
         case 'digital_wallet':
-          return paymentData.walletType && paymentData.walletId;
+          return paymentData.brand && paymentData.walletId;
         case 'paypal':
           return paymentData.email;
         default:
@@ -319,8 +319,8 @@ export default {
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 flex items-center justify-center p-1 rounded-xl bg-white">
-                  <MercadoPago v-if="method.walletType === 'mercadopago'"/>
-                <Uala v-if="method.walletType === 'uala'"/>
+                  <MercadoPago v-if="method.brand === 'mercadopago'"/>
+                <Uala v-if="method.brand === 'uala'"/>
                 <PayPal v-if="method.type === 'paypal'"/>
                 <CreditCard v-if="method.type === 'credit_card'"/>
                 
@@ -333,11 +333,11 @@ export default {
                       ? 'Tarjeta terminada en ' + method.cardNumber.slice(-4) 
                       : method.type === 'paypal' 
                         ? 'PayPal' 
-                        : method.walletType === 'uala' 
+                        : method.brand === 'uala' 
                           ? 'Ualá' 
-                          : method.walletType === 'mercadopago' 
+                          : method.brand === 'mercadopago' 
                             ? 'Mercado Pago' 
-                            : method.walletType || 'Otro método'
+                            : method.brand || 'Otro método'
                   }}
                 </p>
                 <p class="text-sm text-gray-300">
@@ -448,7 +448,7 @@ export default {
               {value: 'uala', label: 'Ualá'},
               {value: 'otra', label:'Otra'}
             ]"
-            v-model="newPaymentMethod.digital_wallet.walletType"
+            v-model="newPaymentMethod.digital_wallet.brand"
             variant="secondary"
             :outline="false"
           />

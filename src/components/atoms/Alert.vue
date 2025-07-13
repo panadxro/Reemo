@@ -1,30 +1,22 @@
-<script>
+<script setup>
+import { computed, defineAsyncComponent } from 'vue';
 import { alerts } from "../../services/alerts";
 
-import Success from "../../icons/Success.vue";
-import Info from "../../icons/Info.vue";
-import Warning from "../../icons/Warning.vue";
-import Error from "../../icons/Error.vue";
+const Success = defineAsyncComponent(() => import('@/icons/Success.vue'));
+const Info = defineAsyncComponent(() => import('@/icons/Info.vue'));
+const Warning = defineAsyncComponent(() => import('@/icons/Warning.vue'));
+const Error = defineAsyncComponent(() => import('@/icons/Error.vue'));
 
-export default {
-  name: "Alert",
-  components: { Success, Info, Warning, Error },
-  computed: {
-    alerts() {
-      return alerts;
-    }
-  },
-  methods: {
-    iconComponent(severity) {
-      return {
-        success: Success,
-        info: Info,
-        warning: Warning,
-        error: Error,
-      }[severity];
-    }
-  },
+const iconComponent = (severity) => {
+  return {
+    success: Success,
+    info: Info,
+    warning: Warning,
+    error: Error,
+  }[severity];
 };
+
+const alertList = computed(() => alerts);
 </script>
 
 <template>

@@ -15,7 +15,7 @@ export default {
       type: String,
       required: true,
       validator: (value) => {
-        return ['mastercard', 'mercado-pago', 'visa', 'uala', 'paypal', 'lemon', 'modo'].includes(value);
+        return ['Mastercard', 'Mercado Pago', 'Visa', 'Uala', 'PayPal', 'Lemon', 'Modo'].includes(value);
       }
     }
   },
@@ -33,12 +33,13 @@ export default {
 </script>
 
 <template>
-  <Uala v-if="method === 'uala'" />
-  <Paypal v-else-if="method === 'paypal'" />
-  <MercadoPago v-else-if="method === 'mercado-pago'" />
-  <Lemon v-else-if="method === 'lemon'" />
-  <Modo v-else-if="method === 'modo'" />
-  <Visa v-else-if="method === 'visa'" />
-  <Mastercard v-else-if="method === 'mastercard'" />
+  <Uala v-if="method === 'Uala'" />
+  <Paypal v-else-if="method === 'PayPal'" />
+  <MercadoPago v-else-if="method === 'Mercado Pago'" />
+  <Lemon v-else-if="method === 'Lemon'" />
+  <Modo v-else-if="method === 'Modo'" />
+  <Visa v-else-if="method === 'Visa'" />
+  <Mastercard v-else-if="method === 'Mastercard'" />
   <Payment v-else />
 </template>
+
