@@ -1,33 +1,14 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { useAuthStore } from "@/stores";
 
 import Home from "../pages/Home.vue";
-import Login from "../pages/Login.vue";
-import UserOnboarding from "../pages/UserOnboarding.vue";
-import CarRegister from "../pages/CarRegister.vue";
-import Register from "../pages/Register.vue";
-import Maps from "../pages/Maps.vue";
-import Dashboard from "../pages/Dashboard.vue";
-import Search from "../pages/Search.vue";
-import CarDetails from "../pages/CarDetails.vue";
-import AdminCars from "../pages/admin/Cars.vue";
-import AdminUsers from "../pages/admin/Users.vue";
-import Chat from "../pages/Chat.vue";
-import UserProfile from "../pages/UserProfile.vue";
-import NotFound from "../pages/NotFound.vue";
-import Notification from "../pages/Notification.vue";
-import RentDetail from '../pages/RentDetails.vue';
-import Rent from '../pages/Rent.vue'
-import MyCars from '../pages/MyCars.vue';
-import Documentation from "../pages/Documentation.vue";
 
 const routes = [
   { path: "/", component: Home, name: "Home" },
-  { path: "/login", component: Login, name: "Login" },
-  { path: "/register", component: Register, name: "Register" },
+  { path: "/login", name: "Login", component: () => import("../pages/Login.vue") },
+  { path: "/register", name: "Register", component: () => import("../pages/Register.vue") },
   {
     path: "/:pathMatch(.*)*",
-    component: NotFound,
+    component: () => import("../pages/NotFound.vue"),
     name: "NotFound",
     beforeEnter: (to) => {
       if (!to.matched.length) {
@@ -36,53 +17,49 @@ const routes = [
     },
    },
   { path: "/dashboard", 
-    component: Dashboard, 
+    component: () => import("../pages/Dashboard.vue"),
     name: "Dashboard",
     meta: { needsAuth: true },
   },
-  { path: "/search", component: Search, name: "Search" },
+  { path: "/search", name: "Search", component: () => import("../pages/Search.vue") },
+  { path: '/maps', name: 'maps', component: () => import('../pages/Maps.vue') },
   { 
-    path: '/maps',
-    component: Maps,
-    name: 'maps', 
-  },
-  {
     path: "/onboarding",
-    component: UserOnboarding,
     name: "onboarding",
+    component: () => import("../pages/UserOnboarding.vue"),
     meta: { needsAuth: true },
   },
   {
     path: "/car/register",
-    component: CarRegister,
     name: "CarRegister",
-    meta: { needsAuth: true}
+    component: () => import("../pages/CarRegister.vue"),
+    meta: { needsAuth: true},
   },
   {
     path: "/car/edit/:id",
     name: 'CarEdit',
-    component: CarRegister,
     props: true,
+    component: () => import("../pages/CarRegister.vue"),
     meta: { requiresAuth: true }
   },
   {
     path: "/car/:id",
     name: "CarDetails",
-    component: CarDetails,
     props: true,
+    component: () => import("../pages/CarDetails.vue"),
     meta: { needsAuth: true },
   },
   {
     path: "/notification",
     name: "Notification",
-    component: Notification,
     props: true,
+    component: () => import("../pages/Notification.vue"),
     meta: { needsAuth: true },
   },
   {
     path: "/user/:id",
     name: "UserProfile",
-    component: UserProfile,
+    component: () => import("../pages/UserProfile.vue"),
     props: (route) => ({
       id: route.params.id,
     }),
@@ -91,11 +68,10 @@ const routes = [
       {
         path: "chat",
         name: "Chat",
-        component: Chat,
+        component: () => import("../pages/Chat.vue"),
         meta: { needsAuth: true },
-        // Validcacion para que un usuario noi pueda chatear con el mismo. lo redirige a su perfil, capaz se puede crear una página deerror
+        // Validcacion para que un usuario no pueda chatear con el mismo. lo redirige a su perfil, capaz se puede crear una página de error
         beforeEnter: (to) => {
-
           // Obtener la sesión del usuario actual
           const authSessionHistory = sessionStorage.getItem('auth_session_history');
           const authSession = JSON.parse(authSessionHistory);
@@ -114,7 +90,6 @@ const routes = [
             };
           }
           
-          // Si no es consigo mismo, permitir el acceso (retorna true implícitamente)
           return true;
         },
       },
@@ -123,7 +98,7 @@ const routes = [
   {
     path: '/rents/:id',
     name: 'Rent',
-    component: Rent,
+    component: () => import('../pages/Rent.vue'),
     props: (route) => ({
       id: route.params.id,
     }),
@@ -132,14 +107,14 @@ const routes = [
   {
     path: '/rent/:id',
     name: 'RentDetail',
-    component: RentDetail,
+    component: () => import('../pages/RentDetails.vue'),
     props: true,
     meta: { needsAuth: true },
   },
   {
     path: '/cars/:id',
     name: 'MyCars',
-    component: MyCars,
+    component: () => import('../pages/MyCars.vue'),
     props: (route) => ({
       id: route.params.id,
     }),
@@ -148,7 +123,7 @@ const routes = [
   {
     path: '/documents/:id',
     name: 'Documentation',
-    component: Documentation,
+    component: () => import('../pages/Documentation.vue'),
     props: (route) => ({
       id: route.params.id,
     }),
@@ -162,12 +137,12 @@ const routes = [
       {
         path: "cars",
         name: "AdminCars",
-        component: AdminCars,
+        component: () => import("../pages/admin/Cars.vue"),
       },
       {
         path: "users",
         name: "AdminUsers",
-        component: AdminUsers,
+        component: () => import("../pages/admin/Users.vue"),
       }
     ],
   },

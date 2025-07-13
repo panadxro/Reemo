@@ -27,14 +27,7 @@ const selectedPayment = ref(null);
 
 const handlePaymentClick = (method) => {
   selectedPayment.value = method;
-  showMobileModal.value = true;
 }
-const showMobileModal = ref(false);
-
-const handleCloseModal = () => {
-  showMobileModal.value = false;
-  selectedPayment.value = null;
-};
 
 onMounted(async () => {
   try {
@@ -247,52 +240,12 @@ onMounted(async () => {
             'bg-white': selectedPayment !== method 
           }"
           >
-          <PaymentMethod :method="method.walletType" 
+          <PaymentMethod :method="method.brand" 
         />
-          <p class="text-deep-blue-900 font-semibold text-xs">{{ method.cardNumber ? '•••• ' + method.cardNumber.slice(-4) : method.walletId }}</p>
+          <p class="text-deep-blue-900 font-semibold text-xs">{{ method.cardNumber ? '•••• •••• •••• ' + method.cardNumber.slice(-4) : method.walletId }}</p>
         </li>
       </ul>
       <PreviewDocumentation :payment="selectedPayment" :user="user" :currentStep="currentStep" class="hidden md:flex"/>
     </article>
-
-    <!-- Modal para mobile -->
-    <div v-if="showMobileModal && currentStep === 2" class="fixed inset-0 bg-black/50 z-30 md:hidden">
-      <div class="flex items-end justify-center h-full p-4" @click.self="handleCloseModal">
-        <div class="bg-white rounded-t-2xl w-full max-w-md">
-          <div class="p-4">
-            <div class="flex justify-between items-center mb-4">
-              <Heading :type="3" class="regular">Método de pago</Heading>
-              <button @click="handleCloseModal" class="text-gray-500 hover:text-gray-700 text-xl">
-                &times;
-              </button>
-            </div>
-            <div 
-              v-if="selectedPayment"
-              class="w-full aspect-video rounded-2xl flex items-center justify-center p-4 mb-4"
-            >
-              <PaymentMethod :method="selectedPayment?.walletType"/> 
-            </div>
-            <ul class="flex flex-col gap-4">
-              <li v-if="selectedPayment?.walletId">
-                <span class="text-xs font-medium text-background-600">Alias</span>
-                <p class="font-semibold">{{ selectedPayment?.walletId || 'No disponible'}}</p>
-              </li>
-              <li v-if="selectedPayment?.cardNumber">
-                <span class="text-xs font-medium text-background-600">Número de tarjeta</span>
-                <p class="font-semibold">{{ selectedPayment?.cardNumber || 'No disponible'}}</p>
-              </li>
-              <li v-if="selectedPayment?.cardholder">
-                <span class="text-xs font-medium text-background-600">Titular de tarjeta</span>
-                <p class="font-semibold">{{ selectedPayment?.cardholder || 'No disponible'}}</p>
-              </li>
-              <li v-if="selectedPayment?.expiryDate">
-                <span class="text-xs font-medium text-background-600">Fecha de vencimiento</span>
-                <p class="font-semibold">{{ selectedPayment?.expiryDate || 'No disponible'}}</p>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
   </section>
 </template>

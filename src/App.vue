@@ -1,5 +1,5 @@
 <script setup>
-import { watch, markRaw, shallowRef } from 'vue'
+import { watch, markRaw, shallowRef, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 
 import DefaultLayout from '@layouts/DefaultLayout.vue'
@@ -7,7 +7,8 @@ import SimpleLayout from "@layouts/SimpleLayout.vue"
 import DashboardLayout from '@layouts/DashboardLayout.vue'
 import UserLayout from '@layouts/UserLayout.vue'
 import MapsLayout from '@layouts/MapsLayout.vue'
-import Alert from './components/atoms/Alert.vue';
+
+const Alert = defineAsyncComponent(() => import('@/components/atoms/Alert.vue'))
 
 const route = useRoute()
 

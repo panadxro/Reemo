@@ -13,26 +13,29 @@ const props = defineProps({
   },
   payment: {
     type: Object,
-    required: false
+    required: false,
+    default: null
   }
 });
 
-// Color de fondo según walletType
-const getColorByWalletType = (walletType) => {
-  switch (walletType) {
-    case 'mastercard':
+// Color de fondo según brand
+const getColorByWalletType = (brand) => {
+  if (!brand) return 'bg-background-900'; // Fallback si no hay brand
+
+  switch (brand) {
+    case 'Mastercard':
       return 'bg-mastercard';
-    case 'visa':
+    case 'Visa':
       return 'bg-visa';
-    case 'uala':
+    case 'Uala':
       return 'bg-uala';
-    case 'paypal':
+    case 'PayPal':
       return 'bg-paypal';
-    case 'mercadopago':
+    case 'Mercado Pago':
       return 'bg-mercado-pago';
-    case 'lemon':
+    case 'Lemon':
       return 'bg-lemon';
-    case 'modo':
+    case 'Modo':
       return 'bg-modo';
     default:
       return 'bg-background-900';
@@ -100,28 +103,32 @@ const getColorByWalletType = (walletType) => {
         <div 
           v-if="payment"
           class="w-full aspect-video rounded-2xl flex items-center justify-center p-4"
-          :class="getColorByWalletType(payment.walletType)" 
+          :class="getColorByWalletType(payment?.brand)" 
         >
-          <PaymentMethod :method="payment?.walletType"/> 
-  
+          <PaymentMethod :method="payment?.brand"/> 
         </div>
-        <ul class="box-vibrant flex flex-col gap-2 overflow-y-auto overflow-x-hidden">
-          <ul v-if="payment.walletId">
-            <span class="text-xs font-medium text-background-600">Alias</span>
-            <p class="font-semibold">{{ payment?.walletId || 'No disponible'}}</p>
-          </ul>
-          <ul v-if="payment.cardNumber">
-            <span class="text-xs font-medium text-background-600">Número de documento</span>
-            <p class="font-semibold">{{ payment?.cardNumber || 'No disponible'}}</p>
-          </ul>
-          <ul v-if="payment.cardholder">
-            <span class="text-xs font-medium text-background-600">Titular de tarjeta</span>
-            <p class="font-semibold">{{ payment?.cardholder || 'No disponible'}}</p>
-          </ul>
-          <ul v-if="payment.expiryDate">
+
+        <div v-else class="w-full aspect-video rounded-2xl bg-background-900 flex items-center justify-center">
+          <p class="text-background-600">Selecciona un método</p>
+        </div>
+
+        <ul v-if="payment" class="box-vibrant flex flex-col gap-2 overflow-y-auto overflow-x-hidden">
+          <li v-if="payment.brand">
+            <span class="text-xs font-medium text-background-600">Tarjeta</span>
+            <p class="font-semibold">{{ payment.brand || 'No disponible'}}</p>
+          </li>
+          <li v-if="payment.cardNumber">
+            <span class="text-xs font-medium text-background-600">Número de tarjeta</span>
+            <p class="font-semibold">{{ payment.cardNumber || 'No disponible'}}</p>
+          </li>
+          <li v-if="payment.cardHolder">
+            <span class="text-xs font-medium text-background-600">Titliar de tarjeta</span>
+            <p class="font-semibold">{{ payment.cardHolder || 'No disponible'}}</p>
+          </li>
+          <li v-if="payment.expiryDate">
             <span class="text-xs font-medium text-background-600">Fecha de vencimiento (MM/AA)</span>
-            <p class="font-semibold">{{ payment?.expiryDate || 'No disponible'}}</p>
-          </ul>
+            <p class="font-semibold">{{ payment.expiryDate || 'No disponible'}}</p>
+          </li>
         </ul>
     </template>
   </aside>

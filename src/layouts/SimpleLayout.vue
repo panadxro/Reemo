@@ -1,9 +1,4 @@
-<script>
-
-export default {
-  name: "SimpleLayout",
-};
-</script>
+<script setup></script>
 
 <template>
   <div class="background-dark flex items-center justify-center bg-vibrant-light-900 min-h-dvh h-full overflow-auto relative">

@@ -1,6 +1,8 @@
 <script setup>
-import Navbar from '@/components/Navbar.vue'
-import FooterLayout from '@/components/Footer.vue'
+import { defineAsyncComponent } from 'vue';
+
+const Navbar = defineAsyncComponent(() => import('@/components/Navbar.vue'));
+const FooterLayout = defineAsyncComponent(() => import('@/components/Footer.vue'));
 </script>
 
 <template>

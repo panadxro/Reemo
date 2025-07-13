@@ -78,19 +78,19 @@ import CreditCard from "@icons/CreditCard.vue";
           <div v-if="paymentMethod" class="mb-4 p-3 bg-white/10 rounded-lg">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 flex items-center justify-center p-1 rounded-xl bg-vibrant-light-600">
-                <MercadoPago v-if="paymentMethod.walletType === 'mercadopago'"/>
+                <MercadoPago v-if="paymentMethod.brand === 'mercadopago'"/>
                 <CreditCard v-if="paymentMethod.type === 'credit_card'"/>
-                <Uala v-if="paymentMethod.walletType === 'uala'"/>
+                <Uala v-if="paymentMethod.brand === 'uala'"/>
                 <PayPal v-if="paymentMethod.type === 'paypal'"/>
               </div>
               <div>
                 <p class="font-medium text-white text-sm">
                   {{ paymentMethod.type === 'credit_card' ? 'Tarjeta terminada en ' + paymentMethod.cardNumber.slice(-4) : 
                      paymentMethod.type === 'paypal' ? 'PayPal' : 
-                     paymentMethod.walletType === 'uala' ? 'Ualá' : 
-                     paymentMethod.walletType === 'mercadopago' ? 'Mercado Pago' : 
-                     paymentMethod.walletType === 'otra' ? 'Otra' : 
-                     paymentMethod.walletType || 'Otro método' }}
+                     paymentMethod.brand === 'uala' ? 'Ualá' : 
+                     paymentMethod.brand === 'mercadopago' ? 'Mercado Pago' : 
+                     paymentMethod.brand === 'otra' ? 'Otra' : 
+                     paymentMethod.brand || 'Otro método' }}
                 </p>
               </div>
             </div>

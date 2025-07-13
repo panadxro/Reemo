@@ -276,35 +276,43 @@ export const useRentStore = defineStore('rent', {
     },
     
     selectPaymentMethod(method) {
-      this.rentalData.selectedPaymentMethod = method;
+      if (!method) {
+        console.error("Intento de seleccionar método de pago nulo");
+        return;
+      }
+      
       const paymentStore = usePaymentStore();
-      paymentStore.showNewPaymentForm = false;
-      this.saveCurrentData(); // Guardar después de seleccionar método de pago
+      // Verificar que el método exista en la lista
+      const isValid = paymentStore.paymentMethods.some(
+        m => paymentStore.getPaymentMethodIdentifier(m) === 
+            paymentStore.getPaymentMethodIdentifier(method)
+      );
+      
+      if (isValid) {
+        this.rentalData.selectedPaymentMethod = method;
+        paymentStore.showNewPaymentForm = false;
+        this.saveCurrentData();
+      } else {
+        console.error("Intento de seleccionar método de pago no válido:", method);
+      }
     },
     
     async fetchPaymentMethods() {
-      if (!this.loggedUser || !this.loggedUser) {
+      if (!this.loggedUser) {
         console.error("Usuario no identificado");
-        this.errorMessage = "Usuario no identificado";
         return [];
       }
       
       this.loading = true;
       try {
         const paymentStore = usePaymentStore();
-        const methods = await paymentStore.fetchPaymentMethods(this.loggedUser);
+        await paymentStore.fetchPaymentMethods(this.loggedUser);
         
-        // Si hay métodos disponibles, seleccionar el primero (si no hay uno ya seleccionado)
-        if (methods.length > 0 && !this.rentalData.selectedPaymentMethod) {
-          this.rentalData.selectedPaymentMethod = methods[0];
-          this.saveCurrentData();
+        if (paymentStore.paymentMethods.length > 0 && !this.rentalData.selectedPaymentMethod) {
+          this.selectPaymentMethod(paymentStore.paymentMethods[0]);
         }
         
-        return methods;
-      } catch (error) {
-        console.error("Error al obtener métodos de pago:", error);
-        this.errorMessage = "Error al cargar métodos de pago";
-        return [];
+        return paymentStore.paymentMethods;
       } finally {
         this.loading = false;
       }
@@ -380,7 +388,7 @@ export const useRentStore = defineStore('rent', {
         payments: {
           transaction_id: Math.random() * (999999999 - 111111111) + 11111,
           amount: this.rentalData.currentTotalPrice,
-          payment_method: paymentStore.getPaymentMethodName(this.rentalData.selectedPaymentMethod),
+          payment_method: this.rentalData.selectedPaymentMethod?.brand || this.rentalData.selectedPaymentMethod.type || 'desconocido',
           status: 'completed',
           timestamp: new Date().toISOString()
         },
@@ -396,6 +404,17 @@ export const useRentStore = defineStore('rent', {
 
         if (!this.rentalData.selectedPaymentMethod) {
           addAlert("Por favor selecciona un método de pago", "error");
+          return false;
+        }
+
+        const paymentStore = usePaymentStore();
+        const isValidMethod = paymentStore.paymentMethods.some(
+          method => paymentStore.getPaymentMethodIdentifier(method) === 
+                  paymentStore.getPaymentMethodIdentifier(this.rentalData.selectedPaymentMethod)
+        );
+        
+        if (!isValidMethod) {
+          addAlert("El método de pago seleccionado no es válido", "error");
           return false;
         }
 

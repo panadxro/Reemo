@@ -269,7 +269,7 @@ export default {
         :class="isOwnProfile ? 'div-my-user' : 'div-user'"
         class="bg-deep-blue-900 overflow-hidden rounded-[40px] py-7 px-5 flex flex-col gap-5"
         >
-        <Heading :type="2" class="medium text-white text-center sm:text-left">{{ isOwnProfile ? "Información personal" : "Información del Usuario"  }}</Heading>
+        <Heading :type="2" class="medium text-white text-center sm:text-left">{{ isOwnProfile ? "Información personal" : "Información del usuario"  }}</Heading>
         <article v-if="isOwnProfile" class="box-deep overflow-y-auto h-full flex flex-col gap-5 pr-2">
           <div class="flex flex-col gap-2">
             <Heading :type="3" class="regular text-white">Datos básicos</Heading>
@@ -313,7 +313,7 @@ export default {
             </ul>
           </div>
         </article>
-        <article v-else class="box-vibrant overflow-y-auto h-full flex flex-col gap-5 pr-4 py-4">
+        <article v-else class="box-deep overflow-y-auto h-full flex flex-col gap-5 pr-4 py-4">
           <div class="flex flex-col gap-2">
             <Heading :type="3" class="regular text-white">Verificación</Heading>
             <ul class="flex flex-col gap-2">

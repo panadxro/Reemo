@@ -1,30 +1,27 @@
-<script>
-import Heading from "../components/atoms/Heading.vue";
-import Pill from '../components/atoms/Pill.vue';
-import ZurichxReemo from "../components/atoms/ZurichxReemo.vue";
-import ABS from "../icons/ABS.vue";
-import LongArrow from "../icons/LongArrow.vue";
-import PublishYourCar from "../components/atoms/PublishYourCar.vue";
-import RentYourCar from "../components/atoms/RentYourCar.vue"
-import NotificationExpress from "../components/atoms/NotificationExpress.vue";
-import RentsExpress from "../components/atoms/RentsExpress.vue";
-import Income from "../components/atoms/Income.vue";
-import Moments from "../components/atoms/Moments.vue";
-import ConectingCars from "../components/atoms/ConectingCars.vue";
-import GooglePlayLg from "../components/atoms/GooglePlayLg.vue";
-import AppStoreLg from "../components/atoms/AppStoreLg.vue";
-import Brands from "../components/atoms/Brands.vue";
-import Replay from "../components/atoms/Replay.vue";
-import Clue from "../components/atoms/Clue.vue";
-import Dropdown from "../components/molecules/Dropdown.vue";
-import Experience from "../components/atoms/Experience.vue";
-import QR from "../components/atoms/QR.vue";
-import InfoSm from "../icons/InfoSm.vue";
+<script setup>
+import { defineAsyncComponent } from "vue";
 
-export default {
-  name: "Home",
-  components: { Heading, Pill, GooglePlayLg, AppStoreLg, ZurichxReemo, ABS, LongArrow, PublishYourCar, RentYourCar, NotificationExpress, RentsExpress, Income, Moments, ConectingCars, Brands, Replay, Clue, Dropdown, Experience, QR, InfoSm },
-};
+const Heading = defineAsyncComponent(() => import("@/components/atoms/Heading.vue"));
+const ZurichxReemo = defineAsyncComponent(() => import("@/components/atoms/ZurichxReemo.vue"));
+const PublishYourCar = defineAsyncComponent(() => import("@/components/atoms/PublishYourCar.vue"));
+const RentYourCar = defineAsyncComponent(() => import("@/components/atoms/RentYourCar.vue"));
+const NotificationExpress = defineAsyncComponent(() => import("@/components/atoms/NotificationExpress.vue"));
+const RentsExpress = defineAsyncComponent(() => import("@/components/atoms/RentsExpress.vue"));
+const Income = defineAsyncComponent(() => import("@/components/atoms/Income.vue"));
+const Moments = defineAsyncComponent(() => import("@/components/atoms/Moments.vue"));
+const ConectingCars = defineAsyncComponent(() => import("@/components/atoms/ConectingCars.vue"));
+const GooglePlayLg = defineAsyncComponent(() => import("@/components/atoms/GooglePlayLg.vue"));
+const AppStoreLg = defineAsyncComponent(() => import("@/components/atoms/AppStoreLg.vue"));
+const Brands = defineAsyncComponent(() => import("@/components/atoms/Brands.vue"));
+const Replay = defineAsyncComponent(() => import("@/components/atoms/Replay.vue"));
+const Clue = defineAsyncComponent(() => import("@/components/atoms/Clue.vue"));
+const Dropdown = defineAsyncComponent(() => import("@/components/molecules/Dropdown.vue"));
+const Experience = defineAsyncComponent(() => import("@/components/atoms/Experience.vue"));
+const QR = defineAsyncComponent(() => import("@/components/atoms/QR.vue"));
+
+const InfoSm = defineAsyncComponent(() => import("@/icons/InfoSm.vue"));
+const ABS = defineAsyncComponent(() => import("@/icons/ABS.vue"));
+const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
 </script>
 
 <template>
