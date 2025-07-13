@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
 import { useAuthStore, useUserStore , useCarStore, useAdminStore } from '@stores'
-import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { Loader } from "@googlemaps/js-api-loader";
 import { loadGoogleMaps, initMap } from "../services/google-maps.js";
 import { useRentStore } from '@/stores/rent.store.js';
@@ -26,7 +26,7 @@ const store = useRentStore();
 const adminStore = useAdminStore();
 
 // Router
-const route = useRoute();
+const router = useRouter();
 
 const props = defineProps({
   id: {
@@ -183,8 +183,11 @@ const validateCar = async (car) => {
   } catch (error) {
     addAlert("Error al validar el vehículo", "error");
   }
-}
+};
 
+const goToEditCar = async (carId) => {
+    router.push({ name: 'CarEdit', params: { id: carId } });
+};
 
 
 // Lifecycle hooks
@@ -268,6 +271,21 @@ watch(car, (newCar) => {
           <figure class="my-auto w-full max-h-64 mx-auto overflow-hidden rounded-2xl relative">
             <div class="absolute top-4 left-4 right-4 flex justify-between items-center">
               <Status :status="car.status?.current"/>
+            
+              <!-- <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                <svg xmlns="http://www.w3.org/2000/svg" id="Filled" viewBox="0 0 24 24" width="16px" height="16px">
+                  <path d="M1.172,19.119A4,4,0,0,0,0,21.947V24H2.053a4,4,0,0,0,2.828-1.172L18.224,9.485,14.515,5.776Z"/><path d="M23.145.855a2.622,2.622,0,0,0-3.71,0L15.929,4.362l3.709,3.709,3.507-3.506A2.622,2.622,0,0,0,23.145.855Z"/>
+                </svg>    
+              </div> -->
+            
+              <div v-if="authStore.user?.id === car.ownerId">
+                <button @click="goToEditCar(car.id)" class="flex p-2.5 bg-secondary-700 rounded-xl hover:rounded-3xl hover:bg-secondary-600 transition-all duration-300 text-white cursor-pointer">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+              </div>
+            
             </div>
             <img 
               class="object-center w-full h-full object-cover"
