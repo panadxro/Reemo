@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores';
 import { fetchUserRentalHistory, fetchUserRentedOutHistory } from '@/services/rentedCarService';
 import Loading from '@/icons/Loading.vue';
 import HistoryCar from '@/components/organisms/rents/HistoryCar.vue';
+import Input from '@/components/molecules/Input.vue';
 
 const props = defineProps({
   showOnly: {
@@ -87,9 +88,16 @@ onMounted(() => {
       @click="router.push({ name: 'RentDetail', params: { id: rent.id } })" />
   </ul>
   
-  <template v-else>
-    <div class="text-center py-10 text-background-600">
-      No hay historial de alquileres disponible
-    </div>
+    <template v-else class="flex flex-col justify-center items-center h-full">
+          <img src="@/assets/car-history.png" alt="No history" class="max-w-[120px] mx-auto opacity-50" />
+          <p class="font-semibold text-white text-center">
+            No tenés historial de alquiler.
+          </p>
+            <Input
+            class="max-w-[200px] mx-auto"
+              type="button"
+              text="Alquilar un auto"
+              variant="primary"
+              @click="router.push('/search')"/>
   </template>
 </template>
