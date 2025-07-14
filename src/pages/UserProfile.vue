@@ -75,6 +75,10 @@ export default {
       return isOwnProfile.value ? userStore.profileData : userStore.visitedProfileData
     })
 
+    const goToCarRegister = () => {
+      router.push('/car/register');
+    };
+
     watch(userIdFromRoute, async (newUserId, oldUserId) => {
       if (newUserId !== oldUserId) {
         await userStore.loadUserProfile(newUserId);
@@ -169,7 +173,8 @@ export default {
       carStore,
       userCars,
       isVerified,
-      loggedUserId
+      loggedUserId,
+      goToCarRegister
     };
   }
 }
@@ -255,12 +260,20 @@ export default {
             @click="() => $router.push(`/car/${car.id}`)"
           />
         </div>
-        <div v-else class="flex flex-col justify-center items-center h-full">
+        <div v-else class="flex flex-col justify-center items-center h-full gap-4">
           <img src="@/assets/no-cars.png" alt="No cars" class="max-w-[120px] mx-auto opacity-50" />
-          <p class="font-semibold opacity-50">{{ isOwnProfile ? "Aún no tienes autos registrados." : "Este usuario no tiene autos registrados." }}</p>
-          <router-link v-if="isOwnProfile" to="/car/register" class="font-semibold opacity-50 hover:opacity-100">
+          <p class="font-semibold opacity-50 text-center">{{ isOwnProfile ? "Aún no tienes autos registrados." : "Este usuario no tiene autos registrados." }}</p>
+          <!-- <router-link v-if="isOwnProfile" to="/car/register" class="font-semibold opacity-50 hover:opacity-100">
             <span class="hover:underline">Registra un auto</span>
-          </router-link>
+          </router-link> -->
+          <Input
+          v-if="isOwnProfile"
+          type="button"
+          text="Registra un auto"
+          variant="primary"
+          @click="goToCarRegister"
+          class="max-w-[200px]"
+          />
         </div>
       </div>
       

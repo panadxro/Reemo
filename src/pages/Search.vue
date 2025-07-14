@@ -137,7 +137,7 @@ const applyFilters = () => {
   if (searchLocation.value && searchLocation.value.lat && searchLocation.value.lng) {
     carsToFilter = updateCars(cars.value, searchLocation.value, map.value)
   } else {
-    console.warn("⚠️ No se aplicó filtro por ubicación")
+    // console.warn("⚠️ No se aplicó filtro por ubicación")
     carsToFilter = cars.value
   }
 
