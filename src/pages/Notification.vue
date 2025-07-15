@@ -3,6 +3,7 @@
 import Heading from '@/components/atoms/Heading.vue';
 import Loading from '@/icons/Loading.vue';
 import ReemoIcon from '@/icons/ReemoIcon.vue';
+import BackButton from '@/components/atoms/BackButton.vue';
 import Input from '../components/molecules/Input.vue';
 
 import { useAuthStore } from '@/stores';
@@ -119,21 +120,13 @@ const handleNotificationClick = async (notification) => {
 
 <template>
 
-  <div class="w-full mx-auto bg-white rounded-lg shadow p-4 overflow-y-hidden">
+  <div class="w-full bg-vibrant-light-600 rounded-[40px] m-2.5 p-4 overflow-y-hidden flex flex-col gap-6">
     <!-- Header -->
-    <div class="flex items-center justify-between mb-4">
-      <Heading :type="1" class="text-start pb-2 pt-4">Notificaciones</Heading>
+    <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-10 bg-white md:bg-vibrant-light-600 px-2.5 md:px-0 py-3 md:py-0">
+      <BackButton />
+      <Heading :type="1" class="medium">Notificaciones</Heading>
     </div>
 
-    <!-- Tabs -->
-    <div class="flex border-b mb-4 space-x-4">
-      <button class="relative pb-2 border-b-2 border-black font-semibold">
-        Inbox <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">4</span>
-      </button>
-      <button class="relative pb-2 text-gray-500">Team
-        <span class="ml-1 bg-gray-300 text-xs rounded-full px-1">2</span>
-      </button>
-    </div>
 
     <div v-if="isLoading" class="flex justify-center items-center p-10">
       <Loading class="h-12 w-12 text-secondary-500" />
@@ -145,7 +138,23 @@ const handleNotificationClick = async (notification) => {
     </div>
 
     <!-- Notifications -->
-    <div v-if="!isLoading && notifications.length > 0" class="overflow-y-auto max-h-screen">
+    <ul v-if="!isLoading && notifications.length > 0" class="box-vibrant overflow-y-auto h-full !pr-2">
+      <!-- Nueva notificación -->
+      <li class="flex items-center justify-between p-4 rounded-4xl bg-vibrant-light-800">
+        <div class="flex items-center gap-5">
+          <figure class="h-31 aspect-square relative">
+            <img src="../assets/Reemo1x1.png" class="bg-white h-full rounded-full object-cover" alt="Reemo Bot"/>
+            <span class="absolute bottom-0 right-0"><img src="../assets/User1x1.png" class="bg-vibrant-light-800 h-13 aspect-square rounded-full object-cover" alt=""></span>
+          </figure>
+          <div class="flex flex-col gap-2.5">
+            <Heading :type="2" class="regular">🚗 Nuevo vehículo pendiente de revisión</Heading>
+            <p>Enzo Rodríguez se registró el 14/07.<br/><span>Revisá sus datos para aprobar la cuenta.</span></p>
+          </div>
+        </div>
+        <span>
+          1hr
+        </span>
+      </li>
       <div v-for="noti in notifications" :key="noti.id"
         class="overflow-y-auto p-6 border-b last:border-b-0 hover:bg-gray-200 rounded-xl cursor-pointer"
         @click="handleNotificationClick(noti)">
@@ -392,7 +401,7 @@ const handleNotificationClick = async (notification) => {
           </div>
         </div>
       </div>
-    </div>
+    </ul>
   </div>
 
 
