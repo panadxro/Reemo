@@ -3,6 +3,7 @@ import { useUserStore, useAuthStore, useCarStore  } from '@stores'
 import { onMounted, ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { usePaymentStore } from '@/stores/payment.store.js'
+import { addAlert } from "@services/alerts.js";
 
 import Heading from "@components/atoms/Heading.vue";
 import CardCar from "@components/organisms/cars/CardCar.vue";
@@ -58,7 +59,7 @@ export default {
     const loggedUserId = computed(() => authStore.user?.id);
     const userIdFromRoute = computed(() => route.params.id);
     const isOwnProfile = computed(() => loggedUserId.value === userIdFromRoute.value);
-    const isVerified = computed(() => authStore.userStatus === 'verified');
+    const isUserVerified = computed(() => authStore.userStatus === 'verified');
 
     const displayedPaymentMethods = computed(() => {
       if (!paymentStore.paymentMethods.length) return [];
@@ -76,8 +77,12 @@ export default {
     })
 
     const goToCarRegister = () => {
-      router.push('/car/register');
-    };
+  if (isUserVerified.value) {
+    router.push('/car/register');
+  } else {
+    addAlert("Aguardá la validación del perfil para registrar un vehículo", "warning");
+  }
+};
 
     watch(userIdFromRoute, async (newUserId, oldUserId) => {
       if (newUserId !== oldUserId) {
@@ -172,7 +177,7 @@ export default {
       confirmDeletePaymentMethod,
       carStore,
       userCars,
-      isVerified,
+      isUserVerified,
       loggedUserId,
       goToCarRegister
     };
@@ -189,16 +194,16 @@ export default {
           <BackButton />
           <Heading v-if="showProfile && showProfile.personalInfo" :type="1" class="medium">{{ isOwnProfile ? "Mi perfil" : showProfile.personalInfo.username }}</Heading>
         </div>
-        <article class="bg-secondary-100 h-full md:flex-row rounded-[40px] items-center justify-center px-6 py-5 flex flex-col gap-5 overflow-hidden">
+        <article class="bg-secondary-100 h-full md:flex-row rounded-[40px] items-center justify-center px-6 py-5 flex flex-col gap-5 overflow-hidden box-vibrant">
             <img 
             v-if="showProfile && showProfile.personalInfo && showProfile.personalInfo.profilePhoto"
-            class="md:h-full aspect-square rounded-full object-cover bg-vibrant-light-800"
+            class="md:hidden xl:block xl:min-w-24 aspect-square rounded-full object-cover bg-vibrant-light-800 max-w-24"
             :src="showProfile.personalInfo.profilePhoto"
             :alt="`Perfil de ${showProfile?.personalInfo?.username || 'usuario'}`" 
             />
             <div class="flex flex-col justify-evenly items-center md:items-baseline h-full md:gap-0 overflow-y-auto ">
               <div class="flex justify-center md:justify-between items-center">
-                <Heading :type="2" class="medium text-primary-900 text-center "
+                <Heading :type="2" class="medium text-primary-900 text-center md:text-start"
                   v-if="showProfile && showProfile.personalInfo">
                   {{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }}
                 </Heading>
@@ -219,12 +224,12 @@ export default {
               <p class="text-primary-900 text-sm md:text-md leading-relaxed">{{ showProfile?.email || 'Este usuario no ha proporcionado un mail.' }}</p>
               <div v-if="isOwnProfile" class="w-full">
                 <VerifyValidation
-                v-if="!isVerified"
+                v-if="!isUserVerified"
                 title="Perfil en proceso de validación"
                 message="Tu perfil está siendo revisado por nuestro equipo. El proceso puede demorar algunos días. 
                 Te notificaremos cuando esté completo."
                 class="!text-black"
-                :show="!isVerified"
+                :show="!isUserVerified"
                 type="brightYellow"
                 />
 
@@ -233,7 +238,7 @@ export default {
                   title="Perfil verificado"
                   message="Tu perfil fue verificado con éxito. Ahoras podés disfrutar la aplicación al 100%."
                   class="!text-black"
-                  :show="isVerified"
+                  :show="isUserVerified"
                   type="green"
                 />
               </div>
@@ -262,14 +267,14 @@ export default {
         </div>
         <div v-else class="flex flex-col justify-center items-center h-full gap-4">
           <img src="@/assets/no-cars.png" alt="No cars" class="max-w-[120px] mx-auto opacity-50" />
-          <p class="font-semibold opacity-50 text-center">{{ isOwnProfile ? "Aún no tienes autos registrados." : "Este usuario no tiene autos registrados." }}</p>
+          <p class="font-semibold opacity-50 text-center">{{ isOwnProfile ? "No tenés autos registrados." : "Este usuario no tiene autos registrados." }}</p>
           <!-- <router-link v-if="isOwnProfile" to="/car/register" class="font-semibold opacity-50 hover:opacity-100">
             <span class="hover:underline">Registra un auto</span>
           </router-link> -->
           <Input
           v-if="isOwnProfile"
           type="button"
-          text="Registra un auto"
+          text="Registrar auto"
           variant="primary"
           @click="goToCarRegister"
           class="max-w-[200px]"

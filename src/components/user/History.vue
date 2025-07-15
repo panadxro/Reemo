@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores';
+import { addAlert } from "@services/alerts.js";
 
 import { fetchUserRentalHistory, fetchUserRentedOutHistory } from '@/services/rentedCarService';
 import Loading from '@/icons/Loading.vue';
@@ -25,6 +26,7 @@ const historyData = ref({
 });
 
 const currentUser = computed(() => authStore.user);
+const isUserVerified = computed(() => currentUser.value?.status === 'verified');
 
 const combinedHistory = computed(() => {
   switch(props.showOnly) {
@@ -37,11 +39,21 @@ const combinedHistory = computed(() => {
   }
 });
 
+const handleButtonClick = () => {
+  if (isUserVerified.value) {
+    router.push('/search');
+  } else {
+    addAlert("Aguardá la validación del perfil para alquilar autos", "warning");
+  }
+};
+
 const loadHistoryData = async () => {
   if (!currentUser.value?.id) {
     isLoading.value = false;
     return;
   }
+
+
 
   isLoading.value = true;
 
@@ -88,16 +100,17 @@ onMounted(() => {
       @click="router.push({ name: 'RentDetail', params: { id: rent.id } })" />
   </ul>
   
-    <template v-else class="flex flex-col justify-center items-center h-full">
+    <template v-else>
           <img src="@/assets/car-history.png" alt="No history" class="max-w-[120px] mx-auto opacity-50" />
           <p class="font-semibold text-white text-center">
-            No tenés historial de alquiler.
+            No tenés alquileres registrados
           </p>
             <Input
             class="max-w-[200px] mx-auto"
               type="button"
               text="Alquilar un auto"
               variant="primary"
-              @click="router.push('/search')"/>
-  </template>
+              @click="handleButtonClick"/>
+            </template>
+            <!-- :disabled="!isUserVerified" -->
 </template>

@@ -383,7 +383,7 @@ export function getCurrentLocation() {
       },
       (error) => {
         console.error("Error al obtener la ubicación:", error.message);
-        addAlert(`Error al obtener tu ubicación: ${error.message}`, "error");
+        // addAlert(`Error al obtener tu ubicación: ${error.message}`, "error");
         reject(error);
       }
       // Opciones para getCurrentPosition que podrían ayudar a obtener una respuesta más rápida

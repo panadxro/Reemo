@@ -58,10 +58,10 @@ export default {
         <Success v-if="type === 'green'" class="text-green-600" />
       </div>
       <div class="flex-1">
-        <h4 class="font-semibold text-sm mb-1" :class="textClasses.replace('200', '300')">
+        <h4 class="font-semibold text-sm mb-1 text-start" :class="textClasses.replace('200', '300')">
           {{ title }}
         </h4>
-        <p class="text-sm" :class="textClasses">
+        <p class="text-sm text-start" :class="textClasses">
           {{ message }}
         </p>
       </div>
