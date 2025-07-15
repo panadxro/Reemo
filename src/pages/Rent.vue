@@ -1,7 +1,8 @@
 <script setup>
-import { useRentStore } from '@stores';
+import { useRentStore, useAuthStore } from '@stores';
 import { onMounted, computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { addAlert } from "@services/alerts.js";
 
 import History from '@/components/user/History.vue';
 import Heading from '@components/atoms/Heading.vue';
@@ -10,25 +11,36 @@ import HistoryCar from '@components/organisms/rents/HistoryCar.vue';
 import ViewRent from '../components/organisms/rents/ViewRent.vue';
 import Loading from '@icons/Loading.vue';
 import Input from '@components/molecules/Input.vue';
+import VerifyValidation from '@components/user/VerifyValidation.vue'; 
 
 const rentStore = useRentStore();
+const authStore = useAuthStore();
+const router = useRouter();
+
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
 const userRents = computed(() => rentStore.userRents);
+const currentUser = computed(() => authStore.user);
+const isUserVerified = computed(() => currentUser.value?.status === 'verified');
+const isLoading = ref(false);
 
 const selectedRent = ref(null);
-const router = useRouter();
 
 const handleRentClick = (rent) => {
   selectedRent.value = rent;
-}
+};
 
 const goToSearch = () => {
-      router.push('/search');
-    };
+  if (isUserVerified.value) {
+    router.push('/search');
+  } else {
+    addAlert("Aguardá la validación del perfil para alquilar autos", "warning");
+  }
+};
 
 onMounted(async () => {
   try {
+    isLoading.value = true;
     await rentStore.loadUserRents(authSession.user?.id);
 
     if (rentStore.userRents.length > 0) {
@@ -36,8 +48,10 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Error cargando rentas:', error);
+  } finally {
+    isLoading.value = false;
   }
-})
+});
 </script>
 
 <template>
@@ -62,25 +76,53 @@ onMounted(async () => {
         />
       </ul>
       
-      <div 
+      <!-- <div 
         v-else
         class="flex flex-col gap-4 items-center justify-center h-full py-10 text-center"
       >
-        <img src="@/assets/car-history.png" alt="No hay alquileres" class="w-80 mb-4 opacity-70"
+        <img src="@/assets/car-history.png" alt="No hay alquileres" class="w-70 mb-4 opacity-70"
         />
         <Heading :type="3" class="text-gray-500 mb-2">
           No tenés alquileres registrados
         </Heading>
         
         <Input
-          type="button"
-          text="Ver vehículos disponibles"
-          variant="primary"
-          @click="goToSearch"
-          class="max-w-[250px]"
-          />
+            type="button"
+            text="Alquilar un auto"
+            variant="primary"
+            @click="goToSearch"
+            class="max-w-[250px]"
+            />
 
-      </div>
+      </div> -->
+
+      <div v-else class="flex flex-col justify-between h-full text-center">
+            <div class="flex flex-col items-center justify-start flex-grow-0">
+              <img src="@/assets/car-history.png" alt="No hay historial" class="w-70 opacity-70 mx-auto"/>
+              <Heading :type="3" class="text-gray-500 mb-2 mt-4">
+                No tenés alquileres registrados
+              </Heading>
+            </div>
+        
+            <div class="flex flex-col items-center justify-end flex-grow-0 gap-4 w-full">
+              <VerifyValidation
+                v-if="!isUserVerified"
+                title="Verificación requerida"
+                message="Para registrar un vehículo, primero debés verificar tu cuenta"
+                type="brightYellow"
+                class="mb-4 w-full max-w-md"
+              />
+              
+              <Input
+                type="button"
+                text="Alquilar un auto"
+                variant="primary"
+                class="w-full max-w-md"
+                @click="goToSearch"
+                />
+                <!-- :disabled="!isVerified" -->
+            </div>
+          </div>
     </div>
   </div>
   

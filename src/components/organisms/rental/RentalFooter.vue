@@ -121,7 +121,7 @@ export default {
           type="normalYellow"
           />
 
-    <div class="flex justify-between items-center mt-8 p-4 rounded-xl bg-deep-blue-800/30 shadow-sm shadow-primary-800 backdrop-blur-xl">
+    <div v-if="isAvailable && isVerified" class="flex justify-between items-center mt-8 p-4 rounded-xl bg-deep-blue-800/30 shadow-sm shadow-primary-800 backdrop-blur-xl">
       <div class="text-white font-bold text-2xl w-full">
         Total: ${{ Math.round(totalAmount).toLocaleString('es-AR') }}
       </div>
