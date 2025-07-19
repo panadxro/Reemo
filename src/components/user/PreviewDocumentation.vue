@@ -119,14 +119,14 @@ const getColorByWalletType = (brand) => {
           </li>
           <li v-if="payment.cardNumber">
             <span class="text-xs font-medium text-background-600">Número de tarjeta</span>
-            <p class="font-semibold">{{ payment.cardNumber || 'No disponible'}}</p>
+            <p class="font-semibold">•••• •••• •••• {{ payment.cardNumber.slice(-4) || 'No disponible'}}</p>
           </li>
           <li v-if="payment.cardHolder">
             <span class="text-xs font-medium text-background-600">Titliar de tarjeta</span>
             <p class="font-semibold">{{ payment.cardHolder || 'No disponible'}}</p>
           </li>
           <li v-if="payment.expiryDate">
-            <span class="text-xs font-medium text-background-600">Fecha de vencimiento (MM/AA)</span>
+            <span class="text-xs font-medium text-background-600">Fecha de vencimiento (AAAA/MM)</span>
             <p class="font-semibold">{{ payment.expiryDate || 'No disponible'}}</p>
           </li>
         </ul>

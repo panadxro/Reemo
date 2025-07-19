@@ -1,6 +1,6 @@
 <script setup>
-import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive } from 'vue';
-import { useAuthStore, useUserStore, useGeoStore } from '@stores'
+import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch } from 'vue';
+import { useAuthStore, useUserStore, useGeoStore, usePaymentStore } from '@stores'
 import { useRouter } from "vue-router";
 import { addAlert } from "../services/alerts.js";
 
@@ -20,11 +20,14 @@ import Documentation from '@icons/Documentation.vue';
 import Location from '@icons/Location.vue';
 import Payment from '@icons/Payment.vue';
 import Clipboard from '@icons/Clipboard.vue';
+import PaymentMethod from '@/components/atoms/PaymentMethod.vue';
 
 const authStore = useAuthStore();
 const userStore = useUserStore();
 const geoStore = useGeoStore();
 const router = useRouter();
+const paymentStore = usePaymentStore();
+
 
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
@@ -87,7 +90,7 @@ const cargarCiudades = () => {
 const handleSubmit = async () => {
   // Basic validation example
   if (!agreements.value.acceptedTerms || !agreements.value.acceptedPrivacyPolicy) {
-    addAlert('Debes aceptar los términos y políticas', 'error')
+    addAlert('Debés aceptar los términos y políticas', 'error')
     return
   }
   loading.value = true
@@ -150,11 +153,34 @@ const handleBeforeUnload = (event) => {
   return message;
 };
 
+function updatePaymentType(selectedBrand) {
+  const brandTypeMap = {
+    'Visa': 'bank',
+    'Mastercard': 'bank',
+    'Uala': 'digital_wallet',
+    'PayPal': 'digital_wallet',
+    'Mercado Pago': 'digital_wallet',
+    'Lemon': 'digital_wallet',
+    'Modo': 'digital_wallet'
+  };
+  paymentStore.newPaymentMethod.type = brandTypeMap[selectedBrand] || 'bank';
+}
+
 // Load initial data
 onMounted(async () => {
   window.addEventListener('beforeunload', handleBeforeUnload);
   await userStore.loadUserProfile(authSession.user.id);
   await geoStore.loadProvinciasYLocalidades();
+
+  if (currentStep.value === 3) {
+    await paymentStore.fetchPaymentMethods(loggedUserId.value);
+  }
+});
+
+watch(() => currentStep.value, async (newStep) => {
+  if (newStep === 3) {
+    await paymentStore.fetchPaymentMethods(loggedUserId.value);
+  }
 });
 
 onBeforeUnmount(() => {
@@ -404,46 +430,149 @@ onBeforeUnmount(() => {
  
         <!-- Paso 4: Método de Pago -->
         <router-view v-if="currentStep === 3" class="step">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large text-white! font-extrabold!">Método de pago</Heading>
-            <Loading v-if="loading" role="status" />
+        <div class="flex gap-4 items-center">
+          <Heading type="2" class="large text-white! font-extrabold!">Métodos de pago</Heading>
+          <Loading v-if="loading" role="status" />
+        </div>
+
+        <p class="text-sm font-medium">Para garantizar que npuedas hacer uso de nuestros servicios, debés ingresar, al menos, un método de pago.</p>
+        
+        <div class="rounded-xl space-y-4">
+          <!-- Métodos de pago existentes -->
+          <div v-if="!loading && paymentStore.paymentMethods.length > 0" class="space-y-3">
+            <div 
+              v-for="(method, index) in paymentStore.paymentMethods" 
+              :key="index"
+              class="border rounded-xl p-4 transition-all"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 flex items-center justify-center p-1 rounded-xl bg-white">
+                    <PaymentMethod :method="method.brand" class="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p class="font-medium text-white">
+                      {{ method.brand }}
+                    </p>
+                    <p v-if="method.cardNumber" class="text-sm text-gray-400">
+                      •••• •••• •••• {{ String(method.cardNumber).slice(-4) }}
+                    </p>
+                  </div>
+                </div>
+                <!-- <div 
+                  class="w-6 h-6 rounded-full border flex items-center justify-center">
+                  <svg v-if="paymentStore.getPaymentMethodIdentifier(paymentStore.selectedPaymentMethod) === paymentStore.getPaymentMethodIdentifier(method)" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </div> -->
+              </div>
+            </div>
           </div>
-          <div class="flex flex-col gap-5">
-    
-            <DropdownForm color="#FFFFFF" title="Agregar tarjeta" :dropdown-id="'tarjeta'" :section-id="'section-3'" :is-initial="true">
+          
+          <!-- Mensaje cuando no hay métodos de pago -->
+          <div v-else-if="!loading && paymentStore.paymentMethods.length === 0" class="text-center text-gray-300">
+            <p class="text-gray-400">No tenés métodos de pago guardados</p>
+          </div>
+          
+          <!-- Botón para agregar método de pago -->
+          <!-- <div 
+            v-if="!paymentStore.showNewPaymentForm"
+            @click.prevent="paymentStore.toggleNewPaymentForm" 
+            class="border border-dashed border-gray-600 rounded-xl p-4 cursor-pointer hover:border-vibrant-light-900 transition-all flex items-center justify-center">
+            <div class="flex items-center gap-2 text-vibrant-light-900">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+              </svg>
+              <span>Agregar método de pago</span>
+            </div>
+          </div> -->
+          <Input
+            v-if="!paymentStore.showNewPaymentForm"
+            type="button"
+            text="Agregar método de pago"
+            variant="secondary"
+            :outline="true"
+            @click.prevent="paymentStore.toggleNewPaymentForm"
+            class="cursor-pointer w-full"
+          />
+          
+          <!-- Formulario para nuevo método de pago -->
+          <div v-if="paymentStore.showNewPaymentForm" class="mt-6 flex flex-col gap-4">
+            <Heading :type="4" class="regular text-white">Nuevo método de pago</Heading>
+            
+            <div class="flex flex-col gap-4">
+              <Input 
+                type="select"
+                placeholder="Selecciona una marca"
+                :options="[
+                  {value: 'Visa', label: 'Visa', type: 'bank'},
+                  {value: 'Mastercard', label: 'Mastercard', type: 'bank'},
+                  {value: 'Uala', label: 'Ualá', type: 'digital_wallet'},
+                  {value: 'PayPal', label: 'PayPal', type: 'digital_wallet'},
+                  {value: 'Mercado Pago', label: 'Mercado Pago', type: 'digital_wallet'},
+                  {value: 'Lemon', label: 'Lemon', type: 'digital_wallet'},
+                  {value: 'Modo', label: 'Modo', type: 'digital_wallet'}
+                ]"
+                v-model="paymentStore.newPaymentMethod.brand"
+                @update:modelValue="updatePaymentType"
+                variant="secondary"
+                :outline="false"
+              />
+
+              <Input 
+                type="text"
+                placeholder="Número de tarjeta (16 dígitos)"
+                v-model="paymentStore.newPaymentMethod.cardNumber"
+                variant="secondary"
+                :outline="false"
+              />
+              
               <Input 
                 type="text"
                 placeholder="Titular de tarjeta"
-                v-model="paymentMethods[0].cardHolder"
-                :variant="'secondary'"
+                v-model="paymentStore.newPaymentMethod.cardHolder"
+                variant="secondary"
                 :outline="false"
-                />
-                <Input
-                  type="text"
-                  placeholder="Número de tarjeta"
-                  v-model="paymentMethods[0].cardNumber"
-                  :variant="'secondary'"
-                  :outline="false"
-                />
+              />
+              
               <div class="flex gap-5">
                 <Input 
-                  type="date"
-                  placeholder="Fecha de vencimiento"
-                  v-model="paymentMethods[0].expirationDate"
-                  :variant="'secondary'"
+                  type="month"
+                  placeholder="MM/AA"
+                  v-model="paymentStore.newPaymentMethod.expiryDate"
+                  variant="secondary"
                   :outline="false"
                 />
                 <Input
                   type="password"
                   placeholder="CVV"
-                  v-model="paymentMethods[0].cvv"
-                  :variant="'secondary'"
+                  v-model="paymentStore.newPaymentMethod.cvv"
+                  variant="secondary"
                   :outline="false"
                 />
               </div>
-            </DropdownForm>
+            </div>
+            
+            <div class="flex gap-4 mt-6">
+              <button 
+                type="button"
+                @click.prevent="paymentStore.toggleNewPaymentForm" 
+                class="flex-1 py-3 px-4 border border-gray-600 rounded-xl hover:border-gray-400 transition-all text-white hover:cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button 
+                type="button"
+                @click.prevent="paymentStore.saveNewPaymentMethod(authStore.user.id)" 
+                :disabled="!paymentStore.isFormValid || loading"
+                class="flex-1 py-3 px-4 bg-vibrant-light-900 text-deep-blue-900 rounded-xl font-medium hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
+              >
+                {{ loading ? 'Guardando...' : 'Guardar' }}
+              </button>
+            </div>
           </div>
-        </router-view>
+        </div>
+      </router-view>
 
         <!-- Paso 5: Términos y Condiciones -->
         <router-view v-if="currentStep === 4" class="step">

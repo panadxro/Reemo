@@ -1,6 +1,7 @@
 <script setup>
 import { ref, inject, computed, onMounted } from 'vue';
 import { useUserStore } from '@stores';
+import { usePaymentStore } from '@stores/payment.store.js';
 
 import Input from '@components/molecules/Input.vue';
 import Heading from '../components/atoms/Heading.vue';
@@ -11,10 +12,13 @@ import Checkbox from '../components/atoms/Checkbox.vue';
 import MercadoPago from '../icons/MercadoPago.vue';
 import PreviewDocumentation from '../components/user/PreviewDocumentation.vue';
 import PaymentMethod from '../components/atoms/PaymentMethod.vue';
+import Modal from '../components/molecules/Modal.vue';
+import Trash from '../icons/Trash.vue';
 
 const currentStep = ref(0);
 
 const userStore = useUserStore();
+const paymentStore = usePaymentStore();
 const authSession = inject('authSession');
 
 const user = computed(() => ({
@@ -29,9 +33,32 @@ const handlePaymentClick = (method) => {
   selectedPayment.value = method;
 }
 
+function updatePaymentType(selectedBrand) {
+  const brandTypeMap = {
+    'Visa': 'bank',
+    'Mastercard': 'bank',
+    'Uala': 'digital_wallet',
+    'PayPal': 'digital_wallet',
+    'Mercado Pago': 'digital_wallet',
+    'Lemon': 'digital_wallet',
+    'Modo': 'digital_wallet'
+  };
+  paymentStore.newPaymentMethod.type = brandTypeMap[selectedBrand] || 'bank';
+}
+
+async function handleDeletePayment(index) {
+  await paymentStore.removePaymentMethod(authSession.user.id, index);
+  // Si el método eliminado era el seleccionado, limpiar selección
+  if (selectedPayment.value === paymentStore.paymentMethods[index]) {
+    selectedPayment.value = null;
+  }
+}
+
 onMounted(async () => {
   try {
     await userStore.loadUserProfile(authSession.user.id);
+    // Cargar métodos de pago cuando se monta el componente
+    await paymentStore.fetchPaymentMethods(authSession.user.id);
     console.log(user.value)
   } catch (error) {
     console.error("Error cargando perfil del usuario:", error)
@@ -72,6 +99,7 @@ onMounted(async () => {
       />
     </div>
     <article class="flex h-full overflow-hidden">
+      <!-- Identificación Form (sin cambios) -->
       <form v-if="currentStep === 0" class="box-white flex flex-col gap-5 h-full w-full md:pr-2 overflow-y-auto">
         <legend class="text-deep-blue-900 font-semibold text-xl">Información personal</legend>
         <div class="flex gap-5">
@@ -160,6 +188,8 @@ onMounted(async () => {
           </div>
         </div>
       </form>
+
+      <!-- Licencia Form (sin cambios) -->
       <form v-if="currentStep === 1" class="box-white flex flex-col gap-5 h-full w-full md:pr-2 overflow-y-auto">
         <legend class="text-deep-blue-900 font-semibold text-xl">Datos de registro</legend>
         <div class="flex gap-5">
@@ -229,23 +259,138 @@ onMounted(async () => {
           </div>
         </div>
       </form>
-      <ul v-if="currentStep === 2" class="box-white flex flex-col gap-5 h-full w-full md:!pr-2 overflow-y-auto">
-        <li 
-          v-for="(method, index) in user.paymentMethods || []"
-          :key="index" 
-          @click="handlePaymentClick(method)"
-          class="flex flex-row items-center gap-2 border-2 border-vibrant-light-900 w-full px-4 py-3 rounded-2xl cursor-pointer"
-          :class="{ 
-            'bg-vibrant-light-600': selectedPayment === method,
-            'bg-white': selectedPayment !== method 
-          }"
+
+      <div v-if="currentStep === 2" class="box-white flex flex-col gap-5 h-full w-full md:!pr-2 overflow-y-auto">
+        <div class="flex justify-between items-center">
+          <legend class="text-deep-blue-900 font-semibold text-xl">Métodos de pago</legend>
+        </div>
+
+        <!-- v-if="!paymentStore.showNewPaymentForm" -->
+        <ul  class="flex flex-col gap-3">
+          <li 
+            v-for="(method, index) in paymentStore.paymentMethods"
+            :key="index" 
+            @click="handlePaymentClick(method)"
+            class="flex flex-row items-center justify-between gap-2 border-2 border-vibrant-light-900 w-full px-4 py-3 rounded-2xl cursor-pointer"
+            :class="{ 
+              'bg-vibrant-light-600': selectedPayment === method,
+              'bg-white': selectedPayment !== method 
+            }"
           >
-          <PaymentMethod :method="method.brand" 
-        />
-          <p class="text-deep-blue-900 font-semibold text-xs">{{ method.cardNumber ? '•••• •••• •••• ' + method.cardNumber.slice(-4) : method.walletId }}</p>
-        </li>
-      </ul>
+            <div class="flex items-center gap-2">
+              <PaymentMethod :method="method.brand" />
+              <p class="text-deep-blue-900 font-semibold text-xs">
+                {{ method.cardNumber ? '•••• •••• •••• ' + method.cardNumber.slice(-4) : method.walletId }}
+              </p>
+            </div>
+            <!-- <button 
+              @click.stop="paymentStore.confirmDeletePaymentMethod(index)"
+              class="text-red-500 hover:text-red-700 font-semibold text-sm"
+            >
+              Eliminar
+            </button> "-->
+            <Trash @click.stop="paymentStore.confirmDeletePaymentMethod(index)"/>
+          </li>
+          <li v-if="paymentStore.paymentMethods.length === 0" class="text-center py-8 text-gray-500">
+            No tienes métodos de pago registrados
+          </li>
+        </ul>
+
+        <div v-if="paymentStore.showNewPaymentForm" class="flex flex-col gap-4">
+          <Heading :type="4" class="regular text-deep-blue-900">Nuevo método de pago</Heading>
+          
+          <div class="flex flex-col gap-4">
+            <Input 
+              type="select"
+              placeholder="Selecciona una marca"
+              :options="[
+                {value: 'Visa', label: 'Visa', type: 'bank'},
+                {value: 'Mastercard', label: 'Mastercard', type: 'bank'},
+                {value: 'Uala', label: 'Ualá', type: 'digital_wallet'},
+                {value: 'PayPal', label: 'PayPal', type: 'digital_wallet'},
+                {value: 'Mercado Pago', label: 'Mercado Pago', type: 'digital_wallet'},
+                {value: 'Lemon', label: 'Lemon', type: 'digital_wallet'},
+                {value: 'Modo', label: 'Modo', type: 'digital_wallet'}
+              ]"
+              v-model="paymentStore.newPaymentMethod.brand"
+              @update:modelValue="updatePaymentType"
+              variant="secondary"
+              :outline="true"
+            />
+
+            <Input 
+              type="text"
+              placeholder="Número de tarjeta (16 dígitos)"
+              v-model="paymentStore.newPaymentMethod.cardNumber"
+              variant="secondary"
+              :outline="true"
+            />
+            
+            <Input 
+              type="text"
+              placeholder="Titular de tarjeta"
+              v-model="paymentStore.newPaymentMethod.cardHolder"
+              variant="secondary"
+              :outline="true"
+            />
+            
+            <div class="flex gap-5">
+              <Input 
+                type="month"
+                placeholder="MM/AA"
+                v-model="paymentStore.newPaymentMethod.expiryDate"
+                variant="secondary"
+                :outline="true"
+              />
+              <Input
+                type="password"
+                placeholder="CVV"
+                v-model="paymentStore.newPaymentMethod.cvv"
+                variant="secondary"
+                :outline="true"
+              />
+            </div>
+          </div>
+          
+          <div class="flex gap-4 mt-6">
+            <button 
+              @click="paymentStore.toggleNewPaymentForm" 
+              class="flex-1 py-3 px-4 border border-gray-600 rounded-xl hover:border-gray-400 transition-all text-deep-blue-900 hover:cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button 
+              @click="paymentStore.saveNewPaymentMethod(authSession.user.id)" 
+              :disabled="!paymentStore.isFormValid || paymentStore.loading"
+              class="flex-1 py-3 px-4 bg-vibrant-light-900 text-deep-blue-900 rounded-xl font-medium hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
+            >
+              {{ paymentStore.loading ? 'Guardando...' : 'Guardar' }}
+            </button>
+          </div>
+        </div>
+        <Input
+            v-if="!paymentStore.showNewPaymentForm"
+            type="button"
+            text="Agregar método"
+            variant="secondary"
+            :outline="true"
+            @click="paymentStore.toggleNewPaymentForm" 
+            class="cursor-pointer "
+          />
+      </div>
+      
+
       <PreviewDocumentation :payment="selectedPayment" :user="user" :currentStep="currentStep" class="hidden md:flex"/>
     </article>
+
+    <Modal 
+      :isOpen="paymentStore.showDeleteModal" 
+      title="Confirmar eliminación"
+      :message="`¿Estás seguro de que quieres eliminar este método de pago? ${selectedPayment ? selectedPayment.brand : ''}`"
+      confirmText="Eliminar"
+      cancelText="Cancelar"
+      @close="paymentStore.cancelDeletePaymentMethod"
+      @confirm="() => handleDeletePayment(paymentStore.paymentToDeleteIndex)"
+    />
   </section>
 </template>

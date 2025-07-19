@@ -142,9 +142,9 @@ const handleNotificationClick = async (notification) => {
       <!-- Nueva notificación -->
       <li class="flex items-center justify-between p-4 rounded-4xl bg-vibrant-light-800">
         <div class="flex items-center gap-5">
-          <figure class="h-31 aspect-square relative">
+          <figure class="h-18 aspect-square relative">
             <img src="../assets/Reemo1x1.png" class="bg-white h-full rounded-full object-cover" alt="Reemo Bot"/>
-            <span class="absolute bottom-0 right-0"><img src="../assets/User1x1.png" class="bg-vibrant-light-800 h-13 aspect-square rounded-full object-cover" alt=""></span>
+            <span class="absolute bottom-0 right-0"><img src="../assets/User1x1.png" class="bg-vibrant-light-800 h-8 aspect-square rounded-full object-cover" alt=""></span>
           </figure>
           <div class="flex flex-col gap-2.5">
             <Heading :type="2" class="regular">🚗 Nuevo vehículo pendiente de revisión</Heading>

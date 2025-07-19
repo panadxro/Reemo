@@ -59,14 +59,20 @@ onMounted(async () => {
         <Heading :type="1" class="medium">Mis autos</Heading>
       </div>
       
-      <div class="md:p-5 md:rounded-[40px] flex flex-col gap-4 w-full md:w-96 h-full overflow-hidden" :class="userCars?.length > 0 ? 'md:bg-deep-blue-900' : 'bg-white'">
+      <div 
+        class="md:p-5 md:rounded-[40px] flex flex-col gap-4 w-full md:w-96 h-full overflow-hidden" 
+        :class="userCars?.length > 0 ? 'md:bg-deep-blue-900' : 'bg-white'"
+      >
+        <!-- Estado de carga -->
         <template v-if="isLoading">
           <div class="flex justify-center py-10">
             <Loading class="w-8 h-8 text-primary-900" />
           </div>
         </template>
         
+        <!-- Contenido cuando no está cargando -->
         <template v-else>
+          <!-- Lista de autos (cuando hay autos) -->
           <ul 
             v-if="userCars?.length > 0"
             class="box-deep min-h-full md:min-h-auto h-full flex flex-col gap-4 overflow-y-auto !pr-2 mb-15 md:mb-0"
@@ -82,6 +88,7 @@ onMounted(async () => {
             />
           </ul>
           
+          <!-- Estado sin autos -->
           <div v-else class="flex flex-col justify-between h-full text-center">
             <div class="flex flex-col items-center justify-start flex-grow-0">
               <img src="@/assets/no-cars.png" alt="No hay vehículos" class="w-70 opacity-70 mx-auto"/>
@@ -91,28 +98,29 @@ onMounted(async () => {
             </div>
         
             <div class="flex flex-col items-center justify-end flex-grow-0 gap-4 w-full">
-              <VerifyValidation
-                v-if="!isUserVerified"
-                title="Verificación requerida"
-                message="Para registrar un vehículo, primero debés verificar tu cuenta"
-                type="brightYellow"
-                class="mb-4 w-full max-w-md"
-              />
               
-              <Input
-                type="button"
-                text="Registrar auto"
-                variant="primary"
-                class="w-full max-w-md"
-                @click="handleRegisterClick"
-                />
-                <!-- :disabled="!isUserVerified" -->
             </div>
           </div>
+          <VerifyValidation
+            v-if="!isUserVerified"
+            title="Verificación requerida"
+            message="Para registrar un vehículo, primero debés verificar tu cuenta"
+            type="brightYellow"
+            class="mb-4 w-full max-w-md"
+          />
+          <Input
+            type="button"
+            text="Registrar auto"
+            variant="primary"
+            class="w-full max-w-md"
+            :disabled="!isUserVerified"
+            @click="handleRegisterClick"
+          />
         </template>
       </div>
     </div>
     
+    <!-- Vista detalle del auto seleccionado -->
     <ViewCar 
       v-if="selectedCar"
       :carId="selectedCar.id"

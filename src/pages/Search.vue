@@ -1,10 +1,9 @@
 <script setup>
 import { ref, reactive, onMounted, watch, nextTick, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { getAvailableCars } from "../services/car"
 import { subscribeToAuthState } from "../services/auth.js"
 import { subscribeToNewPublication } from "../services/publication.js"
-import { useAuthStore } from '@stores'
+import { useAuthStore, useCarStore } from '@stores'
 import { vpicService } from '../services/car/vpicApi.js'
 import { addAlert } from "../services/alerts.js"
 
@@ -27,6 +26,8 @@ import SearchIcon from "@icons/Search.vue"
 import BackButton from "@components/atoms/BackButton.vue"
 
 const router = useRouter()
+const authStore = useAuthStore();
+const carStore = useCarStore(); 
 
 const loggedUser = reactive({
   id: null,
@@ -36,7 +37,7 @@ const loggedUser = reactive({
 const cars = ref([])
 const searchQuery = ref("")
 const searchLocation = ref("")
-const filteredCars = ref([])
+const filteredCars = ref(null)
 const map = ref(null)
 const markers = ref([])
 const loading = ref(false)
@@ -47,7 +48,6 @@ const selectedChassis = ref([])
 const savedFilters = ref(null)
 const optionsTransmission = ["Ambos", "Manual", "Automatico"]
 const selectedTransmission = ref([])
-const authStore = useAuthStore();
 
 // Variables para la API de vehículos
 const vehicleMakes = ref([])
@@ -99,11 +99,14 @@ const loadModels = async (makeName) => {
 // Methods
 const fetchCars = async () => {
   loading.value = true
+  filteredCars.value = null 
   try {
-    cars.value = await getAvailableCars(loggedUser.id)
+    await carStore.loadAvailableCars(loggedUser.id)
+    cars.value = carStore.availableCars
     filteredCars.value = cars.value
   } catch (error) {
     console.error("Error al buscar autos:", error)
+    filteredCars.value = [] 
   } finally {
     loading.value = false
   }
@@ -137,7 +140,6 @@ const applyFilters = () => {
   if (searchLocation.value && searchLocation.value.lat && searchLocation.value.lng) {
     carsToFilter = updateCars(cars.value, searchLocation.value, map.value)
   } else {
-    // console.warn("⚠️ No se aplicó filtro por ubicación")
     carsToFilter = cars.value
   }
 
@@ -148,8 +150,6 @@ const applyFilters = () => {
     showFilters.value = false
   }
 }
-
-
 
 const resetFilters = () => {
   Object.assign(filters, {
@@ -178,11 +178,6 @@ onMounted(async () => {
 
   // Cargar marcas al iniciar
   await loadMakes()
-
-  // getCurrentLocation((location) => {
-  //   searchLocation.value = location
-  //   applyFilters()
-  // })
 
   const savedFilters = localStorage.getItem("filters")
   if (savedFilters) {
@@ -375,9 +370,16 @@ watch(() => filters.brand, async (newBrand, oldBrand) => {
         </div>
       </div>
   
-        <p v-if="filteredCars.length == 0 && !loading" class="text-lg text-red-700 font-bold pt-4">
+        <!-- <p v-if="filteredCars !== null && filteredCars.length === 0 && !loading" class="text-lg text-red-700 font-bold pt-4">
           No se encontraron autos con esas características
-        </p>
+        </p> -->
+
+        <img 
+          v-if="filteredCars !== null && filteredCars.length === 0 && !loading" 
+          src="@/assets/no-cars.png" 
+          alt="No se encontraron resultados" 
+          class="w-1/3 object-cover mx-auto opacity-70"
+        />
         
         <div v-if="loading" class="flex items-center justify-center w-full py-8">
           <Loading role="status" />
