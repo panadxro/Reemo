@@ -24,7 +24,7 @@ export const useUserStore = defineStore('user', {
       },
       documents: null,
       address: {},
-      paymentMethods: {},
+      paymentMethods: [],
       agreements: {},
       role: 'user'
     },

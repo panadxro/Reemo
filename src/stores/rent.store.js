@@ -398,7 +398,7 @@ export const useRentStore = defineStore('rent', {
     async submitRental() {
       try {
         if (!this.acceptTerms) {
-          addAlert("Debes aceptar los términos y condiciones", "error");
+          addAlert("Debés aceptar los términos y condiciones", "error");
           return false;
         }
 

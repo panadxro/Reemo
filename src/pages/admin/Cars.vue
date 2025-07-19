@@ -136,7 +136,8 @@ export default {
         const query = this.searchQuery.toLowerCase();
         filteredCars = filteredCars.filter(car => {
           const ownerName = `${car.owner.personalInfo?.firstName || ''} ${car.owner.personalInfo?.lastName || ''}`.toLowerCase();
-          return ownerName.includes(query);
+          const carName = `${car.basicInfo.brand || ''} ${car.basicInfo.model || ''}`.toLowerCase();
+          return ownerName.includes(query) || carName.includes(query);
         });
       }
       return filteredCars;
@@ -148,7 +149,7 @@ export default {
 <template>
   <section class="w-full p-2.5 flex flex-col gap-6 overflow-hidden">
     <Heading :type="1" class="medium">Administrar vehículos</Heading>
-    <div class="flex justify-between items-center">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
       <div class="flex flex-row gap-4">
         <Input 
           type="button"
@@ -180,7 +181,7 @@ export default {
         id="searchInput"
         name="searchInput"
         placeholder="Buscar autos de dueño"
-        class="mb-2 lg:mb-0 flex-0! min-w-fit!"
+        class="mb-2 lg:mb-0 flex-0! min-w-fit! max-w-[360px]"
         icon-position="left"
         variant="secondary"
         :outline="false"
@@ -195,12 +196,12 @@ export default {
       <thead class="mr-4">
         <tr class="flex w-full border-2 border-secondary-100 rounded-xl">
           <th class="py-2.5 px-5 flex flex-1">Vehículo</th>
-          <th class="py-2.5 px-5 flex flex-1">Dueño</th>
-          <th class="py-2.5 px-5 flex w-20">Año</th>
-          <th class="py-2.5 px-5 flex flex-1">Tipo</th>
-          <th class="py-2.5 px-5 flex flex-1">Estado</th>
-          <th class="py-2.5 px-5 flex w-32">Fecha</th>
-          <th class="py-2.5 px-5 flex-none w-24">Accion</th>
+          <th class="py-2.5 px-5 hidden md:flex flex-1">Dueño</th>
+          <th class="py-2.5 px-5 w-20 hidden lg:flex">Año</th>
+          <th class="py-2.5 px-5 flex-1 hidden lg:flex">Tipo</th>
+          <th class="py-2.5 px-5 hidden sm:flex flex-1">Estado</th>
+          <th class="py-2.5 px-5 w-32 hidden lg:flex">Fecha</th>
+          <th class="py-2.5 px-5 flex-none w-24">Acción</th>
         </tr>
       </thead>
       <tbody class="box-white flex flex-col gap-5 h-full overflow-y-scroll pr-2">
@@ -217,16 +218,16 @@ export default {
               <p class="text-xl">{{ car.basicInfo.model }}</p>
             </div>
           </td>
-          <td class="py-2.5 px-5 flex flex-1">
+          <td class="py-2.5 px-5 hidden md:flex flex-1">
             <router-link :to="`/user/${car.ownerId}`" class="flex items-center gap-2 hover:cursor-pointer">
               <img :src="car.owner.personalInfo?.profilePhoto" alt="Imagen del usuario" class="w-8 h-8 object-cover rounded-full" />
               <p class="hover:underline">{{ car.owner.personalInfo?.firstName }} {{ car.owner.personalInfo?.lastName }}</p>
             </router-link>
           </td>
-          <td class="py-2.5 px-5 flex w-20 items-center">{{ car.basicInfo.year }}</td>
-          <td class="py-2.5 px-5 flex flex-1 items-center">{{ car.basicInfo.type }}</td>
-          <td class="py-2.5 px-5 flex flex-1"><Status :status="car.status.current" /></td>
-          <td class="py-2.5 px-5 flex items-center w-32 font-">{{ formatDate(car.createdAt) }}</td>
+          <td class="py-2.5 px-5 w-20 items-center hidden lg:flex">{{ car.basicInfo.year }}</td>
+          <td class="py-2.5 px-5 flex-1 items-center hidden lg:flex">{{ car.basicInfo.type }}</td>
+          <td class="py-2.5 px-5 hidden sm:flex flex-1"><Status :status="car.status.current" /></td>
+          <td class="py-2.5 px-5 items-center w-32  hidden lg:flex">{{ formatDate(car.createdAt) }}</td>
           <td class="py-2.5 px-5 flex justify-center relative w-24 items-center">
             <Popover
               :items="[

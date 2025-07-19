@@ -1,4 +1,3 @@
-// src/stores/geo.store.js
 import { defineStore } from 'pinia';
 import { getProvinciasYLocalidades } from '@services/geo';
 

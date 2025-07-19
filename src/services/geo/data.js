@@ -1,4 +1,3 @@
-// src/services/geo.js
 let cachedProvinciasYLocalidades = null;
 
 export const getProvinciasYLocalidades = async () => {

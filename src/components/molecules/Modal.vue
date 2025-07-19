@@ -3,7 +3,7 @@ import Heading from "@components/atoms/Heading.vue";
 import Input from "@components/molecules/Input.vue";
 
 export default {
-  name: "GeneralModal",
+  name: "Modal",
   components: {
     Heading, Input
   },

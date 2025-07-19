@@ -113,7 +113,7 @@ async function handleSubmit() {
     return;
   }
   if (!store.acceptTerms) {
-    addAlert('Debes aceptar los términos y condiciones', 'error');
+    addAlert('Debés aceptar los términos y condiciones', 'error');
     return;
   }
 
@@ -149,25 +149,11 @@ function handleCarNotAvailable() {
   // router.push({ name: 'Cars' });
 }
 
-onMounted(async () => {    
-  if (!carStore.car) {
-    console.error('carStore.car es null');
-    return;
-  }
-  
-  if (!authStore.user?.id) {
-    console.error('authStore.user.id es null', authStore.user?.id);
-    return;
-  }
-  store.setInitialData(carStore.car, authStore.user.id, carStore.isCarRented);
-  console.log("authstore.user.id:", authStore.user.id);
-  
-
-  watch(() => store.currentStep, async (newStep) => {
+watch(() => store.currentStep, async (newStep) => {
   console.log("Nuevo Paso:", newStep);
   if (newStep === 3) {
     console.log("Fetch a los métodos de pago..."); 
-    await store.fetchPaymentMethods();
+    await paymentStore.fetchPaymentMethods(authStore.user?.id);
     console.log("Métodos de pago:", paymentStore.paymentMethods);
     
     if (store.rentalData.selectedPaymentMethod && 
@@ -198,9 +184,22 @@ onMounted(async () => {
     },
     { deep: true }
   );
+
+onMounted(async () => {    
+  if (!carStore.car) {
+    console.error('carStore.car es null');
+    return;
+  }
+  
+  if (!authStore.user?.id) {
+    console.error('authStore.user.id es null', authStore.user?.id);
+    return;
+  }
+  store.setInitialData(carStore.car, authStore.user.id, carStore.isCarRented);
+  console.log("authstore.user.id:", authStore.user.id);
     
   if (store.currentStep === 3) {
-    await store.fetchPaymentMethods();
+    await paymentStore.fetchPaymentMethods(authStore.user?.id);
   }
     
   store.calculatePrice();
@@ -208,7 +207,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="relative overflow-y-auto pr-6 box-deep">
+  <div class="relative overflow-y-auto lg:pr-6 box-deep">
     <div class="space-y-6">
       <!-- Header con paso actual -->
       <RentalHeader 
@@ -359,18 +358,26 @@ onMounted(async () => {
             <p class="text-gray-400">No tenés métodos de pago guardados</p>
           </div>
           
-          <div 
+          <!-- <div 
             v-if="!paymentStore.showNewPaymentForm"
             @click="paymentStore.toggleNewPaymentForm" 
-            class="border border-dashed border-gray-600 rounded-xl p-4 cursor-pointer hover:border-vibrant-light-900 transition-all flex items-center justify-center"
-          >
+            class="border border-dashed border-gray-600 rounded-xl p-4 cursor-pointer hover:border-vibrant-light-900 transition-all flex items-center justify-center">
             <div class="flex items-center gap-2 text-vibrant-light-900">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
               </svg>
               <span>Agregar método de pago</span>
             </div>
-          </div>
+          </div> -->
+          <Input
+            v-if="!paymentStore.showNewPaymentForm"
+            type="button"
+            text="Agregar método de pago"
+            variant="secondary"
+            :outline="true"
+            @click="paymentStore.toggleNewPaymentForm" 
+            class="cursor-pointer w-full"
+          />
           
           <div v-if="paymentStore.showNewPaymentForm" class="mt-6 flex flex-col gap-4">
             <Heading :type="4" class="regular text-white ">Nuevo método de pago</Heading>
@@ -395,17 +402,17 @@ onMounted(async () => {
               />
 
               <Input 
-                type="text"
-                placeholder="Titular de tarjeta"
-                v-model="paymentStore.newPaymentMethod.cardHolder"
-                variant="secondary"
-                :outline="false"
+              type="text"
+              placeholder="Número de tarjeta (16 dígitos)"
+              v-model="paymentStore.newPaymentMethod.cardNumber"
+              variant="secondary"
+              :outline="false"
               />
               
               <Input 
                 type="text"
-                placeholder="Número de tarjeta (16 dígitos)"
-                v-model="paymentStore.newPaymentMethod.cardNumber"
+                placeholder="Titular de tarjeta"
+                v-model="paymentStore.newPaymentMethod.cardHolder"
                 variant="secondary"
                 :outline="false"
               />

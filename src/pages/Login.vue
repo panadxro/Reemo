@@ -129,7 +129,7 @@ export default {
       ¿No tenés una cuenta? 
       <router-link to="/register" class="text-primary font-bold">
         <span class="hover:underline">
-          Registrar
+          Registrate
         </span>
       </router-link>
     </p>

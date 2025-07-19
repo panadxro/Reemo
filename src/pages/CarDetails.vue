@@ -399,7 +399,7 @@ watch(car, (newCar) => {
       ></div>
     </div>
   
-    <div v-if="authStore.user?.id !== carStore.car.ownerId" class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-hidden flex flex-col gap-5">
+    <div v-if="authStore.user?.id !== carStore.car.ownerId" class="bg-deep-blue-900 w-full rounded-[40px] py-8 px-4 md:p-8 max-h-full overflow-hidden flex flex-col gap-5">
       <Heading type="2" class="medium text-white">Alquilar vehículo</Heading>
       
       <RentalProcess 

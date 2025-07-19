@@ -264,22 +264,21 @@ export const useAuthStore = defineStore('auth', {
     },
     
     handleLoginError(error) {
-      const errorCode = error.errorCode
+      const errorCode = error.errorCode;
       switch (errorCode) {
         case 'auth/invalid-email':
-          this.error = 'El correo electrónico ingresado no es valido.'
-          break
+          this.error = 'El correo electrónico ingresado no es válido.';
+          break;
         case 'auth/wrong-password':
-          this.error = 'La contraseña es incorrecta.'
-          break
         case 'auth/user-not-found':
-          this.error = 'No existe una cuenta con este email'
-          break
+        case 'auth/invalid-credential':
+          this.error = 'Las credenciales ingresadas son incorrectas.';
+          break;
         default:
-          this.error = 'Error al iniciar sesión. Intenta de nuevo.'
+          this.error = 'Revisá los datos ingresados y volvé a intentarlo.';
       }
-      addAlert(this.error, 'error')
-      this.isSubmitting = false
+      addAlert(this.error, 'error');
+      this.isSubmitting = false;
     },
 
     setUnreadNotifications(status){

@@ -102,6 +102,7 @@ export const usePaymentStore = defineStore('payment', {
       if (!userId) {
         console.error("Usuario no identificado");
         this.errorMessage = "Usuario no identificado";
+        this.paymentMethods = [];
         return [];
       }
       
@@ -109,11 +110,12 @@ export const usePaymentStore = defineStore('payment', {
       try {
         const methods = await getPaymentMethods(userId);
         console.log("Métodos de pago obtenidos:", methods);
-        this.paymentMethods = methods;
-        return methods;
+        this.paymentMethods = Array.isArray(methods) ? methods : [];
+        return this.paymentMethods;
       } catch (error) {
         console.error("Error al obtener métodos de pago:", error);
         this.errorMessage = "Error al cargar métodos de pago";
+        this.paymentMethods = [];
         return [];
       } finally {
         this.loading = false;
