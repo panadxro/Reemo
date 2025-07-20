@@ -34,14 +34,14 @@ export default {
             <a class="text-secondary-900 font-bold text-base sm:text-lg" href="#">Beneficios</a>
             <NavDropdown class="h-full">
               <template #title>
-                <Heading type="5" class="pb-2">Facilidades</Heading>
+                <Heading type="4" class="pb-2 text-lg mb-0.5 sm:text-md">Facilidades</Heading>
               </template>
               <ul class="flex flex-col gap-2 sm:gap-2.5 text-sm mt-3 sm:mt-0">
-                <li><a href="#" class="block py-1 sm:py-0">Registro de vehículos</a></li>
-                <li><a href="#" class="block py-1 sm:py-0">Documentación y verificación</a></li>
-                <li><a href="#" class="block py-1 sm:py-0">Ubicación flexible</a></li>
-                <li><a href="#" class="block py-1 sm:py-0">Chat con propietarios</a></li>
-                <li><a href="#" class="block py-1 sm:py-0">Soporte a propietarios</a></li>
+                <li><a href="#" class="inline py-1 sm:py-0">Registro de vehículos</a></li>
+                <li><a href="#" class="inline py-1 sm:py-0">Documentación y verificación</a></li>
+                <li><a href="#" class="inline py-1 sm:py-0">Ubicación flexible</a></li>
+                <li><a href="#" class="inline py-1 sm:py-0">Chat con propietarios</a></li>
+                <li><a href="#" class="inline py-1 sm:py-0">Soporte a propietarios</a></li>
               </ul>
             </NavDropdown>
           </div>
@@ -50,27 +50,27 @@ export default {
         <div class="flex flex-col gap-6">
           <NavDropdown class="h-full">
             <template #title>
-              <Heading type="5" class="pb-2">Pagos</Heading>
+              <Heading type="4" class="pb-2 text-lg mb-0.5 sm:text-md">Pagos</Heading>
             </template>
             <ul class="flex flex-col gap-2 sm:gap-2.5 text-sm mt-3 sm:mt-0">
-              <li><a href="#" class="block py-1 sm:py-0">Métodos de pago seguros</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Pago con tarjeta</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Integraciones</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Transferencias bancarias</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Gestión de pagos automáticos</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Métodos de pago seguros</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Pago con tarjeta</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Integraciones</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Transferencias bancarias</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Gestión de pagos automáticos</a></li>
             </ul>
           </NavDropdown>
 
           <NavDropdown class="h-full">
             <template #title>
-              <Heading type="5" class="pb-2">Seguridad</Heading>
+              <Heading type="4" class="pb-2 text-lg mb-0.5 sm:text-md">Seguridad</Heading>
             </template>
             <ul class="flex flex-col gap-2 sm:gap-2.5 text-sm mt-3 sm:mt-0">
-              <li><a href="#" class="block py-1 sm:py-0">Verificaciones</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Seguro contra todo riesgo</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Encriptación de datos</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Pausar y cancelar reservas</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Atención de emergencias 24/7</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Verificaciones</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Seguro contra todo riesgo</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Encriptación de datos</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Pausar y cancelar reservas</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Atención de emergencias 24/7</a></li>
             </ul>
           </NavDropdown>
         </div>
@@ -79,25 +79,25 @@ export default {
         <div class="flex flex-col gap-6">
           <NavDropdown class="h-full">
             <template #title>
-              <Heading type="5" class="pb-2">Propietarios</Heading>
+              <Heading type="4" class="pb-2 text-lg mb-0.5 sm:text-md">Propietarios</Heading>
             </template>
             <ul class="flex flex-col gap-2 sm:gap-2.5 text-sm mt-3 sm:mt-0">
-              <li><a href="#" class="block py-1 sm:py-0">Publicá tu vehículo</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Generá ingresos extras</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Gestión de reservas</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Soporte para propietarios</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Publicá tu vehículo</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Generá ingresos extras</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Gestión de reservas</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Soporte para propietarios</a></li>
             </ul>
           </NavDropdown>
 
           <NavDropdown class="h-full">
             <template #title>
-              <Heading type="5" class="pb-2">Usuarios</Heading>
+              <Heading type="4" class="pb-2 text-lg mb-0.5 sm:text-md">Usuarios</Heading>
             </template>
             <ul class="flex flex-col gap-2 sm:gap-2.5 text-sm mt-3 sm:mt-0">
-              <li><a href="#" class="block py-1 sm:py-0">Alquileres express</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Amplia selección de vehículos</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Chat directo con propietarios</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Alquiler flexible por día o semana</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Alquileres express</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Amplia selección de vehículos</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Chat directo con propietarios</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Alquiler flexible por día o semana</a></li>
             </ul>
           </NavDropdown>
         </div>
@@ -105,26 +105,26 @@ export default {
         <div class="flex flex-col gap-6">
           <NavDropdown class="h-full">
             <template #title>
-              <Heading type="5" class="pb-2">Información importante</Heading>
+              <Heading type="4" class="pb-2 text-lg mb-0.5 sm:text-md">Información importante</Heading>
             </template>
             <ul class="flex flex-col gap-2 sm:gap-2.5 text-sm mt-3 sm:mt-0">
-              <li><a href="#" class="block py-1 sm:py-0">Términos y condiciones de uso</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Política de privacidad</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Régimen de transparencia</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Tarifas y comisiones vigentes</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Ley de Defensa del Consumidor (Ley 24.240)</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Términos y condiciones de uso</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Política de privacidad</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Régimen de transparencia</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Tarifas y comisiones vigentes</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Ley de Defensa del Consumidor (Ley 24.240)</a></li>
             </ul>
           </NavDropdown>
 
           <NavDropdown class="h-full">
             <template #title>
-              <Heading type="5" class="pb-2">Contacto</Heading>
+              <Heading type="4" class="pb-2 text-lg mb-0.5 sm:text-md">Contacto</Heading>
             </template>
             <ul class="flex flex-col gap-2 sm:gap-2.5 text-sm mt-3 sm:mt-0">
-              <li><a href="#" class="block py-1 sm:py-0">Soporte y ayuda</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Atención al cliente</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Consultas comerciales</a></li>
-              <li><a href="#" class="block py-1 sm:py-0">Reclamos y sugerencias</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Soporte y ayuda</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Atención al cliente</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Consultas comerciales</a></li>
+              <li><a href="#" class="inline py-1 sm:py-0">Reclamos y sugerencias</a></li>
             </ul>
           </NavDropdown>
         </div>
@@ -134,7 +134,7 @@ export default {
     <div class="rounded-3xl sm:rounded-[52px] bg-secondary-100 py-4 sm:py-6 lg:py-8">
       <div class="flex flex-col-reverse lg:flex-row justify-between items-center gap-6 m-auto w-full lg:w-11/12 xl:w-10/12 p-4 sm:p-6">
         <article class="flex flex-col gap-2 w-full lg:w-2/3">
-          <Heading :type="6" class="text-sm sm:text-base">&copy; <strong>Reemo</strong>, 2024. Todos los derechos reservados</Heading>
+          <Heading :type="5" class="text-sm sm:text-base">&copy; <strong>Reemo</strong>, 2024. Todos los derechos reservados</Heading>
           <p class="text-xs sm:text-sm text-gray-500">
             <strong>Reemo</strong> S.A. Agente de Servicios de Movilidad - Registro Propio. Secretaría de Transporte de la Nación: Nro. de matrícula 2098. Inscripto ante la Secretaría de Innovación y Tecnología de la Nación como Proveedor de Plataformas Digitales para Alquiler de Vehículos, bajo el número 342, y como Agente Autorizado de Gestión de Alquileres Temporales y Transporte Compartido, bajo el número 278.
           </p>

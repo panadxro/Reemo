@@ -56,7 +56,7 @@ const variantClasses = computed(() => {
     },
     secondary: {
       outline: 'border-vibrant-light-800 bg-white',
-      normal: 'bg-vibrant-light-600 text-deep-blue-900 border-transparent'
+      normal: 'bg-vibrant-light-600 text-deep-blue-900 border-transparent hover:bg-vibrant-light-800'
     },
     tertiary: {
       outline: 'border-deep-blue-600 text-deep-blue-600 bg-white',

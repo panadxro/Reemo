@@ -3,11 +3,12 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores';
 import { addAlert } from "@services/alerts.js";
-
 import { fetchUserRentalHistory, fetchUserRentedOutHistory } from '@/services/rentedCarService';
+
 import Loading from '@/icons/Loading.vue';
 import HistoryCar from '@/components/organisms/rents/HistoryCar.vue';
 import Input from '@/components/molecules/Input.vue';
+import NoRent from '@/components/atoms/NoRent.vue';
 
 const props = defineProps({
   showOnly: {
@@ -52,8 +53,6 @@ const loadHistoryData = async () => {
     isLoading.value = false;
     return;
   }
-
-
 
   isLoading.value = true;
 
@@ -100,17 +99,20 @@ onMounted(() => {
       @click="router.push({ name: 'RentDetail', params: { id: rent.id } })" />
   </ul>
   
-    <template v-else>
-          <img src="@/assets/car-history.png" alt="No history" class="max-w-[120px] mx-auto opacity-50" />
-          <p class="font-semibold text-white text-center">
-            No tenés alquileres registrados
-          </p>
-            <Input
-            class="max-w-[200px] mx-auto"
-              type="button"
-              text="Alquilar un auto"
-              variant="primary"
-              @click="handleButtonClick"/>
-            </template>
+    <div v-else class="flex flex-col items-center justify-center h-full gap-5">
+      <div class="max-w-[90px]">
+        <NoRent/>
+      </div>
+      <p class="font-semibold text-white text-center">
+        No tenés alquileres registrados
+      </p>
+      <Input
+        class="max-w-fit mx-auto"
+        type="button"
+        text="Alquilar un auto"
+        variant="secondary"
+        :outline="false"
+        @click="handleButtonClick"/>
+    </div>
             <!-- :disabled="!isUserVerified" -->
 </template>

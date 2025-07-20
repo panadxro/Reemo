@@ -12,6 +12,7 @@ import Heading from '@/components/atoms/Heading.vue';
 import Status from '@/components/molecules/Status.vue';
 import Input from '@/components/molecules/Input.vue';
 import Modal from '@/components/molecules/Modal.vue';
+import NoRent from '@/components/atoms/NoRent.vue';
 
 const authStore = useAuthStore(); 
 const notificationStore = useNotificationStore(); 
@@ -29,18 +30,6 @@ const ownerUnsubscribe = ref(null);
 
 const currentUser = computed(() => authStore.user);
 const notifications = computed(() => notificationStore.sortedNotifications);
-
-// const loadRentalData = async () => {
-  //console.log('[RentStatusDetails] loadRentalData llamado.');
-  // if (!currentUser.value || !currentUser.value.id) {
-  //   console.warn('[RentStatusDetails] Usuario no encontrado o sin ID. currentUser:', currentUser.value);
-  //   errorLoading.value = "Usuario no encontrado";
-  //   driverRentalDetail.value = null;
-  //   ownerRentalDetail.value = null;
-  //   isLoading.value = false;
-  //   return;
-  // }
-  //console.log('[RentStatusDetails] Estableciendo isLoading a true. Usuario ID:', currentUser.value.id);
 
   // Función para limpiar los listeners y resetear los datos
   const cleanupListeners = () => {
@@ -181,14 +170,19 @@ onUnmounted(() => {
   <div v-else-if="errorLoading" class="text-center text-red-400 p-4">
     {{ errorLoading }}
   </div>
-  <div v-else-if="!driverRentalDetail && !ownerRentalDetail" class="text-center text-gray-500 p-4">
-    <div class="text-white flex flex-col items-center justify-center">
-      <img src="@/assets/car-history.png" alt="History Car" class="max-w-[150px] mx-auto mb-4" />
-      <Heading :type="3" class="text-center">No hay registros de solicitudes.</Heading>
-      <router-link to="/search" class="mt-4 px-4 py-2 rounded-lg text-primary-900 bg-secondary-300 hover:bg-primary-700 hover:text-white transition-all duration-300 w-fit font-black">
-        <span class="font-bold">Alquilá un auto</span>
-      </router-link>
-    </div>
+  <div v-else-if="!driverRentalDetail && !ownerRentalDetail" class="text-white flex flex-col items-center justify-center gap-5 h-full">
+    <NoRent class="max-w-[100px]" />
+    <p class="font-semibold text-white">No hay solicitudes pendientes.</p>
+    <Input
+      type="button"
+      text="Buscar autos"
+      icon-position="left"
+      variant="secondary"
+      :outline="false"
+      class="!w-fit"
+      input-class="w-fit md:w-auto"
+      @click="router.push('/search')"
+    />
   </div>
 
   <ul v-else class="flex flex-col gap-4 overflow-y-auto !pr-2">

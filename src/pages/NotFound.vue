@@ -1,62 +1,26 @@
-<script>
-export default {
-  name: 'NotFoundPage'
-}
+<script setup>
+import { useRouter } from 'vue-router'
+
+
+import NoPageFound from '../components/atoms/NoPageFound.vue';
+import Heading from '../components/atoms/Heading.vue';
+import Input from '../components/molecules/Input.vue';
+
+const router = useRouter()
 </script>
 
 <template>
-  <div class="not-found-container">
-    <div class="not-found-content">
-      <h1>404</h1>
-      <h2>Página no encontrada</h2>
-      <p>Lo sentimos, la página que estás buscando no existe.</p>
-      <router-link to="/" class="home-link">Volver al inicio</router-link>
-    </div>  
-  </div>    
+  <div class="w-full bg-white min-h-screen flex flex-col items-center justify-center gap-2">
+    <NoPageFound class="max-w-[300px] m-4"/>
+    <Heading type="1" class="text-7xl text-red-500">404</Heading>
+    <p class="text-lg font-bold">Lo siento, la página que estás buscando no existe.</p>
+    <p class="text-gray-500 text-sm">La dirección que ingresaste es incorrecta o fue eliminada.</p>
+    <Input
+      type="button"
+      text="Volver al inicio"
+      variant="secondary"
+      class="!w-fit"
+      @click="router.push('/')"
+      />
+  </div>
 </template>
-
-<style scoped>
-.not-found-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  text-align: center;
-  background-color: #f8f9fa;
-}
-
-.not-found-content {
-  max-width: 500px;
-  padding: 2rem;
-}
-
-h1 {
-  font-size: 5rem;
-  color: #dc3545;
-  margin-bottom: 1rem;
-}
-
-h2 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
-
-p {
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
-}
-
-.home-link {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  background-color: #007bff;
-  color: white;
-  text-decoration: none;
-  border-radius: 4px;
-  transition: background-color 0.3s;
-}
-
-.home-link:hover {
-  background-color: #0056b3;
-}
-</style>

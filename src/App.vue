@@ -63,9 +63,9 @@ watch(() => route.path, (path) => {
 </script>
 
 <template>
-    <component :is="currentLayout">
-      <router-view />
-    </component>
+  <component :is="currentLayout">
+    <router-view />
+  </component>
   <Alert />
 </template>
 
@@ -139,7 +139,7 @@ h4 {
   scrollbar-color: #143968 #010440;
 }
 .box-vibrant {
-  scrollbar-color: #A7EBEF #CAF3F5;
+  scrollbar-color: #A7EBEF #dbfafc;
 }
 select:focus {
   outline: none;

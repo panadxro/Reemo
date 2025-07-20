@@ -4,7 +4,8 @@ import Heading from '@/components/atoms/Heading.vue';
 import Loading from '@/icons/Loading.vue';
 import ReemoIcon from '@/icons/ReemoIcon.vue';
 import BackButton from '@/components/atoms/BackButton.vue';
-import Input from '../components/molecules/Input.vue';
+import NoNotification from '../components/atoms/NoNotification.vue';
+import Input from '@/components/molecules/Input.vue';
 
 import { useAuthStore } from '@/stores';
 import { useNotificationStore } from '@/stores/notification.store';
@@ -41,20 +42,6 @@ const notifications = computed(() => notificationStore.sortedNotifications); // 
 const isLoading = computed(() => notificationStore.isLoading);
 const errorLoading = computed(() => notificationStore.error);
 
-// onMounted(() => {
-//   // El listener ya debería estar inicializado por App.vue o un watcher global.
-//   // Si por alguna razón no se ha cargado y el usuario está aquí, podemos intentar iniciarlo.
-//   if (currentUser.value && currentUser.value.id && !notificationStore.hasLoadedOnce) {
-//     console.log("[Notification.vue onMounted] El store no ha cargado, intentando iniciar listener.");
-//     notificationStore.initListenerForUser(currentUser.value.id);
-//   } else if (!currentUser.value || !currentUser.value.id) {
-//      // Si no hay usuario, el store debería estar limpio, pero podemos asegurarlo.
-//     if (notificationStore.notifications.length > 0 || notificationStore.isLoading) {
-//         notificationStore.clearListenerAndData();
-//     }
-//     console.warn("[Notification.vue onMounted] No hay usuario autenticado.");
-//   }
-// });
 
 watch(currentUser, (newUser) => {
   if (newUser && newUser.id) {
@@ -133,8 +120,16 @@ const handleNotificationClick = async (notification) => {
       <p class="ml-4 text-gray-600">Cargando notificaciones...</p>
     </div>
 
-    <div v-if="!isLoading && !notifications.length" class="text-center p-10 text-gray-500">
-      Aún no tienes notificaciones.
+    <div v-if="!isLoading && !notifications.length" class="flex flex-col items-center justify-center h-full text-center gap-2">
+      <NoNotification class="max-w-[150px] m-4"/>
+      <p class="text-gray-400 font-bold">No hay notificaciones aún.</p>
+      <Input
+        type="button"
+        text="Ir al inicio"
+        variant="primary"
+        class="!w-fit"
+        @click="router.push('/dashboard')"
+        />
     </div>
 
     <!-- Notifications -->
