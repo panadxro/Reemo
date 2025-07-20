@@ -103,7 +103,7 @@ const handleLogout = () => {
           aria-hidden="true"
         ></span>
       </li>
-      <li v-if="userStore.profileData.role === 'user'">
+<!--       <li v-if="userStore.profileData.role === 'user'">
         <IconNavButton to="/" title="Questions & Answers">
           <QA />
         </IconNavButton>
@@ -112,7 +112,7 @@ const handleLogout = () => {
         <IconNavButton to="/" title="Settings">
           <Settings />
         </IconNavButton>
-      </li>
+      </li> -->
       <li v-if="authStore.isLoggedIn">
         <button 
           @click="handleLogout"

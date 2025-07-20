@@ -13,23 +13,12 @@ export default {
   computed: {
     tag() {
       return `h${this.type}`;
-    },
-    textSize() {
-      // Establece tamaños de texto según el tipo de encabezado
-      return {
-        1: "text-2xl",
-        2: "text-4xl mb-3 sm:text-4xl",
-        3: "text-2xl mb-2 sm:text-3xl",
-        4: "text-xl mb-1 sm:text-lg",
-        5: "text-lg mb-0.5 sm:text-md",
-        6: "text-sm",
-      }[this.type];
-    },
+    }
   },
 };
 </script>
 <template>
-  <component :is="tag" :class="`${textSize} font-semibold text-deep-blue-900 sm:leading-tight`">
+  <component :is="tag" :class="`font-semibold text-deep-blue-900 sm:leading-tight`">
     <slot />
   </component>
 </template>

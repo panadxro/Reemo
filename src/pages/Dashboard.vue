@@ -7,7 +7,7 @@ import Input from '@/components/molecules/Input.vue';
 import SearchIcon from '@/icons/Search.vue';
 import CardCar from '../components/organisms/cars/CardCar.vue';
 import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
-import ReemoIcon from '@/icons/ReemoIcon.vue';
+import ReemoIcon from '../icons/ReemoIcon.vue';
 
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
@@ -45,33 +45,13 @@ onMounted(async () => {
 
 <template>
   <div class="parent w-full md:max-h-vh md:min-h-vh p-2.5">
-    <div class="dash flex flex-col gap-5 ">
+    <div class="dash flex flex-col flex-1 gap-5 ">
       <div class="flex md:items-end justify-between flex-col md:flex-row gap-5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0">
         <div class="flex md:hidden items-center justify-between">
-          <img 
-            v-if="user.personalInfo.profilePhoto" 
-            :src="user.personalInfo.profilePhoto" 
-            alt="User Profile Picture" 
-            class="w-8 h-8 rounded-full object-cover flex"
-          >
-          <img 
-            v-else 
-            src="../../assets/images/default-profile.png" 
-            alt="Default Profile Picture" 
-            class="w-8 h-8 rounded-full object-cover"
-          >
+          
 
-          <div class="flex items-center justify-between gap-4">
+          <div class="flex items-center justify-between gap-4 flex-1">
             <ReemoIcon class="w-10 h-10" color="#4FD8DF" />
-            <Input
-              type="button"
-              text="Descargar app"
-              icon-position="left"
-              variant="secondary"
-              :outline="false"
-              class="!w-fit"
-              input-class="w-fit md:w-auto"
-              />
           </div>
         </div>
         <Heading type="1" class="large">Dashboard</Heading>
@@ -135,7 +115,7 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-        <div v-else class="bg-deep-blue-900 text-white p-6 w-full rounded-[40px] py-10 px-6 flex flex-col gap-12">
+        <div v-else class="bg-deep-blue-900 text-white p-6 w-full h-full rounded-[40px] py-10 px-6 flex flex-col gap-12">
           <Heading type="2" class="medium text-white">¡Bienvenido a <strong>Reemo</strong>, {{ user.personalInfo.firstName }}👋!</Heading>
           <p class="text-white">Aquí podés gestionar tus autos y solicitudes de alquiler.🚗✨</p>
         </div>
@@ -196,5 +176,11 @@ onMounted(async () => {
     .cars { order: 3; }
     .tracking { order: 4; }
   }
+}
+
+selectedcontent {
+  content: url("/src/icons/Dropdown.png");
+  max-width: 1.5rem;
+  max-height: 1.5rem;
 }
 </style>

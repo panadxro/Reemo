@@ -48,7 +48,7 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
     <section class="flex flex-col items-center gap-8 sm:gap-12 sm:w-10/12 md:max-w-3/4 md:mx-auto mx-4">
       <ZurichxReemo/>
       <article class="flex flex-col items-center gap-3 w-full">
-        <Heading :type="2" class="text-center">Seguros contra todo riesgo Zurich</Heading>
+        <Heading :type="2" class="text-4xl mb-3 sm:text-4xl text-center">Seguros contra todo riesgo Zurich</Heading>
         <p class="text-center max-w-[570px]">Ofrecemos seguros contra todo riesgo con Zurich, para que puedas disfrutar de tu viaje con total tranquilidad.</p>
         <a href="" class="flex items-center gap-4 py-2 px-4 rounded-xl bg-secondary-100 w-fit">
           <ABS/>
@@ -58,7 +58,7 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
       <div class="sm:flex flex-wrap justify-center gap-4">
         <div class="sm:w-[310px] shadow-custom px-6 py-12 flex flex-col gap-16 rounded-[36px]">
           <article class="flex flex-col gap-2 text-pretty">
-            <Heading :type="3">¿Cómo funciona <strong>Reemo</strong>?</Heading>
+            <Heading :type="3" class="text-2xl mb-2 sm:text-3xl">¿Cómo funciona <strong>Reemo</strong>?</Heading>
             <p class="text-lg font-regular leading-tight">Aquellos dueños dispuestos a prestar su auto a cambio de dinero, lo registran y las personas que necesitan uno temporalmente, lo alquilan.</p>
             <a href="" class="flex items-center gap-4 py-2 px-4 rounded-xl bg-secondary-100 w-fit">
               Más información
@@ -71,7 +71,7 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
 
         <div class="sm:w-[310px] shadow-custom px-6 py-12 flex flex-col gap-16 rounded-[36px]">
           <article class="flex flex-col gap-2">
-            <Heading :type="3">Proceso 100% digital</Heading>
+            <Heading :type="3" class="text-2xl mb-2 sm:text-3xl">Proceso 100% digital</Heading>
             <p class="text-lg font-regular leading-tight">En <strong>Reemo</strong>, todo el proceso es completamente digital y sin complicaciones. Reservá, pagá y obtené tu auto de forma rápida y sencilla.</p>
             <a href="" class="flex items-center gap-4 py-2 px-4 rounded-xl bg-secondary-100 w-fit">
               Más información
@@ -84,7 +84,7 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
 
         <div class="sm:w-[310px] shadow-custom px-6 py-12 flex flex-col gap-16 rounded-[36px]">
           <article class="flex flex-col gap-2">
-            <Heading :type="3">Impacto en Argentina</Heading>
+            <Heading :type="3" class="text-2xl mb-2 sm:text-3xl">Impacto en Argentina</Heading>
             <p class="text-lg font-regular leading-tight">Al alquilar un auto en <strong>Reemo</strong>, aparte de cuidar tu economía, evitando el cargo de mantener uno propio, ayudas a los dueños que lo publican.</p>
             <a href="" class="flex items-center gap-4 py-2 px-4 rounded-xl bg-secondary-100 w-fit">
               Más información
@@ -98,11 +98,11 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
     </section>
 
     <section class="flex flex-col gap-16 px-4 md:items-center">
-    <Heading :type="2" class="text-center">Con <strong>Reemo</strong>,<br>tranquilo a todos lados</Heading>
+    <Heading :type="2" class="text-4xl mb-3 sm:text-4xl text-center">Con <strong>Reemo</strong>,<br>tranquilo a todos lados</Heading>
     <div class="flex flex-col items-center justify-center md:flex-row gap-4 md:max-w-1/2">
       <article class="bg-primary-900 pl-9 py-11 flex flex-col gap-16 rounded-[40px] w-full group relative">
         <div class="flex flex-col gap-4 md:w-full">
-          <Heading :type="3" class="text-white">Publicá tu vehículo</Heading>
+          <Heading :type="3" class="text-white text-2xl mb-2 sm:text-3xl">Publicá tu vehículo</Heading>
           <p class="text-lg font-regular leading-tight text-slate-400">Registrá tu auto en menos de 10 minutos y dejalo listo para ser alquilado.</p>
         </div>
         <div class="flex flex-row-reverse">
@@ -115,7 +115,7 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
       </article>
       <article class="bg-linear-to-r to-secondary-300 from-secondary-100 pl-9 py-11 flex flex-col gap-16 rounded-[40px] w-full group relative">
         <div class="flex flex-col gap-4 md:w-full">
-          <Heading :type="3">Alquilá un auto</Heading>
+          <Heading :type="3" class="text-2xl mb-2 sm:text-3xl">Alquilá un auto</Heading>
           <p class="text-lg font-regular leading-tight text-slate-600">Conseguí un vehículo que se adapte a vos y comenzá a disfrutarlo.</p>
         </div>
         <div class="flex flex-row-reverse">
@@ -131,7 +131,7 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
 
   <section class="flex flex-col gap-16 px-4 md:px-0 items-center md:max-w-3/4">
     <div class="flex flex-col items-center gap-4 w-full">
-      <Heading :type="2" class="text-center ">🚙<br/>Alquileres express</Heading>
+      <Heading :type="2" class="text-4xl mb-3 sm:text-4xl text-center ">🚙<br/>Alquileres express</Heading>
       <p class="inline">Rápidos, seguros y confiables</p>
       <NotificationExpress/>
     </div>
@@ -140,7 +140,7 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
       <article class="px-9 py-11 w-full rounded-[20px] md:rounded-[40px] shadow-custom flex flex-col lg:flex-row">
         <div class="flex flex-col justify-between flex-1 gap-8">
             <div>
-                <Heading :type="3">Contactate inmediatamente<br class="hidden md:block"/> con el dueño</Heading>
+                <Heading :type="3" class="text-2xl mb-2 sm:text-3xl">Contactate inmediatamente<br class="hidden md:block"/> con el dueño</Heading>
                 <p class="w-full md:w-3/4 text-slate-600 pt-2">
                     Con <strong>Reemo</strong> podés hablar por medio de chat con el dueño del auto luego de haber reservado el mismo para ultimar detalles del alquiler
                 </p>
@@ -158,13 +158,13 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
     </article>
       <div class="flex flex-col flex-1 items-center justify-center xl:flex-row gap-4">
         <article class="bg-secondary-100 pl-9 py-11 flex flex-col rounded-[40px] w-full group relative">
-          <Heading :type="3">Viví momentos <br/>inolvidables</Heading>
+          <Heading :type="3" class="text-2xl mb-2 sm:text-3xl">Viví momentos <br/>inolvidables</Heading>
           <div class="flex flex-row-reverse">
             <Moments />
           </div>
         </article>
         <article class="bg-primary-900 pl-9 py-11 flex flex-col rounded-[40px] w-full group relative">
-          <Heading :type="3" class="text-white">Generá ingresos <br/>extras sin esfuerzo</Heading>
+          <Heading :type="3" class="text-white text-2xl mb-2 sm:text-3xl">Generá ingresos <br/>extras sin esfuerzo</Heading>
           <div class="flex flex-row-reverse">
             <Income />
           </div>
@@ -175,7 +175,7 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
 
   <section class="flex flex-col gap-16 px-4 md:px-0 md:max-w-3/4">
     <div class="flex flex-col items-center gap-4">
-      <Heading :type="2" class="text-center ">🚙<br/>Gran variedad</Heading>
+      <Heading :type="2" class="text-4xl mb-3 sm:text-4xl text-center ">🚙<br/>Gran variedad</Heading>
       <p class="text-center">Conseguí un auto que se adapte a tus necesidades</p>
     </div>
 
@@ -184,7 +184,7 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
         <div class="flex flex-col flex-1 gap-4 w-full">
           <article class="bg-primary-900 px-9 py-11 flex flex-row justify-between items-center rounded-[40px] w-full">
             <div class="flex flex-col gap-16">
-              <Heading :type="3" class="text-white">Viví momentos <br/>inolvidables</Heading>
+              <Heading :type="3" class="text-white text-2xl mb-2 sm:text-3xl">Viví momentos <br/>inolvidables</Heading>
               <button class="bg-secondary-900 w-fit px-6 rounded-full">
                 <LongArrow color="#FFFFFF" direction="right"/>
                 <span class="sr-only">Ver más</span>
@@ -194,7 +194,7 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
           </article>
           <article class="bg-primary-900 px-9 py-11 flex flex-row justify-between items-center rounded-[40px] w-full">
             <div class="flex flex-col gap-16">
-              <Heading :type="3" class="text-white">Buscá y encontrá <br/>tu auto ideal</Heading>
+              <Heading :type="3" class="text-white text-2xl mb-2 sm:text-3xl">Buscá y encontrá <br/>tu auto ideal</Heading>
               <button class="bg-secondary-900 w-fit px-6 rounded-full">
                 <LongArrow color="#FFFFFF" direction="right"/>
                 <span class="sr-only">Ver más</span>
@@ -205,7 +205,7 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
         </div>
 
         <article class="bg-secondary-100 pl-9 py-11 flex flex-col flex-1 rounded-[40px] w-full group relative overflow-hidden gap-10 md:gap-0">
-          <Heading :type="3">Todas las marcas <br/>y todos los modelos</Heading>
+          <Heading :type="3" class="text-2xl mb-2 sm:text-3xl">Todas las marcas <br/>y todos los modelos</Heading>
           <div class="flex flex-row-reverse">
             <Brands class="-m-20"/>
           </div>
@@ -215,7 +215,7 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
   </section>
 
   <section class="flex flex-col gap-5 items-center px-4 md:px-0 md:max-w-3/4">
-    <Heading :type="2" class="text-center">Preguntas frecuentes</Heading>
+    <Heading :type="2" class="text-4xl mb-3 sm:text-4xl text-center">Preguntas frecuentes</Heading>
     <div class="flex flex-col gap-4 md:w-10/12 m-auto">
       <Dropdown class="flex flex-col bg-secondary-100 px-8 py-5 rounded-3xl">
         <template #title>
@@ -262,7 +262,7 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
   <section class="flex flex-col gap-5 items-center px-4 md:px-0 md:max-w-3/4">
     <article class="bg-linear-to-r to-primary-900 from-secondary-900 px-9 py-11 w-full rounded-[40px] shadow-custom flex flex-col items-center text-white overflow-hidden gap-4">
       <Experience class="-mt-20"/>
-      <Heading :type="3" class="text-white">¿Qué esperás para vivir la experiencia <strong>Reemo</strong>?</Heading>
+      <Heading :type="3" class="text-white text-2xl mb-2 sm:text-3xl">¿Qué esperás para vivir la experiencia <strong>Reemo</strong>?</Heading>
       <p>Descargá la app y empezá a alquilar o rentar autos en minutos.</p>
       <QR/>
     </article>

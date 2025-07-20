@@ -1,19 +1,64 @@
 <script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useAuthStore } from "@/stores/auth.store";
+import { useRouter } from "vue-router";
 
-import Logout from "../icons/Logout.vue";
-import Login from "../icons/Login.vue";
 import Reemo from "@icons/Reemo.vue";
+import Input from "./molecules/Input.vue";
 
+const router = useRouter();
 const authStore = useAuthStore();
+
+const props = defineProps({
+  NavbarVisible: {
+    type: Boolean,
+    required: true,
+  }
+});
+
+const emit = defineEmits('handleScroll')
+
+const isNavbarVisible = ref(props.NavbarVisible);
+const lastScrollPosition = ref(0);
+
+const handleScroll = () => {
+  const currentScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+  
+  // Siempre mostrar navbar cuando esté en la parte superior
+  if (currentScrollPosition <= 0) {
+    isNavbarVisible.value = true;
+    lastScrollPosition.value = currentScrollPosition;
+    return;
+  }
+  
+  // Mostrar navbar solo cuando se hace scroll hacia arriba
+  if (currentScrollPosition < lastScrollPosition.value) {
+    isNavbarVisible.value = true;
+  } else {
+    isNavbarVisible.value = false;
+  }
+  
+  lastScrollPosition.value = currentScrollPosition;
+};
 
 const handleLogout = () => {
   authStore.logout();
 };
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
 </script>
 
 <template>
-  <nav class="top-0 z-10 left-0 right-0 shadow-lg bg-white border-gray-200">
+  <nav 
+    class="navbar top-0 z-10 left-0 right-0 shadow-lg bg-white border-gray-200"
+    :class="{ 'navbar--visible': isNavbarVisible, 'navbar--hidden': !isNavbarVisible }"
+    >
     <div class="max-w-(--breakpoint-xl) flex flex-wrap items-center justify-between mx-auto p-4">
       <router-link to="/" class="flex items-center space-x-3 rtl:space-x-reverse">
         <Reemo/>
@@ -21,24 +66,13 @@ const handleLogout = () => {
 
       <!-- Botones de inicio/cierre de sesión -->
       <div class="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-        <template v-if="!authStore.isLoggedIn">
-          <router-link
-            to="/login"
-            class="flex gap-2 items-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
-          >
-            <span>Iniciar sesión</span>
-            <Login />
-          </router-link>
-        </template>
-        <template v-else>
-          <button
-            @click="handleLogout"
-            class="flex gap-2 items-center text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-hidden focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 text-center"
-          >
-            <span>Cerrar sesión</span>
-            <Logout />
-          </button>
-        </template>
+        <Input
+          type="button"
+          text="Ingresar a la app"
+          variant="primary"
+          class="!w-fit"
+          @click="router.push('/dashboard')"
+        />
       </div>
 
       <!-- Links de navegación para usuarios normales -->
@@ -79,3 +113,17 @@ const handleLogout = () => {
     </div>
   </nav>
 </template>
+
+<style>
+.navbar {
+  transition: transform 0.3s ease-in-out;
+}
+
+.navbar--hidden {
+  transform: translateY(-100%);
+}
+
+.navbar--visible {
+  transform: translateY(0);
+}
+</style>

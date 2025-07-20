@@ -17,6 +17,8 @@ import Status from "../components/molecules/Status.vue";
 import InvalidationModal from '@components/Admin/InvalidationModal.vue';
 import RentalProcess from "@/components/organisms/rental/RentalProcess.vue";
 import VerifyValidation from "@/components/user/VerifyValidation.vue";
+import NoCarsResult from "@/components/atoms/NoCarsResult.vue";
+import Input from '../components/molecules/Input.vue';
 
 // Stores
 const carStore = useCarStore();
@@ -260,7 +262,7 @@ watch(car, (newCar) => {
 
 <template>
   <div class="w-full flex flex-col md:flex-row">
-    <section v-if="car.id" class="w-full flex flex-col gap-4 overflow-hidden">
+    <section v-if="car.id" class="w-full flex flex-col gap-4 overflow-hidden md:m-2.5">
       <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0">
         <BackButton />
         <Heading :type="1" class="medium">Detalles del vehículo</Heading>
@@ -376,192 +378,180 @@ watch(car, (newCar) => {
     </section>
   
     <section v-else-if="loading" class="w-full h-full flex items-center justify-center">
-      <!-- <Loading /> -->
-      <div v-if="carStore.loading" class="flex justify-center items-center h-64">
-        <Loading role="status" class="h-6 w-6 text-blue-500" />
-      </div>
-  </section>
+      <Loading role="status" class="h-6 w-6 text-blue-500" />
+    </section>
   
-  <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
-    <p>{{ carStore.errorMessage }}</p>
-  </section>
+    <section v-else class="w-full m-2.5 flex flex-col gap-4 items-center justify-center">
+      <NoCarsResult class="max-w-[300px] m-4"/>
+      <p class="text-gray-400 font-bold">Auto no encontrado.</p>
+      <Input
+        type="button"
+        text="Volver a buscar vehículos"
+        variant="secondary"
+        class="!w-fit"
+        @click="router.push('/search')"
+        />
+    </section>
+    <template v-if="car.id">
 
-  <section v-else class="w-full m-2.5 flex flex-col gap-3 overflow-hidden">
-    <p v-if="errorMsg">{{ errorMsg || 'No se encontró el vehículo' }}</p>
-  </section>
-  
-  <div class="md:m-2.5 p-2.5 w-full flex flex-col gap-3">
-    <div class="map-container">
-      <div 
-        id="map"
-        style="width: 100%; height: 300px; border-radius: 40px;"
-        v-show="store.currentStep === 1"
-      ></div>
-    </div>
-  
-    <div v-if="authStore.user?.id !== carStore.car.ownerId" class="bg-deep-blue-900 w-full rounded-[40px] py-8 px-4 md:p-8 max-h-full overflow-hidden flex flex-col gap-5">
-      <Heading type="2" class="medium text-white">Alquilar vehículo</Heading>
-      
-      <RentalProcess 
-        v-if="!loading && !errorMsg && carStore.car && authStore.user?.id && user?.role !== 'admin'"
-        :car-id="carStore.car.id"
-        :user-id="authStore.user.id"
-        :is-car-rented="store.isRented"
-      />  
-
-      <div v-if="user?.role === 'admin'" class="mt-6">
-        <Heading type="3" class="regular text-white">Datos del seguro</Heading>
-        <ul class="font-semibold text-white mt-4">
-          <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700">
-            <p>Compañía:</p>
-            <span>{{ car.insurance?.company === 'san_cristobal' 
-                          ? 'San Cristóbal' 
-                          : car.insurance?.company === 'la_caja' 
-                            ? 'La Caja' 
-                            : car.insurance?.company === 'federacion_patronal' 
-                              ? 'Federación Patronal' 
-                                : car.insurance?.company === 'sancor' 
-                                  ? 'Sancor' 
-                                    : car.insurance?.company === 'allianz' 
-                                      ? 'Allianz' 
-                                        : car.insurance?.company === 'mercantil' 
-                                          ? 'Mercantil' 
-                                            : car.insurance?.company === 'triunfo' 
-                                              ? 'Triunfo' : 'N/A'}}</span>
-          </li>
-          <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700">
-            <p>Tipo:</p>
-            <span>{{ car.insurance?.type === 'total' 
-                          ? 'Todo riesgo' 
-                          : car.insurance?.type === 'terceros_completo' 
-                            ? 'Terceros completo' 
-                            : car.insurance?.type === 'terceros_basico' 
-                              ? 'Terceros básico' 
-                                : car.insurance?.type === 'granizo' 
-                                  ? 'Todo riesgo + granizo' : 'N/A' }}</span>
-          </li>
-          <li class="flex items-center py-4 justify-between">
-            <p>Número:</p>
-            <span>{{ car.insurance?.number }}</span>
-          </li>
-        </ul>
-        <button @click="car.status?.current === 'not-validated' ? validateCar(car) : openInvalidationModal(car)"
-          class="mt-4 text-white py-3 px-6 rounded-lg font-semibold bg-secondary-700 transition-colors duration-300 w-fit hover:bg-deep-blue-700 hover:cursor-pointer"
-        >
-          <span>{{ car.status?.current === 'not-validated' ? 'Validar' : 'Invalidar'}}</span>
-        </button>
-      </div>
-    </div>
-    
-
-    <div v-else-if="authStore.user?.id === car.ownerId" class="mt-6">
-  <div class="w-full bg-deep-blue-900 rounded-[23px] p-6">
-    <div class="flex flex-col gap-6">
-      
-      <div class="flex flex-col gap-6">
-        <Heading type="3" class="regular mb-4 text-white">Días disponibles</Heading>
-         <VerifyValidation
-          v-if="isAvailabilityDisabled"
-          title="No se puede cambiar la disponibilidad"
-          message="Tu vehículo debe estar validado para cambiar su disponibilidad. Por favor, contacta al soporte si necesitas ayuda."
-          :show="isAvailabilityDisabled"
-          type="normalYellow"
-          />
-
-        <div class="flex justify-center gap-4">
-          <div 
-            v-for="(day, index) in days" 
-            :key="index"
-            class="w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all"
-            :class="{
-              'bg-secondary-700 text-white cursor-pointer': availability.schedule[day.storeKey] && !isAvailabilityDisabled,
-              'bg-deep-blue-700 text-white cursor-pointer': !availability.schedule[day.storeKey] && !isAvailabilityDisabled,
-              'bg-gray-400 text-gray-600 cursor-not-allowed opacity-50': isAvailabilityDisabled
-            }"
-            @click="!isAvailabilityDisabled && toggleDay(day.storeKey)"
-          >
-            {{ day.label }}
-          </div>
+      <div class="md:m-2.5 p-2.5 md:p-0 w-full flex flex-col gap-3 overflow-hidden">
+        <div 
+          class="w-full min-h-50 md:h-[50%] rounded-[40px] relative" 
+          id="map" 
+          v-show="store.currentStep === 1">
         </div>
-      </div>
       
-      <div class="flex flex-col items-center gap-4">
-        <div class="flex gap-6">
-          <div class="flex flex-col items-center gap-2">
-            <label for="start-time" class="font-medium text-white">Desde</label>
-            <select 
-              id="start-time" 
-              v-model="availability.hours.startTime"
-              :disabled="isAvailabilityDisabled"
-              class="p-2 rounded-lg border border-gray-300 bg-white disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed"
-            >
-              <option 
-                v-for="time in timeOptions" 
-                :key="'start-'+time.value" 
-                :value="time.value"
-              >
-                {{ time.label }}
-              </option>
-            </select>
-          </div>
+        <div v-if="authStore.user?.id !== carStore.car.ownerId" class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-hidden flex flex-col gap-5">
+          <Heading type="2" class="medium text-white">Alquilar vehículo</Heading>
           
-          <div class="flex flex-col items-center gap-2">
-            <label for="end-time" class="font-medium text-white">Hasta</label>
-            <select 
-              id="end-time" 
-              v-model="availability.hours.endTime"
-              :disabled="isAvailabilityDisabled"
-              class="p-2 rounded-lg border border-gray-300 bg-white disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed"
+          <RentalProcess 
+            v-if="!loading && !errorMsg && carStore.car && authStore.user?.id && user?.role !== 'admin'"
+            :car-id="carStore.car.id"
+            :user-id="authStore.user.id"
+            :is-car-rented="store.isRented"
+          />  
+    
+          <div v-if="user?.role === 'admin'" class="mt-6">
+            <Heading type="3" class="regular text-white">Datos del seguro</Heading>
+            <ul class="font-semibold text-white mt-4">
+              <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700">
+                <p>Compañía:</p>
+                <span>{{ car.insurance?.company === 'san_cristobal' 
+                              ? 'San Cristóbal' 
+                              : car.insurance?.company === 'la_caja' 
+                                ? 'La Caja' 
+                                : car.insurance?.company === 'federacion_patronal' 
+                                  ? 'Federación Patronal' 
+                                    : car.insurance?.company === 'sancor' 
+                                      ? 'Sancor' 
+                                        : car.insurance?.company === 'allianz' 
+                                          ? 'Allianz' 
+                                            : car.insurance?.company === 'mercantil' 
+                                              ? 'Mercantil' 
+                                                : car.insurance?.company === 'triunfo' 
+                                                  ? 'Triunfo' : 'N/A'}}</span>
+              </li>
+              <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700">
+                <p>Tipo:</p>
+                <span>{{ car.insurance?.type === 'total' 
+                              ? 'Todo riesgo' 
+                              : car.insurance?.type === 'terceros_completo' 
+                                ? 'Terceros completo' 
+                                : car.insurance?.type === 'terceros_basico' 
+                                  ? 'Terceros básico' 
+                                    : car.insurance?.type === 'granizo' 
+                                      ? 'Todo riesgo + granizo' : 'N/A' }}</span>
+              </li>
+              <li class="flex items-center py-4 justify-between">
+                <p>Número:</p>
+                <span>{{ car.insurance?.number }}</span>
+              </li>
+            </ul>
+            <button @click="car.status?.current === 'not-validated' ? validateCar(car) : openInvalidationModal(car)"
+              class="mt-4 text-white py-3 px-6 rounded-lg font-semibold bg-secondary-700 transition-colors duration-300 w-fit hover:bg-deep-blue-700 hover:cursor-pointer"
             >
-              <option 
-                v-for="time in timeOptions" 
-                :key="'end-'+time.value" 
-                :value="time.value"
-              >
-                {{ time.label }}
-              </option>
-            </select>
+              <span>{{ car.status?.current === 'not-validated' ? 'Validar' : 'Invalidar'}}</span>
+            </button>
           </div>
         </div>
-      </div>
-      
-      <div class="flex items-center justify-between p-4 bg-deep-blue-800 rounded-lg">
-        <div>
-          <Heading type="6" class="text-white mb-1">Disponibilidad inmediata</Heading>
-          <p class="text-gray-300 text-sm">
-            {{ isCarAvailable ? 'Tu auto se muestra actualmente para alquilar' : 'Tu auto no se muestra actualmente para alquilar' }}
-          </p>
-        </div>
-        <label class="relative inline-flex items-center cursor-pointer">
-          <input 
-            type="checkbox" 
-            v-model="isCarAvailable"
-            :disabled="isAvailabilityDisabled"
-            class="sr-only peer"
-          >
-          <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          :class="{ 'peer-disabled:bg-gray-400': isAvailabilityDisabled }">
-          </div>
-        </label>
-      </div>
+        
+    
+        <template v-else-if="authStore.user?.id === car.ownerId">
+      <div class="w-full bg-deep-blue-900 rounded-[40px] h-full flex flex-col gap-4 p-8 relative overflow-hidden">
+        <Heading type="3" class="medium mb-4 text-white">Días disponibles</Heading>
+        <div class="box-deep flex flex-col gap-4 overflow-y-auto">
 
-      <button
-        @click="saveAvailability"
-        class="mt-4 text-white py-3 px-6 rounded-lg font-semibold bg-secondary-700 transition-colors duration-300 w-fit hover:bg-deep-blue-700 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
-        :disabled="loading || isAvailabilityDisabled"
-      >
-        {{ loading ? 'Guardando...' : 'Guardar Disponibilidad' }}
-      </button>
-    </div>
-  </div>
-    </div>
-  </div>
-  </div>
+          <ul class="flex justify-center gap-4">
+            <li 
+              v-for="(day, index) in days" 
+              :key="index"
+              class="w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all"
+              :class="{
+                'bg-secondary-700 text-white cursor-pointer': availability.schedule[day.storeKey] && !isAvailabilityDisabled,
+                'bg-deep-blue-700 text-white cursor-pointer': !availability.schedule[day.storeKey] && !isAvailabilityDisabled,
+                'bg-gray-400 text-gray-600 cursor-not-allowed opacity-50': isAvailabilityDisabled
+              }"
+              @click="!isAvailabilityDisabled && toggleDay(day.storeKey)"
+            >
+              {{ day.label }}
+            </li>
+          </ul>
+            
+            <div class="flex flex-col gap-6">
+              <VerifyValidation
+                v-if="isAvailabilityDisabled"
+                title="No se puede cambiar la disponibilidad"
+                message="Tu vehículo debe estar validado para cambiar su disponibilidad. Por favor, contacta al soporte si necesitas ayuda."
+                :show="isAvailabilityDisabled"
+                type="normalYellow"
+                />
+            </div>
+            <div class="flex flex-row gap-3 justify-center">
+              <Input
+                name="start-time"
+                type="select"
+                v-model="availability.hours.startTime"
+                placeholder="Desde"
+                variant="secondary"
+                :disabled="isAvailabilityDisabled"
+                label="Desde"
+                :outline="true"
+                :options="timeOptions"
+                class="!w-fit"
+              />
+              <Input
+                name="end-time"
+                type="select"
+                v-model="availability.hours.endTime"
+                placeholder="Hasta"
+                variant="secondary"
+                :disabled="isAvailabilityDisabled"
+                label="Hasta"
+                :outline="true"
+                :options="timeOptions"
+                class="!w-fit"
+              />
+            </div>
+  
+              <div class="flex items-center justify-between p-4 bg-deep-blue-800 rounded-lg">
+                <div>
+                  <Heading type="6" class="text-white mb-1">Disponibilidad inmediata</Heading>
+                  <p class="text-gray-300 text-sm">
+                    {{ isCarAvailable ? 'Tu auto se muestra actualmente para alquilar' : 'Tu auto no se muestra actualmente para alquilar' }}
+                  </p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    v-model="isCarAvailable"
+                    :disabled="isAvailabilityDisabled"
+                    class="sr-only peer"
+                  >
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  :class="{ 'peer-disabled:bg-gray-400': isAvailabilityDisabled }">
+                  </div>
+                </label>
+              </div>
+              <Input 
+                type="button" 
+                :text="authStore.loading ? 'Guardando...' : 'Guardar Disponibilidad'"
+                :iconPosition="'left'"
+                :variant="'primary'"
+                :disabled="loading || isAvailabilityDisabled"
+                @click="saveAvailability"
+                class="!w-fit"
+              />
+        </div>
+          
+      </div>
+    </template>
+      </div>
+    </template>
+  </div>  
   <InvalidationModal
-      :isOpen="isModalOpen"
-      :car="selectedCarForInvalidation"
-      @close="closeInvalidationModal"
-      @confirm="confirmInvalidation"
-    />
-
+    :isOpen="isModalOpen"
+    :car="selectedCarForInvalidation"
+    @close="closeInvalidationModal"
+    @confirm="confirmInvalidation"
+  />
 </template>

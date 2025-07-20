@@ -61,7 +61,7 @@ export default {
 
 <template>
   <form
-    action="#" @submit.prevent="handleSubmit" 
+    action="/dashboard" @submit.prevent="handleSubmit" 
     class="flex flex-col justify-center md:min-w-lg md:px-16 px-2.5 md:py-12 bg-deep-blue-900 md:rounded-[40px] shadow-lg gap-9 w-full h-screen md:h-auto md:w-fit"
     >
     <BackButton class="flex md:absolute top-10 left-10" color="#FFFFFF"/>

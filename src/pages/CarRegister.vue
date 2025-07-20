@@ -437,6 +437,13 @@ onMounted(async () => {
       loading.value = true;
       await carStore.loadCarById(props.id)
 
+      await loadMakes();
+
+      // No se si esta bien esto, despues lo revisamos con Yoe
+      if (basicInfo.value.brand) {
+        await loadModels(basicInfo.value.brand);
+      }
+
       // Poblar estado local (accesorios, previsualización de fotos)
       if (features.value?.accessories) {
         selectedAccessories.value = allAccessoryOptions.value.filter(
@@ -450,14 +457,9 @@ onMounted(async () => {
         });
       }
       loading.value = false;
+    } else {
+      await loadMakes();
     }
-
-    await loadMakes();
-  
-    // No se si esta bien esto, despues lo revisamos con Yoe
-  if (isEditMode.value && basicInfo.value.brand) {
-    await loadModels(basicInfo.value.brand);
-  }
 
   } catch (error) {
     console.error("Initialization error:", error);
@@ -490,13 +492,15 @@ watch(currentStep, async (newStep) => {
 
 // Otro watch para detectar cambios en la marca que se seleccionr
 watch(() => basicInfo.value.brand, (newBrand) => {
-  if (newBrand) {
-    basicInfo.value.model = '';
-    loadModels(newBrand);
-  } else {
-    vehicleModels.value = [];
-  }
-});
+    if (newBrand) {
+      basicInfo.value.model = '';
+      loadModels(newBrand);
+    } else {
+      vehicleModels.value = [];
+    }
+  }, 
+  { immediate: true }
+);
 
 onBeforeUnmount(() => {
   // window.removeEventListener('beforeunload', handleBeforeUnload);

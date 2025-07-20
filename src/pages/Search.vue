@@ -10,20 +10,17 @@ import { addAlert } from "../services/alerts.js"
 import { updateCars, initAutocomplete, loadGoogleMaps, getCurrentLocation } from "../services/google-maps.js"
 import { filterByPreferences } from "../services/filterService.js"
 
-import AddressInput from "@/components/organisms/google-maps/AddressInput.vue"
-
 import Heading from "@components/atoms/Heading.vue"
 import CardCar from "@components/organisms/cars/CardCar.vue"
-import AddIcon from "@icons/AddIcon.vue"
 import Loading from "@icons/Loading.vue"
 import Input from "../components/molecules/Input.vue"
-import Arrow from '@icons/Arrow.vue'
 import FilterIcon from '@icons/FilterIcon.vue'
 import PriceRange from "../components/molecules/PriceRange.vue"
 import CheckboxFilter from "../components/atoms/CheckboxFilter.vue"
 import Repeat from "@icons/Repeat.vue"
 import SearchIcon from "@icons/Search.vue"
 import BackButton from "@components/atoms/BackButton.vue"
+import NoCarsResult from "@components/atoms/NoCarsResult.vue"
 
 const router = useRouter()
 const authStore = useAuthStore();
@@ -37,7 +34,7 @@ const loggedUser = reactive({
 const cars = ref([])
 const searchQuery = ref("")
 const searchLocation = ref("")
-const filteredCars = ref(null)
+const filteredCars = ref([])
 const map = ref(null)
 const markers = ref([])
 const loading = ref(false)
@@ -324,73 +321,71 @@ watch(() => filters.brand, async (newBrand, oldBrand) => {
       </div>
     </div>
 
-    <div class="w-full lg:w-3/4 xl:w-4/5 overflow-hidden flex flex-col h-full gap-3">
-      <div class="flex items-center gap-5 gap-y-1.5 fixed md:static top-0 left-0 right-0 z-3 bg-white px-2.5 md:px-0 py-3 md:py-0 flex-wrap">
-        <BackButton />
-        <Heading :type="1" class="text-xl lg:text-2xl text-start flex-1 lg:mt-0">Autos disponibles</Heading>  
-        <div class="flex justify-between items-center gap-2 w-full md:w-auto">
-          <a 
-            href="/car/register"
-            class="hidden md:flex"
-            >
-            <Input
-              type="button"
-              variant="primary"
-              text="Registrar vehículo"
-              class="!w-fit"
-              :outline="false"
-            />    
-          </a>
-          <router-link 
-            to="/maps?focusSearch=true"
-            class="flex-1 w-full md:min-w-0"
-            >
-            <Input
-              type="text"
-              id="searchInput"
-              name="searchInput"
-              placeholder="Buscar por ubicación..."
-              icon-position="left"
-              input-class="!w-full md:!w-fit"
-              class="items-end justify-center !flex-1"
-              variant="secondary"
-              :outline="false"
-              >
-              <template #icon>
-                <SearchIcon />
-              </template>
-            </Input>
-          </router-link>    
-          <button 
-            @click="toggleFilters" 
-            class="lg:hidden bg-vibrant-light-600 p-3 rounded-full"
+  <div class="w-full lg:w-3/4 xl:w-4/5 overflow-hidden flex flex-col h-full gap-3">
+    <div class="flex items-center gap-5 gap-y-1.5 fixed md:static top-0 left-0 right-0 z-3 bg-white px-2.5 md:px-0 py-3 md:py-0 flex-wrap">
+      <BackButton />
+      <Heading :type="1" class="text-xl lg:text-2xl text-start flex-1 lg:mt-0">Autos disponibles</Heading>  
+      <div class="flex justify-between items-center gap-2 w-full md:w-auto">
+        <a 
+          href="/car/register"
+          class="hidden md:flex"
           >
-            <FilterIcon/>
-          </button>  
+          <Input
+            type="button"
+            variant="primary"
+            text="Registrar vehículo"
+            class="!w-fit"
+            :outline="false"
+          />    
+        </a>
+        <router-link 
+          to="/maps?focusSearch=true"
+          class="flex-1 w-full md:min-w-0"
+          >
+          <Input
+            type="text"
+            id="searchInput"
+            name="searchInput"
+            placeholder="Buscar por ubicación..."
+            icon-position="left"
+            input-class="!w-full md:!w-fit"
+            class="items-end justify-center !flex-1"
+            variant="secondary"
+            :outline="false"
+            >
+            <template #icon>
+              <SearchIcon />
+            </template>
+          </Input>
+        </router-link>    
+        <button 
+          @click="toggleFilters" 
+          class="lg:hidden bg-vibrant-light-600 p-3 rounded-full"
+        >
+          <FilterIcon/>
+        </button>  
+      </div>
+    </div>
+      <div v-if="loading" class="flex items-center justify-center h-full w-full py-8">
+        <Loading role="status" />
+        <span class="sr-only">Cargando...</span>
+      </div>
+      <div v-else-if="filteredCars.length > 0" class="box-white flex-1 overflow-y-auto md:pr-2 pt-8 md:pt-0">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+          <CardCar v-for="(car, index) in filteredCars" :key="car.id" :car="car" :index="index" />
         </div>
       </div>
-  
-        <!-- <p v-if="filteredCars !== null && filteredCars.length === 0 && !loading" class="text-lg text-red-700 font-bold pt-4">
-          No se encontraron autos con esas características
-        </p> -->
-
-        <img 
-          v-if="filteredCars !== null && filteredCars.length === 0 && !loading" 
-          src="@/assets/no-cars.png" 
-          alt="No se encontraron resultados" 
-          class="w-1/3 object-cover mx-auto opacity-70"
-        />
-        
-        <div v-if="loading" class="flex items-center justify-center w-full py-8">
-          <Loading role="status" />
-          <span class="sr-only">Cargando...</span>
-        </div>
-
-        <div v-else class="box-white flex-1 overflow-y-auto md:pr-2 pt-8 md:pt-0">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3">
-            <CardCar v-for="(car, index) in filteredCars" :key="car.id" :car="car" :index="index" />
-          </div>
-        </div>
+      <div v-else class="flex flex-col items-center justify-center h-full text-center gap-2">
+        <NoCarsResult class="max-w-[150px] m-4"/>
+        <p class="text-gray-400 font-bold">No hay resultados para tu búsqueda.</p>
+        <Input
+          type="button"
+          text="Recargar página"
+          variant="secondary"
+          class="!w-fit"
+          @click="resetFilters"
+          />
       </div>
+    </div>
   </section>
 </template>

@@ -7,7 +7,7 @@ import { updateCars, initAutocomplete, updateMapMarkers, loadGoogleMaps, initMap
 import { addAlert } from "@/services/alerts.js";
 
 import Heading from "@components/atoms/Heading.vue";
-import comentarioIcon from '@/assets/marcador.png';
+import comentarioIcon from '@/assets/mark.png';
 import Loading from "@icons/Loading.vue";
 import Input from "@components/molecules/Input.vue";
 import SearchIcon from "@icons/Search.vue";

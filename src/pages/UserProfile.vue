@@ -2,31 +2,23 @@
 import { useUserStore, useAuthStore, useCarStore  } from '@stores'
 import { onMounted, ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { usePaymentStore } from '@/stores/payment.store.js'
 import { addAlert } from "@services/alerts.js";
 
 import Heading from "@components/atoms/Heading.vue";
 import CardCar from "@components/organisms/cars/CardCar.vue";
-import UserNav from "@components/user/UserNav.vue";
-import RentedCar from "@components/organisms/rental/RentedCar.vue";
 import BackButton from "@components/atoms/BackButton.vue";
 import Input from "@components/molecules/Input.vue";
 import DeletePaymentModal from '@/components/user/DeletePaymentModal.vue';
-import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
 import History from '@/components/user/History.vue'
 import Loading from "@icons/Loading.vue";
-import Arrow from "../icons/Arrow.vue";
-import MercadoPago from "@icons/MercadoPago.vue";
-import Uala from "@icons/Uala.vue";
-import PayPal from "@icons/PayPal.vue";
-import CreditCard from "@icons/CreditCard.vue";
 import Cross from "@icons/Cross.vue";
 import Check from "@icons/Check.vue";
 import VerifyValidation from "@/components/user/VerifyValidation.vue";
+import NoCarsRegister from '../components/atoms/NoCarsRegister.vue';
 
 export default {
   name: "UserProfile",
-  components: { Heading, CardCar, UserNav, RentedCar, Loading, Arrow, BackButton, MercadoPago, Uala, PayPal, CreditCard, Input, DeletePaymentModal, Cross, Check, RentStatusDetails, History, VerifyValidation },
+  components: { Heading, CardCar, Loading, BackButton, Input, DeletePaymentModal, Cross, Check, History, VerifyValidation, NoCarsRegister },
   props: {
     id: {
       type: String,
@@ -44,16 +36,10 @@ export default {
   setup() {
     const userStore = useUserStore();
     const authStore = useAuthStore();
-    const paymentStore = usePaymentStore();
     const carStore = useCarStore();
 
     const route = useRoute();
     const router = useRouter();
-
-    const showAllPaymentMethods = ref(false);
-    const showNewPaymentForm = ref(false);
-    const showDeleteModal = ref(false);
-    const paymentMethodToDelete = ref(null);
 
     const userCars = computed(() => carStore.userCars);
     const loggedUserId = computed(() => authStore.user?.id);
@@ -61,28 +47,17 @@ export default {
     const isOwnProfile = computed(() => loggedUserId.value === userIdFromRoute.value);
     const isUserVerified = computed(() => authStore.userStatus === 'verified');
 
-    const displayedPaymentMethods = computed(() => {
-      if (!paymentStore.paymentMethods.length) return [];
-      return showAllPaymentMethods.value 
-        ? paymentStore.paymentMethods 
-        : paymentStore.paymentMethods.slice(0, 2);
-    }); 
-
-    const hasMoreMethods = computed(() => {
-      return paymentStore.paymentMethods.length > 2;
-    });
-
     const showProfile = computed(() => {
       return isOwnProfile.value ? userStore.profileData : userStore.visitedProfileData
     })
 
     const goToCarRegister = () => {
-  if (isUserVerified.value) {
-    router.push('/car/register');
-  } else {
-    addAlert("Aguardá la validación del perfil para registrar un vehículo", "warning");
-  }
-};
+    if (isUserVerified.value) {
+      router.push('/car/register');
+    } else {
+      addAlert("Aguardá la validación del perfil para registrar un vehículo", "warning");
+    }
+  };
 
     watch(userIdFromRoute, async (newUserId, oldUserId) => {
       if (newUserId !== oldUserId) {
@@ -98,43 +73,6 @@ export default {
       }
     });
 
-    const toggleShowAllMethods = () => {
-      showAllPaymentMethods.value = !showAllPaymentMethods.value;
-    };
-
-    const toggleNewPaymentForm = () => {
-      showNewPaymentForm.value = !showNewPaymentForm.value;
-      if (showNewPaymentForm.value) {
-        paymentStore.resetNewPaymentMethodForm();
-      }
-    };
-
-    const removePaymentMethod = (index) => {
-      paymentMethodToDelete.value = {
-        index: index,
-        method: paymentStore.paymentMethods[index]
-      };
-      showDeleteModal.value = true;
-    };
-
-    const confirmDeletePaymentMethod = async () => {
-      if (paymentMethodToDelete.value !== null) {
-        await paymentStore.removePaymentMethod(
-          loggedUserId.value, 
-          paymentMethodToDelete.value.index
-        );
-        showDeleteModal.value = false;
-        paymentMethodToDelete.value = null;
-      }
-    };
-
-    const saveNewPaymentMethod = async () => {
-      const check = await paymentStore.saveNewPaymentMethod(loggedUserId.value);
-      if (check) {
-        showNewPaymentForm.value = false;
-      }
-    };
-
     onMounted(async () => {
       try {
         // Cargar perfil del usuario
@@ -149,7 +87,6 @@ export default {
           if (!userStore.profileData.profileCompleted) {
             router.push('/onboarding');
           }
-          await paymentStore.fetchPaymentMethods(loggedUserId.value);
         }
       } catch (error) {
         console.error("Error en onMounted:", error);
@@ -162,19 +99,7 @@ export default {
       posts: userStore.posts,
       rentedCars: userStore.rentedCars,
       showProfile,
-      paymentStore,
       userIdFromRoute,
-      showAllPaymentMethods,
-      showNewPaymentForm,
-      displayedPaymentMethods,
-      hasMoreMethods,
-      toggleShowAllMethods,
-      toggleNewPaymentForm,
-      removePaymentMethod,
-      saveNewPaymentMethod,
-      showDeleteModal,
-      paymentMethodToDelete,
-      confirmDeletePaymentMethod,
       carStore,
       userCars,
       isUserVerified,
@@ -265,18 +190,16 @@ export default {
             @click="() => $router.push(`/car/${car.id}`)"
           />
         </div>
-        <div v-else class="flex flex-col justify-center items-center h-full gap-4">
-          <img src="@/assets/no-cars.png" alt="No cars" class="max-w-[120px] mx-auto opacity-50" />
+        <div v-else class="flex flex-col justify-between items-center gap-5 h-full">
+          <div class="max-w-[150px]">
+            <NoCarsRegister/>
+          </div>
           <p class="font-semibold opacity-50 text-center">{{ isOwnProfile ? "No tenés autos registrados." : "Este usuario no tiene autos registrados." }}</p>
-          <!-- <router-link v-if="isOwnProfile" to="/car/register" class="font-semibold opacity-50 hover:opacity-100">
-            <span class="hover:underline">Registra un auto</span>
-          </router-link> -->
           <Input
           v-if="isOwnProfile"
           type="button"
           text="Registrar auto"
           variant="primary"
-          @click="goToCarRegister"
           class="max-w-[200px]"
           />
         </div>

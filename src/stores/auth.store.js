@@ -187,7 +187,7 @@ export const useAuthStore = defineStore('auth', {
         
         this.updateUserProfile(userStore.profileData);
         
-        router.push(`/user/${this.user.id}`);
+        router.push('/dashboard');
         addAlert("!Bienvenido a Reemo!", "success")
         return userCredential
       } catch (error) {
