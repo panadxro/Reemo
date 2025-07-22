@@ -21,6 +21,7 @@ import Repeat from "@icons/Repeat.vue"
 import SearchIcon from "@icons/Search.vue"
 import BackButton from "@components/atoms/BackButton.vue"
 import NoCarsResult from "@components/atoms/NoCarsResult.vue"
+import Arrow from "@icons/Arrow.vue"
 
 const router = useRouter()
 const authStore = useAuthStore();
@@ -222,6 +223,13 @@ watch(() => filters.brand, async (newBrand, oldBrand) => {
       :class=" showFilters ? 'fixed lg:relative inset-0 z-4' : 'hidden lg:block'"
     >
       <div class="flex items-center justify-between">
+        <button
+          type="button"
+          @click="showFilters = false" 
+          class="flex items-center p-2 cursor-pointer rounded-full transition-colors duration-100 hover:bg-background-700/30 md:hidden" 
+          title="Ir a la página anterior">
+          <Arrow direction="left"/>
+        </button>
         <Heading :type="2" class="regular mt-2">Filtrar vehículo</Heading>
         <button @click="resetFilters" class="cursor-pointer hover:bg-vibrant-light-800 rounded-full p-1 transition-colors duration-300" title="Limpiar filtros">
           <Repeat/>

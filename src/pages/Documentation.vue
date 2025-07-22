@@ -78,7 +78,7 @@ onMounted(async () => {
         text="Identificación"
         variant="secondary"
         class="cursor-pointer rounded-2xl !min-w-fit"
-        :input-class="currentStep === 0 ? ' bg-vibrant-light-900' : ''"
+        :input-class="currentStep === 0 ? ' bg-vibrant-light-800' : ''"
         @click="currentStep = 0"
       />
       <Input 
@@ -86,7 +86,7 @@ onMounted(async () => {
         text="Licencia de conducir"
         variant="secondary"
         class="cursor-pointer rounded-2xl !min-w-fit"
-        :input-class="currentStep === 1 ? ' bg-vibrant-light-900' : ''"
+        :input-class="currentStep === 1 ? ' bg-vibrant-light-800' : ''"
         @click="currentStep = 1"
       />
       <Input 
@@ -94,7 +94,7 @@ onMounted(async () => {
         text="Métodos de pago"
         variant="secondary"
         class="cursor-pointer rounded-2xl !min-w-fit"
-        :input-class="currentStep === 2 ? ' bg-vibrant-light-900' : ''"
+        :input-class="currentStep === 2 ? ' bg-vibrant-light-800' : ''"
         @click="currentStep = 2"
       />
     </div>
@@ -108,7 +108,7 @@ onMounted(async () => {
             name="firstname"
             id="firstname"
             placeholder="Nombre"
-            v-model="user.personalInfo.firstName"
+            :value="user.personalInfo.firstName"
             :disabled="user.personalInfo.firstName ? true : false"
             :variant="'secondary'"
             :outline="true"
@@ -119,7 +119,7 @@ onMounted(async () => {
             name="lastname"
             id="lastname"
             placeholder="Apellido"
-            v-model="user.personalInfo.lastName"
+            :value="user.personalInfo.lastName"
             :disabled="user.personalInfo.lastName ? true : false"
             :variant="'secondary'"
             :label="true"
@@ -132,7 +132,7 @@ onMounted(async () => {
             name="gender"
             id="gender"
             placeholder="Sexo"
-            v-model="user.personalInfo.gender"
+            :value="user.personalInfo.gender"
             :disabled="user.personalInfo.gender ? true : false"
             :variant="'secondary'"
             :outline="true"
@@ -143,7 +143,7 @@ onMounted(async () => {
             name="birthDate"
             id="birthDate"
             placeholder="Fecha de nacimiento"
-            v-model="user.personalInfo.birthDate"
+            :value="user.personalInfo.birthDate"
             :disabled="user.personalInfo.birthDate ? true : false"
             :variant="'secondary'"
             :label="true"
@@ -353,19 +353,21 @@ onMounted(async () => {
           </div>
           
           <div class="flex gap-4 mt-6">
-            <button 
-              @click="paymentStore.toggleNewPaymentForm" 
-              class="flex-1 py-3 px-4 border border-gray-600 rounded-xl hover:border-gray-400 transition-all text-deep-blue-900 hover:cursor-pointer"
-            >
-              Cancelar
-            </button>
-            <button 
-              @click="paymentStore.saveNewPaymentMethod(authSession.user.id)" 
-              :disabled="!paymentStore.isFormValid || paymentStore.loading"
-              class="flex-1 py-3 px-4 bg-vibrant-light-900 text-deep-blue-900 rounded-xl font-medium hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
-            >
-              {{ paymentStore.loading ? 'Guardando...' : 'Guardar' }}
-            </button>
+              <Input
+                type="button"
+                @click="paymentStore.toggleNewPaymentForm" 
+                variant="secondary"
+                :outline="true"
+                text="Cancelar"
+              />
+              <Input
+                type="button"
+                @click="paymentStore.saveNewPaymentMethod(authSession.user.id)" 
+                variant="primary"
+                :outline="false"
+                :text="paymentStore.loading ? 'Guardando...' : 'Guardar'"
+                :disabled="!paymentStore.isFormValid || paymentStore.loading"
+              />
           </div>
         </div>
         <Input

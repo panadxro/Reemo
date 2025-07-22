@@ -15,10 +15,11 @@ import Cross from "@icons/Cross.vue";
 import Check from "@icons/Check.vue";
 import VerifyValidation from "@/components/user/VerifyValidation.vue";
 import NoCarsRegister from '../components/atoms/NoCarsRegister.vue';
+import NoMessage from '../components/atoms/NoMessage.vue';
 
 export default {
   name: "UserProfile",
-  components: { Heading, CardCar, Loading, BackButton, Input, DeletePaymentModal, Cross, Check, History, VerifyValidation, NoCarsRegister },
+  components: { Heading, CardCar, Loading, BackButton, Input, DeletePaymentModal, Cross, Check, History, VerifyValidation, NoCarsRegister, NoMessage },
   props: {
     id: {
       type: String,
@@ -119,10 +120,10 @@ export default {
           <BackButton />
           <Heading v-if="showProfile && showProfile.personalInfo" :type="1" class="medium">{{ isOwnProfile ? "Mi perfil" : showProfile.personalInfo.username }}</Heading>
         </div>
-        <article class="bg-secondary-100 h-full md:flex-row rounded-[40px] items-center justify-center px-6 py-5 flex flex-col gap-5 overflow-hidden box-vibrant">
+        <article class="bg-secondary-100 h-full md:flex-row rounded-[40px] items-center justify-center px-6 py-8 flex flex-col gap-5 overflow-hidden box-vibrant">
             <img 
             v-if="showProfile && showProfile.personalInfo && showProfile.personalInfo.profilePhoto"
-            class="md:hidden xl:block xl:min-w-24 aspect-square rounded-full object-cover bg-vibrant-light-800 max-w-24"
+            class="md:hidden xl:block h-full aspect-square rounded-full object-cover bg-vibrant-light-800"
             :src="showProfile.personalInfo.profilePhoto"
             :alt="`Perfil de ${showProfile?.personalInfo?.username || 'usuario'}`" 
             />
@@ -190,10 +191,8 @@ export default {
             @click="() => $router.push(`/car/${car.id}`)"
           />
         </div>
-        <div v-else class="flex flex-col justify-between items-center gap-5 h-full">
-          <div class="max-w-[150px]">
-            <NoCarsRegister/>
-          </div>
+        <div v-else class="flex flex-col justify-center items-center gap-5 h-full">
+          <NoCarsRegister class="max-w-[150px]"/>
           <p class="font-semibold opacity-50 text-center">{{ isOwnProfile ? "No tenés autos registrados." : "Este usuario no tiene autos registrados." }}</p>
           <Input
           v-if="isOwnProfile"
@@ -201,6 +200,7 @@ export default {
           text="Registrar auto"
           variant="primary"
           class="max-w-[200px]"
+          @click="goToCarRegister"
           />
         </div>
       </div>
@@ -334,9 +334,16 @@ export default {
           <!-- Contenido de reseñas -->
         </div>
 
-        <div v-else class="text-white flex flex-col items-center justify-center">
-          <img src="@/assets/no-reviews.png" alt="Sin reseñas" class="max-w-[120px] mx-auto" />
+        <div v-else class="text-white flex flex-col items-center justify-center gap-5">
+          <NoMessage class="max-w-[150px]"/>
           <p class="font-semibold opacity-50" v-if="showProfile && showProfile.personalInfo">Este usuario no tiene reseñas.</p>
+          <Input
+            type="button"
+            text="Proximamente"
+            variant="primary"
+            :disabled="true"
+            class="max-w-[200px]"
+          />
         </div>
       </div>
       <router-view></router-view>

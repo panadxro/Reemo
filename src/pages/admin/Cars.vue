@@ -12,10 +12,11 @@ import Status from "../../components/molecules/Status.vue";
 import Input from "../../components/molecules/Input.vue";
 import Popover from "../../components/molecules/Popover.vue";
 import SearchIcon from "@icons/Search.vue";
+import BackButton from "@components/atoms/BackButton.vue";
 
 export default {
   name: "AdminCars",
-  components: { Heading, Loading, Status, Input, Popover, SearchIcon, InvalidationModal },
+  components: { Heading, Loading, Status, Input, Popover, SearchIcon, InvalidationModal, BackButton },
   data() {
     return {
       openPopoverId: null,
@@ -147,16 +148,19 @@ export default {
 </script>
 
 <template>
-  <section class="w-full p-2.5 flex flex-col gap-6 overflow-hidden">
-    <Heading :type="1" class="medium">Administrar vehículos</Heading>
+  <section class="w-full md:p-2.5 px-2.5 flex flex-col gap-6 overflow-hidden min-h-screen md:min-h-auto md:h-auto">
+    <div class="flex items-center gap-5 gap-y-1.5 fixed md:static top-0 left-0 right-0 z-3 bg-white px-2.5 md:px-0 py-3 md:py-0 flex-wrap">
+      <BackButton />
+      <Heading :type="1" class="medium">Administrar vehículos</Heading>
+    </div>
     <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-      <div class="flex flex-row gap-4">
+      <div class="flex flex-row gap-4 overflow-x-auto">
         <Input 
           type="button"
           text="Todos"
           variant="secondary"
           class="cursor-pointer flex-0!"
-          :input-class="filter === 'all' ? ' bg-vibrant-light-900' : ''"
+          :input-class="filter === 'all' ? ' bg-vibrant-light-800' : ''"
           @click="toggleFiltro('all')"
         />
         <Input 
@@ -164,7 +168,7 @@ export default {
           text="Validados"
           variant="secondary"
           class="cursor-pointer flex-0!"
-          :input-class="filter === 'validados' ? ' bg-vibrant-light-900' : ''"
+          :input-class="filter === 'validados' ? ' bg-vibrant-light-800' : ''"
           @click="toggleFiltro('validados')"
         />
         <Input 
@@ -172,7 +176,7 @@ export default {
           text="Invalidados"
           variant="secondary"
           class="cursor-pointer flex-0!"
-          :input-class="filter === 'no-validados' ? ' bg-vibrant-light-900' : ''"
+          :input-class="filter === 'no-validados' ? ' bg-vibrant-light-800' : ''"
           @click="toggleFiltro('no-validados')"
         />
       </div>
@@ -181,7 +185,7 @@ export default {
         id="searchInput"
         name="searchInput"
         placeholder="Buscar autos de dueño"
-        class="mb-2 lg:mb-0 flex-0! min-w-fit! max-w-[360px]"
+        class="md:flex-0! md:min-w-fit!"
         icon-position="left"
         variant="secondary"
         :outline="false"
@@ -192,8 +196,8 @@ export default {
         </template>
       </Input>
     </div>
-    <table class="min-w-full bg-white h-full overflow-hidden flex flex-col gap-5">
-      <thead class="mr-4">
+    <table class="min-w-full bg-white h-full md:overflow-hidden flex flex-col gap-5">
+      <thead class="md:mr-6">
         <tr class="flex w-full border-2 border-secondary-100 rounded-xl">
           <th class="py-2.5 px-5 flex flex-1">Vehículo</th>
           <th class="py-2.5 px-5 hidden md:flex flex-1">Dueño</th>
@@ -204,7 +208,7 @@ export default {
           <th class="py-2.5 px-5 flex-none w-24">Acción</th>
         </tr>
       </thead>
-      <tbody class="box-white flex flex-col gap-5 h-full overflow-y-scroll pr-2">
+      <tbody class="box-white flex flex-col gap-5 md:h-full md:overflow-y-scroll md:pr-2">
         <tr 
           v-for="(car, index) in carsFilter" 
           :key="car.id" 

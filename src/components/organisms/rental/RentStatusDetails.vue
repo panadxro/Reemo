@@ -262,8 +262,8 @@ onUnmounted(() => {
   </li>
 
   <!-- Owner Rental Detail -->
-  <li v-if="ownerRentalDetail" class="bg-white flex gap-2 min-h-25 rounded-2xl px-2.5 py-2 cursor-pointer">
-    <div class="relative flex items-center">
+  <li v-if="ownerRentalDetail" class="bg-white flex gap-2 min-h-25 rounded-2xl px-2.5 py-2 cursor-pointer" >
+    <div class="relative flex items-center" @click="navigateToRentalDetails(ownerRentalDetail.id)">
       <Status class="absolute top-0 left-1" size="mini" :status="ownerRentalDetail.status" />
       <img 
         v-if="ownerRentalDetail.vehicleDetails?.photos && ownerRentalDetail.vehicleDetails.photos.length > 0"
@@ -281,52 +281,38 @@ onUnmounted(() => {
     </div>
 
     <div class="flex justify-between py-2 text-gray-500 font-medium text-xs flex-1">
-      <div>
+      <div class="flex flex-col justify-center">
         <Heading :type="4" class="small">
-        {{ ownerRentalDetail.vehicleDetails?.basicInfo.brand || 'Marca no disponible' }} 
-        {{ ownerRentalDetail.vehicleDetails?.basicInfo.model || 'Modelo no disponible' }}
-      </Heading>
-      <p>{{ formatDate(ownerRentalDetail.start_time) }}</p>
-      <p>${{ formatPrice(ownerRentalDetail.total_price || 0) }}</p>
-      <p>Inquilino: {{ ownerRentalDetail.driverDetails?.name || 'No disponible' }}</p>
+          {{ ownerRentalDetail.vehicleDetails?.basicInfo.brand || 'Marca no disponible' }} 
+          {{ ownerRentalDetail.vehicleDetails?.basicInfo.model || 'Modelo no disponible' }}
+        </Heading>
+        <p>{{ formatDate(ownerRentalDetail.start_time) }}</p>
+        <p class="md:block hidden">${{ formatPrice(ownerRentalDetail.total_price || 0) }}</p>
+        <p class="md:block hidden">Inquilino: {{ ownerRentalDetail.driverDetails?.name || 'No disponible' }}</p>
       </div>
       
-      <div class="flex items-center justify-between mt-2">
-        <div class="flex gap-2">
-          <div class="flex space-x-2" v-if="ownerRentalDetail.status === 'pending' && currentUser?.id === ownerRentalDetail.owner_id">
-            <!-- <button
-              @click="handleRentalAction(ownerRentalDetail.id, 'confirmed', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"
-              class="text-xs px-2 py-1 rounded border text-gray-700 cursor-pointer">Aceptar</button>
-            <button
-              @click="handleRentalAction(ownerRentalDetail.id, 'rejected', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"
-              class="text-xs px-2 py-1 rounded bg-black text-white cursor-pointer">Rechazar</button> -->
+      <div class="flex items-center justify-between">
+        <div
+          v-if="ownerRentalDetail.status === 'pending' && currentUser?.id === ownerRentalDetail.owner_id"
+          class="flex flex-col md:flex-row gap-2" >
+            <Input
+              type="button"
+              variant="primary"
+              text="Aceptar"
+              @click="handleRentalAction(ownerRentalDetail.id, 'confirmed', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"/>
               <Input
-                type="button"
-                variant="primary"
-                text="Aceptar"
-                @click="handleRentalAction(ownerRentalDetail.id, 'confirmed', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"/>
-                <Input
-                type="button"
-                variant="secondary"
-                outline
-                text="Cancelar"
-                @click="handleRentalAction(ownerRentalDetail.id, 'rejected', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"/>
-          </div>
+              type="button"
+              variant="secondary"
+              outline
+              text="Cancelar"
+              @click="handleRentalAction(ownerRentalDetail.id, 'rejected', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"/>
         </div>
-        
-        <!-- <button
-          v-if="ownerRentalDetail.status === 'confirmed' || ownerRentalDetail.status === 'in_progress' || ownerRentalDetail.status === 'completed'"
-          @click="navigateToRentalDetails(ownerRentalDetail.id)"
-          class="bg-[#0a0a3c] hover:bg-secondary-800 text-white font-bold py-1 px-3 rounded-lg transition duration-150 ease-in-out cursor-pointer text-xs"
-        >
-          Ver detalles
-        </button> -->
         <Input
-            v-if="ownerRentalDetail.status === 'confirmed' || ownerRentalDetail.status === 'in_progress' || ownerRentalDetail.status === 'completed'"
-            type="button"
-            variant="primary"
-            text="Ver Detalles"
-            @click="navigateToRentalDetails(ownerRentalDetail.id)"
+          v-if="ownerRentalDetail.status === 'confirmed' || ownerRentalDetail.status === 'in_progress' || ownerRentalDetail.status === 'completed'"
+          type="button"
+          variant="primary"
+          text="Ver Detalles"
+          @click="navigateToRentalDetails(ownerRentalDetail.id)"
           />
       </div>
     </div>

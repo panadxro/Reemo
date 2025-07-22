@@ -69,12 +69,12 @@ const handleClosePopover = () => {
 </script>
 
 <template>
-  <li class="flex gap-2 min-h-25 rounded-xl shadow-sm px-2.5 py-2 cursor-pointer hover:shadow-md transition-shadow"
+  <li class="flex gap-2 min-h-25 rounded-xl shadow-sm px-2.5 py-2"
     :class="{
       'bg-vibrant-light-600': isSelected,  
       'bg-white': !isSelected    
     }">
-    <div class="relative flex items-center">
+    <div class="relative flex items-center cursor-pointer" @click="goToRentDetail(car.id)">
       <Status class="absolute top-0 left-1" size="mini" :status="car.vehicleDetails.status.current" />
       <img 
         :src="car.vehicleDetails.photos?.[0] || defaultCarImage" @error="setDefaultImage" 
@@ -95,7 +95,7 @@ const handleClosePopover = () => {
       />
     </div>
 
-    <div class="flex flex-col justify-between py-2 text-gray-500 font-medium text-xs">
+    <div class="flex flex-col justify-between py-2 text-gray-500 font-medium text-xs cursor-pointer" @click="goToRentDetail(car.id)">
       <Heading :type="4" class="small">
         {{ car.vehicleDetails.basicInfo?.brand || 'Marca no disponible' }} 
         {{ car.vehicleDetails.basicInfo?.model || 'Modelo no disponible' }}
