@@ -101,7 +101,7 @@ onMounted(async () => {
           variant="primary"
           class="w-full max-w-md"
           @click="goToSearch"
-          :disabled="!isVerified"
+          :disabled="!isUserVerified"
           />
         </div>
       </div>

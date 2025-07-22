@@ -88,7 +88,7 @@ export default {
     <!-- Popover -->
     <div
       v-if="isOpen"
-      class="popover-container absolute right-0 w-40 bg-white border-2 border-vibrant-light-700 rounded-lg shadow-xl z-10"
+      class="popover-container absolute right-0 w-40 bg-white border-2 border-vibrant-light-700 rounded-lg shadow-xl z-4"
       :class="{
         'bottom-full': popoverDirection === 'top',
         '': popoverDirection === 'bottom',

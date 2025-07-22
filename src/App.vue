@@ -1,6 +1,8 @@
 <script setup>
-import { watch, markRaw, shallowRef, defineAsyncComponent } from 'vue'
+import { watch, markRaw, shallowRef, defineAsyncComponent, provide } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.store'
+
 
 import DefaultLayout from '@layouts/DefaultLayout.vue'
 import SimpleLayout from "@layouts/SimpleLayout.vue"
@@ -9,8 +11,10 @@ import UserLayout from '@layouts/UserLayout.vue'
 import MapsLayout from '@layouts/MapsLayout.vue'
 
 const Alert = defineAsyncComponent(() => import('@/components/atoms/Alert.vue'))
-
+const authStore = useAuthStore()
 const route = useRoute()
+
+provide('authStore', authStore);
 
 const layoutComponents = {
   default: markRaw(DefaultLayout),
@@ -129,7 +133,7 @@ h4 {
 }
 
 #app {
-  background-color: #000;
+  background-color: #FFFFFF;
 }
 
 .box-white {

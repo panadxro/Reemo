@@ -96,7 +96,7 @@ onMounted(() => {
       :key="rent.id" 
       :rent="rent"
       :index="index"
-      @click="router.push({ name: 'RentDetail', params: { id: rent.id } })" />
+   />
   </ul>
   
     <div v-else class="flex flex-col items-center justify-center h-full gap-5">

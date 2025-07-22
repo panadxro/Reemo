@@ -1,5 +1,6 @@
 <script setup>
-import { useAuthStore, useUserStore } from "../stores";
+import { inject } from "vue";
+import { useUserStore } from "../stores";
 
 import ReemoIcon from '@icons/ReemoIcon.vue'
 import Home from '@icons/Home.vue'
@@ -14,8 +15,9 @@ import Cars from '@icons/Cars.vue';
 import People from '@icons/People.vue';
 import Login from "@/icons/Login.vue";
 import IconNavButton from './molecules/IconNavButton.vue';
+import DotNotification from "./atoms/DotNotification.vue";
 
-const authStore = useAuthStore();
+const authStore = inject('authStore');
 const userStore = useUserStore();
 
 const handleLogout = () => {
@@ -34,9 +36,10 @@ const handleLogout = () => {
           <ReemoIcon class="w-10 h-10 text-vibrant-light-600" />
         </router-link>
       </li>
-      <li>
+      <li class="relative">
         <IconNavButton to="/dashboard" title="Dashboard">
           <Home />
+          <DotNotification class="md:hidden"/>
         </IconNavButton>
       </li>
       <li>
@@ -65,9 +68,10 @@ const handleLogout = () => {
           <ReemoIcon class="hidden md:block w-10 h-10 text-vibrant-light-600" />
         </router-link>
       </li>
-      <li>
+      <li class="relative">
         <IconNavButton to="/dashboard" title="Dashboard">
           <Home />
+          <DotNotification class="md:hidden"/>
         </IconNavButton>
       </li>
       <li>
@@ -97,11 +101,7 @@ const handleLogout = () => {
         <IconNavButton to="/notification" title="Notification">
           <Notification/>
         </IconNavButton>
-        <span
-          v-if="authStore.unreadNotifications"
-          class="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white dark:ring-secondary-100"
-          aria-hidden="true"
-        ></span>
+        <DotNotification />
       </li>
 <!--       <li v-if="userStore.profileData.role === 'user'">
         <IconNavButton to="/" title="Questions & Answers">

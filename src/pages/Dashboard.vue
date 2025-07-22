@@ -8,6 +8,7 @@ import SearchIcon from '@/icons/Search.vue';
 import CardCar from '../components/organisms/cars/CardCar.vue';
 import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
 import ReemoIcon from '../icons/ReemoIcon.vue';
+import Account from '@/components/molecules/Account.vue';
 
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
@@ -48,10 +49,9 @@ onMounted(async () => {
     <div class="dash flex flex-col flex-1 gap-5 ">
       <div class="flex md:items-end justify-between flex-col md:flex-row gap-5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0">
         <div class="flex md:hidden items-center justify-between">
-          
-
-          <div class="flex items-center justify-between gap-4 flex-1">
-            <ReemoIcon class="w-10 h-10" color="#4FD8DF" />
+          <Account :user="user" :authSession="authSession"/>
+          <div class="flex items-center justify-center gap-4 flex-1 mr-10">
+            <ReemoIcon class="w-10 h-10"/>
           </div>
         </div>
         <Heading type="1" class="large">Dashboard</Heading>
@@ -94,28 +94,7 @@ onMounted(async () => {
           </template>
         </Input>
       </router-link>
-      <div v-if="userCars.length > 0" class="bg-vibrant-light-600 rounded-[40px] w-full py-10 px-6 flex flex-col justify-between gap-5 h-full">
-          <Heading type="2" class="medium">Resumen de actividad</Heading>
-          <div class="flex justify-between text-center h-full flex-wrap">
-            <div class="flex-1">
-              <p class="text-2xl font-bold">12</p>
-              <p class="text-sm text-gray-500">Alquileres</p>
-            </div>
-            <div class="flex-1">
-              <p class="text-2xl font-bold">5</p>
-              <p class="text-sm text-gray-500">Solicitudes</p>
-            </div>
-            <div class="flex-1">
-              <p class="text-2xl font-bold">3</p>
-              <p class="text-sm text-gray-500">Vehículos activos</p>
-            </div>
-            <div class="flex-1">
-              <p class="text-2xl font-bold">$250k</p>
-              <p class="text-sm text-gray-500">Ganancias</p>
-            </div>
-          </div>
-        </div>
-        <div v-else class="bg-deep-blue-900 text-white p-6 w-full h-full rounded-[40px] py-10 px-6 flex flex-col gap-12">
+        <div class="bg-deep-blue-900 text-white p-6 w-full h-full rounded-[40px] py-10 px-6 flex flex-col gap-12">
           <Heading type="2" class="medium text-white">¡Bienvenido a <strong>Reemo</strong>, {{ user.personalInfo.firstName }}👋!</Heading>
           <p class="text-white">Aquí podés gestionar tus autos y solicitudes de alquiler.🚗✨</p>
         </div>
