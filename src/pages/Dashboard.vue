@@ -1,6 +1,9 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue';
-import { useUserStore, useCarStore } from '@/stores';
+import { onMounted, ref, computed, watch } from 'vue';
+import { useUserStore, useCarStore, useAuthStore, useAdminStore } from '@/stores';
+import { useNotificationStore } from '@/stores/notification.store';
+import { useRouter } from 'vue-router';
+
 
 import Heading from '@/components/atoms/Heading.vue';
 import Input from '@/components/molecules/Input.vue';
@@ -9,22 +12,88 @@ import CardCar from '../components/organisms/cars/CardCar.vue';
 import RentStatusDetails from '@/components/organisms/rental/RentStatusDetails.vue';
 import ReemoIcon from '../icons/ReemoIcon.vue';
 import Account from '@/components/molecules/Account.vue';
+import Cars from '@icons/Cars.vue';
+import People from '@icons/People.vue';
+import Rents from '../icons/Rents.vue';
+import Status from "@/components/molecules/Status.vue";
+import Loading from '@/icons/Loading.vue';
+import NoNotification from '@/components/atoms/NoNotification.vue';
 
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
 
 const userStore = useUserStore();
 const carStore = useCarStore();
+const authStore = useAuthStore();
+const adminStore = useAdminStore();
+const notificationStore = useNotificationStore();
+const router = useRouter();
 
 const loading = ref(false);
 
 const user = computed(() => userStore.profileData);
 const availableCars = computed(() => carStore.availableCars);
 const userCars = computed(() => carStore.userCars);
+const isAdmin = computed(() => authStore?.user?.role === 'admin');
+const currentUser = computed(() => authStore.user);
+
+const lastRegisteredCars = computed(() => {
+  const sortedCars = [...adminStore.cars].sort((a, b) => 
+    new Date(b.createdAt) - new Date(a.createdAt)
+  );
+  // console.log('Últimos autos registrados:', sortedCars);
+  return sortedCars.slice(0, 3);
+});
+
+const lastRegisteredUsers = computed(() => {
+  const sortedUsers = [...adminStore.users].sort((a, b) => 
+    new Date(b.createdAt) - new Date(a.createdAt)
+  );
+  return sortedUsers.slice(0, 3);
+});
+
+// De aca hasta el onmounted es de notis
+
+const latestNotifications = computed(() => {
+  return notificationStore.sortedNotifications.slice(0, 3);
+});
+
+const formatNotificationDate = (timestamp) => {
+  if (!timestamp) return '';
+  if (timestamp.seconds) {
+    return new Date(timestamp.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  }
+  return new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+};
+
+const handleNotificationClick = async (notification) => {
+  if (!notification.read) {
+    await notificationStore.markNotificationAsRead(notification.id);
+  }
+  if (notification.link) {
+    router.push(notification.link);
+  }
+};
+
+const getDefaultTitle = (notification) => {
+  if (notification.type === 'rent_request') return 'Nueva solicitud de alquiler';
+  if (notification.type === 'rent_response') return 'Respuesta a tu solicitud';
+  if (notification.type === 'car_validated') return 'Vehículo validado';
+  if (notification.type === 'car_invalidated') return 'Vehículo rechazado';
+  return 'Nueva notificación';
+};
 
 onMounted(async () => {
   try {
     loading.value = true;
+
+    if (adminStore.cars.length === 0) {
+      await adminStore.fetchCars();
+    }
+
+    if (adminStore.users.length === 0) {
+      await adminStore.fetchUsers();
+    }
 
     await userStore.loadUserProfile(authSession.user.id);
     //console.log('User data fetched successfully:', userStore.profileData);
@@ -42,6 +111,17 @@ onMounted(async () => {
     loading.value = false;
   }
 })
+
+watch(currentUser, (newUser) => {
+  if (newUser && newUser.id) {
+    if (!notificationStore.hasLoadedOnce) {
+      notificationStore.initListenerForUser(newUser.id);
+      console.log(latestNotifications.value, 'latestNotifications');
+    }
+  } else {
+    notificationStore.clearListenerAndData();
+  }
+}, { immediate: true });
 </script>
 
 <template>
@@ -54,12 +134,14 @@ onMounted(async () => {
             <ReemoIcon class="w-10 h-10"/>
           </div>
         </div>
-        <Heading type="1" class="large">Dashboard</Heading>
+        <Heading v-if="isAdmin" type="1" class="large">Dashboard</Heading>
+        <Heading v-else type="1" class="large">Panel de control</Heading>
         <router-link 
           class="hidden md:flex"
           to="/maps?focusSearch=true"
           >
           <Input
+            v-if="!isAdmin"
             type="text"
             id="searchInput"
             name="searchInput"
@@ -96,19 +178,49 @@ onMounted(async () => {
       </router-link>
         <div class="bg-deep-blue-900 text-white p-6 w-full h-full rounded-[40px] py-10 px-6 flex flex-col gap-12">
           <Heading type="2" class="medium text-white">¡Bienvenido a <strong>Reemo</strong>, {{ user.personalInfo.firstName }}👋!</Heading>
-          <p class="text-white">Aquí podés gestionar tus autos y solicitudes de alquiler.🚗✨</p>
+          <!-- <p v-if="isAdmin" class="text-white">Acá podés gestionar los usuarios y vehículos registrados.🚗✨</p> -->
+          <article v-if="isAdmin" class="flex flex-col xl:flex-row gap-4 justify-center items-center">
+            <div class="text-center bg-vibrant-light-600 rounded-lg p-4 text-deep-blue-900 gap-8 flex justify-between items-center w-full">
+              <Cars class="size-10"/>
+              <div class="text-end">
+                <Heading type="4" class="medium">{{ lastRegisteredCars.length }}</Heading>
+                <Heading type="3" class="small">Autos totales</Heading>
+              </div>
+            </div>
+
+            <div class="text-center bg-vibrant-light-600 rounded-lg p-4 text-deep-blue-900 gap-8 flex justify-between items-center w-full">
+              <People class="size-10"/>
+              <div class="text-end">
+                <Heading type="4" class="medium">{{ adminStore.users.length }}</Heading>
+                <Heading type="3" class="small">Usuarios totales</Heading>
+              </div>
+            </div>
+
+            <div class="text-center bg-vibrant-light-600 rounded-lg p-4 text-deep-blue-900 gap-8 flex justify-between items-center w-full">
+              <Rents class="size-10"/>
+              <div class="text-end">
+                <Heading type="4" class="medium">{{ lastRegisteredUsers.length }}</Heading>
+                <Heading type="3" class="small">Rentas totales</Heading>
+              </div>
+            </div>
+
+          </article>
+          <p v-else class="text-white">Acá podés gestionar tus autos y solicitudes de alquiler.🚗✨</p>
         </div>
     </div>
     
     <div class="cars flex flex-col gap-6 overflow-hidden">
       <div class="flex justify-between items-end">
-        <Heading type="2" class="medium">Autos más cercanos a tu zona</Heading>
-        <router-link to="/search" class="text-vibrant-light-900 font-semibold cursor-pointer">Ver más
+        <Heading v-if="isAdmin" type="2" class="medium">Últimos autos registrados</Heading>
+        <Heading v-else type="2" class="medium">Autos más cercanos a tu zona</Heading>
+        <router-link v-if="isAdmin" to="/admin/cars" class="text-deep-blue-900 font-semibold cursor-pointer">Ver más
+        </router-link>
+        <router-link v-else to="/search" class="text-vibrant-light-900 font-semibold cursor-pointer">Ver más
         </router-link>
       </div>
       <div class="box-white flex flex-col gap-2 h-full overflow-y-auto pr-2">
         <CardCar 
-          v-for="(car, index) in availableCars" 
+          v-for="(car, index) in isAdmin ? lastRegisteredCars : availableCars" 
           :key="car.id" 
           :car="car"
           :index="index"
@@ -116,14 +228,105 @@ onMounted(async () => {
         />
       </div>
     </div>
-    <div class="bg-vibrant-light-800 rounded-[40px] p-6 flex flex-col justify-between tracking">
-      <h3 class="text-xl font-bold mb-2">¡Tu viaje comienza acá!</h3>
-      <p class="text-gray-700">Alquilá con <strong>Reemo</strong> fácil, rápido y seguro.</p>
-      <button class="mt-6 bg-[#0a0a3c] text-white font-medium py-3 rounded-lg">Buscar autos</button>
+    <div class="bg-vibrant-light-800 rounded-[40px] p-6 flex flex-col gap-4 tracking">
+      <div class="flex justify-between items-center">
+        <Heading type="2" class="medium">Últimas notificaciones</Heading>
+        <router-link 
+          to="/notification" 
+          class="text-deep-blue-900 font-semibold cursor-pointer text-sm"
+        >
+          Ver todas
+        </router-link>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <div v-if="notificationStore.isLoading" class="flex justify-center items-center py-4">
+          <Loading class="h-6 w-6 text-secondary-500" />
+        </div>
+        
+        <div 
+          v-else-if="!notificationStore.isLoading && latestNotifications.length === 0"
+          class="flex flex-col items-center justify-center py-4 text-center gap-2"
+        >
+          <NoNotification class="max-w-[100px]"/>
+          <p class="text-gray-500 font-bold text-sm">No hay notificaciones aún.</p>
+        </div>
+        
+        <div 
+            v-for="noti in latestNotifications" 
+            :key="noti.id"
+            @click="handleNotificationClick(noti)"
+            class="flex items-start gap-3 p-3 bg-white rounded-xl cursor-pointer hover:bg-white/70 transition"
+          >
+          <div class="flex-shrink-0">
+            <div class="relative">
+              <img 
+                v-if="noti.senderDetails?.photoURL" 
+                :src="noti.senderDetails.photoURL" 
+                class="w-10 h-10 rounded-full object-cover"
+              />
+              <div 
+                v-else
+                class="w-10 h-10 rounded-full bg-vibrant-light-900 flex items-center justify-center"
+              >
+                <ReemoIcon class="w-6 h-6 text-white" />
+              </div>
+              <span 
+                v-if="!noti.read"
+                class="absolute top-0 right-0 w-2 h-2 rounded-full bg-red-500"
+              ></span>
+            </div>
+          </div>
+          
+          <div class="flex-1 min-w-0">
+    <div class="flex justify-between items-start">
+      <p class="font-medium text-sm text-deep-blue-900 line-clamp-1">
+        {{ noti.title || getDefaultTitle(noti) }}
+      </p>
+      <span class="text-xs text-secondary-500 whitespace-nowrap ml-2">
+        {{ formatNotificationDate(noti.created_at) }} 
+      </span>
+    </div>
+    <p class="text-xs text-secondary-500 line-clamp-2">
+      {{ noti.message || 'Tienes una nueva notificación de' }} de {{ noti.senderDetails?.name || 'Desconocido' }} {{ noti.senderDetails?.lastName || '' }}
+    </p>
+  </div>
+        </div>
+      </div>
     </div>
     <div class="my-profile w-full bg-deep-blue-900 rounded-[40px] p-6 flex flex-col gap-4 overflow-hidden">
-      <Heading type="2" class="medium text-white">Solicitudes pendientes</Heading>
-      <RentStatusDetails />
+      <div class="flex justify-between items-end">
+        <Heading v-if="isAdmin" type="2" class="medium text-white">Últimos usuarios registrados</Heading>
+        <Heading v-else type="2" class="medium text-white">Solicitudes pendientes</Heading>
+        <router-link 
+          v-if="isAdmin" 
+          to="/admin/users" 
+          class="text-vibrant-light-900 font-semibold cursor-pointer"
+        >
+          Ver más
+        </router-link>
+      </div>
+
+      <div v-if="isAdmin" class="box-white flex flex-col gap-1 h-full overflow-y-auto">
+        <div 
+          v-for="user in lastRegisteredUsers" 
+          :key="user.id" 
+          class="flex items-center gap-3 p-3"
+        >
+          <img 
+            :src="user.personalInfo.profilePhoto" 
+            :alt="user.personalInfo.firstName" 
+            class="w-10 h-10 rounded-full object-cover"
+          />
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-secondary-200 truncate">{{ user.personalInfo.firstName }} {{ user.personalInfo.lastName }}</p>
+            <p class="text-sm text-white/70 truncate">{{ user.email }}</p>
+          </div>
+          <Status :status="user.status" size="small" />
+        </div>
+      </div>
+      
+      <RentStatusDetails v-else />
     </div>
   </div>
 </template>

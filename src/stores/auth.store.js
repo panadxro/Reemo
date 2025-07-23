@@ -15,10 +15,10 @@ export const useAuthStore = defineStore('auth', {
       firstName: null,
       lastName: null,
       name: null,
-      lastname: null,
       profilePhoto: null,
       username: null,
-      status: null 
+      status: null,
+      role: null
     },
     loading: false,
     error: null,
@@ -38,9 +38,6 @@ export const useAuthStore = defineStore('auth', {
       if (state.user.firstName && state.user.lastName) {
         return `${state.user.firstName} ${state.user.lastName}`;
       }
-      if (state.user.name && state.user.lastname) {
-        return `${state.user.name} ${state.user.lastname}`;
-      }
       if (state.user.firstName) {
         return state.user.firstName;
       }
@@ -59,13 +56,16 @@ export const useAuthStore = defineStore('auth', {
       return state.user.firstName || state.user.name || state.user.username || 'Usuario';
     },
     userLastName: (state) => {
-      return state.user.lastName || state.user.lastname || '';
+      return state.user.lastName || '';
     },
     userProfilePhoto: (state) => {
       return state.user.profilePhoto;
     },
     userStatus: (state) => {
       return state.user.status || 'not-verified';
+    },
+    userRole: (state) => {
+      return state.user.role || 'user';
     }
   },
   actions: {
@@ -89,10 +89,10 @@ export const useAuthStore = defineStore('auth', {
             firstName: null,
             lastName: null,
             name: null,
-            lastname: null,
             profilePhoto: null,
             username: null,
-            status: 'not-verified' 
+            status: 'not-verified' ,
+            role: null
           };
           this.isLoggedIn = true;          
 
@@ -115,10 +115,10 @@ export const useAuthStore = defineStore('auth', {
             firstName: null,
             lastName: null,
             name: null,
-            lastname: null,
             profilePhoto: null,
             username: null,
-            status: null 
+            status: null,
+            role: null
           };
           this.isLoggedIn = false;
           
@@ -136,12 +136,12 @@ export const useAuthStore = defineStore('auth', {
       firstName: profileData.personalInfo.firstName || null,
       lastName: profileData.personalInfo.lastName || null,
       name: profileData.personalInfo.firstName || null, 
-      lastname: profileData.personalInfo.lastName || null, 
       profilePhoto: profileData.personalInfo.profilePhoto || null,
       username: profileData.personalInfo.username || null,
-      status: profileData.status || 'not-verified' 
+      status: profileData.status || 'not-verified',
+       role: profileData.role || profileData.personalInfo.role || 'user'
     };
-    console.log("Perfil de usuario actualizado:", this.user);
+    // console.log("Perfil de usuario actualizado:", this.user);
   }
 },
 
@@ -174,10 +174,10 @@ export const useAuthStore = defineStore('auth', {
           firstName: null,
           lastName: null,
           name: null,
-          lastname: null,
           profilePhoto: null,
           username: null,
-          status: null 
+          status: null,
+          role: null 
         }
         this.isLoggedIn = true
         this.updateAuthSessionHistory(localStorage.getItem('auth_session') || '');
@@ -223,10 +223,10 @@ export const useAuthStore = defineStore('auth', {
           firstName: null,
           lastName: null,
           name: null,
-          lastname: null,
           profilePhoto: null,
           username: null,
-          status: null 
+          status: null,
+          role: null
         }
         this.isLoggedIn = true
         this.updateAuthSessionHistory(localStorage.getItem('auth_session') || '');
