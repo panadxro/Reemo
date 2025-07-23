@@ -18,6 +18,7 @@ import Rents from '../icons/Rents.vue';
 import Status from "@/components/molecules/Status.vue";
 import Loading from '@/icons/Loading.vue';
 import NoNotification from '@/components/atoms/NoNotification.vue';
+import NoCarsResult from '../components/atoms/NoCarsResult.vue';
 
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
@@ -220,12 +221,17 @@ watch(currentUser, (newUser) => {
       </div>
       <div class="box-white flex flex-col gap-2 h-full overflow-y-auto pr-2">
         <CardCar 
+          v-if="availableCars.length > 0"
           v-for="(car, index) in isAdmin ? lastRegisteredCars : availableCars" 
           :key="car.id" 
           :car="car"
           :index="index"
           layout="rectangle"
         />
+        <div v-else class="flex flex-col justify-center items-center gap-5 h-full">
+          <NoCarsResult class="max-w-[90px]"/>
+          <p class="font-semibold">No se encontraron autos disponibles cercanos a tu ubicación.</p>
+        </div>
       </div>
     </div>
     <div class="bg-vibrant-light-800 rounded-[40px] p-6 flex flex-col gap-4 tracking">

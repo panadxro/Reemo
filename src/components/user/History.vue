@@ -100,12 +100,8 @@ onMounted(() => {
   </ul>
   
     <div v-else class="flex flex-col items-center justify-center h-full gap-5">
-      <div class="max-w-[90px]">
-        <NoRent/>
-      </div>
-      <p class="font-semibold text-white text-center">
-        No tenés alquileres registrados
-      </p>
+      <NoRent class="max-w-[90px]"/>
+      <p class="font-semibold text-white text-center">No tenés alquileres registrados</p>
       <Input
         class="max-w-fit mx-auto"
         type="button"

@@ -36,7 +36,6 @@ const loggedUserId = computed(() => authStore.user?.id);
 const personalInfo = computed(() => userStore.personalInfo);
 const documents = computed(() => userStore.documents);
 const address = computed(() => userStore.address);
-const paymentMethods = computed(() => userStore.paymentMethods);
 const agreements = computed(() => userStore.agreements);
 
 const currentStep = ref(0);
@@ -70,6 +69,11 @@ const handleFileChange = async (event, field) => {
   }
 };
 
+const justifyClass = computed(() => ({
+  'justify-start': currentStep.value <= 0,
+  'justify-end': currentStep.value >= 2
+}));
+
 const nextStep = () => {
   if (currentStep.value < sections.value.length - 1) {
     currentStep.value++;
@@ -83,8 +87,7 @@ const prevStep = () => {
 };
 
 const cargarCiudades = () => {
-  userStore.setCity(''); // Reinicia la ciudad seleccionada
-  userStore.setCities(geoStore.getCiudadesPorProvincia(address.value.province) || []);
+  address.province = geoStore.getCiudadesPorProvincia(address.value.province);
 };
 
 const handleSubmit = async () => {
@@ -132,7 +135,6 @@ const handleSubmit = async () => {
         personalInfo: userStore.personalInfo,
         documents: userStore.documents,
         address: userStore.address,
-        paymentMethods: userStore.paymentMethods,
         agreements: userStore.agreements
       })
 
@@ -189,14 +191,17 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="flex max-w-[1120px] max-h-[675px] h-full w-full mx-auto justify-between px-16 py-12 bg-deep-blue-900 rounded-[40px] text-white overflow-hidden">
+  <section class="flex flex-col md:flex-row 2xl:max-w-[1120px] 2xl:max-h-[675px] min-h-screen md:min-h-auto md:h-screen w-full 2xl:mx-auto gap-10 justify-start md:justify-center 2xl:justify-between py-4 px-2 xl:px-16 xl:py-12 bg-deep-blue-900 2xl:rounded-[40px] text-white overflow-hidden shadow-2xl">
     <!-- Secciones al costado -->
-    <aside class="flex flex-col gap-8 w-full max-w-[425px]">
-      <div class="flex flex-col gap-2">
-        <Heading type="1" class="large text-white font-extrabold!">Onboarding</Heading>
+    <aside class="flex flex-col gap-8 w-full md:max-w-[425px] md:overflow-hidden">
+      <div class="flex flex-col gap-4 md:gap-2">
+        <div class="flex justify-between items-center">
+          <Heading type="1" class="large text-white font-extrabold!">Onboarding</Heading>
+          <Reemo class="cursor-pointer" color="#FFFFFF" @click="router.push('/dashboard')"/>
+        </div>
         <p class="text-sm max-w-[420px]">¡Bienvenido! Completa los siguientes datos para finalizar tu registro y acceder a todas las funcionalidades de la plataforma.</p>
       </div>
-      <ul class="sections-sidebar">
+      <ul class="sections-sidebar" :class="justifyClass">
         <li
           v-for="(section, index) in sections"
           :key="index"
@@ -205,11 +210,9 @@ onBeforeUnmount(() => {
         >
           <div class="flex items-center gap-4">
             <component :is="section.icon" color="white" />
-            <Heading type="3" class="regular text-white">
-              {{ section.title }}
-            </Heading>
+            <Heading type="3" class="regular text-white hidden md:block">{{ section.title }}</Heading>
           </div>
-          <span>
+          <span class="hidden md:block">
             <LongArrow direction="right" class="hidden" color="#ffffff" :class="{ 'block!': currentStep === index}"/>
           </span>
         </li>
@@ -217,162 +220,162 @@ onBeforeUnmount(() => {
     </aside>
 
     <!-- Formulario dinámico -->
-    <section class="max-h-[568px]">
-      <form
-        class="flex flex-col justify-center gap-8 grow w-full max-w-[425px]"
-        @submit.prevent="handleSubmit"
-      >
-        <div class="flex justify-end">
-          <Reemo color="#FFFFFF" />
+    <form
+      class="flex flex-col justify-center gap-8 w-full max-w-[425px] md:max-h-[568px] md:overflow-hidden"
+      @submit.prevent="handleSubmit"
+    >
+
+      <!-- Paso 1: Información Personal -->
+      <router-view v-if="currentStep === 0">
+        <div class="flex gap-4 items-center">
+          <Heading type="2" class="medium md:!text-4xl text-white! font-extrabold!">Datos personales</Heading>
+          <Loading v-if="!userStore.profileLoaded" role="status" />
         </div>
 
-        <!-- Paso 1: Información Personal -->
-        <router-view v-if="currentStep === 0">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large text-white! font-extrabold!">Datos personales</Heading>
-            <Loading v-if="!userStore.profileLoaded" role="status" />
-          </div>
-
-          <div class="flex flex-col gap-5">
-            <div class="flex gap-3">
-              <label for="profile-picture">
-                <img v-if="filePreviews.profilePhoto || personalInfo.profilePhoto" 
-                  :src="filePreviews.profilePhoto ? filePreviews.profilePhoto : personalInfo.profilePhoto" 
-                  alt="Foto de perfil" 
-                  class="profile-picture" />
-                <img v-else src="/src/assets/User.png" alt="Foto de perfil por defecto" class="profile-picture default cursor-pointer" />
-              </label>
-              <div class="flex flex-col gap-4">
-                <label for="profile-picture" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar foto de perfil</label>
-                <span class="text-xs text-start">Se recomienda un mínimo de 800x800 px.<br/>
-                  Se permite JPG o PNG y GIF</span>
-              </div>
-            </div>
-            <input id="profile-picture" type="file" accept="image/*" 
-            @change="(event) => handleFileChange(event, 'profilePhoto')" class="hidden" />            
-            <Input v-model="personalInfo.username" type="text" placeholder="Nombre de usuario" :variant="'secondary'" :outline="false" required />
-            <div class="flex gap-5">
-              <Input v-model="personalInfo.firstName" type="text" placeholder="Nombre" :variant="'secondary'" :outline="false" required />
-              <Input v-model="personalInfo.lastName" type="text" placeholder="Apellido" :variant="'secondary'" :outline="false" required />
-            </div>
-            
-            <Input v-model="personalInfo.phone" type="tel" placeholder="Número de teléfono" :variant="'secondary'" :outline="false" required />
-            <div class="flex gap-5">
-              <Input
-                type="select"
-                name="gender"
-                id="gender"
-                placeholder="Genero"
-                :options="[
-                  { value: 'Masculino', label: 'Masculino' },
-                  { value: 'Femenino', label: 'Femenino' },
-                  { value: 'Otro', label: 'Otro' },
-                  { value: 'No especificado', label: 'Prefiero no decir' },
-                ]"
-                icon-position="right"
-                variant="secondary"
-                :outline="false"
-                class="w-full cursor-pointer"
-                v-model="personalInfo.gender"
-              />
-              <Input v-model="personalInfo.birthDate" type="date" placeholder="Fecha de nacimiento" :variant="'secondary'" :outline="false" required />
+        <div class="box-deep flex flex-col gap-5 min-w-full md:overflow-y-auto md:pr-2">
+          <div class="flex gap-3">
+            <label for="profile-picture">
+              <img v-if="filePreviews.profilePhoto || personalInfo.profilePhoto" 
+                :src="filePreviews.profilePhoto ? filePreviews.profilePhoto : personalInfo.profilePhoto" 
+                alt="Foto de perfil" 
+                class="profile-picture" />
+              <img v-else src="/src/assets/User.png" alt="Foto de perfil por defecto" class="profile-picture default cursor-pointer" />
+            </label>
+            <div class="flex flex-col gap-4">
+              <label for="profile-picture" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar foto de perfil</label>
+              <span class="text-xs text-start">Se recomienda un mínimo de 800x800 px.<br/>
+                Se permite JPG o PNG y GIF</span>
             </div>
           </div>
-        </router-view>
-
-        <!-- Paso 2: Documentación -->
-        <router-view v-if="currentStep === 1">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large text-white! font-extrabold!">Documentación</Heading>
-            <Loading v-if="loading" role="status" />
+          <input id="profile-picture" type="file" accept="image/*" 
+          @change="(event) => handleFileChange(event, 'profilePhoto')" class="hidden" />   
+          <div>
+            <Input v-model="personalInfo.username" type="text" placeholder="Nombre de usuario" :variant="'secondary'" :outline="false" :label="personalInfo.username" required />
+          </div>         
+          <div class="flex gap-5">
+            <Input v-model="personalInfo.firstName" type="text" placeholder="Nombre" :variant="'secondary'" :outline="false" :label="personalInfo.firstName" required />
+            <Input v-model="personalInfo.lastName" type="text" placeholder="Apellido" :variant="'secondary'" :outline="false" :label="personalInfo.lastName" required />
           </div>
-          <div class="flex flex-col gap-2">
-
-            <DropdownForm color="#FFFFFF" title="Documento de Identidad" :section-id="'section-1'" :dropdown-id="'doc-identidad'" :is-initial="true">
-              <p class="text-sm font-medium">Para completar la verificación de identidad, sube una foto clara y ligible de tu DNI.</p>
-              <div class="flex gap-3">
-                <label for="dni-front" class="cursor-pointer">
-                  <img v-if="documents.dniFront || filePreviews.dniFront" :src="filePreviews.dniFront ? filePreviews.dniFront : documents.dniFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
-                  <DNIFront v-else/>
-                </label>
-                <div class="flex flex-col gap-4">
-                  <label for="dni-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar frente del DNI</label>
-                  <span class="text-xs text-start">
-                    Parte frontal de tu Documento Nacional de Identidad.
-                  </span>
-                </div>
-                <input id="dni-front" type="file" accept="image/*" @change="(event) => handleFileChange(event, 'dniFront')" class="hidden" />
-              </div>
-              <div class="flex gap-3">
-                <label for="dni-back" class="cursor-pointer">
-                  <img v-if="documents.dniBack || filePreviews.dniBack" :src="filePreviews.dniBack ? filePreviews.dniBack : documents.dniBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
-                  <DNIBack v-else/>
-                </label>
-                <div class="flex flex-col gap-4">
-                  <label for="dni-back" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del DNI</label>
-                  <span class="text-xs text-start">Cara dorsal de tu Documento Nacional de Identidad.</span>
-                </div>
-                <input id="dni-back" type="file" accept="image/*"
-                @change="(event) => handleFileChange(event, 'dniBack')" class="hidden" />
-              </div>
-            </DropdownForm>
-            
-            <DropdownForm color="#FFFFFF" title="Registro de conducir" :dropdown-id="'doc-licencia'" :section-id="'section-1'">
-              <p class="text-sm font-medium">Para poder alquilar en nuestra plataforma, es esencial que tengas vinculado tu registro de conducir. </p>
-              <div class="flex gap-3">
-                <label for="driver-front" class="cursor-pointer">
-                  <img v-if="documents.driverLicenseFront || filePreviews.driverLicenseFront" :src="filePreviews.driverLicenseFront ? filePreviews.driverLicenseFront : documents.driverLicenseFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
-                  <DriverFront v-else/>
-                </label>
-                <div class="flex flex-col gap-4">
-                  <label for="driver-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
-                  <span class="text-xs text-start">Cara frontal de tu Licencia de Conducir.</span>
-                </div>
-                <input id="driver-front" type="file" accept="image/*"
-                @change="(event) => handleFileChange(event, 'driverLicenseFront')"
-                class="hidden" />
-              </div>
-              <div class="flex gap-3">
-                <label for="driver-back" class="cursor-pointer">
-                  <img v-if="documents.driverLicenseBack || filePreviews.driverLicenseBack" :src="filePreviews.driverLicenseBack ? filePreviews.driverLicenseBack : documents.driverLicenseBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
-                  <DriverBack v-else/>
-                </label>
-                <div class="flex flex-col gap-4">
-                  <label for="driver-back" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
-                  <span class="text-xs text-start">Cara dorsal de tu Licencia de Conducir.</span>
-                </div>
-                <input id="driver-back" type="file" accept="image/*"
-                @change="(event) => handleFileChange(event, 'driverLicenseBack')"
-                class="hidden" />
-              </div>
-            </DropdownForm>
+          <div>
+            <Input v-model="personalInfo.phone" type="tel" placeholder="Número de teléfono" :variant="'secondary'" :outline="false" :label="personalInfo.phone" required />
           </div>
-        </router-view>
-
-        <!-- Paso 3: Ubicación -->
-        <router-view v-if="currentStep === 2">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large text-white! font-extrabold!">Ubicación</Heading>
-            <Loading v-if="loading" role="status" />
-          </div>
-          <p class="text-sm font-medium">Para garantizar que nuestros servicios estén disponibles en tu área, necesitamos confirmar tu ubicación en Argentina.</p>
-          <div class="flex flex-col gap-5">
-            <!-- Provincia -->
+          <div class="flex gap-5">
             <Input
               type="select"
-              name="provincia"
-              id="provincia"
-              placeholder="Provincia"
-              :options="geoStore.provincias.map(p => ({ value: p, label: p }))"
-              v-model="address.province"
-              @change="cargarCiudades"
-              icon-position="right"
+              name="gender"
+              id="gender"
+              placeholder="Genero"
+              :options="[
+                { value: 'Masculino', label: 'Masculino' },
+                { value: 'Femenino', label: 'Femenino' },
+                { value: 'Otro', label: 'Otro' },
+                { value: 'No especificado', label: 'Prefiero no decir' },
+              ]"
               variant="secondary"
               :outline="false"
-              class="w-full cursor-pointer"
+              :label="personalInfo.gender"
+              v-model="personalInfo.gender"
             />
+            <Input v-model="personalInfo.birthDate" type="date" placeholder="Fecha de nacimiento" :variant="'secondary'" :outline="false" :label="personalInfo.birthDate" required />
+          </div>
+        </div>
+      </router-view>
 
-            <!-- Ciudad/Localidad -->
+      <!-- Paso 2: Documentación -->
+      <router-view v-if="currentStep === 1">
+        <div class="flex gap-4 items-center">
+          <Heading type="2" class="medium md:!text-4xl text-white! font-extrabold!">Documentación</Heading>
+          <Loading v-if="loading" role="status" />
+        </div>
+        <div class="box-deep flex flex-col gap-5 min-w-full md:overflow-y-auto md:pr-2">
+
+          <DropdownForm color="#FFFFFF" title="Documento de Identidad" :section-id="'section-1'" :dropdown-id="'doc-identidad'" :is-initial="true">
+            <p class="text-sm font-medium">Para completar la verificación de identidad, sube una foto clara y ligible de tu DNI.</p>
+            <div class="flex gap-3">
+              <label for="dni-front" class="cursor-pointer">
+                <img v-if="documents.dniFront || filePreviews.dniFront" :src="filePreviews.dniFront ? filePreviews.dniFront : documents.dniFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                <DNIFront v-else/>
+              </label>
+              <div class="flex flex-col gap-4">
+                <label for="dni-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar frente del DNI</label>
+                <span class="text-xs text-start">
+                  Parte frontal de tu Documento Nacional de Identidad.
+                </span>
+              </div>
+              <input id="dni-front" type="file" accept="image/*" @change="(event) => handleFileChange(event, 'dniFront')" class="hidden" />
+            </div>
+            <div class="flex gap-3">
+              <label for="dni-back" class="cursor-pointer">
+                <img v-if="documents.dniBack || filePreviews.dniBack" :src="filePreviews.dniBack ? filePreviews.dniBack : documents.dniBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
+                <DNIBack v-else/>
+              </label>
+              <div class="flex flex-col gap-4">
+                <label for="dni-back" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del DNI</label>
+                <span class="text-xs text-start">Cara dorsal de tu Documento Nacional de Identidad.</span>
+              </div>
+              <input id="dni-back" type="file" accept="image/*"
+              @change="(event) => handleFileChange(event, 'dniBack')" class="hidden" />
+            </div>
+          </DropdownForm>
+          
+          <DropdownForm color="#FFFFFF" title="Registro de conducir" :dropdown-id="'doc-licencia'" :section-id="'section-1'">
+            <p class="text-sm font-medium">Para poder alquilar en nuestra plataforma, es esencial que tengas vinculado tu registro de conducir. </p>
+            <div class="flex gap-3">
+              <label for="driver-front" class="cursor-pointer">
+                <img v-if="documents.driverLicenseFront || filePreviews.driverLicenseFront" :src="filePreviews.driverLicenseFront ? filePreviews.driverLicenseFront : documents.driverLicenseFront" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Frontal">
+                <DriverFront v-else/>
+              </label>
+              <div class="flex flex-col gap-4">
+                <label for="driver-front" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
+                <span class="text-xs text-start">Cara frontal de tu Licencia de Conducir.</span>
+              </div>
+              <input id="driver-front" type="file" accept="image/*"
+              @change="(event) => handleFileChange(event, 'driverLicenseFront')"
+              class="hidden" />
+            </div>
+            <div class="flex gap-3">
+              <label for="driver-back" class="cursor-pointer">
+                <img v-if="documents.driverLicenseBack || filePreviews.driverLicenseBack" :src="filePreviews.driverLicenseBack ? filePreviews.driverLicenseBack : documents.driverLicenseBack" class="w-[140px] h-[85px] object-cover rounded-sm" alt="DNI Dorsal">
+                <DriverBack v-else/>
+              </label>
+              <div class="flex flex-col gap-4">
+                <label for="driver-back" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar dorso del Registro</label>
+                <span class="text-xs text-start">Cara dorsal de tu Licencia de Conducir.</span>
+              </div>
+              <input id="driver-back" type="file" accept="image/*"
+              @change="(event) => handleFileChange(event, 'driverLicenseBack')"
+              class="hidden" />
+            </div>
+          </DropdownForm>
+        </div>
+      </router-view>
+
+      <!-- Paso 3: Ubicación -->
+      <router-view v-if="currentStep === 2">
+        <div class="flex gap-4 items-center">
+          <Heading type="2" class="medium md:!text-4xl text-white! font-extrabold!">Ubicación</Heading>
+          <Loading v-if="loading" role="status" />
+        </div>
+        <p class="text-sm font-medium">Para garantizar que nuestros servicios estén disponibles en tu área, necesitamos confirmar tu ubicación en Argentina.</p>
+        <div class="box-deep flex flex-col gap-5 min-w-full md:overflow-y-auto md:pr-2">
+          <!-- Provincia -->
+           <div>
+             <Input
+               type="select"
+               name="provincia"
+               id="provincia"
+               placeholder="Provincia"
+               :options="geoStore.provincias.map(p => ({ value: p, label: p }))"
+               v-model="address.province"
+               @change="cargarCiudades"
+               :label="address.province"
+               variant="secondary"
+               :outline="false"
+             />
+           </div>
+
+          <!-- Ciudad/Localidad -->
+          <div>
             <Input
               type="select"
               name="ciudad"
@@ -381,205 +384,191 @@ onBeforeUnmount(() => {
               :options="(address.province ? geoStore.getCiudadesPorProvincia(address.province) : []).map(c => ({ value: c, label: c }))"
               v-model="address.city"
               :disabled="!address.province"
-              icon-position="right"
               variant="secondary"
-              :outline="false"
-              class="w-full cursor-pointer"
-            />
-
-            <div class="flex gap-5">
-              <!-- Calle y número -->
-              <Input
-                type="text"
-                placeholder="Calle y número"
-                v-model="address.street"
-                :variant="'secondary'"
-                :outline="false"
-              />
-              <!-- Código Postal -->
-              <Input
-                type="text"
-                placeholder="Código Postal"
-                v-model="address.postalCode"
-                :variant="'secondary'"
-                :outline="false"
-              />
-            </div>
-            
-            <div class="flex gap-5">
-              <!-- Piso (opcional) -->
-              <Input
-              type="text"
-              placeholder="Piso"
-              v-model="address.floor"
-              :variant="'secondary'"
+              :label="address.city"
               :outline="false"
             />
+          </div>
 
-            <!-- Departamento (opcional) -->
+          <div class="flex gap-5">
+            <!-- Calle y número -->
             <Input
               type="text"
-              placeholder="Departamento"
-              v-model="address.apartment"
+              placeholder="Calle y número"
+              v-model="address.street"
+              :label="address.street"
               :variant="'secondary'"
               :outline="false"
-              />
-            </div>
-          </div>
-        </router-view>
- 
-        <!-- Paso 4: Método de Pago -->
-        <router-view v-if="currentStep === 3" class="step">
-        <div class="flex gap-4 items-center">
-          <Heading type="2" class="large text-white! font-extrabold!">Métodos de pago</Heading>
-          <Loading v-if="loading" role="status" />
-        </div>
-
-        <p class="text-sm font-medium">Para garantizar que npuedas hacer uso de nuestros servicios, debés ingresar, al menos, un método de pago.</p>
-        
-        <div class="rounded-xl space-y-4">
-          <!-- Métodos de pago existentes -->
-          <div v-if="!loading && paymentStore.paymentMethods.length > 0" class="space-y-3">
-            <div 
-              v-for="(method, index) in paymentStore.paymentMethods" 
-              :key="index"
-              class="border rounded-xl p-4 transition-all"
-            >
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 flex items-center justify-center p-1 rounded-xl bg-white">
-                    <PaymentMethod :method="method.brand" class="h-6 w-6" />
-                  </div>
-                  <div>
-                    <p class="font-medium text-white">
-                      {{ method.brand }}
-                    </p>
-                    <p v-if="method.cardNumber" class="text-sm text-gray-400">
-                      •••• •••• •••• {{ String(method.cardNumber).slice(-4) }}
-                    </p>
-                  </div>
-                </div>
-                <!-- <div 
-                  class="w-6 h-6 rounded-full border flex items-center justify-center">
-                  <svg v-if="paymentStore.getPaymentMethodIdentifier(paymentStore.selectedPaymentMethod) === paymentStore.getPaymentMethodIdentifier(method)" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                  </svg>
-                </div> -->
-              </div>
-            </div>
+            />
+            <!-- Código Postal -->
+            <Input
+              type="text"
+              placeholder="Código Postal"
+              v-model="address.postalCode"
+              :label="address.postalCode"
+              :variant="'secondary'"
+              :outline="false"
+            />
           </div>
           
-          <!-- Mensaje cuando no hay métodos de pago -->
-          <div v-else-if="!loading && paymentStore.paymentMethods.length === 0" class="text-center text-gray-300">
-            <p class="text-gray-400">No tenés métodos de pago guardados</p>
-          </div>
-          
-          <!-- Botón para agregar método de pago -->
-          <!-- <div 
-            v-if="!paymentStore.showNewPaymentForm"
-            @click.prevent="paymentStore.toggleNewPaymentForm" 
-            class="border border-dashed border-gray-600 rounded-xl p-4 cursor-pointer hover:border-vibrant-light-900 transition-all flex items-center justify-center">
-            <div class="flex items-center gap-2 text-vibrant-light-900">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-              </svg>
-              <span>Agregar método de pago</span>
-            </div>
-          </div> -->
-          <Input
-            v-if="!paymentStore.showNewPaymentForm"
-            type="button"
-            text="Agregar método de pago"
-            variant="tertiary"
+          <div class="flex gap-5">
+            <!-- Piso (opcional) -->
+            <Input
+            type="text"
+            placeholder="Piso"
+            v-model="address.floor"
+            :label="address.floor"
+            :variant="'secondary'"
             :outline="false"
-            @click.prevent="paymentStore.toggleNewPaymentForm"
-            class="cursor-pointer w-full"
           />
-          
-          <!-- Formulario para nuevo método de pago -->
-          <div v-if="paymentStore.showNewPaymentForm" class="mt-6 flex flex-col gap-4">
-            <Heading :type="4" class="regular text-white">Nuevo método de pago</Heading>
-            
-            <div class="flex flex-col gap-4">
-              <Input 
-                type="select"
-                placeholder="Selecciona una marca"
-                :options="[
-                  {value: 'Visa', label: 'Visa', type: 'bank'},
-                  {value: 'Mastercard', label: 'Mastercard', type: 'bank'},
-                  {value: 'Uala', label: 'Ualá', type: 'digital_wallet'},
-                  {value: 'PayPal', label: 'PayPal', type: 'digital_wallet'},
-                  {value: 'Mercado Pago', label: 'Mercado Pago', type: 'digital_wallet'},
-                  {value: 'Lemon', label: 'Lemon', type: 'digital_wallet'},
-                  {value: 'Modo', label: 'Modo', type: 'digital_wallet'}
-                ]"
-                v-model="paymentStore.newPaymentMethod.brand"
-                @update:modelValue="updatePaymentType"
-                variant="secondary"
-                :outline="false"
-              />
 
-              <Input 
-                type="text"
-                placeholder="Número de tarjeta (16 dígitos)"
-                v-model="paymentStore.newPaymentMethod.cardNumber"
-                variant="secondary"
-                :outline="false"
-              />
-              
-              <Input 
-                type="text"
-                placeholder="Titular de tarjeta"
-                v-model="paymentStore.newPaymentMethod.cardHolder"
-                variant="secondary"
-                :outline="false"
-              />
-              
-              <div class="flex gap-5">
-                <Input 
-                  type="month"
-                  placeholder="MM/AA"
-                  v-model="paymentStore.newPaymentMethod.expiryDate"
-                  variant="secondary"
-                  :outline="false"
-                />
-                <Input
-                  type="password"
-                  placeholder="CVV"
-                  v-model="paymentStore.newPaymentMethod.cvv"
-                  variant="secondary"
-                  :outline="false"
-                />
-              </div>
-            </div>
-            
-            <div class="flex gap-4 mt-6">
-              <button 
-                type="button"
-                @click.prevent="paymentStore.toggleNewPaymentForm" 
-                class="flex-1 py-3 px-4 border border-gray-600 rounded-xl hover:border-gray-400 transition-all text-white hover:cursor-pointer"
-              >
-                Cancelar
-              </button>
-              <button 
-                type="button"
-                @click.prevent="paymentStore.saveNewPaymentMethod(authStore.user.id)" 
-                :disabled="!paymentStore.isFormValid || loading"
-                class="flex-1 py-3 px-4 bg-vibrant-light-900 text-deep-blue-900 rounded-xl font-medium hover:bg-opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:cursor-pointer"
-              >
-                {{ loading ? 'Guardando...' : 'Guardar' }}
-              </button>
-            </div>
+          <!-- Departamento (opcional) -->
+          <Input
+            type="text"
+            placeholder="Departamento"
+            v-model="address.apartment"
+            :label="address.apartment"
+            :variant="'secondary'"
+            :outline="false"
+            />
           </div>
         </div>
       </router-view>
 
-        <!-- Paso 5: Términos y Condiciones -->
-        <router-view v-if="currentStep === 4" class="step">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large text-white! font-extrabold!">Términos y condiciones</Heading>
-            <Loading v-if="loading" role="status" />
+      <!-- Paso 4: Método de Pago -->
+      <router-view v-if="currentStep === 3" class="step">
+      <div class="flex gap-4 items-center">
+        <Heading type="2" class="medium md:!text-4xl text-white! font-extrabold!">Métodos de pago</Heading>
+        <Loading v-if="loading" role="status" />
+      </div>
+
+      <p class="text-sm font-medium">Para garantizar que npuedas hacer uso de nuestros servicios, debés ingresar, al menos, un método de pago.</p>
+      
+      <div class="box-deep flex flex-col gap-5 min-w-full md:overflow-y-auto md:pr-2">
+        <!-- Métodos de pago existentes -->
+        <div v-if="!loading && paymentStore.paymentMethods.length > 0" class="space-y-3">
+          <div 
+            v-for="(method, index) in paymentStore.paymentMethods" 
+            :key="index"
+            class="border rounded-xl p-4 transition-all"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 flex items-center justify-center p-1 rounded-xl bg-white">
+                  <PaymentMethod :method="method.brand" class="h-6 w-6" />
+                </div>
+                <div>
+                  <p class="font-medium text-white">
+                    {{ method.brand }}
+                  </p>
+                  <p v-if="method.cardNumber" class="text-sm text-gray-400">
+                    •••• •••• •••• {{ String(method.cardNumber).slice(-4) }}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
+        
+        <!-- Mensaje cuando no hay métodos de pago -->
+        <div v-else-if="!loading && paymentStore.paymentMethods.length === 0" class="text-center text-gray-300">
+          <p class="text-gray-400">No tenés métodos de pago guardados</p>
+        </div>
+        <Input
+          v-if="!paymentStore.showNewPaymentForm"
+          type="button"
+          text="Agregar método de pago"
+          variant="tertiary"
+          :outline="false"
+          @click.prevent="paymentStore.toggleNewPaymentForm"
+        />
+        
+        <!-- Formulario para nuevo método de pago -->
+        <div v-if="paymentStore.showNewPaymentForm" class="mt-6 flex flex-col gap-4">
+          <Heading :type="4" class="regular text-white">Nuevo método de pago</Heading>
+          
+          <div class="flex flex-col gap-4">
+            <Input 
+              type="select"
+              placeholder="Selecciona una marca"
+              :options="[
+                {value: 'Visa', label: 'Visa', type: 'bank'},
+                {value: 'Mastercard', label: 'Mastercard', type: 'bank'},
+                {value: 'Uala', label: 'Ualá', type: 'digital_wallet'},
+                {value: 'PayPal', label: 'PayPal', type: 'digital_wallet'},
+                {value: 'Mercado Pago', label: 'Mercado Pago', type: 'digital_wallet'},
+                {value: 'Lemon', label: 'Lemon', type: 'digital_wallet'},
+                {value: 'Modo', label: 'Modo', type: 'digital_wallet'}
+              ]"
+              v-model="paymentStore.newPaymentMethod.brand"
+              @update:modelValue="updatePaymentType"
+              variant="secondary"
+              :outline="false"
+            />
+
+            <Input 
+              type="text"
+              placeholder="Número de tarjeta (16 dígitos)"
+              v-model="paymentStore.newPaymentMethod.cardNumber"
+              variant="secondary"
+              :outline="false"
+            />
+            
+            <Input 
+              type="text"
+              placeholder="Titular de tarjeta"
+              v-model="paymentStore.newPaymentMethod.cardHolder"
+              variant="secondary"
+              :outline="false"
+            />
+            
+            <div class="flex gap-5">
+              <Input 
+                type="month"
+                placeholder="MM/AA"
+                v-model="paymentStore.newPaymentMethod.expiryDate"
+                variant="secondary"
+                :outline="false"
+              />
+              <Input
+                type="password"
+                placeholder="CVV"
+                v-model="paymentStore.newPaymentMethod.cvv"
+                variant="secondary"
+                :outline="false"
+              />
+            </div>
+          </div>
+          
+          <div class="flex gap-4 mt-6">
+            <Input
+              type="button"
+              text="Cancelar"
+              variant="primary"
+              :outline="true"
+              @click.prevent="paymentStore.toggleNewPaymentForm" 
+            />
+            <Input
+              type="button"
+              :text="loading ? 'Guardando...' : 'Guardar'"
+              variant="primary"
+              :outline="false"
+              :input-class="loading ? 'cursor-not-allowed bg-deep-blue-700' : ''"
+              :disabled="!paymentStore.isFormValid || loading"
+              @click.prevent="paymentStore.saveNewPaymentMethod(authStore.user.id)" 
+            />
+          </div>
+        </div>
+      </div>
+    </router-view>
+
+      <!-- Paso 5: Términos y Condiciones -->
+      <router-view v-if="currentStep === 4" class="step">
+        <div class="flex gap-4 items-center">
+          <Heading type="2" class="medium md:!text-4xl text-white! font-extrabold!">Términos y condiciones</Heading>
+          <Loading v-if="loading" role="status" />
+        </div>
+        <div class="flex flex-col gap-5">
           <div class="flex gap-2 items-center">
             <Checkbox v-model="agreements.acceptedTerms" :disabled="agreements.acceptedTerms"/>
             <p class="text-sm font-medium">He leído y acepto los 
@@ -608,40 +597,38 @@ onBeforeUnmount(() => {
             <Checkbox v-model="agreements.acceptedMarketing" />
             <p class="text-sm font-medium">Acepto recibir notificaciones y promociones por correo electrónico.</p>
           </div>
-        </router-view>
-
-        <!-- Botones de navegación -->
-        <div class="flex justify-between items-center gap-32">
-          <button 
-            type="button" 
-            class="bg-background-900/15 p-2 flex items-center h-fit rounded-full disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:not-disabled:bg-background-900/35" 
-            @click="prevStep" 
-            :disabled="currentStep === 0"
-          >
-            <span class="sr-only">Anterior</span>
-            <LongArrow color="#FFFFFF" direction="left" />
-          </button>
-          <Input
-            type="button"
-            text="Siguiente"
-            variant="primary"
-            @click="nextStep"
-            :disabled="currentStep === sections.length - 1"
-            v-if="currentStep < sections.length - 1"
-            class="cursor-pointer"
-          />
-          <Input
-            type="submit"
-            :text="loading ? 'Procesando...' : 'Finalizar'"
-            variant="primary"
-            :class="loading ? 'cursor-not-allowed bg-deep-blue-700' : 'cursor-pointer'"
-            :disabled="loading"
-            v-if="currentStep === sections.length - 1"
-            class="cursor-pointer"
-          />
         </div>
-      </form>
-    </section>
+      </router-view>
+
+      <!-- Botones de navegación -->
+      <div class="flex justify-between items-center gap-32">
+        <button 
+          type="button" 
+          class="bg-background-900/15 p-2 flex items-center h-fit rounded-full disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:not-disabled:bg-background-900/35" 
+          @click="prevStep" 
+          :disabled="currentStep === 0"
+        >
+          <span class="sr-only">Anterior</span>
+          <LongArrow color="#FFFFFF" direction="left" />
+        </button>
+        <Input
+          v-if="currentStep < sections.length - 1"
+          type="button"
+          text="Siguiente"
+          variant="primary"
+          @click="nextStep"
+          :disabled="currentStep === sections.length - 1"
+        />
+        <Input
+          v-if="currentStep === sections.length - 1"
+          type="submit"
+          :text="loading ? 'Procesando...' : 'Finalizar'"
+          variant="primary"
+          :input-class="loading ? 'cursor-not-allowed bg-deep-blue-700' : 'cursor-pointer'"
+          :disabled="loading"
+        />
+      </div>
+    </form>
   </section>
 </template>
 
@@ -653,6 +640,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-direction: column;
   gap: 40px;
+  overflow: hidden;
 }
 
 .section-item {
@@ -666,16 +654,31 @@ onBeforeUnmount(() => {
   align-items: center;
   position: relative;
 }
-
+@media (width <= 768px) {
+  .sections-sidebar {
+    flex-direction: row;
+  }
+  .section-item {
+    border-radius: 100%;
+  }
+  .section-item:not(:last-child)::after {
+    transform: rotate(0deg);
+    bottom: 13px;
+    right: -37px;
+  }
+}
+@media (width >= 768px) {
+  .section-item:not(:last-child)::after {
+    bottom: -35px;
+    left: 10px;
+    transform: rotate(90deg);
+  }
+}
 .section-item:not(:last-child)::after {
   content: "----";
   color: rgba(255, 255, 255, 0.5);
   position: absolute;
-  bottom: -35px;
-  left: 10px;
-  transform: rotate(90deg)
 }
-
 .section-item.active {
   background-color: rgba(255, 255, 255, 0.2); /* Fondo blanco transparente al 20% */
   font-weight: bold;

@@ -1,5 +1,4 @@
 <script>
-// Importar los nuevos iconos (asegúrate de tener estos componentes creados)
 import Bluetooth from "../../icons/Bluetooth.vue";
 import GPS from "../../icons/GPS.vue";
 import TouchScreen from "../../icons/TouchScreen.vue";
@@ -89,7 +88,11 @@ export default {
     name: {
       type: String,
       required: true,
-    }
+    },
+    icon: {
+      type: Boolean,
+      required: false,
+    },
   },
   computed: {
     IconComponent() {
@@ -206,5 +209,6 @@ export default {
       <component :is="IconComponent" />
     </span>
     <span class="label text-sm">{{ displayName }}</span>
+    <slot v-if="icon" name="icon"></slot>
   </div>
 </template>

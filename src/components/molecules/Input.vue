@@ -9,14 +9,14 @@ const props = defineProps({
     validator: (value) => [
       'text', 'number', 'email', 'password', 'tel', 'url',
       'date', 'time', 'checkbox', 'radio', 'file',
-      'button', 'submit', 'reset', 'select', 'month'
+      'button', 'submit', 'reset', 'select', 'month', 'textarea'
     ].includes(value)
   },
   id: String,
   name: String,
   placeholder: String,
   iconPosition: { type: String, default: 'left', validator: (value) => ['left', 'right'].includes(value) },
-  variant: { type: String, default: 'primary', validator: (value) => ['primary', 'secondary'].includes(value) },
+  variant: { type: String, default: 'primary', validator: (value) => ['primary', 'secondary', 'tertiary'].includes(value) },
   outline: Boolean,
   text: String,
   options: { type: Array, default: () => [] },
@@ -43,7 +43,7 @@ const inputRef = ref(null);
 const baseClasses = computed(() => [
   props.inputClass,
   'flex flex-1 items-center justify-center rounded-2xl py-2.5 px-5 gap-2 border-2 font-semibold',
-  { '!flex-col !items-start': props.label && !['button', 'submit', 'select'].includes(props.type) },
+  { '!items-start': props.label && !['button', 'submit', 'select'].includes(props.type) },
   { '!cursor-not-allowed opacity-50': props.disabled }
 ]);
 
@@ -88,19 +88,20 @@ defineExpose({ focus, blur,  });
 </script>
 
 <template>
-  <div class="flex flex-col gap-1 w-full">
+  <div class="flex flex-col gap-1 w-full min-h-12">
     <!-- Label -->
     <label 
-      v-if="label && !['button', 'submit', 'select'].includes(type)" 
+      v-if="label && !['button', 'submit'].includes(type)" 
       :for="id" 
-      class="font-semibold text-deep-blue-900"
+      class="font-semibold"
+      
     >
       {{ placeholder }}
     </label>
 
     <!-- Input normal -->
     <label 
-      v-if="!['button', 'submit', 'select'].includes(type)"
+      v-if="!['button', 'submit', 'select', 'textarea'].includes(type)"
       :class="[
         containerClasses, 
         { 'cursor-text': type === 'text' || type === 'email' || type === 'tel' || type === 'password' }
@@ -152,7 +153,11 @@ defineExpose({ focus, blur,  });
       :value="modelValue"
       @change="$emit('update:modelValue', $event.target.value)"
       :class="containerClasses"
+      class="max-h-12 w-full"
     >
+<!--       <button>
+        <selectedcontent class="truncate"></selectedcontent>
+      </button> -->
       <option 
         v-if="placeholder" 
         value="" 
@@ -171,6 +176,20 @@ defineExpose({ focus, blur,  });
         {{ option.label }}
       </option>
     </select>
+
+    <!-- Textarea -->
+    <textarea
+      v-else-if="type === 'textarea'"
+      :id="id"
+      :name="name"
+      :placeholder="placeholder"
+      :autofocus="autofocus"
+      :disabled="disabled"
+      :required="required"
+      :autocomplete="autocomplete"
+      v-bind="attrs"
+      :value="modelValue"
+      ></textarea>
 
     <!-- Botón -->
     <button
@@ -231,5 +250,21 @@ option {
 select option::checkmark {
   order:1;
   content: "✅";
+}
+
+textarea {
+  resize: none;
+  min-height: 30px !important;
+  width: full ;
+  form-sizing: content;
+  max-height: 80px !important;
+  background: white;
+  border: 2px solid #A7EBEF ;
+  border-radius: 1rem;
+  padding-inline: 1rem;
+  padding-block: .5rem;
+  outline: none;
+  font-weight: 600;
+  scrollbar-width: none;
 }
 </style>

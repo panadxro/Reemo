@@ -151,15 +151,17 @@ onMounted(async () => {
             required />
         </div>
         <legend class="text-deep-blue-900 font-semibold text-xl">Documento nacional de identidad</legend>
-        <Input
-          type="tel"
-          name="dni"
-          id="dni"
-          placeholder="Número de documento"
-          :variant="'secondary'"
-          :label="true"
-          :outline="true"
-          required />
+        <div>
+          <Input
+            type="tel"
+            name="dni"
+            id="dni"
+            placeholder="Número de documento"
+            :variant="'secondary'"
+            :label="true"
+            :outline="true"
+            required />
+        </div>
         <div class="flex flex-col gap-5">
           <legend class="text-deep-blue-900 font-semibold">Archivos adjuntos</legend>
           <div class="flex gap-3">

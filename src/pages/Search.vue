@@ -253,7 +253,6 @@ watch(() => filters.brand, async (newBrand, oldBrand) => {
                 :outline="true"
                 :disabled="loadingMakes"
               />
-  
             <!-- Modelo -->
             <Input
                 type="select"
