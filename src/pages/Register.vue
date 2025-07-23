@@ -29,10 +29,6 @@ const user = reactive({
 });
 
 const handleSubmit = async () => {
-  console.log("Credentials to send:", {
-    email: user.email,
-    password: user.password,
-  });
   if (!user.email || !user.password || !user.repeatPassword) {
     addAlert("Por favor, completa todos los campos.", "error");
     return;

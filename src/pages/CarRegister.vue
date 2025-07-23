@@ -1,6 +1,6 @@
 <script setup>
-import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch } from 'vue';
-import { useAuthStore, useUserStore, useCarStore } from '@stores'
+import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch, inject } from 'vue';
+import { useUserStore, useCarStore } from '@stores'
 import { loadGoogleMaps, initAutocomplete } from "../services/google-maps.js";
 import { notifyAdminsOfVehicleUpdate } from '../services/car/notifyRented.js';
 import { vpicService } from '../services/car/vpicApi.js';
@@ -24,6 +24,7 @@ import Images from "@icons/Images.vue";
 import Secure from "@icons/Secure.vue";
 import Search from "@icons/Search.vue";
 import Cross from "@icons/Cross.vue";
+import Pill from "@components/atoms/Pill.vue";
 
 const props = defineProps({
   id: {
@@ -34,7 +35,7 @@ const props = defineProps({
 
 const router = useRouter();
 
-const authStore = useAuthStore();
+const authStore = inject('authStore');
 const userStore = useUserStore();
 const carStore = useCarStore();
 
@@ -138,9 +139,7 @@ const availableAccessoryOptions = computed(() => {
   return allAccessoryOptions.value.filter(option => !selectedValues.includes(option.value));
 });
 
-const handleAccessorySelect = (event) => {
-  console.log('handleAccessorySelect ejecutado', event); 
-  
+const handleAccessorySelect = (event) => {  
   let selectedValue;
   if (typeof event === 'string') {
     selectedValue = event;
@@ -149,19 +148,14 @@ const handleAccessorySelect = (event) => {
   } else if (event?.value) {
     selectedValue = event.value;
   } else {
-    console.log('No se pudo obtener el valor del evento:', event);
     return;
   }
-  
-  console.log('Acesorio seleccionado:', selectedValue); 
   
   if (selectedValue && selectedValue !== '') {
     const selectedOption = allAccessoryOptions.value.find(option => option.value === selectedValue);
     
     if (selectedOption && !selectedAccessories.value.find(acc => acc.value === selectedValue)) {
       selectedAccessories.value.push(selectedOption);
-      console.log('Accesorios actuales:', selectedAccessories.value); 
-      
       updateFeaturesInStore();
     }
   }
@@ -169,16 +163,11 @@ const handleAccessorySelect = (event) => {
 
 const updateFeaturesInStore = () => {
   const accessoryValues = selectedAccessories.value.map(acc => acc.value);
-  console.log('Actualizando store con:', accessoryValues); 
-  
   carStore.updateFeatures({ accessories: accessoryValues });
-  
-  console.log('accesorios despues de actualizare:', carStore.features); 
 };
 
 const removeAccessory = (value) => {
   selectedAccessories.value = selectedAccessories.value.filter(acc => acc.value !== value);
-  
   updateFeaturesInStore();
 };
 
@@ -427,6 +416,7 @@ const toggleDay = (dayKey) => {
 // Load initial data
 onMounted(async () => {
   // window.addEventListener('beforeunload', handleBeforeUnload);
+
   try {
     if (!authSession.user.id) {
       throw new Error("User not authenticated");
@@ -458,6 +448,7 @@ onMounted(async () => {
       }
       loading.value = false;
     } else {
+      await carStore.initializeCar();
       await loadMakes();
     }
 
@@ -479,7 +470,6 @@ watch(currentStep, async (newStep) => {
             address: placeData.formattedAddress,
             location: placeData.location // {lat, lng}
           });
-          // Opcional: podrías extraer y guardar ciudad/país aquí si es necesario
         }
       });
       autocompleteInitialized.value = true;
@@ -508,19 +498,18 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="flex relative max-w-[1120px] max-h-[675px] h-full w-full mx-auto justify-between px-16 py-12 bg-vibrant-light-600 rounded-[40px] text-deep-blue-900 overflow-hidden">
+  <section class="flex flex-col md:flex-row 2xl:max-w-[1120px] 2xl:max-h-[675px] min-h-screen md:min-h-auto md:h-screen w-full 2xl:mx-auto gap-10 justify-start md:justify-center 2xl:justify-between py-4 px-2 xl:px-16 xl:py-12 bg-vibrant-light-600 2xl:rounded-[40px] text-deep-blue-900 overflow-hidden shadow-2xl">
     <!-- Secciones al costado -->
-    <aside class="flex flex-col gap-8 w-full max-w-[425px]">
-      <div class="flex flex-col gap-2">
-        <div class="flex gap-2 items-center">
-        <Heading type="1" class="large text-deep-blue-900 font-extrabold!">
-         {{ isEditMode ? 'Editar vehiculo' : 'Registrar vehiculo' }}
-        </Heading>
+    <aside class="flex flex-col gap-8 w-full md:max-w-[425px] md:overflow-hidden">
+      <div class="flex flex-col gap-4 md:gap-2">
+        <div class="flex flex-col gap-4">
+          <Reemo class="cursor-pointer" @click="router.push('/dashboard')"/>
+          <Heading type="1" class="large text-deep-blue-900 font-extrabold!">{{ isEditMode ? 'Editar vehiculo' : 'Registrar vehiculo' }}</Heading>
         </div>
         <p class="text-sm max-w-[420px]">{{ isEditMode ? 'Gestioná y actualizá los datos de tu vehículo disponible para alquiler' : 'Subscribí tu vehículo a la plataforma y haz que trabaje por vos.'}}</p>
       </div>
       <ul 
-        class="flex flex-col gap-[40px] max-w-[420px] w-full h-[495px] rounded-lg px-2 overflow-hidden transition-all duration-300 ease-in-out"
+        class="sections-sidebar"
         :class="justifyClass"
         >
         <li
@@ -531,12 +520,15 @@ onBeforeUnmount(() => {
         >
           <div class="flex items-center gap-4">
             <component :is="section.icon" />
-            <Heading type="3" class="regular text-deep-blue-900">
-              {{ section.title }}
-            </Heading>
+            <Heading type="3" class="regular hidden md:block text-deep-blue-900">{{ section.title }}</Heading>
           </div>
-          <span>
-            <LongArrow direction="right" class="hidden" color="#ffffff" :class="{ 'block!': currentStep === index}"/>
+          <span class="hidden md:block">
+            <LongArrow 
+              direction="right" 
+              class="hidden" 
+              color="#ffffff" 
+              :class="{ 'block!': currentStep === index}"
+            />
           </span>
         </li>
       </ul>
@@ -545,370 +537,371 @@ onBeforeUnmount(() => {
     
     
     <!-- Formulario dinámico -->
-    <section class="max-h-[568px]">
-      <form
-      class="flex flex-col justify-center gap-9 grow w-full max-w-[425px]"
-      @submit.prevent="handleSubmit"
-      >
-      <div class="flex justify-between">
-        <p>{{ currentStep + 1 }}/{{ sections.length }}</p>
-        <Reemo />
-      </div>
-      
+    <form
+    class="flex flex-col justify-center gap-8 w-full max-w-[425px] md:max-h-[568px] md:overflow-hidden"
+    @submit.prevent="handleSubmit"
+    >      
 
-        <!-- Paso 1: Información básica -->
-        <router-view v-if="currentStep === 0">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large text-deep-blue-900! font-extrabold!">Información básica</Heading>
-            <Loading v-if="!userStore.profileLoaded" role="status" />
+      <!-- Paso 1: Información básica -->
+      <router-view v-if="currentStep === 0">
+        <div class="flex gap-4 items-center">
+          <Heading type="2" class="medium md:!text-3xl text-deep-blue-900! font-extrabold!">Información básica</Heading>
+          <Loading v-if="!userStore.profileLoaded" role="status" />
+        </div>
+        <p class="text-sm font-medium">Ingresá los datos principales del vehículo. Esta información ayuda a identificar correctamente el auto y mostrarlo a los usuarios interesados.</p>
+
+        <div class="box-vibrant flex flex-col gap-5 min-w-full md:overflow-y-auto md:pr-2">      
+          <div class="flex gap-5">
+            <Input
+              type="select"
+              v-model="basicInfo.brand"
+              name="brand"
+              id="brand"
+              placeholder="Marca"
+              :options="vehicleMakes"
+              variant="secondary"
+              :outline="true"
+              :label="true"
+              :disabled="loadingMakes"
+            />
+            <Input
+              type="select"
+              v-model="basicInfo.model"
+              name="model"
+              id="model"
+              placeholder="Modelo"
+              :options="vehicleModels"
+              :value="basicInfo.model"
+              variant="secondary"
+              :outline="true"
+              :label="true"
+              :disabled="loadingModels || !basicInfo.brand"
+            />
           </div>
-          <p class="text-sm font-medium">Ingresá los datos principales del vehículo. Esta información ayuda a identificar correctamente el auto y mostrarlo a los usuarios interesados.</p>
+          
+          <div class="flex justify-between gap-2 md:gap-5">
+            <Input
+              type="select"
+              v-model.number="basicInfo.year"
+              name="year"
+              id="year"
+              placeholder="Año"
+              :options="Array.from({ length: new Date().getFullYear() - 2009 }, (_, i) => ({
+                value: 2010 + i,
+                label: (2010 + i).toString()
+              }))"
+              variant="secondary"
+              :outline="true"
+              :label="true"
+            />
+            <Input
+              type="select"
+              v-model="basicInfo.type"
+              name="type"
+              id="type"
+              placeholder="Chasis"
+              :options="[
+                { value: 'Sedan', label: 'Sedán' },
+                { value: 'Hatchback', label: 'Hatchback' },
+                { value: 'SUV', label: 'SUV' },
+                { value: 'Pickup', label: 'Pickup' },
+                { value: 'Van', label: 'Van' }
+              ]"
+              variant="secondary"
+              :outline="true"
+              :label="true"
+            /> 
+            <Input
+              type="select"
+              v-model="basicInfo.color"
+              name="color"
+              id="color"
+              placeholder="Color"
+              :options="[
+                { value: 'Blanco', label: 'Blanco' },
+                { value: 'Negro', label: 'Negro' },
+                { value: 'Gris', label: 'Gris' },
+                { value: 'Rojo', label: 'Rojo' },
+                { value: 'Azul', label: 'Azul' },
+                { value: 'Plateado', label: 'Plateado' }
+              ]"
+              variant="secondary"
+              :outline="true"
+              :label="true"
+            /> 
+          </div>  
+          <div class="flex gap-5">
+            <Input
+              type="text"
+              v-model="basicInfo.licensePlate"
+              name="licensePlate"
+              id="licensePlate"
+              placeholder="Patente"
+              :variant="'secondary'"
+              :outline="true"
+              :label="true"
+             />
+            <Input
+              type="number"
+              v-model.number="basicInfo.kilometers"
+              name="kilometers"
+              id="kilometers"
+              placeholder="Kilometraje"
+              :variant="'secondary'"
+              :outline="true"
+              :label="true"
+            />
+          </div>           
+        </div>
+      </router-view>
 
-          <div class="flex flex-col gap-5">      
-            <div class="flex gap-5">
-              <Input
-                type="select"
-                v-model="basicInfo.brand"
-                name="brand"
-                id="brand"
-                placeholder="Marca"
-                :options="vehicleMakes"
-                icon-position="right"
-                variant="secondary"
-                :outline="true"
-                :disabled="loadingMakes"
-                class="w-full"
-              >
-                <template #icon v-if="loadingMakes">
-                  <Loading />
-                </template>
-              </Input>
-              <Input
-                type="select"
-                v-model="basicInfo.model"
-                name="model"
-                id="model"
-                placeholder="Modelo"
-                :options="vehicleModels"
-                icon-position="right"
-                variant="secondary"
-                :outline="true"
-                :disabled="loadingModels || !basicInfo.brand"
-                class="w-full"
-              >
-                <template #icon v-if="loadingModels">
-                  <Loading />
-                </template>
-              </Input>            
-            </div>
-            
-            <div class="flex justify-between gap-5">
-              <Input
-                type="select"
-                v-model.number="basicInfo.year"
-                name="year"
-                id="year"
-                placeholder="Año"
-                :options="Array.from({ length: new Date().getFullYear() - 2009 }, (_, i) => ({
-                  value: 2010 + i,
-                  label: (2010 + i).toString()
-                }))"
-                variant="secondary"
-                :outline="true"
+      <!-- Paso 2: Especificaciones técnicas -->
+      <router-view v-if="currentStep === 1">
+        <div class="flex gap-4 items-center">
+          <Heading type="2" class="medium md:!text-3xl text-deep-blue-900! font-extrabold!">Especificaciones técnicas</Heading>
+          <Loading v-if="loading" role="status" />
+        </div>
+        <p class="text-sm font-medium">Completá las características técnicas del vehículo. Las opciones se adaptan según la marca y el modelo del vehículo, para que puedas seleccionar solo lo que corresponde a tu modelo.</p>
+
+        <div class="box-vibrant flex flex-col gap-5 min-w-full md:overflow-y-auto md:pr-2">
+          <div class="flex gap-5">
+            <Input
+              type="select"
+              v-model="specifications.engine"
+              name="engine"
+              id="engine"
+              placeholder="Motor"
+              :options="[
+                { value: '1.4', label: '1.4L 4 cilindros' },
+                { value: '1.6', label: '1.6L 4 cilindros' },
+                { value: '1.8', label: '1.8L 4 cilindros' },
+                { value: '2.0', label: '2.0L 4 cilindros' },
+                { value: '2.4', label: '2.4L 4 cilindros' },
+                { value: '3.0', label: '3.0L V6' }
+              ]"
+              variant="secondary"
+              :outline="true"
+              :label="true"
+            />
+            <Input
+              type="select"
+              v-model="specifications.transmission"
+              name="transmission"
+              id="transmission"
+              placeholder="Transmisión"
+              :options="[
+                { value: 'Automatico', label: 'Automatico' },
+                { value: 'Manual', label: 'Manual' },
+                { value: 'CVT', label: 'CVT' }                
+              ]"
+              variant="secondary"
+              :outline="true"
+              :label="true"
+            /> 
+          </div>
+          <div class="flex gap-5">
+            <Input
+              type="select"
+              v-model="specifications.fuelType"
+              name="fuelType"
+              id="fuelType"
+              placeholder="Combustible"
+              :options="[
+                { value: 'Nafta', label: 'Nafta' },
+                { value: 'Diesel', label: 'Diésel' },
+                { value: 'GNC', label: 'GNC' },
+                { value: 'Híbrido', label: 'Híbrido' },
+                { value: 'Eléctrico', label: 'Eléctrico' }
+              ]"
+              variant="secondary"
+              :outline="true"
+              :label="true"
+            />
+            <Input
+              type="select"
+              v-model="specifications.drivetrain"
+              name="drivetrain"
+              id="drivetrain"
+              placeholder="Tracción"
+              :options="[
+                { value: 'Delantera', label: 'Delantera' },
+                { value: 'Trasera', label: 'Trasera' },
+                { value: '4x4', label: '4x4' },
+                { value: 'AWD', label: 'AWD (Tracción integral)' }
+              ]"
+              variant="secondary"
+              :outline="true"
+              :label="true"
+            />            
+          </div> 
+          <div class="flex gap-5">
+            <Input
+              type="number"
+              v-model.number="specifications.autonomy"
+              placeholder="Autonomía"
+              name="autonomy"
+              id="autonomy"
+              :variant="'secondary'"
+              :outline="true"
+              :label="true"
               />
-              <Input
-                type="select"
-                v-model="basicInfo.type"
-                name="type"
-                id="type"
-                placeholder="Chasis"
-                :options="[
-                  { value: 'Sedan', label: 'Sedán' },
-                  { value: 'Hatchback', label: 'Hatchback' },
-                  { value: 'SUV', label: 'SUV' },
-                  { value: 'Pickup', label: 'Pickup' },
-                  { value: 'Van', label: 'Van' }
-                ]"
-                variant="secondary"
-                :outline="true"
-              /> 
-              <Input
-                type="select"
-                v-model="basicInfo.color"
-                name="color"
-                id="color"
-                placeholder="Color"
-                :options="[
-                  { value: 'Blanco', label: 'Blanco' },
-                  { value: 'Negro', label: 'Negro' },
-                  { value: 'Gris', label: 'Gris' },
-                  { value: 'Rojo', label: 'Rojo' },
-                  { value: 'Azul', label: 'Azul' },
-                  { value: 'Plateado', label: 'Plateado' }
-                ]"
-                variant="secondary"
-                :outline="true"
-              /> 
-            </div>  
-            <div class="flex gap-5">
-              <Input
-                type="text"
-                v-model="basicInfo.licensePlate"
-                name="licensePlate"
-                id="licensePlate"
-                placeholder="Patente"
-                :variant="'secondary'"
-                :outline="true"
-                required />
-              <Input
-                type="number"
-                v-model.number="basicInfo.kilometers"
-                name="kilometers"
-                id="kilometers"
-                placeholder="Kilometraje"
-                :variant="'secondary'"
-                :outline="true"
-                required />
-            </div>           
-          </div>
-        </router-view>
-
-        <!-- Paso 2: Especificaciones técnicas -->
-        <router-view v-if="currentStep === 1">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large text-deep-blue-900! font-extrabold!">Especificaciones técnicas</Heading>
-            <Loading v-if="loading" role="status" />
-          </div>
-          <p class="text-sm font-medium">Completá las características técnicas del vehículo. Las opciones se adaptan según la marca y el modelo del vehículo, para que puedas seleccionar solo lo que corresponde a tu modelo.</p>
-
-          <div class="flex flex-col gap-5">
-            <div class="flex gap-5">
-              <Input
-                type="select"
-                v-model="specifications.engine"
-                name="engine"
-                id="engine"
-                placeholder="Motor"
-                :options="[
-                  { value: '1.4', label: '1.4L 4 cilindros' },
-                  { value: '1.6', label: '1.6L 4 cilindros' },
-                  { value: '1.8', label: '1.8L 4 cilindros' },
-                  { value: '2.0', label: '2.0L 4 cilindros' },
-                  { value: '2.4', label: '2.4L 4 cilindros' },
-                  { value: '3.0', label: '3.0L V6' }
-                ]"
-                icon-position="right"
-                variant="secondary"
-                :outline="true"
-                class="w-full"
+            <Input
+              type="number"
+              v-model.number="specifications.doors"
+              name="doors"
+              id="doors"
+              placeholder="Puertas"
+              :variant="'secondary'"
+              :outline="true"
+              :label="true"
               />
-              <Input
-                type="select"
-                v-model="specifications.transmission"
-                name="transmission"
-                id="transmission"
-                placeholder="Transmisión"
-                :options="[
-                  { value: 'Automatico', label: 'Automatico' },
-                  { value: 'Manual', label: 'Manual' },
-                  { value: 'CVT', label: 'CVT' }                
-                ]"
-                icon-position="right"
-                variant="secondary"
-                :outline="true"
-                class="w-full"
-              /> 
-            </div>
-            <div class="flex gap-5">
-              <Input
-                type="select"
-                v-model="specifications.fuelType"
-                name="fuelType"
-                id="fuelType"
-                placeholder="Combustible"
-                :options="[
-                  { value: 'Nafta', label: 'Nafta' },
-                  { value: 'Diesel', label: 'Diésel' },
-                  { value: 'GNC', label: 'GNC' },
-                  { value: 'Híbrido', label: 'Híbrido' },
-                  { value: 'Eléctrico', label: 'Eléctrico' }
-                ]"
-                icon-position="right"
-                variant="secondary"
-                :outline="true"
-                class="w-full cursor-pointer"
+            <Input
+              type="number"
+              v-model.number="specifications.seats"
+              name="seats"
+              id="seats"
+              placeholder="Asientos"
+              :variant="'secondary'"
+              :outline="true"
+              :label="true"
               />
-              <Input
-                type="select"
-                v-model="specifications.drivetrain"
-                name="drivetrain"
-                id="drivetrain"
-                placeholder="Tracción"
-                :options="[
-                  { value: 'Delantera', label: 'Delantera' },
-                  { value: 'Trasera', label: 'Trasera' },
-                  { value: '4x4', label: '4x4' },
-                  { value: 'AWD', label: 'AWD (Tracción integral)' }
-                ]"
-                icon-position="right"
-                variant="secondary"
-                :outline="true"
-                class="w-full cursor-pointer"
-              />            
-            </div> 
-            <div class="flex gap-5">
-              <Input
-                type="number"
-                v-model.number="specifications.autonomy"
-                placeholder="Autonomía"
-                name="autonomy"
-                id="autonomy"
-                :variant="'secondary'"
-                :outline="true"
-                required />
-              <Input
-                type="number"
-                v-model.number="specifications.doors"
-                name="doors"
-                id="doors"
-                placeholder="Puertas"
-                :variant="'secondary'"
-                :outline="true"
-                required />
-              <Input
-                type="number"
-                v-model.number="specifications.seats"
-                name="seats"
-                id="seats"
-                placeholder="Asientos"
-                :variant="'secondary'"
-                :outline="true"
-                required />
-            </div>
           </div>
-        </router-view>
+        </div>
+      </router-view>
 
-        <!-- Paso 3: Equipamiento y características -->
-        <router-view v-if="currentStep === 2">
-  <div class="flex gap-4 items-center">
-    <Heading type="2" class="large text-deep-blue-900! font-extrabold!">Equipamiento y características</Heading>
-    <Loading v-if="loading" role="status" />
-  </div>
-  <div class="flex flex-col gap-5">
-    <Input
-      type="select"
-      name="tecnologia-conectividad"
-      id="tecnologia-conectividad"
-      placeholder="Buscar características"
-      :options="availableAccessoryOptions"
-      icon-position="right"
-      variant="secondary"
-      :outline="true"
-      class="w-full cursor-pointer"
-      @change="handleAccessorySelect"
-    />   
-    
-    <div 
-      v-if="selectedAccessories.length > 0" 
-      class="flex flex-wrap gap-2 mt-3 max-h-[200px] overflow-auto"
-      >
-      <div 
-        v-for="accessory in selectedAccessories" 
-        :key="accessory.value"
-        class="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-3 py-2 rounded-full text-sm font-medium border border-blue-200 hover:bg-blue-200 transition-colors"
-      >
-        <span>{{ accessory.label }}</span>
-        <Cross @click="removeAccessory(accessory.value)" :aria-label="`Eliminar ${accessory.label}`"/>
-      </div>
-    </div>
-  </div>
-</router-view>
- 
-        <!-- Paso 4: Ubicación y disponibilidad -->
-        <router-view v-if="currentStep === 3" class="step">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large text-deep-blue-900! font-extrabold!">Ubicación y disponibilidad</Heading>
-            <Loading v-if="loading" role="status" />
+      <!-- Paso 3: Equipamiento y características -->
+      <router-view v-if="currentStep === 2">
+        <div class="flex gap-4 items-center">
+          <Heading type="2" class="medium md:!text-3xl text-deep-blue-900! font-extrabold!">Equipamiento y características</Heading>
+          <Loading v-if="loading" role="status" />
+        </div>
+        <div class="box-vibrant flex flex-col gap-5 min-w-full md:overflow-y-auto md:pr-2">
+          <Input
+            type="select"
+            name="tecnologia-conectividad"
+            id="tecnologia-conectividad"
+            placeholder="Buscar características"
+            :options="availableAccessoryOptions"
+            variant="secondary"
+            :outline="true"
+            class="w-full cursor-pointer"
+            @change="handleAccessorySelect"
+          />   
+  
+          <div 
+            v-if="selectedAccessories.length > 0" 
+            class="flex flex-wrap gap-2 mt-3 max-h-[200px] overflow-auto"
+            >
+            <Pill 
+              v-for="(accessory, index) in selectedAccessories" 
+              :key="accessory.value" 
+              :accessory="accessory.label" 
+              :name="accessory.label" 
+              :icon="true"
+            >
+              <template #icon>
+                <Cross 
+                  @click="removeAccessory(accessory.value)" 
+                  :aria-label="`Eliminar ${accessory.label}`" 
+                  class="cursor-pointer"
+                  />
+              </template>
+            </Pill>
           </div>
-          <div class="flex flex-col gap-5">
+        </div>
+      </router-view>
+
+      <!-- Paso 4: Ubicación y disponibilidad -->
+      <router-view v-if="currentStep === 3" class="step">
+        <div class="flex gap-4 items-center">
+          <Heading type="2" class="medium md:!text-3xl text-deep-blue-900! font-extrabold!">Ubicación y disponibilidad</Heading>
+          <Loading v-if="loading" role="status" />
+        </div>
+        <div class="box-vibrant flex flex-col gap-5 min-w-full md:overflow-y-auto md:pr-2">
+          <div>
             <Input
               id="carRegisterAddressInput"
               v-model="status.currentLocation.address"
-              type="text" placeholder="Direccion" :variant="'secondary'" :outline="true" iconPosition="right" required>
+              type="text" placeholder="Ubicación actual del vehículo" 
+              :variant="'secondary'" 
+              :outline="true" 
+              iconPosition="left" 
+              :label="true"
+              >
               <template #icon>
                 <Search color="#7b7b7b"/>
               </template>
             </Input>
+          </div>
 
-            <!-- <div class="w-full h-[120px] bg-background-700 flex flex-col items-center justify-center text-background-600 rounded-[23px]">
-              <h4 class="font-semibold">Mapa</h4>
-              <p>Esto hacelo vos Yoel</p>
-            </div> -->
-
-            <div class="w-full h-full bg-vibrant-light-700 flex flex-col items-center justify-center rounded-[23px] p-4">
-              <Heading type="5" class="mb-6">Días activo</Heading>
-              
-              <div class="flex gap-4 mb-8">
-                <div 
-                  v-for="(day, index) in days" 
-                  :key="index"
-                  class="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-deep-blue-900 font-semibold"
-                  :class="{
-                    'bg-vibrant-light-900': availability.schedule[day.storeKey],
-                    'bg-white': !availability.schedule[day.storeKey]
-                  }"
-                  @click="toggleDay(day.storeKey)"
-                >
-                  {{ day.label }}
-                </div>
+          <div class="w-full h-full bg-vibrant-light-700 flex flex-col items-center justify-center rounded-[23px] p-4">
+            <Heading type="5" class="mb-6">Días activo</Heading>
+            
+            <div class="flex gap-4 mb-8">
+              <div 
+                v-for="(day, index) in days" 
+                :key="index"
+                class="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer text-deep-blue-900 font-semibold"
+                :class="{
+                  'bg-vibrant-light-900': availability.schedule[day.storeKey],
+                  'bg-white': !availability.schedule[day.storeKey]
+                }"
+                @click="toggleDay(day.storeKey)"
+              >
+                {{ day.label }}
               </div>
-              
-              <!-- Selector de horario -->
-              <div class="flex w-full max-w-xs gap-4 font-bold">
-                <div class="flex-1 flex flex-col items-center">
-                  <label for="start-time">Desde</label>
-                  <select 
-                    id="start-time" 
-                    v-model="availability.hours.startTime" 
-                    class="p-2 rounded-lg border border-gray-300"
-                  >
-                    <option 
-                      v-for="time in timeOptions" 
-                      :key="'start-'+time.value" 
-                      :value="time.value"
-                    >
-                      {{ time.label }}
-                    </option>
-                  </select>
-                </div>
-                <div class="flex-1 flex flex-col items-center">
-                  <label for="end-time">Hasta</label>
-                  <select 
-                    id="end-time" 
-                    v-model="availability.hours.endTime"
-                    class="p-2 rounded-lg border border-gray-300"
-                  >
-                    <option 
-                      v-for="time in timeOptions" 
-                      :key="'end-'+time.value" 
-                      :value="time.value"
-                    >
-                      {{ time.label }}
-                    </option>
-                  </select>
-                </div>
+            </div>
+            
+            <!-- Selector de horario -->
+            <div class="flex w-full max-w-xs gap-4 font-bold">
+              <div class="flex-1 flex flex-col items-center">
+                <Input
+                  id="start-time"
+                  name="start-time"
+                  type="select"
+                  v-model="availability.hours.startTime" 
+                  placeholder="Hasta"
+                  variant="secondary"
+                  :label="true"
+                  :outline="true"
+                  :options="timeOptions.map(option => ({
+                    value: option.value,
+                    label: option.label
+                  }))"
+                  class="!w-fit items-center"
+                />
+              </div>
+              <div class="flex-1 flex flex-col items-center">
+                <Input
+                  id="end-time"
+                  name="end-time"
+                  type="select"
+                  v-model="availability.hours.endTime"
+                  placeholder="Desde"
+                  variant="secondary"
+                  :label="true"
+                  :outline="true"
+                  :options="timeOptions.map(option => ({
+                    value: option.value,
+                    label: option.label
+                  }))"
+                  class="!w-fit items-center"
+                />
               </div>
             </div>
           </div>
-        </router-view>
+        </div>
+      </router-view>
 
-        <!-- Paso 5: Políticas y tarifas -->
-        <router-view v-if="currentStep === 4" class="step">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large text-deep-blue-900! font-extrabold!">Políticas y tarifas</Heading>
-            <Loading v-if="loading" role="status" />
-          </div>
-          <p class="text-sm font-medium">Establecé la tarifa diaria para alquilar tu vehículo. Configurá los kilómetros incluidos, el precio por KM extra y el depósito de seguridad sugerido. Esto permite definir claramente las condiciones para el arrendatario.</p>
+      <!-- Paso 5: Políticas y tarifas -->
+      <router-view v-if="currentStep === 4" class="step">
+        <div class="flex gap-4 items-center">
+          <Heading type="2" class="medium md:!text-3xl text-deep-blue-900! font-extrabold!">Políticas y tarifas</Heading>
+          <Loading v-if="loading" role="status" />
+        </div>
+        <p class="text-sm font-medium">Establecé la tarifa diaria para alquilar tu vehículo. Configurá los kilómetros incluidos, el precio por KM extra y el depósito de seguridad sugerido. Esto permite definir claramente las condiciones para el arrendatario.</p>
+        <div class="box-vibrant flex flex-col gap-5 min-w-full md:overflow-y-auto md:pr-2">
+
           <DropdownForm title="Tarifa base" :section-id="'section-2'" :dropdown-id="'tarifa'" :is-initial="true">
             <div class="flex gap-5">
               <Input
@@ -919,7 +912,8 @@ onBeforeUnmount(() => {
                 placeholder="Diaria"
                 :variant="'secondary'"
                 :outline="true"
-                required />
+                :label="true"
+                />
               <Input
                 type="number"
                 v-model.number="pricing.rates.weekly"
@@ -928,7 +922,8 @@ onBeforeUnmount(() => {
                 placeholder="Semanal"
                 :variant="'secondary'"
                 :outline="true"
-                required />
+                :label="true"
+                />
               <Input
                 type="number"
                 v-model.number="pricing.rates.monthly"
@@ -937,14 +932,11 @@ onBeforeUnmount(() => {
                 placeholder="Mensual"
                 :variant="'secondary'"
                 :outline="true"
-                required />
-            </div>
-            <div class="flex gap-2 items-center">
-              <Checkbox />
-              <p class="text-sm font-medium">Sugerencia automática</p>
+                :label="true"
+                />
             </div>
           </DropdownForm>
-          <DropdownForm color="" title="Política de kilometraje" :section-id="'section-2'" :dropdown-id="'kilometraje'">
+          <DropdownForm title="Política de kilometraje" :section-id="'section-2'" :dropdown-id="'kilometraje'">
             <div class="flex gap-5">
               <Input
                 type="select"
@@ -960,10 +952,9 @@ onBeforeUnmount(() => {
                   { value: '300', label: '300 km/día' },
                   { value: 'ilimitado', label: 'Ilimitado' }
                 ]"
-                icon-position="right"
                 variant="secondary"
                 :outline="true"
-                class="flex flex-45!"
+                :label="true"
               />
               <Input
                 type="select"
@@ -978,45 +969,50 @@ onBeforeUnmount(() => {
                   { value: '1200', label: '$1200/km' },
                   { value: '1500', label: '$1500/km' }
                 ]"
-                icon-position="right"
                 variant="secondary"
                 :outline="true"
-                class="flex flex-50!"
+                :label="true"
               />    
             </div>
           </DropdownForm>
-          <DropdownForm color="" title="Depósito de seguridad" :section-id="'section-2'" :dropdown-id="'seguridad'">
-              <Input 
-                type="number" 
-                v-model.number="pricing.securityDeposit" 
-                name="security-deposit" 
-                id="security-deposit" 
-                placeholder="Monto total del depósito" 
-                :variant="'secondary'" 
-                :outline="true" 
-                required />
+          <DropdownForm title="Depósito de seguridad" :section-id="'section-2'" :dropdown-id="'seguridad'">
+            <Input 
+              type="number" 
+              v-model.number="pricing.securityDeposit" 
+              name="security-deposit" 
+              id="security-deposit" 
+              placeholder="Monto total del depósito" 
+              :variant="'secondary'" 
+              :outline="true"
+              :label="true"
+              />
           </DropdownForm>
-        </router-view>
+        </div>
+      </router-view>
 
-         <!-- Paso 5: Fotos del vehículo -->
-         <router-view v-if="currentStep === 5" class="step">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large text-deep-blue-900! font-extrabold!">Fotos del vehículo</Heading>
-            <Loading v-if="loading" role="status" />
-          </div>
-          <p class="text-sm font-medium">Describe las características principales de tu vehículo. Subí fotos que muestren tanto el exterior como el interior, destacando sus mejores atributos. Las publicaciones con buenas imágenes reciben un 40% más de reservas.</p>
-          
+        <!-- Paso 5: Fotos del vehículo -->
+      <router-view v-if="currentStep === 5" class="step">
+        <div class="flex gap-4 items-center">
+          <Heading type="2" class="medium md:!text-3xl text-deep-blue-900! font-extrabold!">Fotos del vehículo</Heading>
+          <Loading v-if="loading" role="status" />
+        </div>
+        <p class="text-sm font-medium">Describe las características principales de tu vehículo. Subí fotos que muestren tanto el exterior como el interior, destacando sus mejores atributos. Las publicaciones con buenas imágenes reciben un 40% más de reservas.</p>
+        <div class="box-vibrant flex flex-col gap-5 min-w-full md:overflow-y-auto md:pr-2">
           <!-- Textarea descripcion -->
-          <Input 
-            type="textarea" 
-            v-model="status.description" 
-            name="description" 
-            id="description" 
-            placeholder="Descripción" 
-            :variant="'secondary'" 
-            :outline="true" 
-            required />
-
+          <div>
+            <Input 
+              type="textarea" 
+              v-model="status.description" 
+              name="description" 
+              id="description" 
+              placeholder="Descripción" 
+              :variant="'secondary'" 
+              :outline="true" 
+              :label="true"
+              class="!min-h-30 box-white"
+              />
+          </div>
+  
           <!-- Contenedor de fotos con grid de 4 columnas -->
           <div class="grid grid-cols-4 gap-4 w-full">
             <div 
@@ -1059,111 +1055,115 @@ onBeforeUnmount(() => {
               <span class="text-xs text-gray-500">Foto {{ index }}</span>
             </div>
           </div>
-        </router-view>
+        </div>
+        
+      </router-view>
 
-        <!-- Paso 6: Información de seguro -->
-        <router-view v-if="currentStep === 6" class="step">
-          <div class="flex gap-4 items-center">
-            <Heading type="2" class="large text-deep-blue-900! font-extrabold!">Información de seguro</Heading>
-            <Loading v-if="loading" role="status" />
-          </div>
-          <p class="text-sm font-medium">Indicá el tipo de cobertura, la compañía aseguradora y la vigencia del contrato. Además, cargá una imagen de la cédula verde para validar que la póliza está activa y cumple con los requisitos legales.</p>
-          <div class="flex flex-col gap-5">
-            <Input 
-              type="tel" 
-              v-model.number="insurance.number" 
-              name="number-insurance" 
-              id="number-insurance" 
-              placeholder="Número de póliza" 
-              :variant="'secondary'" 
-              :outline="true" 
-              required />
-            <Input
-              type="select"
-              v-model="insurance.company"
-              name="company"
-              id="company"
-              placeholder="Compañia aseguradora"
-              :options="[
-                { value: 'san_cristobal', label: 'San Cristóbal' },
-                { value: 'la_caja', label: 'La Caja' },
-                { value: 'federacion_patronal', label: 'Federación Patronal' },
-                { value: 'allianz', label: 'Allianz' },
-                { value: 'sancor', label: 'Sancor Seguros' },
-                { value: 'mercantil', label: 'Mercantil Andina' },
-                { value: 'triunfo', label: 'El Triunfo' }
-              ]"
-              icon-position="right"
-              variant="secondary"
-              :outline="true"
-              class="w-full cursor-pointer" />
-            <Input
-              type="select"
-              v-model="insurance.type"
-              name="type-insurance"
-              id="type-insurance"
-              placeholder="Tipo de cobertura"
-              :options="[
-                { value: 'total', label: 'Todo riesgo' },
-                { value: 'terceros_completo', label: 'Terceros completo' },
-                { value: 'terceros_basico', label: 'Terceros básico' },
-                { value: 'granizo', label: 'Todo riesgo + granizo' }
-              ]"
-              icon-position="right"
-              variant="secondary"
-              :outline="true"
-              class="w-full cursor-pointer"
+      <!-- Paso 6: Información de seguro -->
+      <router-view v-if="currentStep === 6" class="step">
+        <div class="flex gap-4 items-center">
+          <Heading type="2" class="medium md:!text-3xl text-deep-blue-900! font-extrabold!">Información de seguro</Heading>
+          <Loading v-if="loading" role="status" />
+        </div>
+        <p class="text-sm font-medium">Indicá el tipo de cobertura, la compañía aseguradora y la vigencia del contrato. Además, cargá una imagen de la cédula verde para validar que la póliza está activa y cumple con los requisitos legales.</p>
+        <div class="box-vibrant flex flex-col gap-5 min-w-full md:overflow-y-auto md:pr-2">
+          <Input 
+            type="tel" 
+            v-model.number="insurance.number" 
+            name="number-insurance" 
+            id="number-insurance" 
+            placeholder="Número de póliza" 
+            :variant="'secondary'" 
+            :outline="true" 
+            :label="true"
             />
-          </div>
-        </router-view>
-
-
-        <!-- Botones de navegación -->
-        <div class="flex justify-between items-center gap-32">
-          <button 
-            type="button" 
-            class="bg-vibrant-light-800 p-2 flex items-center h-fit rounded-full disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:not-disabled:bg-background-900/35" 
-            @click="prevStep" 
-            :disabled="currentStep === 0"
-          >
-            <span class="sr-only">Anterior</span>
-            <LongArrow color="#FFFFFF" direction="left" />
-          </button>
           <Input
-            type="button"
-            text="Siguiente"
-            variant="primary"
-            @click="nextStep"
-            :disabled="currentStep === sections.length - 1"
-            v-if="currentStep < sections.length - 1"
-            class="cursor-pointer"
-          />
-          <!-- :text="loading ? 'Procesando...' : 'Finalizar'" -->
+            type="select"
+            v-model="insurance.company"
+            name="company"
+            id="company"
+            placeholder="Compañia aseguradora"
+            :options="[
+              { value: 'san_cristobal', label: 'San Cristóbal' },
+              { value: 'la_caja', label: 'La Caja' },
+              { value: 'federacion_patronal', label: 'Federación Patronal' },
+              { value: 'allianz', label: 'Allianz' },
+              { value: 'sancor', label: 'Sancor Seguros' },
+              { value: 'mercantil', label: 'Mercantil Andina' },
+              { value: 'triunfo', label: 'El Triunfo' }
+            ]"
+            variant="secondary"
+            :outline="true"
+            :label="true"
+            />
           <Input
-            :type="currentStep === 6 ? 'submit' : 'button'"
-            variant="primary"
-            :text="loading ? 'Procesando...' : (isEditMode ? 'Guardar Cambios': 'Finalizar')"
-            :class="loading ? 'cursor-not-allowed bg-deep-blue-900' : 'cursor-pointer'"
-            :disabled="loading"
-            v-if="currentStep === sections.length - 1"
-            class="cursor-pointer"
+            type="select"
+            v-model="insurance.type"
+            name="type-insurance"
+            id="type-insurance"
+            placeholder="Tipo de cobertura"
+            :options="[
+              { value: 'total', label: 'Todo riesgo' },
+              { value: 'terceros_completo', label: 'Terceros completo' },
+              { value: 'terceros_basico', label: 'Terceros básico' },
+              { value: 'granizo', label: 'Todo riesgo + granizo' }
+            ]"
+            variant="secondary"
+            :outline="true"
+            :label="true"
           />
         </div>
-      </form>
-    </section>
+      </router-view>
+
+
+      <!-- Botones de navegación -->
+      <div class="flex justify-between items-center gap-32">
+        <button 
+          type="button" 
+          class="bg-vibrant-light-800 p-2 flex items-center h-fit rounded-full disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:not-disabled:bg-background-900/35" 
+          @click="prevStep" 
+          :disabled="currentStep === 0"
+        >
+          <span class="sr-only">Anterior</span>
+          <LongArrow color="#FFFFFF" direction="left" />
+        </button>
+        <Input
+          type="button"
+          text="Siguiente"
+          variant="tertiary"
+          :outline="false"
+          @click="nextStep"
+          :disabled="currentStep === sections.length - 1"
+          v-if="currentStep < sections.length - 1"
+          class="cursor-pointer"
+        />
+        <!-- :text="loading ? 'Procesando...' : 'Finalizar'" -->
+        <Input
+          :type="currentStep === 6 ? 'submit' : 'button'"
+          variant="tertiary"
+          :outline="false"
+          :text="loading ? 'Procesando...' : (isEditMode ? 'Guardar Cambios': 'Finalizar')"
+          :class="loading ? 'cursor-not-allowed bg-deep-blue-900' : 'cursor-pointer'"
+          :disabled="loading"
+          v-if="currentStep === sections.length - 1"
+          class="cursor-pointer"
+        />
+      </div>
+    </form>
   </section>
 </template>
 
 <style scoped>
-/* .sections-sidebar {
+.sections-sidebar {
   max-width: 420px;
   width: 100%;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
   gap: 40px;
+  overflow: hidden;
 }
- */
+
 .section-item {
   padding: 1rem;
   border-radius: 16px;
@@ -1175,14 +1175,30 @@ onBeforeUnmount(() => {
   align-items: center;
   position: relative;
 }
-
+@media (width <= 768px) {
+  .sections-sidebar {
+    flex-direction: row;
+  }
+  .section-item {
+    border-radius: 100%;
+  }
+  .section-item:not(:last-child)::after {
+    transform: rotate(0deg);
+    bottom: 13px;
+    right: -37px;
+  }
+}
+@media (width >= 768px) {
+  .section-item:not(:last-child)::after {
+    bottom: -35px;
+    left: 10px;
+    transform: rotate(90deg);
+  }
+}
 .section-item:not(:last-child)::after {
   content: "----";
   color: #7B7B7B;
   position: absolute;
-  bottom: -35px;
-  left: 10px;
-  transform: rotate(90deg)
 }
 
 .section-item.active {

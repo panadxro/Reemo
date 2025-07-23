@@ -130,20 +130,19 @@ export const useAuthStore = defineStore('auth', {
     },
     
     updateUserProfile(profileData) {
-  if (profileData && profileData.personalInfo) {
-    this.user = {
-      ...this.user,
-      firstName: profileData.personalInfo.firstName || null,
-      lastName: profileData.personalInfo.lastName || null,
-      name: profileData.personalInfo.firstName || null, 
-      profilePhoto: profileData.personalInfo.profilePhoto || null,
-      username: profileData.personalInfo.username || null,
-      status: profileData.status || 'not-verified',
-       role: profileData.role || profileData.personalInfo.role || 'user'
-    };
-    // console.log("Perfil de usuario actualizado:", this.user);
-  }
-},
+      if (profileData && profileData.personalInfo) {
+        this.user = {
+          ...this.user,
+          firstName: profileData.personalInfo.firstName || null,
+          lastName: profileData.personalInfo.lastName || null,
+          name: profileData.personalInfo.firstName || null, 
+          profilePhoto: profileData.personalInfo.profilePhoto || null,
+          username: profileData.personalInfo.username || null,
+          status: profileData.status || 'not-verified',
+          role: profileData.role || profileData.personalInfo.role || 'user'
+        };
+      }
+    },
 
     updateAuthSessionHistory(value) {
       sessionStorage.setItem('auth_session_history', value);
@@ -232,7 +231,7 @@ export const useAuthStore = defineStore('auth', {
         this.updateAuthSessionHistory(localStorage.getItem('auth_session') || '');
         await createUserProfile(this.user.id, this.user.email)
         router.push('/onboarding');
-        addAlert("!Bienvenido a Reemo!", "success")
+        addAlert("Usuario registrado con éxito. !Bienvenido a Reemo!", "success")
       } catch (error) {
         this.handleLoginError(error)
         throw error

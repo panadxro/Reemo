@@ -6,22 +6,6 @@ export const usePaymentStore = defineStore('payment', {
   state: () => ({
     paymentMethods: [],
     newPaymentMethod: {
-      // digital_wallet: {
-      //   type: 'digital_wallet',
-      //   brand: '',
-      //   cardNumber: ''
-      // },
-      // credit_card: {
-      //   type: 'credit_card',
-      //   cardholder: '',
-      //   cardNumber: '',
-      //   expiryDate: '',
-      //   cvv: ''
-      // },
-      // paypal: {
-      //   type: 'paypal',
-      //   email: ''
-      // }
       type: '',                
       brand: '',               
       cardNumber: '',          

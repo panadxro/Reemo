@@ -156,4 +156,35 @@ select,
 select option:first-of-type {
   display: none;
 }
+
+.pac-container {
+  border-radius: 1rem;
+  cursor: pointer;
+  scrollbar-width: none;
+  scrollbar-color: #CAF3F5 #ffffff;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  border: 2px solid #A7EBEF;
+}
+.pac-item {
+  cursor: pointer;
+  border: none;
+  padding: 0.5rem 1rem 0.5rem 1rem;
+}
+.pac-item:hover {
+  background-color: #A7EBEF !important;
+}
+.pac-item span:last-child {
+  font-size: 1rem;
+  font-family: onest;
+  font-weight: 600;
+}
+.pac-item-query {
+  text-color: #010440;
+  font-size: 1rem;
+  font-family: onest;
+  font-weight: 600;
+}
+.pac-icon-marker {
+  display: none;
+}
 </style>

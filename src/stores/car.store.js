@@ -130,17 +130,17 @@ export const useCarStore = defineStore("car", {
   }),
 
   actions: {
-    // async initializeCar() {
-    //   try {
-    //     this.loading = true;
-    //     this.currentCar.id = createCarData();
-    //   } catch (error) {
-    //     this.error = error;
-    //     throw error;
-    //   } finally {
-    //     this.loading = false;
-    //   }
-    // },
+    async initializeCar() {
+      try {
+        this.loading = true;
+        this.currentCar.id = createCarData();
+      } catch (error) {
+        this.error = error;
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
 
     async saveCar(carData) {
       try {

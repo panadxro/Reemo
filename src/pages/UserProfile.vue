@@ -152,8 +152,7 @@ export default {
                 <VerifyValidation
                 v-if="!isUserVerified"
                 title="Perfil en proceso de validación"
-                message="Tu perfil está siendo revisado por nuestro equipo. El proceso puede demorar algunos días. 
-                Te notificaremos cuando esté completo."
+                message="Tu perfil está siendo revisado por nuestro equipo. El proceso puede demorar algunos días."
                 class="!text-black"
                 :show="!isUserVerified"
                 type="brightYellow"

@@ -19,6 +19,7 @@ import RentalProcess from "@/components/organisms/rental/RentalProcess.vue";
 import VerifyValidation from "@/components/user/VerifyValidation.vue";
 import NoCarsResult from "@/components/atoms/NoCarsResult.vue";
 import Input from '../components/molecules/Input.vue';
+import NoCarLocation from "@/components/atoms/NoCarLocation.vue";
 
 // Stores
 const carStore = useCarStore();
@@ -395,7 +396,12 @@ watch(car, (newCar) => {
     <template v-if="car.id">
 
       <div class="md:m-2.5 p-2.5 md:p-0 w-full flex flex-col gap-3 overflow-hidden">
+        <div v-if="!car.value?.status?.currentLocation?.location" class="flex flex-col items-center justify-center h-full gap-5 bg-background-700 rounded-[40px] p-8">
+          <NoCarLocation class="max-w-[90px]"/>
+          <p class="font-semibold">Este vehículo no tiene ubicación registrada</p>
+        </div>
         <div 
+          v-else 
           class="w-full min-h-50 md:h-[50%] rounded-[40px] relative" 
           id="map" 
           v-show="store.currentStep === 1">
