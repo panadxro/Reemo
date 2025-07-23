@@ -26,9 +26,9 @@ const handleLogout = () => {
 </script>
 
 <template>
-  <nav class="flex md:bg-vibrant-light-600 flex-col justify-between w-full md:w-fit xs:max-h-3.5 md:min-h-full xs:mx-auto md:m-2.5 p-4 md:py-12 rounded-full fixed md:relative bottom-0 left-0 z-5">
+  <nav class="flex md:bg-vibrant-light-600  flex-col justify-between w-full md:w-fit xs:max-h-3.5 md:min-h-full xs:mx-auto md:m-2.5 p-4 md:py-12 rounded-full fixed md:relative bottom-0 left-0 z-5" :class="{'md:bg-vibrant-light-600': authStore?.user?.role === 'user', 'md:bg-deep-blue-900': authStore?.user?.role === 'admin'}">
     <ul 
-      v-if="userStore.profileData.role === 'user'"
+      v-if="authStore?.user?.role === 'user'"
       class="flex bg-vibrant-light-600 h-full md:h-auto !p-2.5 md:!p-0 md:flex-col rounded-full justify-center gap-4 md:gap-2 items-center"
     >
       <li class="hidden md:block">
@@ -60,38 +60,38 @@ const handleLogout = () => {
     </ul>
 
     <ul 
-      v-else-if="userStore.profileData.role === 'admin'"
-      class="flex bg-vibrant-light-600 h-full md:h-auto !p-2.5 md:!p-0 md:flex-col rounded-full justify-center gap-4 md:gap-2 items-center"
+      v-else-if="authStore?.user?.role === 'admin'"
+      class="flex bg-deep-blue-900 h-full md:h-auto !p-2.5 md:!p-0 md:flex-col rounded-full justify-center gap-4 md:gap-2 items-center"
     >
       <li>
         <router-link to="/">
-          <ReemoIcon class="hidden md:block w-10 h-10 text-vibrant-light-600" />
+          <ReemoIcon class="hidden md:block w-10 h-10" color="#FFFFFF" />
         </router-link>
       </li>
       <li class="relative">
         <IconNavButton to="/dashboard" title="Dashboard">
-          <Home />
+          <Home color="#FFFFFF"/>
           <DotNotification class="md:hidden"/>
         </IconNavButton>
       </li>
       <li>
         <IconNavButton to="/search" title="Search">
-          <Search />
+          <Search color="#FFFFFF"/>
         </IconNavButton>
       </li>
       <li>
         <IconNavButton to="/admin/cars" title="Admin cars">
-          <Cars />
-        </IconNavButton>
+          <Cars color="#FFFFFF"/>
+      </IconNavButton>
       </li>
       <li>
         <IconNavButton to="/admin/users" title="Admin users">
-          <People />
+          <People color="#FFFFFF"/>
         </IconNavButton>
       </li>
       <li>
         <IconNavButton :to="'/user/' + authStore?.user.id" title="Profile">
-          <User />
+          <User color="#FFFFFF"/>
         </IconNavButton>
       </li>
     </ul>
@@ -99,11 +99,13 @@ const handleLogout = () => {
     <ul class="hidden md:flex flex-col gap-2 items-center">
       <li title="Notifications" class="relative">
         <IconNavButton to="/notification" title="Notification">
-          <Notification/>
+          <Notification 
+            :color="userStore.profileData?.role === 'admin' ? '#FFFFFF' : '#010440'"
+          />
         </IconNavButton>
         <DotNotification />
       </li>
-<!--       <li v-if="userStore.profileData.role === 'user'">
+<!--       <li v-if="authStore?.user?.role === 'user'">
         <IconNavButton to="/" title="Questions & Answers">
           <QA />
         </IconNavButton>
@@ -119,7 +121,7 @@ const handleLogout = () => {
           title="Logout"
           class="flex items-center justify-center p-2 rounded-full transition-colors duration-300 cursor-pointer hover:bg-white/50"
         >
-          <Logout />
+          <Logout :color="userStore.profileData?.role === 'admin' ? '#FFFFFF' : '#010440'"/>
           <span class="sr-only">Logout</span>
         </button>
       </li>

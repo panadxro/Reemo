@@ -1,27 +1,39 @@
 <script>
+import { useUserStore } from "@/stores";
+
 export default {
   name: "IconNavButton",
   props: {
     to: {
       type: String,
-      required: true, // Ruta de navegación
+      required: true,
     },
     title: {
       type: String,
-      required: true, // Texto accesible
+      required: true,
     },
+  },
+  setup() {
+    const userStore = useUserStore();
+    return { userStore };
   },
 };
 </script>
 
 <template>
-  <router-link 
+  <router-link
     :to="to"
     :title="title"
     class="flex items-center p-2 rounded-full transition-colors duration-300 hover:bg-white/50"
-    active-class="bg-vibrant-light-800"
+    :active-class="
+      userStore.profileData?.role === 'user'
+        ? 'bg-vibrant-light-800'
+        : userStore.profileData?.role === 'admin'
+        ? 'bg-deep-blue-700'
+        : ''
+    "
   >
-    <slot></slot>
-    <span class="sr-only">{{ title }}</span> 
+    <slot />
+    <span class="sr-only">{{ title }}</span>
   </router-link>
 </template>

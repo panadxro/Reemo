@@ -402,7 +402,7 @@ watch(car, (newCar) => {
         </div>
       
         <div v-if="authStore.user?.id !== carStore.car.ownerId" class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-hidden flex flex-col gap-5">
-          <Heading type="2" class="medium text-white">Alquilar vehículo</Heading>
+          <Heading v-if="authStore?.user?.role === 'user'" type="2" class="medium text-white">Alquilar vehículo</Heading>
           
           <RentalProcess 
             v-if="!loading && !errorMsg && carStore.car && authStore.user?.id && user?.role !== 'admin'"
