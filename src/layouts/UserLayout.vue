@@ -1,26 +1,17 @@
 <script setup>
-import { provide, computed, defineAsyncComponent } from 'vue';
-import { useAuthStore } from '@stores';
+import { inject, computed } from 'vue';
 import { useRoute } from 'vue-router';
 
-const Sidebar = defineAsyncComponent(() => import('@/components/Sidebar.vue'));
-const UserNav = defineAsyncComponent(() => import('@/components/user/UserNav.vue'));
+import Sidebar from '../components/Sidebar.vue';
+import UserNav from '../components/user/UserNav.vue';
 
-const authStore = useAuthStore();
+const authStore = inject('authStore');
 const route = useRoute();
-
-// Proveer datos de autenticación y usuario
-const loggedUser = computed(() => authStore.user);
-const authSessionHistory = sessionStorage.getItem('auth_session_history');
-const authSession = JSON.parse(authSessionHistory);
 
 // Verificar si el ID de la ruta coincide con el usuario logueado
 const showUserNav = computed(() => {
-  return route.params.id === loggedUser.value?.id;
+  return route.params.id === authStore.user?.id;
 });
-
-provide('loggedUser', loggedUser);
-provide('authSession', authSession);
 </script>
 
 <template>

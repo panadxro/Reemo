@@ -448,7 +448,8 @@ onMounted(async () => {
       }
       loading.value = false;
     } else {
-      await carStore.initializeCar();
+      // await carStore.initializeCar();
+      carStore.resetCarState();
       await loadMakes();
     }
 

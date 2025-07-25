@@ -34,24 +34,6 @@ export const useAuthStore = defineStore('auth', {
     pick: ['user', 'isLoggedIn'] 
   },
   getters: {
-    userDisplayName: (state) => {
-      if (state.user.firstName && state.user.lastName) {
-        return `${state.user.firstName} ${state.user.lastName}`;
-      }
-      if (state.user.firstName) {
-        return state.user.firstName;
-      }
-      if (state.user.name) {
-        return state.user.name;
-      }
-      if (state.user.username) {
-        return state.user.username;
-      }
-      if (state.user.email) {
-        return state.user.email.split('@')[0];
-      }
-      return 'Usuario';
-    },
     userFirstName: (state) => {
       return state.user.firstName || state.user.name || state.user.username || 'Usuario';
     },
@@ -63,9 +45,6 @@ export const useAuthStore = defineStore('auth', {
     },
     userStatus: (state) => {
       return state.user.status || 'not-verified';
-    },
-    userRole: (state) => {
-      return state.user.role || 'user';
     }
   },
   actions: {
@@ -91,7 +70,7 @@ export const useAuthStore = defineStore('auth', {
             name: null,
             profilePhoto: null,
             username: null,
-            status: 'not-verified' ,
+            status: 'not-verified',
             role: null
           };
           this.isLoggedIn = true;          
@@ -130,19 +109,20 @@ export const useAuthStore = defineStore('auth', {
     },
     
     updateUserProfile(profileData) {
-      if (profileData && profileData.personalInfo) {
-        this.user = {
-          ...this.user,
-          firstName: profileData.personalInfo.firstName || null,
-          lastName: profileData.personalInfo.lastName || null,
-          name: profileData.personalInfo.firstName || null, 
-          profilePhoto: profileData.personalInfo.profilePhoto || null,
-          username: profileData.personalInfo.username || null,
-          status: profileData.status || 'not-verified',
-          role: profileData.role || profileData.personalInfo.role || 'user'
-        };
-      }
-    },
+  if (profileData && profileData.personalInfo) {
+    this.user = {
+      ...this.user,
+      firstName: profileData.personalInfo.firstName || null,
+      lastName: profileData.personalInfo.lastName || null,
+      name: profileData.personalInfo.firstName || null, 
+      profilePhoto: profileData.personalInfo.profilePhoto || null,
+      username: profileData.personalInfo.username || null,
+      status: profileData.status || 'not-verified',
+      role: profileData.role || 'user'
+    };
+    console.log("Perfil de usuario actualizado:", this.user);
+  }
+},
 
     updateAuthSessionHistory(value) {
       sessionStorage.setItem('auth_session_history', value);
@@ -175,8 +155,7 @@ export const useAuthStore = defineStore('auth', {
           name: null,
           profilePhoto: null,
           username: null,
-          status: null,
-          role: null 
+          status: null 
         }
         this.isLoggedIn = true
         this.updateAuthSessionHistory(localStorage.getItem('auth_session') || '');
@@ -186,7 +165,7 @@ export const useAuthStore = defineStore('auth', {
         
         this.updateUserProfile(userStore.profileData);
         
-        router.push('/dashboard');
+        router.push(`/user/${this.user.id}`);
         addAlert("!Bienvenido a Reemo!", "success")
         return userCredential
       } catch (error) {
@@ -224,14 +203,13 @@ export const useAuthStore = defineStore('auth', {
           name: null,
           profilePhoto: null,
           username: null,
-          status: null,
-          role: null
+          status: null 
         }
         this.isLoggedIn = true
         this.updateAuthSessionHistory(localStorage.getItem('auth_session') || '');
         await createUserProfile(this.user.id, this.user.email)
         router.push('/onboarding');
-        addAlert("Usuario registrado con éxito. !Bienvenido a Reemo!", "success")
+        addAlert("!Bienvenido a Reemo!", "success")
       } catch (error) {
         this.handleLoginError(error)
         throw error
@@ -263,21 +241,22 @@ export const useAuthStore = defineStore('auth', {
     },
     
     handleLoginError(error) {
-      const errorCode = error.errorCode;
+      const errorCode = error.errorCode
       switch (errorCode) {
         case 'auth/invalid-email':
-          this.error = 'El correo electrónico ingresado no es válido.';
-          break;
+          this.error = 'El correo electrónico ingresado no es valido.'
+          break
         case 'auth/wrong-password':
+          this.error = 'La contraseña es incorrecta.'
+          break
         case 'auth/user-not-found':
-        case 'auth/invalid-credential':
-          this.error = 'Las credenciales ingresadas son incorrectas.';
-          break;
+          this.error = 'No existe una cuenta con este email'
+          break
         default:
-          this.error = 'Revisá los datos ingresados y volvé a intentarlo.';
+          this.error = 'Error al iniciar sesión. Intenta de nuevo.'
       }
-      addAlert(this.error, 'error');
-      this.isSubmitting = false;
+      addAlert(this.error, 'error')
+      this.isSubmitting = false
     },
 
     setUnreadNotifications(status){

@@ -442,7 +442,7 @@ onBeforeUnmount(() => {
         <Loading v-if="loading" role="status" />
       </div>
 
-      <p class="text-sm font-medium">Para garantizar que npuedas hacer uso de nuestros servicios, debés ingresar, al menos, un método de pago.</p>
+      <p class="text-sm font-medium">Para garantizar que puedas hacer uso de nuestros servicios, debés ingresar, al menos, un método de pago.</p>
       
       <div class="box-deep flex flex-col gap-5 min-w-full md:overflow-y-auto md:pr-2">
         <!-- Métodos de pago existentes -->

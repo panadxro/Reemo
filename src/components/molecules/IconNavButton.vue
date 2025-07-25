@@ -1,34 +1,29 @@
-<script>
-import { useUserStore } from "@/stores";
+<script setup>
+import { inject } from 'vue';
 
-export default {
-  name: "IconNavButton",
-  props: {
-    to: {
-      type: String,
-      required: true,
-    },
-    title: {
-      type: String,
-      required: true,
-    },
+const props = defineProps({
+  to: {
+    type: String,
+    required: true,
   },
-  setup() {
-    const userStore = useUserStore();
-    return { userStore };
+  title: {
+    type: String,
+    required: true,
   },
-};
+})
+
+const authStore = inject('authStore');
 </script>
 
 <template>
   <router-link
     :to="to"
     :title="title"
-    class="flex items-center p-2 rounded-full transition-colors duration-300 hover:bg-white/50"
+    class="flex items-center p-2 rounded-full transition-colors duration-300 hover:bg-white/20"
     :active-class="
-      userStore.profileData?.role === 'user'
+      authStore.user?.role === 'user'
         ? 'bg-vibrant-light-800'
-        : userStore.profileData?.role === 'admin'
+        : authStore.user?.role === 'admin'
         ? 'bg-deep-blue-700'
         : ''
     "

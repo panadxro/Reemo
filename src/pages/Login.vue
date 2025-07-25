@@ -1,5 +1,5 @@
 <script>
-import { reactive } from "vue";
+import { reactive, ref, inject } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@stores";
 import { addAlert } from "../services/alerts";
@@ -18,20 +18,32 @@ export default {
   name: "Login",
   components: { Heading, Reemo, Google, FacebookIcon, Input, Mail, Password, Checkbox, BackButton },
   setup() {
-    const authStore = useAuthStore();
+    const authStore = inject('authStore');
+
+    const router = useRouter();
+    const loading = ref(false);
+    const errorMsg = ref("");
+
     const user = reactive({
       email: "",
       password: "",
+      remember: false,
     });
-    const router = useRouter();
-    
-    const authSessionHistory = sessionStorage.getItem('auth_session_history');
-    const authSession = JSON.parse(authSessionHistory);
-    if (authSession.isLoggedIn) {
-      router.push("/");
+
+    try {
+      const authSessionHistory = sessionStorage.getItem('auth_session_history');
+      if (authSessionHistory) {
+        const authSession = JSON.parse(authSessionHistory);
+        if (authSession?.isLoggedIn) {
+          router.push("/");
+        }
+      }
+    } catch (error) {
+      console.error("Error parsing auth session:", error);
+      sessionStorage.removeItem('auth_session_history')
     }
 
-    return { authStore, user };
+    return { authStore, user, loading, errorMsg };
   },
   methods: {
     async handleSubmit() {
@@ -51,6 +63,9 @@ export default {
       }
       try{
         await this.authStore.loginUser(this.user)
+      } catch (error) {
+        this.errorMsg = error.message || "Error al iniciar sesión.";
+        addAlert("Error al iniciar sesión.", "error")
       } finally {
         this.loading = false;
       }

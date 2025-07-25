@@ -155,9 +155,9 @@ defineExpose({ focus, blur,  });
       :class="containerClasses"
       class="max-h-12 w-full"
     >
-<!--       <button>
+      <button>
         <selectedcontent class="truncate"></selectedcontent>
-      </button> -->
+      </button>
       <option 
         v-if="placeholder" 
         value="" 
@@ -256,7 +256,6 @@ textarea {
   resize: none;
   min-height: 30px !important;
   width: full ;
-  form-sizing: content;
   max-height: 80px !important;
   background: white;
   border: 2px solid #A7EBEF ;
