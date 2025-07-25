@@ -1,20 +1,27 @@
 <script setup>
-import { watch, markRaw, shallowRef, defineAsyncComponent, provide } from 'vue'
+import { watch, markRaw, shallowRef, provide, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
-
 
 import DefaultLayout from '@layouts/DefaultLayout.vue'
 import SimpleLayout from "@layouts/SimpleLayout.vue"
 import DashboardLayout from '@layouts/DashboardLayout.vue'
 import UserLayout from '@layouts/UserLayout.vue'
 import MapsLayout from '@layouts/MapsLayout.vue'
+import Alert from './components/atoms/Alert.vue';
 
-const Alert = defineAsyncComponent(() => import('@/components/atoms/Alert.vue'))
 const authStore = useAuthStore()
+authStore.init();
 const route = useRoute()
 
+
+const loggedUser = computed(() => authStore.user);
+// const authSessionHistory = sessionStorage.getItem('auth_session_history');
+// const authSession = JSON.parse(authSessionHistory);
+
 provide('authStore', authStore);
+provide('authSession', authStore);
+provide('loggedUser', loggedUser);
 
 const layoutComponents = {
   default: markRaw(DefaultLayout),
@@ -179,7 +186,7 @@ select option:first-of-type {
   font-weight: 600;
 }
 .pac-item-query {
-  text-color: #010440;
+  color: #010440;
   font-size: 1rem;
   font-family: onest;
   font-weight: 600;

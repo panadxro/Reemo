@@ -27,7 +27,7 @@ export const useCarStore = defineStore("car", {
         seats: null
       },
       status: {
-        current: 'available',
+        current: 'not-validated',
         description: null,
         currentLocation: {
           address: '',
@@ -163,6 +163,9 @@ export const useCarStore = defineStore("car", {
       } finally {
         this.loading = false;
       }
+    },
+    resetCarState () {
+      this.$reset();
     },
 
     async updateCar(carId, carData) {

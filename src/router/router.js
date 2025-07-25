@@ -161,24 +161,27 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
-  const authSessionHistory = sessionStorage.getItem('auth_session_history');
-  const authSession = JSON.parse(authSessionHistory);
+  let authSession = { isLoggedIn: false };
+  
+  try {
+    const authSessionHistory = sessionStorage.getItem('auth_session_history');
+    authSession = authSessionHistory ? JSON.parse(authSessionHistory) : { isLoggedIn: false };
+  } catch (e) {
+    authSession = { isLoggedIn: false };
+  }
 
-  // Si el usuario está logueado, permite la navegación
-  if (authSession.isLoggedIn === true) {
+  // Rutas que no requieren autenticación
+  const publicRoutes = ['Login', 'Register', 'Home'];
+  if (publicRoutes.includes(to.name)) {
     return true;
   }
-  // Si no esta logueado pero el authstore esta inicializado
-  else {
-    // Si no requiere auth
-    if (!to.meta.needsAuth) {
-      return true;
-    }
-    // Si la ruta requiere autenticación, y el store esta inicializado, redirige a /login
-    if (to.meta.needsAuth && authSession.isLoggedIn === false) {
-      return { path: "/login", query: { redirect: to.fullPath } };
-    }
+
+  // Si requiere autenticación y no está logueado
+  if (to.meta.needsAuth && !authSession.isLoggedIn) {
+    return { path: "/login", query: { redirect: to.fullPath } };
   }
-})
+
+  return true;
+});
 
 export default router;
