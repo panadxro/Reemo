@@ -1,27 +1,31 @@
 <script setup>
 import { defineAsyncComponent } from "vue";
+import { useRouter } from 'vue-router';
 
-const Heading = defineAsyncComponent(() => import("@/components/atoms/Heading.vue"));
-const ZurichxReemo = defineAsyncComponent(() => import("@/components/atoms/ZurichxReemo.vue"));
-const PublishYourCar = defineAsyncComponent(() => import("@/components/atoms/PublishYourCar.vue"));
-const RentYourCar = defineAsyncComponent(() => import("@/components/atoms/RentYourCar.vue"));
-const NotificationExpress = defineAsyncComponent(() => import("@/components/atoms/NotificationExpress.vue"));
-const RentsExpress = defineAsyncComponent(() => import("@/components/atoms/RentsExpress.vue"));
-const Income = defineAsyncComponent(() => import("@/components/atoms/Income.vue"));
-const Moments = defineAsyncComponent(() => import("@/components/atoms/Moments.vue"));
-const ConectingCars = defineAsyncComponent(() => import("@/components/atoms/ConectingCars.vue"));
-const GooglePlayLg = defineAsyncComponent(() => import("@/components/atoms/GooglePlayLg.vue"));
-const AppStoreLg = defineAsyncComponent(() => import("@/components/atoms/AppStoreLg.vue"));
-const Brands = defineAsyncComponent(() => import("@/components/atoms/Brands.vue"));
-const Replay = defineAsyncComponent(() => import("@/components/atoms/Replay.vue"));
-const Clue = defineAsyncComponent(() => import("@/components/atoms/Clue.vue"));
-const Dropdown = defineAsyncComponent(() => import("@/components/molecules/Dropdown.vue"));
-const Experience = defineAsyncComponent(() => import("@/components/atoms/Experience.vue"));
-const QR = defineAsyncComponent(() => import("@/components/atoms/QR.vue"));
+import Heading from "@/components/atoms/Heading.vue";
+import ZurichxReemo from "@/components/atoms/ZurichxReemo.vue";
+import PublishYourCar from "@/components/atoms/PublishYourCar.vue";
+import RentYourCar from "@/components/atoms/RentYourCar.vue";
+import NotificationExpress from "@/components/atoms/NotificationExpress.vue";
+import RentsExpress from "@/components/atoms/RentsExpress.vue";
+import Income from "@/components/atoms/Income.vue";
+import Moments from "@/components/atoms/Moments.vue";
+import ConectingCars from "@/components/atoms/ConectingCars.vue";
+import GooglePlayLg from "@/components/atoms/GooglePlayLg.vue"; 
+import AppStoreLg from "@/components/atoms/AppStoreLg.vue";
+import Brands from "@/components/atoms/Brands.vue";
+import Replay from "@/components/atoms/Replay.vue";
+import Clue from "@/components/atoms/Clue.vue";
+import Dropdown from "@/components/molecules/Dropdown.vue";
+import Experience from "@/components/atoms/Experience.vue";
+import QR from "@/components/atoms/QR.vue";
+import Input from "@/components/molecules/Input.vue";
+import InfoSm from "@/icons/InfoSm.vue";
+import ABS from "@/icons/ABS.vue";
+import LongArrow from "@/icons/LongArrow.vue";
 
-const InfoSm = defineAsyncComponent(() => import("@/icons/InfoSm.vue"));
-const ABS = defineAsyncComponent(() => import("@/icons/ABS.vue"));
-const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
+const router = useRouter();
+
 </script>
 
 <template>
@@ -108,10 +112,21 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
         <div class="flex flex-row-reverse">
           <PublishYourCar />
         </div>
-        <a href="" class="flex items-center justify-between py-2 px-5 rounded-xl bg-primary-800 text-white w-36">
+        <!-- <a href="/car/register" class="flex items-center justify-between py-2 px-5 rounded-xl bg-primary-800 text-white w-36">
           <span>Publicar</span>
           <LongArrow color="#FFFFFF" direction="right"/>
-        </a>
+        </a> -->
+        <Input type="button"
+          text="Publicar"
+          variant="primary"
+          class="w-fit"
+          icon-position="right"
+          @click="$router.push('/car/register')"
+          >
+          <template #icon>
+            <LongArrow color="#FFFFFF" direction="right"/>
+          </template>
+        </Input>
       </article>
       <article class="bg-linear-to-r to-secondary-300 from-secondary-100 pl-9 py-11 flex flex-col gap-16 rounded-[40px] w-full group relative">
         <div class="flex flex-col gap-4 md:w-full">
@@ -121,10 +136,17 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
         <div class="flex flex-row-reverse">
           <RentYourCar />
         </div>
-        <a href="" class="flex items-center justify-between py-2 px-5 rounded-xl bg-secondary-300 text-white w-36">
-          <span>Ver autos</span>
-          <LongArrow color="#FFFFFF" direction="right"/>
-        </a>
+        <Input type="button"
+          text="Ver autos"
+          variant="tertiary"
+          class="w-fit"
+          icon-position="right"
+          @click="$router.push('/search')"
+          >
+          <template #icon>
+            <LongArrow color="#FFFFFF" direction="right"/>
+          </template>
+        </Input>
       </article>
     </div>
   </section>
@@ -146,10 +168,17 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
                 </p>
             </div>
     
-            <a href="" class="flex items-center justify-between py-2 px-5 rounded-xl bg-secondary-900 text-white w-36 mt-6 md:mt-0">
-                <span>Ver autos</span>
-                <LongArrow color="#FFFFFF" direction="right"/>
-            </a>
+            <Input type="button"
+          text="Ver autos"
+          variant="tertiary"
+          class="w-fit"
+          icon-position="right"
+          @click="$router.push('/search')"
+          >
+          <template #icon>
+            <LongArrow color="#FFFFFF" direction="right"/>
+          </template>
+        </Input>
         </div>
         
         <div class="hidden md:flex justify-center lg:justify-end mt-8 md:mt-0 md:mr-16">
@@ -253,10 +282,20 @@ const LongArrow = defineAsyncComponent(() => import("@/icons/LongArrow.vue"));
         <p class="pt-4">Todos los vehículos registrados en nuestra plataforma están protegidos por un seguro contra todo riesgo con Zurich, lo que significa que tanto el propietario como el arrendatario están cubiertos en caso de accidentes, daños o robos durante el período de alquiler.</p>
       </Dropdown>
     </div>
-    <a href="" class="flex items-center gap-4 py-2 px-4 rounded-2xl bg-secondary-900 w-fit">
+    <!-- <a href="" class="flex items-center gap-4 py-2 px-4 rounded-2xl bg-secondary-900 w-fit">
       <span class="font-semibold text-white">Ir a todas las preguntas</span>
       <LongArrow color="#FFFFFF" direction="right"/>
-    </a>
+    </a> -->
+    <Input type="button"
+          text="Ver todas las preguntas"
+          variant="secondary"
+          class="w-fit mx-auto"
+          icon-position="right"
+          >
+          <template #icon>
+            <LongArrow direction="right"/>
+          </template>
+        </Input>
   </section>
 
   <section class="flex flex-col gap-5 items-center px-4 md:px-0 md:max-w-3/4">
