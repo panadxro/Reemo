@@ -63,10 +63,16 @@ export default {
     watch(userIdFromRoute, async (newUserId, oldUserId) => {
       if (newUserId !== oldUserId) {
         await userStore.loadUserProfile(newUserId);
+
+        // if(!userIdFromRoute !== newUserId) {
+        //   router.push('/not-found');
+        // }
+
         // También cargar los autos cuando cambie el usuario
         if (newUserId) {
           try {
             await carStore.loadUserCars(newUserId);
+            // console.log('nuevo id de usuario', newUserId);
           } catch (error) {
             console.error("Error cargando autos del usuario:", error);
           }
@@ -78,6 +84,11 @@ export default {
       try {
         // Cargar perfil del usuario
         await userStore.loadUserProfile(userIdFromRoute.value);
+        // console.log('Perfil del usuario cargado', showProfile.value.uid,);
+        // if (!showProfile.value.uid !== userIdFromRoute.value) {
+        //   router.push('/not-found');
+        //   return;
+        // }
 
         // Fetch a los autos del usuario
         await carStore.loadUserCars(userIdFromRoute.value);

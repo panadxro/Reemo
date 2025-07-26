@@ -100,7 +100,7 @@ syncWithStoreData() {
   this.updateAvailableUntilHours();
   
   if (dataWasLoaded) {
-    console.log("Datos cargados del store, emitiendo actualización");
+    // console.log("Datos cargados del store, emitiendo actualización");
     this.emitDates();
   }
 },
@@ -263,9 +263,9 @@ syncWithStoreData() {
   },
 mounted() {
   this.$nextTick(() => {
-    console.log("DateTime montado, inicializando con datos:", 
-      this.rentalData.rentedFromDate, 
-      this.rentalData.rentedUntilDate);
+    // console.log("DateTime montado, inicializando con datos:", 
+    //   this.rentalData.rentedFromDate, 
+    //   this.rentalData.rentedUntilDate);
     
     this.syncWithStoreData();
     
