@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useUserStore } from "@/stores";
 
 import Home from "../pages/Home.vue";
 
@@ -6,17 +7,8 @@ const routes = [
   { path: "/", component: Home, name: "Home" },
   { path: "/login", name: "Login", component: () => import("../pages/Login.vue") },
   { path: "/register", name: "Register", component: () => import("../pages/Register.vue") },
-  {
-    path: "/:pathMatch(.*)*",
-    component: () => import("../pages/NotFound.vue"),
-    name: "NotFound",
-    beforeEnter: (to) => {
-      if (!to.matched.length) {
-        return '/404'
-      }
-    },
-   },
-  { path: "/dashboard", 
+  { 
+    path: "/dashboard", 
     component: () => import("../pages/Dashboard.vue"),
     name: "Dashboard",
     meta: { needsAuth: true },
@@ -33,14 +25,14 @@ const routes = [
     path: "/car/register",
     name: "CarRegister",
     component: () => import("../pages/CarRegister.vue"),
-    meta: { needsAuth: true},
+    meta: { needsAuth: true, requiresVerified: true },
   },
   {
     path: "/car/edit/:id",
     name: 'CarEdit',
     props: true,
     component: () => import("../pages/CarRegister.vue"),
-    meta: { requiresAuth: true }
+    meta: { needsAuth: true, requiresVerified: true },
   },
   {
     path: "/car/:id",
@@ -64,30 +56,37 @@ const routes = [
       id: route.params.id,
     }),
     meta: { needsAuth: true },
+    async beforeEnter(to) {
+      const userStore = useUserStore();
+      
+      try {
+        const user = await userStore.getUserById(to.params.id);
+        
+        if (!user) {
+          return { name: 'NotFound' };
+        }
+        
+        return true;
+      } catch (error) {
+        console.error("Error al verificar el usuario:", error);
+        return { name: 'NotFound' };
+      }
+    },
     children: [
       {
         path: "chat",
         name: "Chat",
         component: () => import("../pages/Chat.vue"),
-        meta: { needsAuth: true },
-        // Validcacion para que un usuario no pueda chatear con el mismo. lo redirige a su perfil, capaz se puede crear una página de error
+        meta: { needsAuth: true, requiresVerified: true },
         beforeEnter: (to) => {
-          // Obtener la sesión del usuario actual
           const authSessionHistory = sessionStorage.getItem('auth_session_history');
           const authSession = JSON.parse(authSessionHistory);
           
-          // Obtener el ID del usuario desde la URL
           const targetUserId = to.params.id;
-          
-          // Obtener el ID del usuario actual (asumiendo que está en la sesión)
           const currentUserId = authSession.user?.id || authSession.userId;
           
-          // Verificar si está intentando chatear consigo mismo
           if (targetUserId === currentUserId || targetUserId === String(currentUserId)) {
-            // Redireccion
-            return { 
-              path: `/user/${targetUserId}`,
-            };
+            return { path: `/user/${targetUserId}` };
           }
           
           return true;
@@ -103,13 +102,29 @@ const routes = [
       id: route.params.id,
     }),
     meta: { needsAuth: true },
+    async beforeEnter(to) {
+      const userStore = useUserStore();
+      
+      try {
+        const user = await userStore.getUserById(to.params.id);
+        
+        if (!user) {
+          return { name: 'NotFound' };
+        }
+        
+        return true;
+      } catch (error) {
+        console.error("Error al verificar el usuario:", error);
+        return { name: 'NotFound' };
+      }
+    },
   },
   {
     path: '/rent/:id',
     name: 'RentDetail',
     component: () => import('../pages/RentDetails.vue'),
     props: true,
-    meta: { needsAuth: true },
+    meta: { needsAuth: true, requiresVerified: true },
   },
   {
     path: '/cars/:id',
@@ -118,7 +133,23 @@ const routes = [
     props: (route) => ({
       id: route.params.id,
     }),
-    meta: { needAuth: true },
+    meta: { needsAuth: true, requiresVerified: true },
+    async beforeEnter(to) {
+      const userStore = useUserStore();
+      
+      try {
+        const user = await userStore.getUserById(to.params.id);
+        
+        if (!user) {
+          return { name: 'NotFound' };
+        }
+        
+        return true;
+      } catch (error) {
+        console.error("Error al verificar el usuario:", error);
+        return { name: 'NotFound' };
+      }
+    },
   },
   {
     path: '/documents/:id',
@@ -127,12 +158,12 @@ const routes = [
     props: (route) => ({
       id: route.params.id,
     }),
-    meta: { needAuth: true },
+    meta: { needsAuth: true },
   },
   {
     path: "/admin",
     name: "Admin",
-    meta: { needsAuth: true, role: "admin" },
+    meta: { needsAuth: true, role: "admin", requiresVerified: true },
     children: [
       {
         path: "cars",
@@ -146,6 +177,9 @@ const routes = [
       }
     ],
   },
+  { path: '/not-authorized', name: 'NotAuthorized', component: () => import('../pages/NotAuthorized.vue') },
+  { path: '/not-found', name: 'NotFound', component: () => import('../pages/NotFound.vue') },
+  { path: '/not-verified', name: 'NotVerified', component: () => import('../pages/NotVerified.vue') },
 ];
 
 const router = createRouter({
@@ -161,16 +195,16 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
-  let authSession = { isLoggedIn: false };
+  let authSession = { isLoggedIn: false, user: { status: null, role: null } };
   
   try {
     const authSessionHistory = sessionStorage.getItem('auth_session_history');
-    authSession = authSessionHistory ? JSON.parse(authSessionHistory) : { isLoggedIn: false };
+    authSession = authSessionHistory ? JSON.parse(authSessionHistory) : { isLoggedIn: false, user: { status: null, role: null } };
   } catch (e) {
-    authSession = { isLoggedIn: false };
+    authSession = { isLoggedIn: false, user: { status: null, role: null } };
   }
 
-  // Rutas que no requieren autenticación
+  // Rutas públicas que no requieren autenticación
   const publicRoutes = ['Login', 'Register', 'Home'];
   if (publicRoutes.includes(to.name)) {
     return true;
@@ -179,6 +213,25 @@ router.beforeEach(async (to) => {
   // Si requiere autenticación y no está logueado
   if (to.meta.needsAuth && !authSession.isLoggedIn) {
     return { path: "/login", query: { redirect: to.fullPath } };
+  }
+
+  // Verificación para usuarios no verificados
+  if (authSession.isLoggedIn && authSession.user?.status === 'not-verified' && to.meta.requiresVerified) {
+    return { path: '/not-verified' };
+  }
+
+  // Verificación de roles de administrador
+  if (to.meta.role && authSession.isLoggedIn) {
+    const userRole = authSession.user?.role;
+    
+    if (to.meta.role !== userRole) {
+      return { path: '/not-authorized' };
+    }
+  }
+
+  // Verificación de ruta no encontrada
+  if (!to.matched.length) {
+    return { path: '/not-found' };
   }
 
   return true;
