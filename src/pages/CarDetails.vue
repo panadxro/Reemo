@@ -423,19 +423,21 @@ watch(car, (newCar) => {
               <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700">
                 <p>Compañía:</p>
                 <span>{{ car.insurance?.company === 'san_cristobal' 
-                              ? 'San Cristóbal' 
-                              : car.insurance?.company === 'la_caja' 
-                                ? 'La Caja' 
-                                : car.insurance?.company === 'federacion_patronal' 
-                                  ? 'Federación Patronal' 
-                                    : car.insurance?.company === 'sancor' 
-                                      ? 'Sancor' 
-                                        : car.insurance?.company === 'allianz' 
-                                          ? 'Allianz' 
-                                            : car.insurance?.company === 'mercantil' 
-                                              ? 'Mercantil' 
-                                                : car.insurance?.company === 'triunfo' 
-                                                  ? 'Triunfo' : 'N/A'}}</span>
+                              ? 'San Cristóbal'
+                               : car.insurance?.company === 'zurich' 
+                                ? 'Zurich Seguros' 
+                                  : car.insurance?.company === 'la_caja' 
+                                    ? 'La Caja' 
+                                    : car.insurance?.company === 'federacion_patronal' 
+                                      ? 'Federación Patronal' 
+                                        : car.insurance?.company === 'sancor' 
+                                          ? 'Sancor' 
+                                            : car.insurance?.company === 'allianz' 
+                                              ? 'Allianz' 
+                                                : car.insurance?.company === 'mercantil' 
+                                                  ? 'Mercantil' 
+                                                    : car.insurance?.company === 'triunfo' 
+                                                      ? 'Triunfo' : 'N/A'}}</span>
               </li>
               <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700">
                 <p>Tipo:</p>
