@@ -121,13 +121,95 @@ export default {
           <Heading v-if="showProfile && showProfile.personalInfo" :type="1" class="medium">{{ isOwnProfile ? "Mi perfil" : showProfile.personalInfo.username }}</Heading>
         </div>
         <article class="bg-secondary-100 h-full md:flex-row rounded-[40px] items-center justify-center px-6 py-8 flex flex-col gap-5 overflow-hidden box-vibrant">
-            <img 
-            v-if="showProfile && showProfile.personalInfo && showProfile.personalInfo.profilePhoto"
-            class="md:hidden xl:block h-full aspect-square rounded-full object-cover bg-vibrant-light-800"
-            :src="showProfile.personalInfo.profilePhoto"
-            :alt="`Perfil de ${showProfile?.personalInfo?.username || 'usuario'}`" 
-            />
-            <div class="flex flex-col justify-evenly items-center md:items-baseline h-full md:gap-0 overflow-y-auto ">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Perfil y verificación -->
+            <div class="flex flex-col items-center md:items-start text-center md:text-left">
+              <img 
+                v-if="showProfile && showProfile.personalInfo && showProfile.personalInfo.profilePhoto"
+                class="w-24 h-24 mb-4 xl:block h aspect-square rounded-full object-cover bg-vibrant-light-800"
+                :src="showProfile.personalInfo.profilePhoto"
+                :alt="`Perfil de ${showProfile?.personalInfo?.username || 'usuario'}`" 
+              />
+              <!-- <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 text-white flex items-center justify-center text-3xl font-bold mb-4">
+                YL
+              </div> -->
+              <Heading :type="2" class="text-2xl font-semibold text-gray-800 md:text-start"
+                v-if="showProfile && showProfile.personalInfo">
+                {{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }}
+              </Heading>
+              <!-- <h2 class="text-2xl font-semibold text-gray-800">Yoel Lazarte</h2> -->
+              <p class="text-gray-500 text-sm">{{ showProfile?.email || 'Este usuario no ha proporcionado un mail.' }}</p>
+
+              <div v-if="isOwnProfile" class="">
+                <div v-if="isUserVerified" class="flex items-center bg-green-100 text-green-800  px-3 py-1 rounded-full mt-3 text-sm">
+                  <!-- <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="..." /></svg> -->
+                  Perfil verificado
+                </div>
+                <div v-if="!isUserVerified" class="flex items-center bg-red-100 text-red-800  px-3 py-1 rounded-full mt-3 text-sm">
+                  <!-- <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="..." /></svg> -->
+                  Perfil no verificado
+                </div>
+              </div>
+              <!-- <div v-if="isOwnProfile" class="w-full">
+                <VerifyValidation
+                v-if="!isUserVerified"
+                title="Perfil en proceso de validación"
+                message="Tu perfil está siendo revisado por nuestro equipo. El proceso puede demorar algunos días."
+                class="!text-black"
+                :show="!isUserVerified"
+                type="brightYellow"
+                />
+  
+                <VerifyValidation
+                  v-else
+                  title="Perfil verificado"
+                  message="Tu perfil fue verificado con éxito. Ahoras podés disfrutar la aplicación al 100%."
+                  class="!text-black"
+                  :show="isUserVerified"
+                  type="green"
+                />
+              </div> -->
+            </div>
+            
+            <div class="flex flex-col justify-between"
+            v-if="!isOwnProfile && showProfile && showProfile.personalInfo && showProfile.personalInfo.id !== id">
+              <div class="flex items-center justify-between">
+                  <router-link
+                  :to="`/user/${id}/chat`"
+                  class="cursor-pointer"
+                  >
+                    <Input 
+                      type="button"
+                      text="Chat"
+                      variant="primary"
+                      :outline="false"
+                      class="cursor-pointer"
+                    />
+                  </router-link>
+              </div>
+            </div>
+          
+            <!-- Ganancias Totales -->
+            <div v-if="isOwnProfile" class="bg-gradient-to-tr bg-deep-blue-800 text-white p-5 rounded-2xl shadow-lg flex flex-col justify-between">
+              <div class="flex items-center justify-between pb-3">
+                <div>
+                  <p class="text-sm uppercase">Ganancias Totales</p>
+                  <h3 class="text-3xl font-bold mt-1">{{ new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(showProfile?.personalInfo?.totalEarnings || 0) }}</h3>
+                </div>
+                <svg class="w-10 h-10 opacity-80" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="..." /> <!-- ícono de dinero o gráfico -->
+                </svg>
+              </div>
+                <div>
+                  <p class="text-sm uppercase">Gastos Totales</p>
+                  <h3 class="text-3xl font-bold mt-1">$0,00</h3>
+                </div>
+              <!-- <button class="mt-4 bg-white text-emerald-700 font-semibold py-1 px-3 rounded-lg hover:bg-gray-100 transition">Ver Detalles</button> -->
+            </div>
+          </div>
+
+            
+            <!-- <div class="flex flex-col justify-evenly items-center md:items-baseline h-full md:gap-0 overflow-y-auto ">
               <div class="flex justify-center md:justify-between items-center">
                 <Heading :type="2" class="medium text-primary-900 text-center md:text-start"
                   v-if="showProfile && showProfile.personalInfo">
@@ -148,6 +230,12 @@ export default {
                 </router-link>
               </div>
               <p class="text-primary-900 text-sm md:text-md leading-relaxed">{{ showProfile?.email || 'Este usuario no ha proporcionado un mail.' }}</p>
+              
+              <li class="flex justify-between items-center">
+                <Heading :type="6" class="text-sm font-bold">Ganancias totales</Heading>
+                <p class="text-sm">{{ new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(showProfile?.personalInfo?.totalEarnings || 0) }}</p>
+              </li>
+              
               <div v-if="isOwnProfile" class="w-full">
                 <VerifyValidation
                 v-if="!isUserVerified"
@@ -167,9 +255,12 @@ export default {
                   type="green"
                 />
               </div>
-            </div>
+            </div> -->
         </article>
       </div>
+
+
+
 
       <!-- Autos del usuario -->
       <div class="overflow-hidden flex flex-col gap-5" :class="isOwnProfile ? 'cars' : 'user-cars'">
