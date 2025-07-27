@@ -2,7 +2,10 @@ import {
   createUserWithEmailAndPassword, 
   onAuthStateChanged, 
   signInWithEmailAndPassword, 
-  signOut 
+  signOut,
+  GoogleAuthProvider,
+  FacebookAuthProvider,
+  signInWithPopup
 } from "firebase/auth";
 import { auth } from "./firebase";
 
@@ -62,5 +65,27 @@ export function subscribeToAuthState(callback) {
 function notifyAllObservers() {
   authObservers.forEach(observer => {
     observer({ ...currentAuthState });
+  });
+}
+
+export async function loginWithGoogle() {
+  const provider = new GoogleAuthProvider();
+  return signInWithPopup(auth, provider);
+}
+
+export async function loginWithFacebook() {
+  const provider = new FacebookAuthProvider();
+  provider.addScope('email');
+  provider.addScope('public_profile');
+  
+  // Opcional: solicitar datos específicos
+  provider.setCustomParameters({
+    'display': 'popup',
+    'auth_type': 'reauthenticate'
+  });
+  
+  return signInWithPopup(auth, provider).catch(error => {
+    console.error("Facebook sign-in error:", error);
+    throw error;
   });
 }

@@ -188,6 +188,14 @@ const validateCar = async (car) => {
   }
 };
 
+const formatInsuranceName = (company) => {
+  if (!company) return 'N/A';
+  return company
+    .split('_')
+    .map(word => word[0]?.toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 const goToEditCar = async (carId) => {
     router.push({ name: 'CarEdit', params: { id: carId } });
 };
@@ -396,9 +404,9 @@ watch(car, (newCar) => {
     <template v-if="car.id">
 
       <div class="md:m-2.5 p-2.5 md:p-0 w-full flex flex-col gap-3 overflow-hidden">
-        <div v-if="!car.value?.status?.currentLocation?.location" class="flex flex-col items-center justify-center h-full gap-5 bg-background-700 rounded-[40px] p-8">
+        <div v-if="!car.value?.status?.currentLocation?.location" v-show="store.currentStep === 1" class="flex flex-col items-center justify-center min-h-50 md:h-[50%] gap-5 bg-background-700 rounded-[40px] p-8">
           <NoCarLocation class="max-w-[90px]"/>
-          <p class="font-semibold">Este vehículo no tiene ubicación registrada</p>
+          <p class="font-semibold text-center">Este vehículo no tiene ubicación registrada</p>
         </div>
         <div 
           v-else 
@@ -407,7 +415,7 @@ watch(car, (newCar) => {
           v-show="store.currentStep === 1">
         </div>
       
-        <div v-if="authStore.user?.id !== carStore.car.ownerId" class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full overflow-hidden flex flex-col gap-5">
+        <div v-if="authStore.user?.id !== carStore.car.ownerId" class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full h-full overflow-hidden flex flex-col gap-5">
           <Heading v-if="authStore?.user?.role === 'user'" type="2" class="medium text-white">Alquilar vehículo</Heading>
           
           <RentalProcess 
@@ -417,47 +425,41 @@ watch(car, (newCar) => {
             :is-car-rented="store.isRented"
           />  
     
-          <div v-if="user?.role === 'admin'" class="mt-6">
+          <div v-if="user?.role === 'admin'" class="box-deep flex flex-col gap-4 overflow-hidden w-full h-full">
             <Heading type="3" class="regular text-white">Datos del seguro</Heading>
-            <ul class="font-semibold text-white mt-4">
-              <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700">
-                <p>Compañía:</p>
-                <span>{{ car.insurance?.company === 'san_cristobal' 
-                              ? 'San Cristóbal' 
-                              : car.insurance?.company === 'la_caja' 
-                                ? 'La Caja' 
-                                : car.insurance?.company === 'federacion_patronal' 
-                                  ? 'Federación Patronal' 
-                                    : car.insurance?.company === 'sancor' 
-                                      ? 'Sancor' 
-                                        : car.insurance?.company === 'allianz' 
-                                          ? 'Allianz' 
-                                            : car.insurance?.company === 'mercantil' 
-                                              ? 'Mercantil' 
-                                                : car.insurance?.company === 'triunfo' 
-                                                  ? 'Triunfo' : 'N/A'}}</span>
-              </li>
-              <li class="flex items-center py-4 justify-between border-b-2 border-vibrant-light-700">
-                <p>Tipo:</p>
-                <span>{{ car.insurance?.type === 'total' 
-                              ? 'Todo riesgo' 
-                              : car.insurance?.type === 'terceros_completo' 
-                                ? 'Terceros completo' 
-                                : car.insurance?.type === 'terceros_basico' 
-                                  ? 'Terceros básico' 
-                                    : car.insurance?.type === 'granizo' 
-                                      ? 'Todo riesgo + granizo' : 'N/A' }}</span>
-              </li>
-              <li class="flex items-center py-4 justify-between">
-                <p>Número:</p>
-                <span>{{ car.insurance?.number }}</span>
-              </li>
-            </ul>
-            <button @click="car.status?.current === 'not-validated' ? validateCar(car) : openInvalidationModal(car)"
-              class="mt-4 text-white py-3 px-6 rounded-lg font-semibold bg-secondary-700 transition-colors duration-300 w-fit hover:bg-deep-blue-700 hover:cursor-pointer"
-            >
-              <span>{{ car.status?.current === 'not-validated' ? 'Validar' : 'Invalidar'}}</span>
-            </button>
+            <div class="flex flex-col gap-4 justify-between overflow-y-auto h-full pr-2">
+
+              <ul class="font-semibold text-white flex flex-col gap-2 ">
+                <li class="flex items-center justify-between">
+                  <p>Compañía:</p>
+                  <span>{{ formatInsuranceName(car.insurance?.company) }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <p>Tipo:</p>
+                  <span>{{ car.insurance?.type === 'total' 
+                                ? 'Todo riesgo' 
+                                : car.insurance?.type === 'terceros_completo' 
+                                  ? 'Terceros completo' 
+                                  : car.insurance?.type === 'terceros_basico' 
+                                    ? 'Terceros básico' 
+                                      : car.insurance?.type === 'granizo' 
+                                        ? 'Todo riesgo + granizo' : 'N/A' }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <p>Número:</p>
+                  <span>{{ car.insurance?.number }}</span>
+                </li>
+              </ul>
+
+              <Input
+                type="button"
+                variant="primary"
+                :outline="false"
+                :text="car.status?.current === 'not-validated' ? 'Validar' : 'Invalidar'"
+                class="!w-fit"
+                @click="car.status?.current === 'not-validated' ? validateCar(car) : openInvalidationModal(car)"
+              />
+            </div>
           </div>
         </div>
         

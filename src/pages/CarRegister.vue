@@ -499,9 +499,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="flex flex-col md:flex-row 2xl:max-w-[1120px] 2xl:max-h-[675px] min-h-screen md:min-h-auto md:h-screen w-full 2xl:mx-auto gap-10 justify-start md:justify-center 2xl:justify-between py-4 px-2 xl:px-16 xl:py-12 bg-vibrant-light-600 2xl:rounded-[40px] text-deep-blue-900 overflow-hidden shadow-2xl">
+  <section class="flex flex-col md:flex-row 2xl:max-w-[1120px] 2xl:max-h-[675px] min-h-screen md:min-h-auto md:h-screen w-full 2xl:mx-auto gap-10 justify-start md:justify-center 2xl:justify-between py-4 px-2 xl:px-16 xl:py-12 bg-vibrant-light-600 2xl:rounded-[40px] text-deep-blue-900 overflow-hidden shadow-2xl items-center">
     <!-- Secciones al costado -->
-    <aside class="flex flex-col gap-8 w-full md:max-w-[425px] md:overflow-hidden">
+    <aside class="flex flex-col gap-8 w-full md:max-w-[425px] md:max-h-[525px] md:overflow-hidden">
       <div class="flex flex-col gap-4 md:gap-2">
         <div class="flex flex-col gap-4">
           <Reemo class="cursor-pointer" @click="router.push('/dashboard')"/>
@@ -539,7 +539,7 @@ onBeforeUnmount(() => {
     
     <!-- Formulario dinámico -->
     <form
-    class="flex flex-col justify-center gap-8 w-full max-w-[425px] md:max-h-[568px] md:overflow-hidden"
+    class="flex flex-col gap-8 w-full max-w-[425px] md:max-h-[568px] md:overflow-hidden h-full"
     @submit.prevent="handleSubmit"
     >      
 

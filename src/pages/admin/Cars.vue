@@ -4,7 +4,6 @@ import { useAdminStore } from "@stores";
 import { addAlert } from "../../services/alerts";
 import { formatDate } from '../../libraries/date.js';
 import { createCarValidationNotification } from "../../services/car/notifyRented.js";
-import InvalidationModal from '@components/Admin/InvalidationModal.vue';
 
 import Heading from "@components/atoms/Heading.vue";
 import Loading from "@icons/Loading.vue";
@@ -13,10 +12,12 @@ import Input from "../../components/molecules/Input.vue";
 import Popover from "../../components/molecules/Popover.vue";
 import SearchIcon from "@icons/Search.vue";
 import BackButton from "@components/atoms/BackButton.vue";
+import NoCarsRegister from "../../components/atoms/NoCarsRegister.vue";
+import InvalidationModal from '@components/Admin/InvalidationModal.vue';
 
 export default {
   name: "AdminCars",
-  components: { Heading, Loading, Status, Input, Popover, SearchIcon, InvalidationModal, BackButton },
+  components: { Heading, Loading, Status, Input, Popover, SearchIcon, InvalidationModal, BackButton, NoCarsRegister },
   data() {
     return {
       openPopoverId: null,
@@ -159,24 +160,27 @@ export default {
           type="button"
           text="Todos"
           variant="secondary"
-          class="cursor-pointer flex-0!"
-          :input-class="filter === 'all' ? ' bg-vibrant-light-800' : ''"
+          :outline="true"
+          class="!w-fit"
+          :input-class="filter === 'all' ? ' !bg-vibrant-light-800' : ''"
           @click="toggleFiltro('all')"
         />
         <Input 
           type="button"
           text="Validados"
           variant="secondary"
-          class="cursor-pointer flex-0!"
-          :input-class="filter === 'validados' ? ' bg-vibrant-light-800' : ''"
+          :outline="true"
+          class="!w-fit"
+          :input-class="filter === 'validados' ? ' !bg-vibrant-light-800' : ''"
           @click="toggleFiltro('validados')"
         />
         <Input 
           type="button"
           text="Invalidados"
           variant="secondary"
-          class="cursor-pointer flex-0!"
-          :input-class="filter === 'no-validados' ? ' bg-vibrant-light-800' : ''"
+          :outline="true"
+          class="!w-fit"
+          :input-class="filter === 'no-validados' ? ' !bg-vibrant-light-800' : ''"
           @click="toggleFiltro('no-validados')"
         />
       </div>
@@ -247,7 +251,14 @@ export default {
               @close-popover="handleClosePopover"
             />
           </td>
-        </tr>        
+        </tr>
+        <div v-if="carsFilter.length === 0" class="flex flex-col justify-center items-center gap-5 h-full">
+          <NoCarsRegister class="max-w-[150px]"/>
+          <Heading :type="3" class="text-gray-500 mb-2 mt-4 text-center">
+            No hay autos registrados aún.<br/>
+            Regresa más tarde.
+          </Heading>
+        </div>
       </tbody>
     </table>
     <InvalidationModal

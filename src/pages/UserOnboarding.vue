@@ -1,6 +1,6 @@
 <script setup>
-import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch } from 'vue';
-import { useAuthStore, useUserStore, useGeoStore, usePaymentStore } from '@stores'
+import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch, inject, onUnmounted } from 'vue';
+import { useUserStore, useGeoStore, usePaymentStore } from '@stores'
 import { useRouter } from "vue-router";
 import { addAlert } from "../services/alerts.js";
 
@@ -22,15 +22,12 @@ import Payment from '@icons/Payment.vue';
 import Clipboard from '@icons/Clipboard.vue';
 import PaymentMethod from '@/components/atoms/PaymentMethod.vue';
 
-const authStore = useAuthStore();
+const authStore = inject('authStore');
+const authSession = inject('authSession');
 const userStore = useUserStore();
 const geoStore = useGeoStore();
 const router = useRouter();
 const paymentStore = usePaymentStore();
-
-
-const authSessionHistory = sessionStorage.getItem('auth_session_history');
-const authSession = JSON.parse(authSessionHistory);
 
 const loggedUserId = computed(() => authStore.user?.id);
 const personalInfo = computed(() => userStore.personalInfo);
@@ -139,7 +136,7 @@ const handleSubmit = async () => {
       })
 
       addAlert('!Usuario completado con éxito!', 'success');
-      router.push('/search');
+      router.push('/user/' + loggedUserId.value);
     } catch (error) {
       console.error('Error en onboarding:', error);
       addAlert('Error al cargar los datos de usuario.', 'error');
@@ -171,13 +168,17 @@ function updatePaymentType(selectedBrand) {
 // Load initial data
 onMounted(async () => {
   window.addEventListener('beforeunload', handleBeforeUnload);
-  await userStore.loadUserProfile(authSession.user.id);
+  await userStore.loadUserProfile(loggedUserId.value);
   await geoStore.loadProvinciasYLocalidades();
 
   if (currentStep.value === 3) {
     await paymentStore.fetchPaymentMethods(loggedUserId.value);
   }
 });
+
+onUnmounted(async () => {
+  sessionStorage.setItem('auth_session_history', localStorage.getItem('auth_session'));
+})
 
 watch(() => currentStep.value, async (newStep) => {
   if (newStep === 3) {
@@ -191,7 +192,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="flex flex-col md:flex-row 2xl:max-w-[1120px] 2xl:max-h-[675px] min-h-screen md:min-h-auto md:h-screen w-full 2xl:mx-auto gap-10 justify-start md:justify-center 2xl:justify-between py-4 px-2 xl:px-16 xl:py-12 bg-deep-blue-900 2xl:rounded-[40px] text-white overflow-hidden shadow-2xl">
+  <section class="flex flex-col md:flex-row 2xl:max-w-[1120px] 2xl:max-h-[675px] min-h-screen md:min-h-auto md:h-screen w-full 2xl:mx-auto gap-10 justify-start md:justify-center 2xl:justify-between py-4 px-2 xl:px-16 xl:py-12 bg-deep-blue-900 2xl:rounded-[40px] text-white overflow-hidden shadow-2xl items-center">
     <!-- Secciones al costado -->
     <aside class="flex flex-col gap-8 w-full md:max-w-[425px] md:overflow-hidden">
       <div class="flex flex-col gap-4 md:gap-2">
@@ -250,14 +251,14 @@ onBeforeUnmount(() => {
           <input id="profile-picture" type="file" accept="image/*" 
           @change="(event) => handleFileChange(event, 'profilePhoto')" class="hidden" />   
           <div>
-            <Input v-model="personalInfo.username" type="text" placeholder="Nombre de usuario" :variant="'secondary'" :outline="false" :label="personalInfo.username" required />
+            <Input v-model="personalInfo.username" type="text" placeholder="Nombre de usuario" :variant="'secondary'" :outline="false" :label="true" required />
           </div>         
           <div class="flex gap-5">
-            <Input v-model="personalInfo.firstName" type="text" placeholder="Nombre" :variant="'secondary'" :outline="false" :label="personalInfo.firstName" required />
-            <Input v-model="personalInfo.lastName" type="text" placeholder="Apellido" :variant="'secondary'" :outline="false" :label="personalInfo.lastName" required />
+            <Input v-model="personalInfo.firstName" type="text" placeholder="Nombre" :variant="'secondary'" :outline="false" :label="true" required />
+            <Input v-model="personalInfo.lastName" type="text" placeholder="Apellido" :variant="'secondary'" :outline="false" :label="true" required />
           </div>
           <div>
-            <Input v-model="personalInfo.phone" type="tel" placeholder="Número de teléfono" :variant="'secondary'" :outline="false" :label="personalInfo.phone" required />
+            <Input v-model="personalInfo.phone" type="tel" placeholder="Número de teléfono" :variant="'secondary'" :outline="false" :label="true" required />
           </div>
           <div class="flex gap-5">
             <Input
@@ -273,10 +274,10 @@ onBeforeUnmount(() => {
               ]"
               variant="secondary"
               :outline="false"
-              :label="personalInfo.gender"
+              :label="true"
               v-model="personalInfo.gender"
             />
-            <Input v-model="personalInfo.birthDate" type="date" placeholder="Fecha de nacimiento" :variant="'secondary'" :outline="false" :label="personalInfo.birthDate" required />
+            <Input v-model="personalInfo.birthDate" type="date" placeholder="Fecha de nacimiento" :variant="'secondary'" :outline="false" :label="true" required />
           </div>
         </div>
       </router-view>
@@ -368,7 +369,7 @@ onBeforeUnmount(() => {
                :options="geoStore.provincias.map(p => ({ value: p, label: p }))"
                v-model="address.province"
                @change="cargarCiudades"
-               :label="address.province"
+               :label="true"
                variant="secondary"
                :outline="false"
              />
@@ -385,7 +386,7 @@ onBeforeUnmount(() => {
               v-model="address.city"
               :disabled="!address.province"
               variant="secondary"
-              :label="address.city"
+              :label="true"
               :outline="false"
             />
           </div>
@@ -396,7 +397,7 @@ onBeforeUnmount(() => {
               type="text"
               placeholder="Calle y número"
               v-model="address.street"
-              :label="address.street"
+              :label="true"
               :variant="'secondary'"
               :outline="false"
             />
@@ -405,7 +406,7 @@ onBeforeUnmount(() => {
               type="text"
               placeholder="Código Postal"
               v-model="address.postalCode"
-              :label="address.postalCode"
+              :label="true"
               :variant="'secondary'"
               :outline="false"
             />
@@ -417,7 +418,7 @@ onBeforeUnmount(() => {
             type="text"
             placeholder="Piso"
             v-model="address.floor"
-            :label="address.floor"
+            :label="true"
             :variant="'secondary'"
             :outline="false"
           />
@@ -427,7 +428,7 @@ onBeforeUnmount(() => {
             type="text"
             placeholder="Departamento"
             v-model="address.apartment"
-            :label="address.apartment"
+            :label="true"
             :variant="'secondary'"
             :outline="false"
             />

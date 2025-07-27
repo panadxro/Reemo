@@ -1,13 +1,12 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { useAuthStore } from "@/stores/auth.store";
+import { ref, onMounted, onBeforeUnmount, inject } from 'vue';
 import { useRouter } from "vue-router";
 
 import Reemo from "@icons/Reemo.vue";
 import Input from "./molecules/Input.vue";
 
 const router = useRouter();
-const authStore = useAuthStore();
+const authStore = inject('authStore');
 
 const props = defineProps({
   NavbarVisible: {
@@ -41,10 +40,6 @@ const handleScroll = () => {
   lastScrollPosition.value = currentScrollPosition;
 };
 
-const handleLogout = () => {
-  authStore.logout();
-};
-
 onMounted(() => {
   window.addEventListener('scroll', handleScroll);
 });
@@ -60,19 +55,20 @@ onBeforeUnmount(() => {
     :class="{ 'navbar--visible': isNavbarVisible, 'navbar--hidden': !isNavbarVisible }"
     >
     <div class="max-w-(--breakpoint-xl) flex flex-wrap items-center justify-between mx-auto p-4">
-      <router-link to="/" class="flex items-center space-x-3 rtl:space-x-reverse">
+      <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
         <Reemo/>
-      </router-link>
+      </a>
 
       <!-- Botones de inicio/cierre de sesión -->
       <div class="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-        <Input
+        <a href="/dashboard">
+          <Input
           type="button"
           text="Ingresar a la app"
           variant="primary"
           class="!w-fit"
-          @click="router.push('/dashboard')"
-        />
+          />
+        </a>
       </div>
 
       <!-- Links de navegación para usuarios normales -->

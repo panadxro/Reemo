@@ -47,18 +47,21 @@ const alertList = computed(() => alerts);
   display: flex;
   flex-direction: column;
   position: fixed;
-  position: fixed;
-  bottom: 0;
+  bottom: 25%;
   left: 0;
+  right: 0;
+  height: 1px;
   width: 100%; /* Ocupa el ancho completo */
   gap: .2rem;
-  z-index: 1000;
+  z-index: 4;
+  pointer-events: none;
 }
 .alert-msj {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30%;
+  width: fit-content;
+  padding-inline: 8px;
   margin: 0 auto;
 }
 
@@ -69,7 +72,10 @@ const alertList = computed(() => alerts);
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
-  transition: all 0.5s linear;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transform: translateY(100%);
+  animation: slideIn 0.5s forwards, fadeOut 0.5s forwards 2.5s;
 }
 
 /* Estilos de severidad */
@@ -98,30 +104,22 @@ const alertList = computed(() => alerts);
 }
 
 /* Animación personalizada */
-@keyframes bounceInUp {
+@keyframes slideIn {
   0% {
     opacity: 0;
     transform: translateY(100%);
   }
-  60% {
-    opacity: 1;
-    transform: translateY(-10px);
-  }
-  80% {
-    transform: translateY(5px);
-  }
   100% {
+    opacity: 1;
     transform: translateY(0);
   }
 }
 
-@keyframes bounceOutDown {
+/* Animación de salida */
+@keyframes fadeOut {
   0% {
     opacity: 1;
     transform: translateY(0);
-  }
-  20% {
-    transform: translateY(-5px);
   }
   100% {
     opacity: 0;
@@ -130,11 +128,11 @@ const alertList = computed(() => alerts);
 }
 
 /* Clases para la transición de entrada y salida con rebote */
-.slide-bounce-enter-active {
-  animation: bounceInUp 0.6s ease-out;
+/* .slide-bounce-enter-active {
+  animation: slideInUp 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
 .slide-bounce-leave-active {
-  animation: bounceOutDown 0.6s ease-in;
-}
+  animation: slideOutDown 0.4s cubic-bezier(0.55, 0.085, 0.68, 0.53) both;
+} */
 </style>
