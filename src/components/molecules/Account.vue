@@ -1,13 +1,21 @@
 <script setup>
-import { inject } from 'vue';
+import { inject, ref } from 'vue';
 import DotNotification from '../atoms/DotNotification.vue';
+import Modal from '@/components/molecules/Modal.vue';
 
 const authStore = inject('authStore');
+
+const showCancelModal = ref(false);
 
 const props = defineProps({
   user: { type: Object, required: true },
   authSession: { type: Object, required: true }
 });
+
+function openCancelModal() {
+  // console.log('Hola', authStore?.user?.profilePhoto);
+  showCancelModal.value = true;
+}
 
 const handleLogout = () => {
   authStore.logout();
@@ -30,8 +38,18 @@ const handleLogout = () => {
       </li>
       <!-- <li class="px-4 py-2">Configuración</li> -->
       <!-- <li class="px-4 py-2">Ayuda</li> -->
-      <li class="router-link" @click="handleLogout">Cerrar sesión</li>
+      <li class="router-link" @click="openCancelModal">Cerrar sesión</li>
     </ul>
+    <Modal
+          :isOpen="showCancelModal"
+          title="Cerrar Sesión"
+          message="¿Estás seguro que querés cerrar sesión?"
+          confirmText="Si, cerrar"
+          cancelText="No, mantener"
+          :image="authStore?.user?.profilePhoto"
+          @close="showCancelModal = false"
+          @confirm="handleLogout"
+        />
   </details>
 </template>
 
