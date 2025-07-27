@@ -1,5 +1,6 @@
 <script setup>
 import { ref, inject, computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { useUserStore } from '@stores';
 import { usePaymentStore } from '@stores/payment.store.js';
 
@@ -17,9 +18,12 @@ import Trash from '../icons/Trash.vue';
 
 const currentStep = ref(0);
 
+const route = useRoute();
+
 const userStore = useUserStore();
 const paymentStore = usePaymentStore();
-const authSession = inject('authSession');
+const authSession = inject('authStore');
+const userIdFromRoute = computed(() => route.params.id);
 
 const user = computed(() => ({
   ...userStore.user,
@@ -56,7 +60,11 @@ async function handleDeletePayment(index) {
 
 onMounted(async () => {
   try {
-    await userStore.loadUserProfile(authSession.user.id);
+    if (authSession?.user?.id) {
+    await userStore.loadUserProfile(authSession?.user?.id);
+    } else {
+      await userStore.loadUserProfile(userIdFromRoute.value);
+    }
     // Cargar métodos de pago cuando se monta el componente
     await paymentStore.fetchPaymentMethods(authSession.user.id);
     console.log(user.value)
@@ -77,24 +85,27 @@ onMounted(async () => {
         type="button"
         text="Identificación"
         variant="secondary"
-        class="cursor-pointer rounded-2xl !min-w-fit"
-        :input-class="currentStep === 0 ? ' bg-vibrant-light-800' : ''"
+        :outline="true"
+        class="!min-w-fit"
+        :input-class="currentStep === 0 ? ' !bg-vibrant-light-800' : ''"
         @click="currentStep = 0"
       />
       <Input 
         type="button"
         text="Licencia de conducir"
         variant="secondary"
-        class="cursor-pointer rounded-2xl !min-w-fit"
-        :input-class="currentStep === 1 ? ' bg-vibrant-light-800' : ''"
+        :outline="true"
+        class="!min-w-fit"
+        :input-class="currentStep === 1 ? ' !bg-vibrant-light-800' : ''"
         @click="currentStep = 1"
       />
       <Input 
         type="button"
         text="Métodos de pago"
         variant="secondary"
-        class="cursor-pointer rounded-2xl !min-w-fit"
-        :input-class="currentStep === 2 ? ' bg-vibrant-light-800' : ''"
+        :outline="true"
+        class="!min-w-fit"
+        :input-class="currentStep === 2 ? ' !bg-vibrant-light-800' : ''"
         @click="currentStep = 2"
       />
     </div>
@@ -376,10 +387,9 @@ onMounted(async () => {
             v-if="!paymentStore.showNewPaymentForm"
             type="button"
             text="Agregar método"
-            variant="secondary"
-            :outline="true"
+            variant="primary"
+            :outline="false"
             @click="paymentStore.toggleNewPaymentForm" 
-            class="cursor-pointer "
           />
       </div>
       

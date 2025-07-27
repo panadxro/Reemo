@@ -1,6 +1,6 @@
 <script>
-import { useUserStore, useAuthStore, useCarStore  } from '@stores'
-import { onMounted, ref, computed, watch } from 'vue';
+import { useUserStore, useCarStore  } from '@stores'
+import { onMounted, ref, computed, watch, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { addAlert } from "@services/alerts.js";
 
@@ -12,6 +12,7 @@ import DeletePaymentModal from '@/components/user/DeletePaymentModal.vue';
 import History from '@/components/user/History.vue'
 import Loading from "@icons/Loading.vue";
 import Cross from "@icons/Cross.vue";
+import Send from "@icons/Send.vue";
 import Check from "@icons/Check.vue";
 import VerifyValidation from "@/components/user/VerifyValidation.vue";
 import NoCarsRegister from '../components/atoms/NoCarsRegister.vue';
@@ -19,7 +20,7 @@ import NoMessage from '../components/atoms/NoMessage.vue';
 
 export default {
   name: "UserProfile",
-  components: { Heading, CardCar, Loading, BackButton, Input, DeletePaymentModal, Cross, Check, History, VerifyValidation, NoCarsRegister, NoMessage },
+  components: { Heading, CardCar, Loading, BackButton, Input, DeletePaymentModal, Cross, Check, History, VerifyValidation, NoCarsRegister, NoMessage, Send },
   props: {
     id: {
       type: String,
@@ -35,8 +36,8 @@ export default {
     }
   },
   setup() {
+    const authStore = inject('authStore');
     const userStore = useUserStore();
-    const authStore = useAuthStore();
     const carStore = useCarStore();
 
     const route = useRoute();
@@ -131,32 +132,34 @@ export default {
           <BackButton />
           <Heading v-if="showProfile && showProfile.personalInfo" :type="1" class="medium">{{ isOwnProfile ? "Mi perfil" : showProfile.personalInfo.username }}</Heading>
         </div>
-        <article class="bg-secondary-100 h-full md:flex-row rounded-[40px] items-center justify-center px-6 py-8 flex flex-col gap-5 overflow-hidden box-vibrant">
+        <article class="bg-secondary-100 h-full md:flex-row rounded-[40px] items-center justify-center px-6 py-8 md:py-2 xl:py-4 2xl:py-16 flex flex-col gap-5 overflow-hidden box-vibrant">
             <img 
             v-if="showProfile && showProfile.personalInfo && showProfile.personalInfo.profilePhoto"
-            class="md:hidden xl:block h-full aspect-square rounded-full object-cover bg-vibrant-light-800"
+            class="md:h-full aspect-square rounded-full object-cover bg-vibrant-light-800 "
             :src="showProfile.personalInfo.profilePhoto"
             :alt="`Perfil de ${showProfile?.personalInfo?.username || 'usuario'}`" 
             />
-            <div class="flex flex-col justify-evenly items-center md:items-baseline h-full md:gap-0 overflow-y-auto ">
-              <div class="flex justify-center md:justify-between items-center">
+            <div class="box-invisible flex flex-col justify-evenly items-center md:items-baseline h-full md:gap-0 overflow-y-auto gap-2">
+              <div class="flex flex-col md:flex-row justify-center md:justify-between items-center gap-2">
                 <Heading :type="2" class="medium text-primary-900 text-center md:text-start"
                   v-if="showProfile && showProfile.personalInfo">
                   {{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }}
                 </Heading>
-                <router-link
-                  v-if="!isOwnProfile && showProfile && showProfile.personalInfo && showProfile.personalInfo.id !== id"
-                  :to="`/user/${id}/chat`"
-                  class="cursor-pointer"
-                  >
                 <Input 
+                  v-if="!isOwnProfile && showProfile && showProfile.personalInfo && showProfile.personalInfo.id !== id"
                   type="button"
-                  text="Chat"
+                  text="Enviar mensaje"
                   variant="primary"
                   :outline="false"
                   class="cursor-pointer"
-                />
-                </router-link>
+                  
+                  @click="() => $router.push(`/user/${id}/chat`)"
+                  icon-position="right"
+                >
+                <template #icon>
+                  <Send color="#FFFFFF"/>
+                </template>
+                </Input>
               </div>
               <p class="text-primary-900 text-sm md:text-md leading-relaxed">{{ showProfile?.email || 'Este usuario no ha proporcionado un mail.' }}</p>
               <div v-if="isOwnProfile" class="w-full">
@@ -220,7 +223,7 @@ export default {
         :class="isOwnProfile ? 'div-my-user' : 'div-user'"
         class="bg-deep-blue-900 overflow-hidden rounded-[40px] py-7 px-5 flex flex-col gap-5"
         >
-        <Heading :type="2" class="medium text-white text-center sm:text-left">{{ isOwnProfile ? "Información personal" : "Información del usuario"  }}</Heading>
+        <Heading :type="2" class="medium text-white sm:text-left">{{ isOwnProfile ? "Información personal" : "Información del usuario"  }}</Heading>
         <article v-if="isOwnProfile" class="box-deep overflow-y-auto h-full flex flex-col gap-5 pr-2">
           <div class="flex flex-col gap-2">
             <Heading :type="3" class="regular text-white">Datos básicos</Heading>
@@ -264,7 +267,7 @@ export default {
             </ul>
           </div>
         </article>
-        <article v-else class="box-deep overflow-y-auto h-full flex flex-col gap-5 pr-4 py-4">
+        <article v-else class="box-deep overflow-y-auto h-full flex flex-col gap-5 pr-4">
           <div class="flex flex-col gap-2">
             <Heading :type="3" class="regular text-white">Verificación</Heading>
             <ul class="flex flex-col gap-2">

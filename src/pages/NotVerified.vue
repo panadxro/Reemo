@@ -10,11 +10,11 @@ const router = useRouter()
 </script>
 
 <template>
-  <div class="w-full bg-white min-h-screen flex flex-col items-center justify-center gap-2">
-    <NoValidation class="max-w-[300px] m-4"/>
-    <Heading type="1" class="text-7xl text-red-500">No tenés autorización</Heading>
-    <p class="text-lg font-bold">Lo sentimos, tu usuario no está validado.</p>
-    <p class="text-gray-500 text-sm">Serás notificado sobre el estado de tu cuenta en pocos días.</p>
+  <div class="w-full bg-white min-h-screen flex flex-col items-center justify-center gap-2 text-center">
+    <NoValidation class="w-[200px] 2xl:w-[300px]"/>
+    <Heading type="1" class="large 2xl:!text-6xl text-red-500">No tenés autorización</Heading>
+    <p class="text-lg 2xl:text-2xl font-bold">Lo sentimos, tu usuario no está validado.</p>
+    <p class="text-gray-500 text-sm 2xl:text-base">Serás notificado sobre el estado de tu cuenta en pocos días.</p>
     <Input
       type="button"
       text="Volver al inicio"

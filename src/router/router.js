@@ -42,10 +42,10 @@ const routes = [
     meta: { needsAuth: true },
   },
   {
-    path: "/notification",
+    path: "/notifications",
     name: "Notification",
     props: true,
-    component: () => import("../pages/Notification.vue"),
+    component: () => import("../pages/Notifications.vue"),
     meta: { needsAuth: true },
   },
   {
@@ -180,6 +180,7 @@ const routes = [
   { path: '/not-authorized', name: 'NotAuthorized', component: () => import('../pages/NotAuthorized.vue') },
   { path: '/not-found', name: 'NotFound', component: () => import('../pages/NotFound.vue') },
   { path: '/not-verified', name: 'NotVerified', component: () => import('../pages/NotVerified.vue') },
+  { path: '/offline', name: 'Offline', component: () => import('../pages/Offline.vue') }
 ];
 
 const router = createRouter({

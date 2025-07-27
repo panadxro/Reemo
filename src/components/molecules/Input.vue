@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, useAttrs } from 'vue';
+import { computed, ref, useAttrs, defineProps } from 'vue';
 
 const props = defineProps({
   modelValue: { type: [String, Number, Boolean, Array], default: '' },
@@ -42,7 +42,7 @@ const inputRef = ref(null);
 // Clases base comunes
 const baseClasses = computed(() => [
   props.inputClass,
-  'flex flex-1 items-center justify-center rounded-2xl py-2.5 px-5 gap-2 border-2 font-semibold',
+  'flex flex-1 items-center justify-center rounded-2xl py-2.5 px-5 gap-2 border-2 font-semibold transform transition-all duration-300',
   { '!items-start': props.label && !['button', 'submit', 'select'].includes(props.type) },
   { '!cursor-not-allowed opacity-50': props.disabled }
 ]);
@@ -143,6 +143,7 @@ defineExpose({ focus, blur,  });
 
     <!-- Select -->
     <select
+      
       v-else-if="type === 'select'"
       :id="id"
       :name="name"
@@ -155,7 +156,7 @@ defineExpose({ focus, blur,  });
       :class="containerClasses"
       class="max-h-12 w-full"
     >
-      <button>
+      <button v-pre>
         <selectedcontent class="truncate"></selectedcontent>
       </button>
       <option 
@@ -199,7 +200,10 @@ defineExpose({ focus, blur,  });
       v-bind="attrs"
       @click="$emit('click', $event)"
       class="hover:cursor-pointer"
-      :class="containerClasses"
+      :class="[
+        {'bg-vibrant-light-900': variant === 'secondary' && !outline},
+        containerClasses,
+        ]"
     >
       <slot v-if="iconPosition === 'left'" name="icon" />
       {{ text }}

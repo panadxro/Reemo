@@ -68,7 +68,7 @@ onMounted(async () => {
       :class="userRents?.length > 0 ? 'md:bg-deep-blue-900 md:w-85' : 'bg-white items-center justify-center'">
       <ul 
         v-if="userRents?.length > 0"
-        class="box-deep h-full flex flex-col gap-4 overflow-y-auto !pr-1 w-full"
+        class="box-deep h-full flex flex-col gap-4 overflow-y-auto !pr-1 w-full mb-15 md:mb-0"
       >
         <HistoryCar 
           v-for="(rent, index) in userRents" 
@@ -86,7 +86,7 @@ onMounted(async () => {
           No tenés alquileres registrados
         </Heading>
       </template>
-      <div class="flex flex-col items-center justify-end flex-grow-0 gap-4 w-full">
+      <div class="flex flex-col items-center justify-end flex-grow-0 gap-4 w-full fixed md:static bottom-22 left-0">
         <VerifyValidation
           v-if="!isUserVerified"
           title="Verificación requerida"
@@ -99,7 +99,7 @@ onMounted(async () => {
           type="button"
           text="Alquilar un auto"
           variant="primary"
-          class="w-full max-w-md"
+          class="w-full max-w-md px-2.5"
           @click="goToSearch"
           :disabled="!isUserVerified"
           />

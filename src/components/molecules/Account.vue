@@ -1,13 +1,16 @@
 <script setup>
-import { inject } from 'vue';
+import { inject, onMounted, ref, defineProps } from 'vue';
 import DotNotification from '../atoms/DotNotification.vue';
 
 const authStore = inject('authStore');
 
 const props = defineProps({
-  user: { type: Object, required: true },
   authSession: { type: Object, required: true }
 });
+
+const user = ref(props.user);
+const authSession = ref(props.authSession);
+
 
 const handleLogout = () => {
   authStore.logout();
@@ -17,7 +20,8 @@ const handleLogout = () => {
 <template>
   <details class="relative">
     <summary class="flex items-center gap-2">
-      <img :src="user.personalInfo.profilePhoto" :alt="user.personalInfo.firstName" class="w-10 h-10 rounded-full object-cover"/>
+      <img v-if="authSession.user.profilePhoto" :src="authSession.user.profilePhoto" :alt="authSession.user.firstName" class="w-10 h-10 rounded-full object-cover"/>
+      <img v-else src="/src/assets/User.png" alt="User" class="w-10 h-10 rounded-full object-cover"/>
       <DotNotification />
     </summary>
     <ul class="absolute top-10 left-0 bg-white border-2 border-vibrant-light-800 rounded-xl overflow-hidden">
@@ -25,7 +29,7 @@ const handleLogout = () => {
         <router-link class="router-link" :to="{ name: 'UserProfile', params: { id: authSession.user.id } }">Perfil</router-link>
       </li>
       <li class="relative">
-        <router-link class="router-link" to="/notification">Notificaciones</router-link>
+        <router-link class="router-link" to="/notifications">Notificaciones</router-link>
         <DotNotification />
       </li>
       <!-- <li class="px-4 py-2">Configuración</li> -->

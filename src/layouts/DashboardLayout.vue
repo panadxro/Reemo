@@ -1,17 +1,5 @@
 <script setup>
-import { onMounted, ref } from "vue";
-
 import Sidebar from "@/components/Sidebar.vue";
-/* 
-onMounted(() => {
-  try {
-    const sessionData = sessionStorage.getItem('auth_session_history');
-    authSession.value = sessionData ? JSON.parse(sessionData) : null;
-  } catch (error) {
-    console.error("Error parsing auth session:", error);
-    authSession.value = null;
-  }
-}); */
 </script>
 
 <template>

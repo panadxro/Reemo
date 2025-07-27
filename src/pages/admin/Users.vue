@@ -99,29 +99,33 @@ export default {
       <Heading :type="1" class="medium">Administrar usuarios</Heading>
     </div>
     <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
-      <div class="flex flex-row gap-4 overflow-x-auto">
+      <div class="box-white box-thin flex flex-row gap-4 overflow-x-auto pb-2 md:pb-0">
         <Input 
           type="button"
           text="Todos"
           variant="secondary"
-          class="cursor-pointer flex-0!"
-          :input-class="filter === 'all' ? ' bg-vibrant-light-800' : ''"
+          :outline="true"
+          class="!w-fit"
+          :input-class="filter === 'all' ? ' !bg-vibrant-light-800' : ''"
           @click="toggleFiltro('all')"
         />
         <Input 
           type="button"
           text="Verificados"
           variant="secondary"
-          class="cursor-pointer flex-0!"
-          :input-class="filter === 'verificados' ? ' bg-vibrant-light-800' : ''"
+          :outline="true"
+          class="!w-fit"
+
+          :input-class="filter === 'verificados' ? ' !bg-vibrant-light-800' : ''"
           @click="toggleFiltro('verificados')"
         />
         <Input 
           type="button"
           text="No verificados"
           variant="secondary"
-          class="cursor-pointer flex-0! min-w-[150px]!"
-          :input-class="filter === 'no-verificados' ? ' bg-vibrant-light-800' : ''"
+          :outline="true"
+          class="!w-fit min-w-fit"
+          :input-class="filter === 'no-verificados' ? ' !bg-vibrant-light-800' : ''"
           @click="toggleFiltro('no-verificados')"
         />
       </div>
@@ -158,7 +162,7 @@ export default {
           >
           <td class="py-2.5 px-5 flex flex-1 overflow-hidden">
             <router-link :to="`/user/${user.id}`" class="flex items-center gap-2 hover:cursor-pointer">
-              <img :src="user.personalInfo.profilePhoto" :alt="user.personalInfo.username" class="w-8 h-8 object-cover rounded-full" />
+              <img :src="user.personalInfo.profilePhoto" :alt="user.personalInfo.username" class="h-8 aspect-square object-cover rounded-full" />
               <p class="hover:underline">{{ user.personalInfo.firstName }} {{ user.personalInfo.lastName }}</p>
             </router-link>
           </td>
@@ -179,7 +183,13 @@ export default {
               @close-popover="handleClosePopover"
             />
           </td>
-        </tr>        
+        </tr>  
+        <div v-if="userFilter.length === 0" class="flex flex-col justify-center items-center gap-5 h-full">
+          <Heading :type="3" class="text-gray-500 mb-2 mt-4 text-center">
+            No hay usuarios registrados aún.<br/>
+            Regresa más tarde.
+          </Heading>
+        </div>      
       </tbody>
     </table>
   </section>
