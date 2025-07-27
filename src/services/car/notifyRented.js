@@ -8,7 +8,7 @@ import { getAdminUser } from "../user/admin.js";
  * @param {string} receiverId - El ID del propietario del vehículo (quien recibe la notificación).
  */
 
-export async function createRentalRequestNotification(rentId, senderId, receiverId, customMessage = null, notificacionType = "rent_request"){
+export async function createRentalRequestNotification(rentId, senderId, receiverId, customMessage = null, title = null, notificacionType = "rent_request"){
   try {
     const notificationData = {
       type: notificacionType,
@@ -16,6 +16,7 @@ export async function createRentalRequestNotification(rentId, senderId, receiver
       rent_id: rentId,
       sender_id: senderId,
       receiver_id: receiverId,
+      title: title,
       message: customMessage,
       created_at: Timestamp.now(),
       read: false,
