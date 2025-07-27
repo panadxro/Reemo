@@ -529,7 +529,7 @@ onMounted(() => {
         <Modal
           :isOpen="showCancelModal"
           title="Cancelar alquiler"
-          message="¿Estás seguro de que quieres cancelar este alquiler?"
+          message="¿Estás seguro que querés cancelar este alquiler?"
           confirmText="Si, cancelar"
           cancelText="No, mantener"
           @close="showCancelModal = false"

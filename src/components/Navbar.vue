@@ -41,9 +41,9 @@ const handleScroll = () => {
   lastScrollPosition.value = currentScrollPosition;
 };
 
-const handleLogout = () => {
-  authStore.logout();
-};
+// const handleLogout = () => {
+//   authStore.logout();
+// };
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll);

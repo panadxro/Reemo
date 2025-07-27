@@ -58,10 +58,10 @@ export const useCarStore = defineStore("car", {
           weekly: null,
           monthly: null
         },
-        mileagePolicy: {
-          includedPerDay: null,
-          extraPricePerKm: null
-        },
+        // mileagePolicy: {
+        //   includedPerDay: null,
+        //   extraPricePerKm: null
+        // },
         securityDeposit: null,
       },
       photos: [],
@@ -86,7 +86,7 @@ export const useCarStore = defineStore("car", {
         number: null,
         company: null,
         type: null,
-        expirationDate: null,
+        // expirationDate: null,
       },
       id: null,
     },
