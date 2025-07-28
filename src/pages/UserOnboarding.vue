@@ -1,6 +1,6 @@
 <script setup>
-import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch } from 'vue';
-import { useAuthStore, useUserStore, useGeoStore, usePaymentStore } from '@stores'
+import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch, inject, onUnmounted } from 'vue';
+import { useUserStore, useGeoStore, usePaymentStore } from '@stores'
 import { useRouter } from "vue-router";
 import { addAlert } from "../services/alerts.js";
 
@@ -21,16 +21,42 @@ import Location from '@icons/Location.vue';
 import Payment from '@icons/Payment.vue';
 import Clipboard from '@icons/Clipboard.vue';
 import PaymentMethod from '@/components/atoms/PaymentMethod.vue';
+import Modal from '@/components/molecules/Modal.vue';
 
-const authStore = useAuthStore();
+const authStore = inject('authStore');
+
+const showTermsModal = ref(false);
+const showPolicyModal = ref(false);
 const userStore = useUserStore();
 const geoStore = useGeoStore();
 const router = useRouter();
 const paymentStore = usePaymentStore();
 
+function openTermsModal() {
+  showTermsModal.value = true;
+}
 
-const authSessionHistory = sessionStorage.getItem('auth_session_history');
-const authSession = JSON.parse(authSessionHistory);
+function handleAcceptTerms() {
+  if(agreements.value.acceptedTerms === false){
+    showTermsModal.value = false;
+    agreements.value.acceptedTerms = true;
+  } else if(agreements.value.acceptedTerms === true) {
+    showTermsModal.value = false;
+  }
+}
+
+function openPolicyModal() {
+  showPolicyModal.value = true;
+}
+
+function handleAcceptPolicy() {
+  if(agreements.value.acceptedPrivacyPolicy === false){
+    showPolicyModal.value = false;
+    agreements.value.acceptedPrivacyPolicy = true;
+  } else if(agreements.value.acceptedPrivacyPolicy === true) {
+    showPolicyModal.value = false;
+  }
+}
 
 const loggedUserId = computed(() => authStore.user?.id);
 const personalInfo = computed(() => userStore.personalInfo);
@@ -139,7 +165,7 @@ const handleSubmit = async () => {
       })
 
       addAlert('!Usuario completado con éxito!', 'success');
-      router.push('/search');
+      router.push('/user/' + loggedUserId.value);
     } catch (error) {
       console.error('Error en onboarding:', error);
       addAlert('Error al cargar los datos de usuario.', 'error');
@@ -171,13 +197,17 @@ function updatePaymentType(selectedBrand) {
 // Load initial data
 onMounted(async () => {
   window.addEventListener('beforeunload', handleBeforeUnload);
-  await userStore.loadUserProfile(authSession.user.id);
+  await userStore.loadUserProfile(loggedUserId.value);
   await geoStore.loadProvinciasYLocalidades();
 
   if (currentStep.value === 3) {
     await paymentStore.fetchPaymentMethods(loggedUserId.value);
   }
 });
+
+onUnmounted(async () => {
+  sessionStorage.setItem('auth_session_history', localStorage.getItem('auth_session'));
+})
 
 watch(() => currentStep.value, async (newStep) => {
   if (newStep === 3) {
@@ -191,7 +221,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section class="flex flex-col md:flex-row 2xl:max-w-[1120px] 2xl:max-h-[675px] min-h-screen md:min-h-auto md:h-screen w-full 2xl:mx-auto gap-10 justify-start md:justify-center 2xl:justify-between py-4 px-2 xl:px-16 xl:py-12 bg-deep-blue-900 2xl:rounded-[40px] text-white overflow-hidden shadow-2xl">
+  <section class="flex flex-col md:flex-row 2xl:max-w-[1120px] 2xl:max-h-[675px] min-h-screen md:min-h-auto md:h-screen w-full 2xl:mx-auto gap-10 justify-start md:justify-center 2xl:justify-between py-4 px-2 xl:px-16 xl:py-12 bg-deep-blue-900 2xl:rounded-[40px] text-white overflow-hidden shadow-2xl items-center">
     <!-- Secciones al costado -->
     <aside class="flex flex-col gap-8 w-full md:max-w-[425px] md:overflow-hidden">
       <div class="flex flex-col gap-4 md:gap-2">
@@ -250,14 +280,14 @@ onBeforeUnmount(() => {
           <input id="profile-picture" type="file" accept="image/*" 
           @change="(event) => handleFileChange(event, 'profilePhoto')" class="hidden" />   
           <div>
-            <Input v-model="personalInfo.username" type="text" placeholder="Nombre de usuario" :variant="'secondary'" :outline="false" :label="personalInfo.username" required />
+            <Input v-model="personalInfo.username" type="text" placeholder="Nombre de usuario" :variant="'secondary'" :outline="false" :label="true" required />
           </div>         
           <div class="flex gap-5">
-            <Input v-model="personalInfo.firstName" type="text" placeholder="Nombre" :variant="'secondary'" :outline="false" :label="personalInfo.firstName" required />
-            <Input v-model="personalInfo.lastName" type="text" placeholder="Apellido" :variant="'secondary'" :outline="false" :label="personalInfo.lastName" required />
+            <Input v-model="personalInfo.firstName" type="text" placeholder="Nombre" :variant="'secondary'" :outline="false" :label="true" required />
+            <Input v-model="personalInfo.lastName" type="text" placeholder="Apellido" :variant="'secondary'" :outline="false" :label="true" required />
           </div>
           <div>
-            <Input v-model="personalInfo.phone" type="tel" placeholder="Número de teléfono" :variant="'secondary'" :outline="false" :label="personalInfo.phone" required />
+            <Input v-model="personalInfo.phone" type="tel" placeholder="Número de teléfono" :variant="'secondary'" :outline="false" :label="true" required />
           </div>
           <div class="flex gap-5">
             <Input
@@ -273,10 +303,10 @@ onBeforeUnmount(() => {
               ]"
               variant="secondary"
               :outline="false"
-              :label="personalInfo.gender"
+              :label="true"
               v-model="personalInfo.gender"
             />
-            <Input v-model="personalInfo.birthDate" type="date" placeholder="Fecha de nacimiento" :variant="'secondary'" :outline="false" :label="personalInfo.birthDate" required />
+            <Input v-model="personalInfo.birthDate" type="date" placeholder="Fecha de nacimiento" :variant="'secondary'" :outline="false" :label="true" required />
           </div>
         </div>
       </router-view>
@@ -368,7 +398,7 @@ onBeforeUnmount(() => {
                :options="geoStore.provincias.map(p => ({ value: p, label: p }))"
                v-model="address.province"
                @change="cargarCiudades"
-               :label="address.province"
+               :label="true"
                variant="secondary"
                :outline="false"
              />
@@ -385,7 +415,7 @@ onBeforeUnmount(() => {
               v-model="address.city"
               :disabled="!address.province"
               variant="secondary"
-              :label="address.city"
+              :label="true"
               :outline="false"
             />
           </div>
@@ -396,7 +426,7 @@ onBeforeUnmount(() => {
               type="text"
               placeholder="Calle y número"
               v-model="address.street"
-              :label="address.street"
+              :label="true"
               :variant="'secondary'"
               :outline="false"
             />
@@ -405,7 +435,7 @@ onBeforeUnmount(() => {
               type="text"
               placeholder="Código Postal"
               v-model="address.postalCode"
-              :label="address.postalCode"
+              :label="true"
               :variant="'secondary'"
               :outline="false"
             />
@@ -417,7 +447,7 @@ onBeforeUnmount(() => {
             type="text"
             placeholder="Piso"
             v-model="address.floor"
-            :label="address.floor"
+            :label="true"
             :variant="'secondary'"
             :outline="false"
           />
@@ -427,7 +457,7 @@ onBeforeUnmount(() => {
             type="text"
             placeholder="Departamento"
             v-model="address.apartment"
-            :label="address.apartment"
+            :label="true"
             :variant="'secondary'"
             :outline="false"
             />
@@ -572,24 +602,151 @@ onBeforeUnmount(() => {
           <div class="flex gap-2 items-center">
             <Checkbox v-model="agreements.acceptedTerms" :disabled="agreements.acceptedTerms"/>
             <p class="text-sm font-medium">He leído y acepto los 
-              <router-link
+              <span class="hover:underline font-bold cursor-pointer" @click="openTermsModal">Términos y Condiciones</span>
+              <Modal
+              class="text-deep-blue-900"
+                :isOpen="showTermsModal"
+                title="Términos y Condiciones"
+                :message="`
+                  <div class='terms-container'>
+  <div class='term-section mb-4'>
+    <h5 class='font-semibold mb-2'>1. Aceptación de Términos</h5>
+    <p class='text-sm'>Al utilizar esta aplicación, usted acepta cumplir con estos Términos y Condiciones, así como con nuestra política de privacidad. Si no está de acuerdo, absténgase de usar el servicio.</p>
+  </div>
+
+  <div class='term-section mb-4'>
+    <h5 class='font-semibold mb-2'>2. Requisitos para Renta</h5>
+    <ul class='list-disc pl-5 space-y-1 text-sm'>
+      <li>Debe ser mayor de 21 años y contar con licencia de conducir vigente.</li>
+      <li>Se requiere tarjeta de crédito válida para garantizar el pago y posibles daños.</li>
+    </ul>
+  </div>
+
+  <div class='term-section mb-4'>
+    <h5 class='font-semibold mb-2'>3. Reservas y Pagos</h5>
+    <ul class='list-disc pl-5 space-y-1 text-sm'>
+      <li>Los precios incluyen impuestos aplicables, salvo indicación contraria.</li>
+      <li>El pago se realizará al confirmar la reserva. Cancelaciones con menos de 24 horas pueden incurrir en cargos.</li>
+    </ul>
+  </div>
+
+  <div class='term-section mb-4'>
+    <h5 class='font-semibold mb-2'>4. Uso del Vehículo</h5>
+    <ul class='list-disc pl-5 space-y-1 text-sm'>
+      <li>Prohibido uso ilegal, subarrendamiento o conducción bajo influencia de alcohol/drogas.</li>
+      <li>El usuario es responsable de multas, daños o pérdidas durante el periodo de renta.</li>
+    </ul>
+  </div>
+
+  <div class='term-section mb-4'>
+    <h5 class='font-semibold mb-2'>5. Seguro</h5>
+    <p class='text-sm'>Incluye cobertura básica según la ley local. Opciones adicionales pueden estar disponibles.</p>
+  </div>
+
+  <div class='term-section mb-4'>
+    <h5 class='font-semibold mb-2'>6. Devolución</h5>
+    <p class='text-sm'>El vehículo debe devolverse en la fecha/hora acordada. Retrasos generarán cargos adicionales.</p>
+  </div>
+
+  <div class='term-section mb-4'>
+    <h5 class='font-semibold mb-2'>7. Limitación de Responsabilidad</h5>
+    <p class='text-sm'>La aplicación no se hace responsable por daños indirectos, pérdidas o accidentes derivados del uso del vehículo.</p>
+  </div>
+
+  <div class='term-section'>
+    <h5 class='font-semibold mb-2'>8. Modificaciones</h5>
+    <p class='text-sm'>Nos reservamos el derecho de actualizar estos términos. Los cambios serán notificados dentro de la app.</p>
+  </div>
+
+  <p class='text-xs mt-6 text-gray-500'>Fecha de última actualización: 27/07/25</p>
+</div>
+                `"
+                confirmText="Aceptar"
+                cancelText="Cerrar"
+                @close="showTermsModal = false"
+                @confirm="handleAcceptTerms"
+              />
+              <!-- <router-link
                 to="/terms-and-conditions"
                 class="text-primary text-background-900 font-bold"
-                >
-                <span class="hover:underline">Términos y Condiciones</span>
-              </router-link>.
+                > -->
+              <!-- </router-link>. -->
             </p>
           </div>
           <!-- Politicas de privacidad -->
           <div class="flex gap-2 items-center">
             <Checkbox v-model="agreements.acceptedPrivacyPolicy" :disabled="agreements.acceptedPrivacyPolicy"/>
             <p class="text-sm font-medium">He leído y acepto las 
-              <router-link
+              <!-- <router-link
                 to="/privacy-policy"
                 class="text-primary text-background-900 font-bold"
-                >
-                <span class="hover:underline">Políticas de Privacidad</span>
-              </router-link>.
+                > -->
+                <span class="hover:underline font-bold cursor-pointer" @click="openPolicyModal">Políticas de Privacidad</span>
+                <Modal
+              class="text-deep-blue-900"
+                :isOpen="showPolicyModal"
+                title="Términos y Condiciones"
+                :message="`<div class='privacy-policy-container'>
+  
+  <div class='policy-section mb-4'>
+    <h5 class='font-semibold mb-2'>1. Recopilación de Información</h5>
+    <p class='text-sm'>Recopilamos información personal cuando usted: realiza una reserva, crea una cuenta, o interactúa con nuestros servicios. Esto incluye nombre, dirección, datos de pago, licencia de conducir y datos de contacto.</p>
+  </div>
+
+  <div class='policy-section mb-4'>
+    <h5 class='font-semibold mb-2'>2. Uso de la Información</h5>
+    <ul class='list-disc pl-5 space-y-1 text-sm'>
+      <li>Procesar reservas y pagos</li>
+      <li>Verificar su identidad y elegibilidad</li>
+      <li>Comunicarnos sobre su reserva</li>
+      <li>Mejorar nuestros servicios</li>
+      <li>Cumplir con obligaciones legales</li>
+    </ul>
+  </div>
+
+  <div class='policy-section mb-4'>
+    <h5 class='font-semibold mb-2'>3. Protección de Datos</h5>
+    <p class='text-sm'>Implementamos medidas de seguridad técnicas y organizativas para proteger sus datos personales contra accesos no autorizados, alteración o destrucción.</p>
+  </div>
+
+  <div class='policy-section mb-4'>
+    <h5 class='font-semibold mb-2'>4. Compartir Información</h5>
+    <p class='text-sm'>Podemos compartir sus datos con:</p>
+    <ul class='list-disc pl-5 space-y-1 text-sm'>
+      <li>Proveedores de pago</li>
+      <li>Empresas asociadas para servicios adicionales</li>
+      <li>Autoridades cuando lo requiera la ley</li>
+    </ul>
+  </div>
+
+  <div class='policy-section mb-4'>
+    <h5 class='font-semibold mb-2'>5. Cookies y Tecnologías Similares</h5>
+    <p class='text-sm'>Utilizamos cookies para mejorar su experiencia, analizar tráfico y personalizar contenido. Puede gestionarlas en la configuración de su navegador.</p>
+  </div>
+
+  <div class='policy-section mb-4'>
+    <h5 class='font-semibold mb-2'>6. Sus Derechos</h5>
+    <ul class='list-disc pl-5 space-y-1 text-sm'>
+      <li>Acceder a sus datos personales</li>
+      <li>Solicitar corrección o eliminación</li>
+      <li>Oponerse al procesamiento</li>
+      <li>Solicitar limitación del tratamiento</li>
+    </ul>
+  </div>
+
+  <div class='policy-section'>
+    <h5 class='font-semibold mb-2'>7. Cambios a esta Política</h5>
+    <p class='text-sm'>Nos reservamos el derecho de actualizar esta política. Las versiones actualizadas serán publicadas en la aplicación con fecha de revisión.</p>
+  </div>
+
+  <p class='text-xs mt-6 text-gray-500'>Fecha de última actualización: 27/07/25</p>
+</div>`"
+                confirmText="Aceptar"
+                cancelText="Cerrar"
+                @close="showPolicyModal = false"
+                @confirm="handleAcceptPolicy"
+              />
+              <!-- </router-link>-->
             </p>
           </div>
           <!-- Notificaciones -->

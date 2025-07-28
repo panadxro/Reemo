@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from "vue";
+import { reactive, inject, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@stores";
 import { addAlert } from "../services/alerts";
@@ -13,14 +13,9 @@ import Mail from "../icons/Mail.vue";
 import Password from "../icons/Password.vue";
 import BackButton from "../components/atoms/BackButton.vue";
 
-const authStore = useAuthStore();
+const authStore = inject('authStore');
+const authSession = inject('authSession');
 const router = useRouter();
-
-const authSessionHistory = sessionStorage.getItem('auth_session_history');
-const authSession = JSON.parse(authSessionHistory);
-if (authSession.isLoggedIn) {
-  router.push("/");
-}
 
 const user = reactive({
   email: "",
@@ -50,6 +45,29 @@ const handleSubmit = async () => {
   } catch (error) {}
 };
 
+const handleGoogleSignUp = async () => {
+  try {
+    await authStore.registerWithGoogle();
+  } catch (error) {
+    console.error("Error en registro con Google:", error);
+  }
+};
+
+const handleFacebookSignUp = async () => {
+  try {
+    await authStore.registerWithFacebook();
+  } catch (error) {
+    console.error("Error en registro con Facebook:", error);
+  }
+};
+
+onMounted(async () => {
+  await authSession.isLoggedIn;
+  if (authSession.isLoggedIn) {
+    router.push("/");
+  }
+});
+
 </script>
 
 <template>
@@ -57,20 +75,44 @@ const handleSubmit = async () => {
     action="#" @submit.prevent="handleSubmit" autocomplete="off"
     class="flex flex-col justify-center md:max-w-lg md:px-16 px-2.5 py-12 bg-deep-blue-900 md:rounded-[40px] shadow-lg gap-4 md:gap-8 w-full h-screen md:h-auto" 
     >
-
-    <BackButton class="flex md:absolute top-10 left-10" color="#FFFFFF"/>
-    <Reemo color="#FFFFFF" />
+    <div class="flex gap-2 justify-between items-center">
+      <BackButton class="flex md:absolute top-10 left-10" color="#FFFFFF"/>
+      <Reemo color="#FFFFFF" />
+    </div>
     <div class="flex flex-col gap-5">
       <Heading :type="1" class="font-extrabold! text-background-900! large">Registrate</Heading>
-      <p class="text-xs text-background-900 font-semibold">¡Bienvenido! Selecciona un método para crear una cuenta:</p>
+      <p class="hidden md:flex text-sm text-background-900 font-semibold">¡Bienvenido! Selecciona un método para crear una cuenta:</p>
+      <p class="md:hidden text-sm text-background-900 font-semibold">¡Bienvenido! Ingresa tus datos para crear una cuenta:</p>
     </div>
 
     <div class="flex flex-col gap-5">
-      <div class="flex justify-between gap-4 md:gap-10">
-        <a href="/" class="flex items-center w-full justify-center gap-2 py-2.5 px-5 bg-background-900 font-semibold rounded-2xl"> <Google/> Google </a>
-        <a href="/" class="flex items-center w-full justify-center gap-2 p-2 bg-background-900 font-semibold rounded-2xl"> <FacebookIcon/> Facebook </a>
+      <div class="hidden md:flex justify-between gap-4 md:gap-10">
+        <Input
+          type="button"
+          variant="primary"
+          :outline="true"
+          @click="handleGoogleSignUp"
+          icon-position="left"
+          text="Google"
+        >
+          <template #icon>
+            <Google/>
+          </template>
+        </Input>
+        <Input
+          type="button"
+          variant="primary"
+          :outline="true"
+          @click="handleFacebookSignUp"
+          icon-position="left"
+          text="Facebook"
+        >
+          <template #icon>
+            <FacebookIcon/>
+          </template>
+        </Input>
       </div>
-      <div class="flex items-center text-center text-background-900! gap-5 text-xs">
+      <div class="hidden md:flex items-center text-center text-background-900! gap-5 text-xs">
         <hr class="grow h-px bg-background-900!"/>
         O registrate con tu email
         <hr class="grow h-px bg-background-900!"/>
@@ -117,20 +159,6 @@ const handleSubmit = async () => {
           <Password color="#7b7b7b"/>
         </template>
       </Input>
-      <p class="text-xs text-background-900 font-regular text-wrap">
-        Al crear una cuenta, usted acepta nuestra 
-        <router-link to="/" class="text-primary font-bold">
-          <span class="hover:underline">
-            Política de privacidad 
-          </span> 
-        </router-link>
-        y nuestra 
-        <router-link to="/" class="text-primary font-bold">
-          <span class="hover:underline">
-            Política de comunicación electrónica.
-          </span>
-        </router-link>
-      </p>
     </div>
     <Input 
       type="submit" 
@@ -140,7 +168,7 @@ const handleSubmit = async () => {
       :disabled="authStore.loading"
     >
     </Input>
-    <p class="text-xs text-background-900 text-center font-regular">
+    <p class="text-sm text-background-900 text-center font-regular">
       ¿Ya tenés una cuenta?
       <router-link to="/login" class="text-primary font-bold">
         <span class="hover:underline">

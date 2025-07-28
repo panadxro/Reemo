@@ -132,7 +132,9 @@ watch(currentUser, (newUser) => {
         <div class="flex md:hidden items-center justify-between">
           <Account :user="user" :authSession="authSession"/>
           <div class="flex items-center justify-center gap-4 flex-1 mr-10">
-            <ReemoIcon class="w-10 h-10"/>
+            <router-link to="/">
+              <ReemoIcon class="w-10 h-10"/>
+            </router-link>
           </div>
         </div>
         <Heading v-if="isAdmin" type="1" class="large">Dashboard</Heading>
@@ -177,35 +179,35 @@ watch(currentUser, (newUser) => {
           </template>
         </Input>
       </router-link>
-        <div class="bg-deep-blue-900 text-white p-6 w-full h-full rounded-[40px] py-10 px-6 flex flex-col gap-12">
+        <div class="bg-deep-blue-900 text-white p-6 w-full h-full rounded-[40px] py-10 px-6 flex flex-col  gap-4 overflow-hidden ">
           <Heading type="2" class="medium text-white">¡Bienvenido a <strong>Reemo</strong>, {{ user.personalInfo.firstName }}👋!</Heading>
           <!-- <p v-if="isAdmin" class="text-white">Acá podés gestionar los usuarios y vehículos registrados.🚗✨</p> -->
-          <article v-if="isAdmin" class="flex flex-col xl:flex-row gap-4 justify-center items-center">
-            <div class="text-center bg-vibrant-light-600 rounded-lg p-4 text-deep-blue-900 gap-8 flex justify-between items-center w-full">
+          <ul v-if="isAdmin" class="flex flex-col md:flex-row gap-4 justify-center items-center h-full lg:my-[1/2]">
+            <li class="text-center bg-vibrant-light-600 rounded-2xl p-4 text-deep-blue-900 flex justify-between items-center w-full lg:h-full">
               <Cars class="size-10"/>
               <div class="text-end">
                 <Heading type="4" class="medium">{{ lastRegisteredCars.length }}</Heading>
                 <Heading type="3" class="small">Autos totales</Heading>
               </div>
-            </div>
+            </li>
 
-            <div class="text-center bg-vibrant-light-600 rounded-lg p-4 text-deep-blue-900 gap-8 flex justify-between items-center w-full">
+            <li class="text-center bg-vibrant-light-600 rounded-2xl p-4 text-deep-blue-900 flex justify-between items-center w-full lg:h-full">
               <People class="size-10"/>
               <div class="text-end">
                 <Heading type="4" class="medium">{{ adminStore.users.length }}</Heading>
                 <Heading type="3" class="small">Usuarios totales</Heading>
               </div>
-            </div>
+            </li>
 
-            <div class="text-center bg-vibrant-light-600 rounded-lg p-4 text-deep-blue-900 gap-8 flex justify-between items-center w-full">
+            <li class="text-center bg-vibrant-light-600 rounded-2xl p-4 text-deep-blue-900 flex justify-between items-center w-full lg:h-full">
               <Rents class="size-10"/>
               <div class="text-end">
                 <Heading type="4" class="medium">{{ lastRegisteredUsers.length }}</Heading>
                 <Heading type="3" class="small">Rentas totales</Heading>
               </div>
-            </div>
+            </li>
 
-          </article>
+          </ul>
           <p v-else class="text-white">Acá podés gestionar tus autos y solicitudes de alquiler.🚗✨</p>
         </div>
     </div>
@@ -234,18 +236,18 @@ watch(currentUser, (newUser) => {
         </div>
       </div>
     </div>
-    <div class="bg-vibrant-light-800 rounded-[40px] p-6 flex flex-col gap-4 tracking">
+    <div class="bg-vibrant-light-600 rounded-[40px] p-6 flex flex-col gap-4 tracking overflow-hidden">
       <div class="flex justify-between items-center">
         <Heading type="2" class="medium">Últimas notificaciones</Heading>
         <router-link 
-          to="/notification" 
+          to="/notifications" 
           class="text-deep-blue-900 font-semibold cursor-pointer text-sm"
         >
           Ver todas
         </router-link>
       </div>
 
-      <div class="flex flex-col gap-3">
+      <div class="box-vibrant flex flex-col gap-3 overflow-y-auto h-full pr-2">
         <div v-if="notificationStore.isLoading" class="flex justify-center items-center py-4">
           <Loading class="h-6 w-6 text-secondary-500" />
         </div>
@@ -262,7 +264,7 @@ watch(currentUser, (newUser) => {
             v-for="noti in latestNotifications" 
             :key="noti.id"
             @click="handleNotificationClick(noti)"
-            class="flex items-start gap-3 p-3 bg-white rounded-xl cursor-pointer hover:bg-white/70 transition"
+            class="flex items-start gap-3 p-3 bg-white rounded-xl cursor-pointer hover:bg-white/70 transition "
           >
           <div class="flex-shrink-0">
             <div class="relative">
@@ -313,7 +315,7 @@ watch(currentUser, (newUser) => {
         </router-link>
       </div>
 
-      <div v-if="isAdmin" class="box-white flex flex-col gap-1 h-full overflow-y-auto">
+      <div v-if="isAdmin" class="box-deep flex flex-col gap-1 h-full overflow-y-auto">
         <div 
           v-for="user in lastRegisteredUsers" 
           :key="user.id" 

@@ -19,7 +19,7 @@ const authSession = inject('authSession');
 </script>
 
 <template>
-  <aside class="md:bg-vibrant-light-600 md:m-2.5 md:px-5 flex flex-col md:items-center gap-2 md:rounded-[40px] md:min-w-[250px] md:relative h-full md:h-auto md:justify-center overflow-x-auto">
+  <aside class="box-invisible md:bg-vibrant-light-600 md:m-2.5 md:px-5 flex flex-col md:items-center gap-2 md:rounded-[40px] md:min-w-[250px] md:relative h-full md:h-auto md:justify-center overflow-x-auto">
     <img 
       v-if="profileData.personalInfo.profilePhoto" 
       class="hidden md:block w-20 aspect-square rounded-full bg-vibrant-light-800 object-cover" 

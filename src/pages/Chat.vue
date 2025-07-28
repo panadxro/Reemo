@@ -1,5 +1,5 @@
 <script>
-import { onMounted, ref, computed, nextTick, watch } from 'vue';
+import { onMounted, ref, computed, nextTick, watch, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useUserStore, useAuthStore } from '@stores';
 import { savePrivateChatMessage, subscribeToPrivateChatMessages } from '../services/private-chat';
@@ -73,10 +73,6 @@ export default {
           newMessage.value.text
         );
         newMessage.value.text = "";
-        // Scroll automático después de enviar mensaje
-        // NextTick es una funcion de Vue que espera a que el DOM se actualice
-        // antes de ejecutar la función, asegurando que 
-        // el scroll (en este caso) se aplique correctamente
         await nextTick();
         scrollToBottom();
       } catch (error) {
@@ -100,7 +96,23 @@ export default {
       return formatDateHour(timestamp);
     };
 
+    const handleEnterKey = (event) => {
+      if (!event.shiftKey && newMessage.value.text.trim() !== '') {
+        handleSubmit();
+      } else if (event.shiftKey) {
+        // Permite un salto de línea si se presiona Shift+Enter
+        newMessage.value.text += '\n';
+      } 
+    };
+
     onMounted(async () => {
+    const main = document.getElementsByTagName('main')[0];
+
+      // Agregar clase max-h-dvh al main
+      if (window.innerWidth < 1280) {
+        main.classList.add('max-h-dvh');
+      }
+
       try {
         await userStore.loadUserProfile(userIdFromRoute.value);
       } catch (error) {
@@ -123,6 +135,15 @@ export default {
       );
     });
 
+    onUnmounted(() => {
+    const main = document.getElementsByTagName('main')[0];
+
+      if (window.innerWidth < 1280) {
+        main.classList.remove('max-h-dvh');
+      }
+    });
+
+
     watch(messages, () => {
       nextTick(() => {
         scrollToBottom();
@@ -140,60 +161,59 @@ export default {
       handleSubmit,
       formatDateHour: formatDateHourHelper,
       messagesContainer,
-      scrollToBottom
+      scrollToBottom,
+      handleEnterKey
     };
   }
 }
 </script>
 
 <template>
-  <aside class="chat flex flex-col bg-vibrant-light-700 xl:rounded-[40px] xl:min-w-[250px] xl:p-5 xl:pt-8 xl:gap-5 
-                h-screen xl:h-auto p-0 gap-0">
+  <aside class="chat flex flex-col bg-vibrant-light-700 md:rounded-[40px] md:min-w-[250px] gap-4 h-dvh md:h-auto p-4">
     
-    <div class="shrink-0 p-4 xl:p-0 bg-vibrant-light-700 xl:bg-transparent">
-      <div v-if="loadingUser" class="flex items-center justify-center w-fit mx-auto">
-        <Loading role="status" />
-      </div>
+    <div v-if="loadingUser" class="flex items-center justify-center w-fit mx-auto">
+      <Loading role="status" />
+    </div>
+    <div class="">
 
-      <div class="flex items-center gap-4" v-else>
+      <div class="flex items-center gap-2">
         <BackButton class="xl:block"/>
         <img 
           :src="ownerUser.photoURL"
           :alt="`Foto de perfil de ${ownerUser.userName}`" 
-          class="w-8 h-8 rounded-full" 
+          class="w-8 h-8 rounded-full object-cover" 
         />
         <Heading :type="3" class="regular">{{ownerUser.name}} {{ownerUser.lastName}}</Heading>
       </div>
     </div>
     
-    <div class="flex-1 mx-4 xl:mx-0 mb-4 xl:mb-0 border rounded-[20px] bg-vibrant-light-600 overflow-hidden flex flex-col xl:h-[610px]">
-      <ul 
-        ref="messagesContainer"
-        class="flex-1 flex flex-col items-start gap-4 overflow-y-auto p-4 xl:max-h-[600px] scroll-smooth"
+    <ul 
+      ref="messagesContainer"
+      class="box-vibrant bg-vibrant-light-600 flex flex-col items-start gap-4 overflow-y-auto p-4 h-full rounded-[20px] scroll-smooth overflow-hidden !px-1 !py-1 md:mx-0"
+    >
+      <li v-if="loadingMessage" class="w-full flex justify-center py-8">
+        <Loading class="w-6 h-6" />
+      </li>
+      
+      <li
+        v-for="message in messages"
+        :key="message.id"
+        :class="{
+            'bg-deep-blue-900 text-white rounded-bl-xs': message.user_id !== loggedUserId,
+            'bg-background-900 text-primary-900 rounded-br-xs': message.user_id === loggedUserId,
+            'self-end': message.user_id === loggedUserId,
+        }"
+        class="p-4 rounded-xl max-w-[80%] w-auto"
       >
-        <li v-if="loadingMessage" class="w-full flex justify-center py-8">
-          <Loading class="w-6 h-6" />
-        </li>
-        
-        <li
-          v-for="message in messages"
-          :key="message.id"
-          :class="{
-              'bg-deep-blue-900 text-white rounded-bl-xs': message.user_id !== loggedUserId,
-              'bg-background-900 text-primary-900 rounded-br-xs': message.user_id === loggedUserId,
-              'self-end': message.user_id === loggedUserId,
-          }"
-          class="p-4 rounded-xl max-w-[80%] w-auto"
-        >
-          <div class="text-sm">{{ message.text }}</div>
-          <div class="text-xs text-background-600 mt-1">{{ formatDateHour(message.created_at) || 'Enviando...' }}</div>
-        </li>
-      </ul>
-    </div>
+        <div class="text-sm">{{ message.text }}</div>
+        <div class="text-xs text-background-600 mt-1">{{ formatDateHour(message.created_at) || 'Enviando...' }}</div>
+      </li>
+    </ul>
     
-    <div class="shrink-0 p-4 xl:p-0 bg-vibrant-light-700 xl:bg-transparent">
+    <div class="sticky bottom-0 ">
       <form 
         action="#"
+        method="dialog"
         class="flex bg-background-900 rounded-[20px] gap-2 items-center p-2"
         @submit.prevent="handleSubmit"
       >
@@ -202,6 +222,7 @@ export default {
           id="text"
           class="w-full min-h-[60px] border resize-none rounded-2xl p-2 outline-none border-background-900"
           v-model="newMessage.text"
+          @keydown.enter.prevent="handleEnterKey"
           placeholder="Escribe un mensaje..."
         ></textarea>
         <button 
@@ -224,7 +245,7 @@ export default {
   }
   
   /* Estilos específicos para móvil */
-  @media (max-width: 1279px) {
+  @media (max-width: 768px) {
     .chat {
       grid-area: unset;
       position: fixed;
@@ -233,6 +254,13 @@ export default {
       right: 0;
       bottom: 0;
       z-index: 48;
+      overflow: hidden;
     }
   }
+
+  .box-vibrant {
+    scrollbar-width: none;
+    scrollbar-gutter: stable both-edges;
+  }
+
 </style>

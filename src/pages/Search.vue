@@ -219,7 +219,7 @@ watch(() => filters.brand, async (newBrand, oldBrand) => {
 <template>
   <section class="w-full md:min-h-full relative flex p-2.5 gap-5">
     <div 
-      class="bg-vibrant-light-600 md:rounded-[40px] md:px-5 pr-2! md:py-9 h-full transition-all duration-300 lg:w-1/4 xl:w-1/5 lg:min-w-[320px] overflow-hidden flex flex-col gap-5 px-2.5 py-5"
+      class="bg-vibrant-light-600 md:rounded-[40px] md:px-5 pr-2! md:py-9 h-full transition-all duration-300 lg:w-1/4 xl:w-1/5 lg:min-w-[320px] overflow-hidden flex flex-col gap-5 px-2.5 py-5 pb-22"
       :class=" showFilters ? 'fixed lg:relative inset-0 z-4' : 'hidden lg:block'"
     >
       <div class="flex items-center justify-between">
@@ -328,7 +328,7 @@ watch(() => filters.brand, async (newBrand, oldBrand) => {
       </div>
     </div>
 
-  <div class="w-full lg:w-3/4 xl:w-4/5 overflow-hidden flex flex-col h-full gap-3">
+  <div class="w-full lg:w-3/4 xl:w-4/5 overflow-hidden flex flex-col flex-1 h-full gap-3">
     <div class="flex items-center gap-5 gap-y-1.5 fixed md:static top-0 left-0 right-0 z-3 bg-white px-2.5 md:px-0 py-3 md:py-0 flex-wrap">
       <BackButton />
       <Heading :type="1" class="text-xl lg:text-2xl text-start flex-1 lg:mt-0">Autos disponibles</Heading>  
@@ -382,16 +382,17 @@ watch(() => filters.brand, async (newBrand, oldBrand) => {
           <CardCar v-for="(car, index) in filteredCars" :key="car.id" :car="car" :index="index" />
         </div>
       </div>
-      <div v-else class="flex flex-col items-center justify-center h-full text-center gap-2">
+      <div v-else class="flex flex-col items-center justify-center h-120 md:h-full text-center gap-2">
         <NoCarsResult class="max-w-[150px] m-4"/>
         <p class="text-gray-400 font-bold">No hay resultados para tu búsqueda.</p>
-        <Input
+        <a href="/search">
+          <Input
           type="button"
           text="Recargar página"
           variant="secondary"
           class="!w-fit"
-          @click="resetFilters"
           />
+        </a>
       </div>
     </div>
   </section>

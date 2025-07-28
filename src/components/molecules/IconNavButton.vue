@@ -19,12 +19,16 @@ const authStore = inject('authStore');
   <router-link
     :to="to"
     :title="title"
-    class="flex items-center p-2 rounded-full transition-colors duration-300 hover:bg-white/20"
+    class="flex items-center p-2 rounded-full transition-colors duration-300"
+    :class="{
+      ' hover:bg-vibrant-light-700': authStore.user?.role === 'user',
+      ' hover:bg-deep-blue-700': authStore.user?.role === 'admin'
+    }"
     :active-class="
       authStore.user?.role === 'user'
-        ? 'bg-vibrant-light-800'
+        ? '!bg-vibrant-light-800'
         : authStore.user?.role === 'admin'
-        ? 'bg-deep-blue-700'
+        ? '!bg-white/25'
         : ''
     "
   >
