@@ -1,5 +1,5 @@
 <script setup>
-import { defineAsyncComponent } from "vue";
+import { defineAsyncComponent, onMounted, ref } from "vue";
 import { useRouter } from 'vue-router';
 
 import Heading from "@/components/atoms/Heading.vue";
@@ -26,6 +26,34 @@ import LongArrow from "@/icons/LongArrow.vue";
 
 const router = useRouter();
 
+let showInstallButton = ref(false);
+let deferredPrompt = null;
+
+onMounted(() => {
+  // Verifica si el navegador soporta PWA
+  if ('serviceWorker' in navigator && 'BeforeInstallPromptEvent' in window) {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      showInstallButton.value = true;
+    });
+  } else {
+    showInstallButton.value = false;
+  }
+});
+
+async function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to the install prompt: ${outcome}`);
+    deferredPrompt = null;
+    showInstallButton.value = false;
+  } else {
+    console.warn('No se pudo instalar la PWA, no hay prompt disponible.');
+  }
+}
+
 </script>
 
 <template>
@@ -33,17 +61,19 @@ const router = useRouter();
     <section class="flex flex-col items-center justify-between xl:flex-row xl:justify-center md:gap-16 px-4 md:px-0 md:max-w-3/4">
       <div class="flex flex-col gap-4">
         <h1 class="font-medium leading-tight text-5xl block mb-4 sm:text-6xl w-[95%] sm:w-full text-pretty text-center xl:text-start pt-4 xl:pt-0"><b>Conectando autos,</b><br/> impulsando<br/> oportunidades</h1>
-        <div class="sm:flex gap-2 hidden justify-center xl:justify-start">
-          <div class="group">
-            <a href="#">
-              <GooglePlayLg />
-            </a>
-          </div>
-          <div class="group">
-            <a href="#">
-              <AppStoreLg/>
-            </a>
-          </div>
+        <div class="flex gap-2 mx-auto xl:mx-0">
+          <Input type="button"
+            text="Descargar App"
+            variant="tertiary"
+            v-if="showInstallButton"
+            @click="installPWA"
+            class="w-fit"
+            icon-position="right">
+            <template #icon>
+              <LongArrow color="#FFFFFF" direction="right"/>
+            </template>
+          </Input>
+          <!-- @click="$router.push('/download')" -->
         </div>
       </div>
       <ConectingCars/>
