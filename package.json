@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-pwa-assets": "pwa-asset-generator public/Reemo.svg public --background \"#FFFFFF\" --theme-color \"#4FD8DF\" --opaque true --type png --quality 100 --padding \"15%\" --manifest public/site.webmanifest --index public/index.html --favicon --mstile --maskable --dark-mode --scrape true"
   },
   "dependencies": {
     "@fawmi/vue-google-maps": "^0.9.79",

@@ -86,7 +86,7 @@ onMounted(async () => {
     </div>
 
     <div class="flex flex-col gap-5">
-      <div class="hidden md:flex justify-between gap-4 md:gap-10">
+      <div class="flex justify-between gap-4 md:gap-10">
         <Input
           type="button"
           variant="primary"
@@ -112,7 +112,7 @@ onMounted(async () => {
           </template>
         </Input>
       </div>
-      <div class="hidden md:flex items-center text-center text-background-900! gap-5 text-xs">
+      <div class="flex items-center text-center text-background-900! gap-5 text-xs">
         <hr class="grow h-px bg-background-900!"/>
         O registrate con tu email
         <hr class="grow h-px bg-background-900!"/>

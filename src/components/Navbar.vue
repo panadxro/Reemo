@@ -50,11 +50,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <nav 
+  <header 
     class="navbar top-0 z-10 left-0 right-0 shadow-lg bg-white border-gray-200"
     :class="{ 'navbar--visible': isNavbarVisible, 'navbar--hidden': !isNavbarVisible }"
     >
-    <div class="max-w-(--breakpoint-xl) flex flex-wrap items-center justify-between mx-auto p-4">
+    <nav class="max-w-(--breakpoint-xl) flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="/" class="flex items-center space-x-3 rtl:space-x-reverse">
         <Reemo/>
       </a>
@@ -106,8 +106,8 @@ onBeforeUnmount(() => {
           </li>
         </ul>
       </div>
-    </div>
-  </nav>
+    </nav>
+  </header>
 </template>
 
 <style>

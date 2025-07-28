@@ -42,14 +42,14 @@ const authStore = useAuthStore()
 authStore.init();
 const route = useRoute()
 
-
+const authSession = computed(() => authStore.authSession);
 const loggedUser = computed(() => authStore.user);
-const authSessionHistory = sessionStorage.getItem('auth_session_history');
-const authSession = JSON.parse(authSessionHistory);
+
 
 provide('authStore', authStore);
 provide('authSession', authSession);
 provide('loggedUser', loggedUser);
+provide('isOnline', isOnline);
 
 const layoutComponents = {
   default: markRaw(DefaultLayout),
@@ -99,12 +99,17 @@ watch(() => route.path, (path) => {
   currentLayout.value = layoutComponents[layoutType]
 }, { immediate: true })
 
+/* onMounted(() => {
+  const authSessionHistory = sessionStorage.getItem('auth_session_history');
+  const authSession = JSON.parse(authSessionHistory);
+
+}) */
+
 </script>
 
 <template>
   <component :is="currentLayout">
-    <router-view v-if="isOnline"/>
-    <Offline v-else />
+    <router-view :isOnline="isOnline"/>
   </component>
   <Alert />
 </template>
