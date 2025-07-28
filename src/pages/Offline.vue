@@ -18,7 +18,7 @@ export default {
 </script>
 
 <template>
-  <div class="w-full min-h-full flex-1 bg-white flex flex-col items-center justify-center gap-2 text-center">
+  <div class="w-full min-h-full flex-1 flex flex-col items-center justify-center gap-2 text-center">
     <NoConection class="w-[200px] 2xl:w-[300px]"/>
     <Heading type="1" class="large 2xl:!text-6xl text-red-500">No tenés conexión</Heading>
     <p class="text-lg 2xl:text-2xl font-bold">Parece que estás offline. Revisá tu conexión a internet o probá en un lugar con mejor señal.</p>
