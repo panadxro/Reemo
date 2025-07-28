@@ -64,7 +64,7 @@ onMounted(async () => {
   <section class="md:m-2.5 w-full min-h-auto flex-1 md:min-h-auto md:max-h-dvh md:overflow-hidden flex gap-5">
     <div class="flex flex-col gap-4 w-full min-h-full" 
       :class="userCars?.length > 0 ? 'md:w-100' : ''">
-      <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0">
+      <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-4 bg-white px-2.5 md:px-0 py-3 md:py-0">
         <BackButton />
         <Heading :type="1" class="medium">Mis autos</Heading>
       </div>
