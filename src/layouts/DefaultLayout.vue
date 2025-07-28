@@ -1,8 +1,11 @@
 <script setup>
-import { defineAsyncComponent, ref } from 'vue';
+import { ref, inject } from 'vue';
 
-const Navbar = defineAsyncComponent(() => import('@/components/Navbar.vue'));
-const FooterLayout = defineAsyncComponent(() => import('@/components/Footer.vue'));
+import Navbar from '@/components/Navbar.vue';
+import FooterLayout from '@/components/Footer.vue';
+import Offline from "@pages/Offline.vue";
+
+const isOnline = inject('isOnline');
 
 const isNavbarVisible = ref(true);
 </script>
@@ -10,7 +13,8 @@ const isNavbarVisible = ref(true);
 <template>
   <Navbar class="fixed" :NavbarVisible="isNavbarVisible"/>
   <main class="flex flex-col min-h-screen">
-    <slot />
+    <slot v-if="isOnline"/>
+    <Offline v-else/>
   </main>
   <FooterLayout />
 </template>
