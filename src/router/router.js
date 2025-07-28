@@ -2,19 +2,26 @@ import { createRouter, createWebHistory } from "vue-router";
 import { useUserStore } from "@/stores";
 
 import Home from "../pages/Home.vue";
+import Dashboard from "../pages/Dashboard.vue";
+import Search from "../pages/Search.vue";
+import Maps from "../pages/Maps.vue";
+import UserProfile from "../pages/UserProfile.vue";
+import Notifications from "../pages/Notifications.vue";
+import Login from "../pages/Login.vue";
+import Register from "../pages/Register.vue";
 
 const routes = [
   { path: "/", component: Home, name: "Home" },
-  { path: "/login", name: "Login", component: () => import("../pages/Login.vue") },
-  { path: "/register", name: "Register", component: () => import("../pages/Register.vue") },
+  { path: "/login", name: "Login", component: Login },
+  { path: "/register", name: "Register", component: Register },
   { 
     path: "/dashboard", 
-    component: () => import("../pages/Dashboard.vue"),
+    component: Dashboard,
     name: "Dashboard",
     meta: { needsAuth: true },
   },
-  { path: "/search", name: "Search", component: () => import("../pages/Search.vue") },
-  { path: '/maps', name: 'maps', component: () => import('../pages/Maps.vue') },
+  { path: "/search", name: "Search", component: Search },
+  { path: '/maps', name: 'maps', component: Maps },
   { 
     path: "/onboarding",
     name: "onboarding",
@@ -45,13 +52,13 @@ const routes = [
     path: "/notifications",
     name: "Notification",
     props: true,
-    component: () => import("../pages/Notifications.vue"),
+    component: Notifications,
     meta: { needsAuth: true },
   },
   {
     path: "/user/:id",
     name: "UserProfile",
-    component: () => import("../pages/UserProfile.vue"),
+    component: UserProfile,
     props: (route) => ({
       id: route.params.id,
     }),
@@ -200,9 +207,12 @@ router.beforeEach(async (to) => {
   
   try {
     const authSessionHistory = sessionStorage.getItem('auth_session_history');
-    authSession = authSessionHistory ? JSON.parse(authSessionHistory) : { isLoggedIn: false, user: { status: null, role: null } };
+    if (authSessionHistory && authSessionHistory.trim() !== '') {
+      authSession = JSON.parse(authSessionHistory);
+    }
   } catch (e) {
-    authSession = { isLoggedIn: false, user: { status: null, role: null } };
+    console.error("Error parsing auth session:", e);
+    sessionStorage.removeItem('auth_session_history');
   }
 
   // Rutas públicas que no requieren autenticación

@@ -104,12 +104,11 @@ export default {
     </div>
     <div class="flex flex-col gap-5">
       <Heading :type="1" class="font-extrabold! text-background-900! large">Inicia sesión</Heading>
-      <p class="hidden md:block text-sm text-background-900 font-semibold">¡Bienvenido! Selecciona un método para ingresar a tu cuenta:</p>
-      <p class="md:hidden text-sm text-background-900 font-semibold">¡Bienvenido! Ingresa tus datos para iniciar sesión:</p>
+      <p class="text-sm text-background-900 font-semibold">¡Bienvenido! Selecciona un método para ingresar a tu cuenta:</p>
     </div>
 
     <div class="flex flex-col gap-5">
-      <div class="hidden md:flex justify-between gap-4 md:gap-10">
+      <div class="flex justify-between gap-4 md:gap-10">
         <Input
           type="button"
           variant="primary"
@@ -135,7 +134,7 @@ export default {
           </template>
         </Input>
       </div>
-      <div class="hidden md:flex items-center text-center text-background-900! gap-5 text-xs">
+      <div class="flex items-center text-center text-background-900! gap-5 text-xs">
         <hr class="grow h-px bg-background-900!"/>
         O ingresa con tu email
         <hr class="grow h-px bg-background-900!"/>

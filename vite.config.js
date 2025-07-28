@@ -21,11 +21,50 @@ export default defineConfig({
         name: 'Reemo',
         short_name: 'Reemo',
         description: 'Reemo es una plataforma web para alquilar vehículos en Argentina.',
-        theme_color: '#4FD8DF',
-        background_color: '#010440',
+        theme_color: '#FFFFFF',
+        background_color: '#FFFFFF',
         display: 'standalone',
+        orientation: 'portrait',
         display_override: ['window-controls-overlay'],
         lang: 'es-AR',
+        shortcuts: [
+          {
+            name: 'Inicio',
+            short_name: 'Inicio',
+            description: 'Ir a la página de inicio',
+            url: '/',
+            icons: [{
+              src: '/Home.png',
+              sizes: '24x24',
+              type: 'image/png',
+              purpose: 'any'
+            }]
+          },
+          {
+            name: 'Buscar vehículos',
+            short_name: 'Buscar',
+            description: 'Ir a la página de búsqueda de vehículos',
+            url: '/search',
+            icons: [{
+              src: '/Search.png',
+              sizes: '24x24',
+              type: 'image/png',
+              purpose: 'any'
+            }]
+          },
+          {
+            name: 'Abrir mapa',
+            short_name: 'Mapa',
+            description: 'Ir a la página de mapa',
+            url: '/maps',
+            icons: [{
+              src: '/Maps.png',
+              sizes: '24x24',
+              type: 'image/png',
+              purpose: 'any'
+            }]
+          }
+        ],
         icons: [
           {
             src: '/pwa-180x180.png',
