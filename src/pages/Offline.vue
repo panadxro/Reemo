@@ -22,7 +22,7 @@ export default {
     <NoConection class="w-[200px] 2xl:w-[300px]"/>
     <Heading type="1" class="large 2xl:!text-6xl text-red-500">No tenés conexión</Heading>
     <p class="text-lg 2xl:text-2xl font-bold">Parece que estás offline. Revisá tu conexión a internet o probá en un lugar con mejor señal.</p>
-    <p class="text-gray-500 text-sm 2xl:text-base">Mientras tanto, podés revisar contenido disponible offline o volver a la página anterior.</p>
+    <!-- <p class="text-gray-500 text-sm 2xl:text-base">Mientras tanto, podés revisar contenido disponible offline o volver a la página anterior.</p> -->
     <Input
       v-if="needRefresh"
       type="button"
