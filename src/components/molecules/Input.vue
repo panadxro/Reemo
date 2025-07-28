@@ -190,6 +190,7 @@ defineExpose({ focus, blur,  });
       :autocomplete="autocomplete"
       v-bind="attrs"
       :value="modelValue"
+      @input="$emit('update:modelValue', $event.target.value)"
       ></textarea>
 
     <!-- Botón -->

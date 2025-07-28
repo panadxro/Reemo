@@ -1,5 +1,5 @@
 <script setup>
-import { inject } from "vue";
+import { inject, ref } from "vue";
 
 import ReemoIcon from '@icons/ReemoIcon.vue'
 import Home from '@icons/Home.vue'
@@ -15,8 +15,15 @@ import People from '@icons/People.vue';
 import Login from "@/icons/Login.vue";
 import IconNavButton from './molecules/IconNavButton.vue';
 import DotNotification from "./atoms/DotNotification.vue";
+import Modal from '@/components/molecules/Modal.vue';
 
 const authStore = inject('authStore');
+
+const showCancelModal = ref(false);
+
+function openCancelModal() {
+  showCancelModal.value = true;
+}
 
 const handleLogout = () => {
   authStore.logout();
@@ -96,7 +103,7 @@ const handleLogout = () => {
       </li> -->
       <li v-if="authStore.isLoggedIn">
         <button 
-          @click="handleLogout"
+          @click="openCancelModal"
           title="Logout"
           class="flex items-center justify-center p-2 rounded-full transition-colors duration-300 cursor-pointer"
           :class="{
@@ -107,6 +114,16 @@ const handleLogout = () => {
           <Logout :color="authStore?.user?.role === 'admin' ? '#FFFFFF' : '#010440'"/>
           <span class="sr-only">Logout</span>
         </button>
+        <Modal
+          :isOpen="showCancelModal"
+          title="Cerrar Sesión"
+          message="¿Estás seguro que querés cerrar sesión?"
+          confirmText="Si, cerrar"
+          cancelText="No, mantener"
+          :image="authStore?.user?.profilePhoto"
+          @close="showCancelModal = false"
+          @confirm="handleLogout"
+        />
       </li>
       <li v-else>
         <IconNavButton to="/login" title="Log In">

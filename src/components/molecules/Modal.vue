@@ -1,11 +1,12 @@
 <script>
 import Heading from "@components/atoms/Heading.vue";
 import Input from "@components/molecules/Input.vue";
+import Cross from "@icons/Cross.vue";
 
 export default {
   name: "Modal",
   components: {
-    Heading, Input
+    Heading, Input, Cross
   },
   props: {
     isOpen: {
@@ -17,7 +18,7 @@ export default {
       default: "Confirmar acción"
     },
     message: {
-      type: String,
+      type: [String, Object],
       default: "¿Estás seguro de realizar esta acción?"
     },
     confirmText: {
@@ -78,7 +79,7 @@ export default {
     <!--Para poder cerrarlo al tocar afuera -->
     <div class="absolute inset-0 bg-black/60" @click="onClose"></div>
     
-    <div class="relative bg-white rounded-[40px] p-6 w-full max-w-md mx-4 z-10">
+    <div class="relative bg-white rounded-[40px] p-6 w-full max-w-md mx-4 z-10 max-h-auto ">
       <div class="flex flex-col">
         <div class="flex justify-between items-start mb-4">
           <Heading :type="5" class="text-primary-900 text-center">{{ title }}</Heading>
@@ -86,7 +87,7 @@ export default {
             @click="onClose" 
             class="text-primary-900 hover:text-primary-700 transition-colors hover:cursor-pointer"
           >
-            ✕
+            <Cross />
           </button>
         </div>
 
@@ -95,8 +96,8 @@ export default {
           <img :src="image" alt="Modal image" class="w-24 h-24 mx-auto rounded-full object-cover">
         </div>
 
-        <div class="mb-6">
-          <p class="text-primary-700">{{ message }}</p>
+        <div class="mb-6 overflow-y-auto max-h-80 box-white pr-4">
+          <p class="text-primary-700" v-html="message"></p>
         </div>
 
         <!-- Botones condicionales -->
@@ -111,7 +112,7 @@ export default {
             @click="onClose"
             type="button"
             variant="secondary"
-            outline
+            :outline="true"
             :text="cancelText"
           />
         </div>

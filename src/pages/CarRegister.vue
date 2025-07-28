@@ -51,7 +51,7 @@ const availability = computed(() => carStore.availability);
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
 
-const currentStep = ref(0);
+const currentStep = ref(4);
 const autocompleteInitialized = ref(false);
 
 // Variables que agregue para la api de vehiculos
@@ -177,7 +177,7 @@ const validateStep = (step) => {
       if (!basicInfo.value.brand || !basicInfo.value.model || !basicInfo.value.year || 
           !basicInfo.value.type || !basicInfo.value.color || !basicInfo.value.licensePlate || 
           !basicInfo.value.kilometers) {
-        addAlert('Por favor completa todos los campos de información básica', 'error');
+        addAlert('Por favor completá todos los campos de información básica', 'error');
         return false;
       }
       return true;
@@ -199,7 +199,7 @@ const validateStep = (step) => {
     case 3: // Ubicación y disponibilidad
       if ( !availability.value.hours.startTime || 
           !availability.value.hours.endTime) {
-        addAlert('Por favor completa la ubicación y horarios de disponibilidad', 'error');
+        addAlert('Por favor completá la ubicación y horarios de disponibilidad', 'error');
         return false;
       }
       
@@ -213,12 +213,19 @@ const validateStep = (step) => {
 
     case 4: // Políticas y tarifas
       if (!pricing.value.rates.daily || !pricing.value.rates.weekly || 
-          !pricing.value.rates.monthly || !pricing.value.mileagePolicy.includedPerDay || 
-          !pricing.value.mileagePolicy.extraPricePerKm || !pricing.value.securityDeposit) {
-        addAlert('Por favor completa todos los campos de políticas y tarifas', 'error');
+          !pricing.value.rates.monthly || !pricing.value.securityDeposit) {
+        addAlert('Por favor completá todos los campos de políticas y tarifas', 'error');
+        return false;
+      }
+
+      if (pricing.value.rates.daily > 1000000 || pricing.value.rates.daily < 20000) {
+        addAlert('La tarifa diaria debe ser mayor a $20.000 y menor a $1.000.000', 'error');
         return false;
       }
       return true;
+
+      // || !pricing.value.mileagePolicy.includedPerDay || 
+      //     !pricing.value.mileagePolicy.extraPricePerKm
 
     case 5: // Fotos del vehículo
       if (!status.value.description || (!filePreviews.photo1File && !filePreviews.photo1)) {
@@ -320,15 +327,12 @@ const timeOptions = ref(
 );
 
 const handleSubmit = async () => {
-    // Validar el último paso antes de enviar
-    if (!validateStep(currentStep.value)) {
-    return;
-  }
+  if (!validateStep(currentStep.value)) return;
   
-  // Validar todos los pasos antes de enviar
+  // Validar todos los pasos
   for (let i = 0; i < sections.value.length; i++) {
     if (!validateStep(i)) {
-      currentStep.value = i; // Redirigir al paso con error
+      currentStep.value = i;
       addAlert(`Por favor completa todos los campos requeridos en la sección "${sections.value[i].title}"`, 'error');
       return;
     }
@@ -337,66 +341,70 @@ const handleSubmit = async () => {
   loading.value = true;
   
   try {
-    // 1. Obtener ID del store (ya generado previamente)
-    const carId = carStore.currentCar.id;
-    if (!carId) throw new Error("Missing car ID");
+    let carId;
+    if (isEditMode.value) {
+      carId = props.id; 
+    } else {
+      if (!carStore.currentCar.id) {
+        await carStore.initializeCar(); 
+      }
+      carId = carStore.currentCar.id;
+      if (!carId) throw new Error("No se pudo generar el ID del vehículo");
+    }
+
+    console.log('Operación con vehículo ID:', carId);
 
     // 2. Subir fotos
-    // const photoUrls = [];
-    const finalPhotoUrls = [...(photos.value || [])];
+    const finalPhotoUrls = [...(carStore.photos || [])];
     for (let i = 0; i < 4; i++) {
       const photoKey = `photo${i+1}`;
       if (filePreviews[`${photoKey}File`]) {
-        const newUrl= await carStore.uploadCarPhoto(
+        finalPhotoUrls[i] = await carStore.uploadCarPhoto(
           authStore.user.id,
           filePreviews[`${photoKey}File`],
-          carStore.currentCar.id,
+          carId,
           i
         );
-        finalPhotoUrls[i] = newUrl;
       }
     }
 
-    // 3. Preparar datos completos
+    // 3. Preparar datos
     const carData = {
       id: carId,
       ownerId: authStore.user.id,
-      basicInfo: { ...basicInfo.value },
-      specifications: { ...specifications.value },
+      basicInfo: { ...carStore.basicInfo },
+      specifications: { ...carStore.specifications },
       status: { 
-        ...status.value,
+        ...carStore.status,
         current: "available",
         timesRented: 0
       },
-      features: { ...features.value },
-      pricing: { ...pricing.value },
-      insurance: { ...insurance.value },
-      availability: { ...availability.value },
+      features: { ...carStore.features },
+      pricing: { ...carStore.pricing },
+      insurance: { ...carStore.insurance },
+      availability: { ...carStore.availability },
       photos: finalPhotoUrls.filter(url => url)
     };
 
-
-  if (isEditMode.value) {
-    await carStore.updateCar(props.id, carData);
-
-    // Notificar a los administradores que el vehículo fue actualizado
-    if (!userStore.profileData.id) {
-      await userStore.loadUserProfile(authStore.user.id);
+    if (isEditMode.value) {
+      await carStore.updateCar(carId, carData);
+      
+      if (!userStore.profileData.id) {
+        await userStore.loadUserProfile(authStore.user.id);
+      }
+      await notifyAdminsOfVehicleUpdate(carData, userStore.profileData);
+      
+      addAlert('¡Vehículo actualizado con éxito!', 'success');
+      router.push(`/car/${carId}`);
+    } else {
+      const savedCarId = await carStore.saveCar(carData);
+      addAlert('¡Vehículo registrado con éxito!', 'success');
+      router.push(`/car/${savedCarId}`);
     }
-    await notifyAdminsOfVehicleUpdate(carData, userStore.profileData);
-
-    addAlert('¡Vehiculo actualizado con exito!', 'success');
-    router.push(`/car/${props.id}`);
-  } else {
-    await carStore.saveCar(carData);
-    addAlert('¡Vehículo registrado con éxito!', 'success');
-    router.push(`/car/${carStore.currentCar.id}`);
-  }
-
     
   } catch (error) {
-    console.error('Error al registrar vehículo:', error);
-    addAlert('Error al registrar el vehículo. Por favor intenta nuevamente.', 'error');
+    console.error('Error:', error);
+    addAlert(error.message || 'Error al procesar el vehículo', 'error');
   } finally {
     loading.value = false;
   }
@@ -493,6 +501,13 @@ watch(() => basicInfo.value.brand, (newBrand) => {
   { immediate: true }
 );
 
+watch(() => pricing.value.rates.daily, (newDailyRate) => {
+  if (newDailyRate) {
+    carStore.pricing.rates.weekly = Math.ceil(newDailyRate * 7 * 0.9);
+    carStore.pricing.rates.monthly = Math.ceil(newDailyRate * 30 * 0.85);
+  }
+}, { immediate: true });
+
 onBeforeUnmount(() => {
   // window.removeEventListener('beforeunload', handleBeforeUnload);
 });
@@ -507,7 +522,7 @@ onBeforeUnmount(() => {
           <Reemo class="cursor-pointer" @click="router.push('/dashboard')"/>
           <Heading type="1" class="large text-deep-blue-900 font-extrabold!">{{ isEditMode ? 'Editar vehiculo' : 'Registrar vehiculo' }}</Heading>
         </div>
-        <p class="text-sm max-w-[420px]">{{ isEditMode ? 'Gestioná y actualizá los datos de tu vehículo disponible para alquiler' : 'Subscribí tu vehículo a la plataforma y haz que trabaje por vos.'}}</p>
+        <p class="text-sm max-w-[420px]">{{ isEditMode ? 'Gestioná y actualizá los datos de tu vehículo disponible para alquiler' : 'Subscribí tu vehículo a la plataforma y hace que trabaje por vos.'}}</p>
       </div>
       <ul 
         class="sections-sidebar"
@@ -796,7 +811,7 @@ onBeforeUnmount(() => {
             <Pill 
               v-for="(accessory, index) in selectedAccessories" 
               :key="accessory.value" 
-              :accessory="accessory.label" 
+              :accessory="accessory.value" 
               :name="accessory.label" 
               :icon="true"
             >
@@ -900,10 +915,12 @@ onBeforeUnmount(() => {
           <Heading type="2" class="medium md:!text-3xl text-deep-blue-900! font-extrabold!">Políticas y tarifas</Heading>
           <Loading v-if="loading" role="status" />
         </div>
-        <p class="text-sm font-medium">Establecé la tarifa diaria para alquilar tu vehículo. Configurá los kilómetros incluidos, el precio por KM extra y el depósito de seguridad sugerido. Esto permite definir claramente las condiciones para el arrendatario.</p>
-        <div class="box-vibrant flex flex-col gap-5 min-w-full md:overflow-y-auto md:pr-2">
+        <p class="text-sm font-medium">Establecé la tarifa diaria para alquilar tu vehículo y el depósito de seguridad. Los valores semanales y mensuales se calculan automáticamente a partir de la tarifa diaria.</p>
+        <div class="box-vibrant flex flex-col gap-10 min-w-full md:overflow-y-auto md:pr-2">
 
-          <DropdownForm title="Tarifa base" :section-id="'section-2'" :dropdown-id="'tarifa'" :is-initial="true">
+          <!-- <DropdownForm title="Tarifa base" :section-id="'section-2'" :dropdown-id="'tarifa'" :is-initial="true"> -->
+            <div class="flex flex-col gap-4">
+              <Heading type="3" class="regular text-deep-blue-900">Tarifa base</Heading>
             <div class="flex gap-5">
               <Input
                 type="number"
@@ -914,30 +931,35 @@ onBeforeUnmount(() => {
                 :variant="'secondary'"
                 :outline="true"
                 :label="true"
-                />
+                :min="20000"
+                :max="1000000"
+              />
               <Input
                 type="number"
-                v-model.number="pricing.rates.weekly"
+                :value="pricing.rates.weekly"
                 name="weekly"
                 id="weekly"
                 placeholder="Semanal"
                 :variant="'secondary'"
                 :outline="true"
                 :label="true"
-                />
+                :disabled="true"
+              />
               <Input
                 type="number"
-                v-model.number="pricing.rates.monthly"
+                :value="pricing.rates.monthly"
                 name="monthly"
                 id="monthly"
                 placeholder="Mensual"
                 :variant="'secondary'"
                 :outline="true"
                 :label="true"
-                />
+                :disabled="true"
+              />
             </div>
-          </DropdownForm>
-          <DropdownForm title="Política de kilometraje" :section-id="'section-2'" :dropdown-id="'kilometraje'">
+            </div>
+          <!-- </DropdownForm> -->
+          <!-- <DropdownForm title="Política de kilometraje" :section-id="'section-2'" :dropdown-id="'kilometraje'">
             <div class="flex gap-5">
               <Input
                 type="select"
@@ -975,8 +997,10 @@ onBeforeUnmount(() => {
                 :label="true"
               />    
             </div>
-          </DropdownForm>
-          <DropdownForm title="Depósito de seguridad" :section-id="'section-2'" :dropdown-id="'seguridad'">
+          </DropdownForm> -->
+          <!-- <DropdownForm title="Depósito de seguridad" :section-id="'section-2'" :dropdown-id="'seguridad'"> -->
+           <div class="flex flex-col gap-4">
+             <Heading type="3" class="regular text-deep-blue-900">Política de kilometraje</Heading>
             <Input 
               type="number" 
               v-model.number="pricing.securityDeposit" 
@@ -987,7 +1011,8 @@ onBeforeUnmount(() => {
               :outline="true"
               :label="true"
               />
-          </DropdownForm>
+           </div>
+          <!-- </DropdownForm> -->
         </div>
       </router-view>
 
@@ -1085,6 +1110,7 @@ onBeforeUnmount(() => {
             id="company"
             placeholder="Compañia aseguradora"
             :options="[
+              { value: 'zurich', label: 'Zurich Seguros' },
               { value: 'san_cristobal', label: 'San Cristóbal' },
               { value: 'la_caja', label: 'La Caja' },
               { value: 'federacion_patronal', label: 'Federación Patronal' },
