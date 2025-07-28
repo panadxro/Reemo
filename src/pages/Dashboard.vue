@@ -128,7 +128,7 @@ watch(currentUser, (newUser) => {
 <template>
   <div class="parent w-full md:max-h-vh md:min-h-vh p-2.5">
     <div class="dash flex flex-col flex-1 gap-5 ">
-      <div class="flex md:items-end justify-between flex-col md:flex-row gap-5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0">
+      <div class="flex md:items-end justify-between flex-col md:flex-row gap-5 fixed md:static top-0 left-0 right-0 z-4 bg-white px-2.5 md:px-0 py-3 md:py-0">
         <div class="flex md:hidden items-center justify-between">
           <Account :user="user" :authSession="authSession"/>
           <div class="flex items-center justify-center gap-4 flex-1 mr-10">

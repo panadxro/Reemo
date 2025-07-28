@@ -76,7 +76,7 @@ onMounted(async () => {
 
 <template>
   <section class="flex flex-col gap-5 md:m-2.5 w-full md:max-h-vh md:overflow-hidden">
-    <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0">
+    <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-4 bg-white px-2.5 md:px-0 py-3 md:py-0">
       <BackButton />
       <Heading :type="1" class="medium">Mis documentos</Heading>
     </div>

@@ -59,7 +59,7 @@ onMounted(async () => {
   <section class="md:m-2.5 w-full md:max-h-vh md:overflow-hidden flex gap-5">
   <div class="flex flex-col gap-4 w-full" 
     :class="userRents?.length > 0 ? 'md:w-auto' : ''">
-    <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0">
+    <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-4 bg-white px-2.5 md:px-0 py-3 md:py-0">
       <BackButton />
       <Heading :type="1" class="medium">Historial</Heading>
     </div>
@@ -68,7 +68,7 @@ onMounted(async () => {
       :class="userRents?.length > 0 ? 'md:bg-deep-blue-900 md:w-85' : 'bg-white items-center justify-center'">
       <ul 
         v-if="userRents?.length > 0"
-        class="box-deep h-full flex flex-col gap-4 overflow-y-auto !pr-1 w-full mb-15 md:mb-0"
+        class="box-deep min-h-full flex flex-col gap-4 overflow-y-auto !pr-1 w-full mb-15 md:mb-0"
       >
         <HistoryCar 
           v-for="(rent, index) in userRents" 

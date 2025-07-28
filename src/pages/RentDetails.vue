@@ -363,7 +363,7 @@ onMounted(() => {
 
     <div class="box-vibrant w-full md:w-3/7 flex flex-col gap-4 overflow-visible lg:overflow-hidden lg:overflow-y-auto md:pr-2 order-1 lg:order-1">
       
-      <div class="flex items-center gap-5 fixed top-0 left-0 right-0 z-10 bg-white md:bg-vibrant-light-600 px-2.5 md:px-0 py-3 md:py-0 md:sticky">
+      <div class="flex items-center gap-5 fixed top-0 left-0 right-0 z-4 bg-white md:bg-vibrant-light-600 px-2.5 md:px-0 py-3 md:py-0 md:sticky">
         <BackButton />
         <Heading :type="1" class="medium text-lg sm:text-xl lg:text-2xl">Detalles del alquiler</Heading>
       </div>

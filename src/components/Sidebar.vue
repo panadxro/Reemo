@@ -116,7 +116,7 @@ const handleLogout = () => {
         </button>
         <Modal
           :isOpen="showCancelModal"
-          title="Cerrar Sesión"
+          title="Cerrar sesión"
           message="¿Estás seguro que querés cerrar sesión?"
           confirmText="Si, cerrar"
           cancelText="No, mantener"
