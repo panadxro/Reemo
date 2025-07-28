@@ -376,7 +376,7 @@ const handleSubmit = async () => {
       specifications: { ...carStore.specifications },
       status: { 
         ...carStore.status,
-        current: "available",
+        current: "not-validated",
         timesRented: 0
       },
       features: { ...carStore.features },
@@ -1170,7 +1170,6 @@ onBeforeUnmount(() => {
           variant="tertiary"
           :outline="false"
           :text="loading ? 'Procesando...' : (isEditMode ? 'Guardar Cambios': 'Finalizar')"
-          :class="loading ? 'cursor-not-allowed bg-deep-blue-900' : 'cursor-pointer'"
           :disabled="loading"
           v-if="currentStep === sections.length - 1"
           class="cursor-pointer"
