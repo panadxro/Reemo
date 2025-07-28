@@ -114,7 +114,6 @@ const handleNotificationClick = async (notification) => {
       <Heading :type="1" class="medium">Notificaciones</Heading>
     </div>
 
-
     <div v-if="isLoading" class="flex justify-center items-center p-10">
       <Loading class="h-12 w-12 text-secondary-500" />
       <p class="ml-4 text-gray-600">Cargando notificaciones...</p>
@@ -150,21 +149,34 @@ const handleNotificationClick = async (notification) => {
           1hr
         </span>
       </li>
-      <div v-for="noti in notifications" :key="noti.id"
-        class="overflow-y-auto p-6 border-b last:border-b-0 hover:bg-gray-200 rounded-xl cursor-pointer"
+      <li v-for="noti in notifications" :key="noti.id"
+        class="flex items-center justify-between p-4 rounded-4xl bg-vibrant-light-800"
         @click="handleNotificationClick(noti)">
-        <!-- Contenedor General para una Notificación -->
-        <div class="flex items-start space-x-3">
-          <img v-if="noti.senderDetails?.photoURL" :src="noti.senderDetails?.photoURL"
-            :alt="noti.senderDetails?.name || 'Reemo Bot' " class="w-10 h-10 rounded-full" />
-          <div v-else
-            class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
-            <!-- <img src="../assets/imagotipo-celeste.png" :alt="noti.senderDetails?.name || 'Reemo Bot' " class="w-10 h-10 rounded-full" /> -->
-            <ReemoIcon class="w-15 h-15 rounded-full" />
-            <!-- <h3>{{ noti.senderDetails?.name ? noti.senderDetails.name .charAt(0).toUpperCase() : 'R' }}</h3> -->
-            <!-- <p> {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}</p> -->
+        <div class="flex items-center gap-5 bg-alert-success-900">
+          <figure class="h-18 aspect-square relative">
+            <img 
+              v-if="noti.senderDetails?.photoURL" 
+              :src="noti.senderDetails?.photoURL"
+              :alt="noti.senderDetails?.name || 'Reemo Bot' " 
+              class="bg-white h-full rounded-full object-cover" />
+            <div v-else
+              class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center text-white text-xl font-bold">
+              <!-- <img src="../assets/imagotipo-celeste.png" :alt="noti.senderDetails?.name || 'Reemo Bot' " class="w-10 h-10 rounded-full" /> -->
+              <ReemoIcon class="w-15 h-15 rounded-full" />
+              <!-- <h3>{{ noti.senderDetails?.name ? noti.senderDetails.name .charAt(0).toUpperCase() : 'R' }}</h3> -->
+              <!-- <p> {{ noti.message || 'Ha habido una actualización sobre tu solicitud de alquiler.' }}</p> -->
+            </div>
+            <span class="absolute bottom-0 right-0">Imagen de usuario</span>
+          </figure>
+          <div class="flex flex-col gap-2.5">
+            <Heading :type="2" class="regular">{{ noti.title || 'Tienes una nueva notificación.' }}</Heading>
+            <p>{{ noti.message || 'Tienes una nueva notificación.' }}</p>
+
           </div>
-          <div class="flex-1">
+
+        </div>
+        <!-- Contenedor General para una Notificación -->
+          <div class="flex-1 bg-alert-error-700">
 
             <!-- Emcabezado general -->
             <div class="flex items-center justify-start">
@@ -322,14 +334,6 @@ const handleNotificationClick = async (notification) => {
                 </p>
               </div>
 
-              <!-- <router-link :to="noti.link" class="ml-3 text-primary-600 hover:text-primary-800 transition"
-                title="Ver detalle">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                  stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </router-link> -->
-
               <router-link :to="noti.link"
                 class="ml-3 bg-secondary-700 hover:bg-primary-900 text-white p-2 rounded-full transition"
                 title="Revisar vehículo">
@@ -361,110 +365,14 @@ const handleNotificationClick = async (notification) => {
               </router-link>
             </div>
 
-
-
-            <!-- Caso: Otro tipo de notificación (genérico) -->
             <div v-else>
               <!-- <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div> -->
               <p class="text-sm text-gray-700">{{ noti.message || 'Tienes una nueva notificación.' }}</p>
             </div>
 
-
-            <!-- Mensaje comentado -->
-            <!-- <div v-if="noti.mensajeExtra" class="bg-gray-50 border rounded p-2 mt-3 text-sm text-gray-600">
-              {{ noti.mensajeExtra }}
-            </div> -->
-
-            <!-- Acciones -->
-            <!-- <div v-if="noti.acciones" class="flex space-x-2 mt-3"> -->
-            <!-- <div v-if="noti.acciones" class="flex space-x-2 mt-3">
-            <button class="text-sm px-3 py-1 rounded border text-gray-700">Decline</button>
-            <button class="text-sm px-3 py-1 rounded bg-black text-white">Accept</button>
-            </div> -->
-
-            <!-- <div class="text-xs text-gray-400 mt-1">{{ formatDate(noti.created_at) }}</div> -->
-            <!-- <div class="text-xs text-gray-400 mt-1">1 min ago • Easy 2023 Project</div> -->
-
-            <!-- Tags -->
-            <!-- <div v-if="noti.tags.length > 0" class="flex flex-wrap mt-2 gap-1">
-            <span v-for="tag in noti.tags" :key="tag"
-              class="text-xs px-2 py-0.5 rounded bg-gray-100 border text-gray-700">{{ tag }}</span>
-            </div> -->
-
-            <!-- Responder -->
             <button v-if="noti.responder" class="text-sm text-gray-600 mt-2">Reply</button>
           </div>
-        </div>
-      </div>
+      </li>
     </ul>
   </div>
-
-
-  <!-- <div class="flex h-screen">
-    <aside class="w-64 bg-white border-r flex flex-col p-4">
-      <h1 class="text-2xl font-bold mb-6">Mails</h1>
-      <nav class="flex-1 space-y-2">
-        <button class="flex items-center gap-3 w-full p-2 rounded-lg hover:bg-gray-100" v-for="item in items"
-          :key="item.label">
-          <span>{{ item.icon }}</span>
-          <span>{{ item.label }}</span>
-        </button>
-      </nav>
-
-      <div class="mt-6 border-t pt-4 space-y-2 text-sm">
-        <p class="font-medium">Other</p>
-        <button v-for="tag in tags" :key="tag" class="text-gray-600 hover:text-primary">
-          {{ tag }}
-        </button>
-      </div>
-
-      <div class="mt-auto pt-6 border-t">
-        <div class="text-xs text-gray-500 mb-2">Free Version</div>
-        <div class="bg-gray-200 h-2 rounded-full w-full mb-3">
-          <div class="bg-primary h-2 rounded-full w-2/3"></div>
-        </div>
-        <button class="w-full bg-primary text-white py-2 rounded-xl text-sm">Upgrade to PRO 🚀</button>
-      </div>
-    </aside>
-    <div class="flex flex-col flex-1">
-      <div class="flex items-center p-4 border-b bg-white gap-3 flex-wrap">
-        <div class="flex gap-2">
-          <input type="checkbox" />
-          <button class="bg-gray-100 p-2 rounded-lg">🏷️</button>
-          <button class="bg-gray-100 p-2 rounded-lg">📦</button>
-          <button class="bg-gray-100 p-2 rounded-lg">🗑️</button>
-        </div>
-
-        <div class="flex-1 flex gap-2 justify-end items-center">
-          <input type="text" placeholder="Search" class="border text-sm rounded-lg px-3 py-2" />
-          <button class="bg-gray-100 p-2 rounded-lg">⚙️</button>
-          <button class="bg-gray-100 p-2 rounded-lg">↻</button>
-          <span>1 of 15</span>
-          <button class="bg-gray-100 p-2 rounded-lg">←</button>
-          <button class="bg-gray-100 p-2 rounded-lg">→</button>
-        </div>
-      </div>
-
-      <div class="overflow-y-auto flex-1">
-        <div class="flex items-center p-4 border-b hover:bg-gray-50 cursor-pointer gap-3">
-          <input type="checkbox" />
-          <span class="text-gray-400">🔖</span>
-          <div class="relative">
-            <img :src="mails.avatar" class="w-10 h-10 rounded-full" />
-            <span v-if="mails.unread" class="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
-          </div>
-          <div class="flex-1">
-            <p class="font-medium text-gray-900">{{ mails.name }}</p>
-            <p class="text-gray-500 text-sm truncate">{{ mails.subject }}</p>
-          </div>
-            <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
-              {{ mails.label }}
-            </span>
-          <span class="text-gray-500 text-sm">{{ mails.date }}</span>
-        </div>
-      </div>
-
-    </div>
-  </div> -->
-
 </template>

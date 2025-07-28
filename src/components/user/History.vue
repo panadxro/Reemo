@@ -1,7 +1,6 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, inject } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores';
 import { addAlert } from "@services/alerts.js";
 import { fetchUserRentalHistory, fetchUserRentedOutHistory } from '@/services/rentedCarService';
 
@@ -18,7 +17,7 @@ const props = defineProps({
 });
 
 const router = useRouter();
-const authStore = useAuthStore();
+const authStore = inject('authStore');
 
 const isLoading = ref(true);
 const historyData = ref({

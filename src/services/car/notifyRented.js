@@ -37,28 +37,31 @@ const carValidationStatusNotification = (car, newStatus, message = null) => {
   // Generar el contenido de la notificación, ahora pasando el motivo.
   // Asumimos que tienes un archivo de templates como en la sugerencia anterior.
   // Si no, puedes construir el mensaje aquí mismo.
-  const title = newStatus === 'validated' ? '¡Tu vehículo ha sido validado!' : 'Se requiere una acción para tu vehículo';
+  const title = newStatus === 'validated' ? '✅ ¡Tu vehículo fue aprobado!' : '⚠️ Tu vehículo no fue aprobado';
+
   const link = newStatus == 'validated'
     ? `/car/${car.id}`
     : `/car/edit/${car.id}`
+
   const reason = newStatus === 'validated'
-    ? `Buenas noticias. Tu ${car.basicInfo.brand} ${car.basicInfo.model} fue aprobado y ya está visible para alquilar.`
-    : `Tu ${car.basicInfo.brand} ${car.basicInfo.model} fue marcado como no validado por el siguiente motivo: "${message}". Por favor, corrige el problema y vuelve a solicitar la validación.`;
+    ? `Tu ${car.basicInfo.brand} ${car.basicInfo.model} (${car.basicInfo.licensePlate}) ya está disponible para alquiler!
+    Ahora otros usuarios podrán solicitarlo.`
+    : `El ${car.basicInfo.brand} ${car.basicInfo.model} (${car.basicInfo.licensePlate}) no cumple con los requisitos.
+    Revisa la documentación y volvé a enviarlo para revisión.`;
 
   if (newStatus === 'validated') {
     return {
       title: title,
       message: reason,
       type: 'car_validated',
-      link: link, // Enlace a la página de detalles del auto
+      link: link
     };
   } else { // 'not-validated'
     return {
       title: title,
-      // message: `Tu ${car.basicInfo.brand} ${car.basicInfo.model} fue marcado como no validado. Por favor, revisa los detalles o contacta a soporte para más información.`,
       message: reason,
       type: 'car_invalidated',
-      link: link // Enlace a la página de detalles del auto
+      link: link 
     };
   }
 };

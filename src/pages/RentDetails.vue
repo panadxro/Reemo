@@ -359,9 +359,9 @@ onMounted(() => {
     <Loading class="h-12 w-12 text-secondary-500" />
   </div>
 
-  <div v-else-if="rentalDetails" class="flex flex-col lg:flex-row md:m-2.5 py-4 lg:py-6 px-2 sm:px-4 gap-4 w-full bg-vibrant-light-600 rounded-xl lg:rounded-3xl min-h-screen lg:min-h-auto overflow-y-auto ">
+  <div v-else-if="rentalDetails" class="flex flex-col lg:flex-row md:m-2.5 py-4 lg:py-6 md:px-2 sm:px-4 gap-4 w-full md:bg-vibrant-light-600 rounded-xl lg:rounded-3xl min-h-screen lg:min-h-auto overflow-y-auto ">
 
-    <div class="box-vibrant w-full md:w-2/5 flex flex-col gap-4 overflow-visible lg:overflow-hidden lg:overflow-y-auto md:pr-2 order-1 lg:order-1">
+    <div class="box-vibrant w-full md:w-3/7 flex flex-col gap-4 overflow-visible lg:overflow-hidden lg:overflow-y-auto md:pr-2 order-1 lg:order-1">
       
       <div class="flex items-center gap-5 fixed top-0 left-0 right-0 z-10 bg-white md:bg-vibrant-light-600 px-2.5 md:px-0 py-3 md:py-0 md:sticky">
         <BackButton />
@@ -374,22 +374,22 @@ onMounted(() => {
           <Status :status="rentalDetails.status"/>
         </div>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 text-white">
           <div>
-            <p class="text-background-800 text-xs sm:text-sm">Desde:</p> 
-            <p class="text-white text-sm sm:text-base">{{ formatDate(rentalDetails.start_time) }}</p>
+            <p class="text-xs sm:text-sm">Desde:</p> 
+            <p class="text-sm sm:text-base">{{ formatDate(rentalDetails.start_time) }}</p>
           </div>
           <div>
-            <p class="text-background-800 text-xs sm:text-sm">Hasta:</p> 
-            <p class="text-white text-sm sm:text-base">{{ formatDate(rentalDetails.end_time) }}</p>
+            <p class="text-xs sm:text-sm">Hasta:</p> 
+            <p class="text-sm sm:text-base">{{ formatDate(rentalDetails.end_time) }}</p>
           </div>
           <div>
-            <p class="text-background-800 text-xs sm:text-sm">Tarifa:</p> 
-            <p class="text-white text-sm sm:text-base">${{ rentalDetails.total_price?.toFixed() || 'N/A' }}</p>
+            <p class="text-xs sm:text-sm">Tarifa:</p> 
+            <p class="text-sm sm:text-base">${{ rentalDetails.total_price?.toFixed() || 'N/A' }}</p>
           </div>
           <div>
-            <p class="text-background-800 text-xs sm:text-sm">Método de pago:</p> 
-            <p class="text-white text-sm sm:text-base">Transferencia</p>
+            <p class="text-xs sm:text-sm">Método de pago:</p> 
+            <p class="text-sm sm:text-base">Transferencia</p>
           </div>
         </div>
       </div>
@@ -529,7 +529,7 @@ onMounted(() => {
         <Modal
           :isOpen="showCancelModal"
           title="Cancelar alquiler"
-          message="¿Estás seguro de que quieres cancelar este alquiler?"
+          message="¿Estás seguro que querés cancelar este alquiler?"
           confirmText="Si, cancelar"
           cancelText="No, mantener"
           @close="showCancelModal = false"
@@ -596,7 +596,7 @@ onMounted(() => {
       </div>
     </div>
 
-      <section v-else class="box-white bg-white rounded-2xl py-6 px-4 pr-2 w-full text-gray-700 max-h-full order-2 overflow-hidden">
+      <section v-else class="box-white bg-white border-2 border-vibrant-light-600 rounded-2xl py-6 px-4 pr-2 w-full text-gray-700 max-h-full order-2 overflow-hidden">
         <Heading :type="2" class="text-gray-800 text-lg sm:text-xl lg:text-2xl">📄 Resumen del alquiler</Heading>
         <article class="overflow-y-auto h-full py-2">
 

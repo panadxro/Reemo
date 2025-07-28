@@ -1,7 +1,8 @@
 <script setup>
-import { watch, markRaw, shallowRef, provide, computed } from 'vue'
+import { watch, markRaw, shallowRef, provide, computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
+import { useRegisterSW } from 'virtual:pwa-register/vue'
 
 import DefaultLayout from '@layouts/DefaultLayout.vue'
 import SimpleLayout from "@layouts/SimpleLayout.vue"
@@ -9,6 +10,33 @@ import DashboardLayout from '@layouts/DashboardLayout.vue'
 import UserLayout from '@layouts/UserLayout.vue'
 import MapsLayout from '@layouts/MapsLayout.vue'
 import Alert from './components/atoms/Alert.vue';
+import Offline from "@pages/Offline.vue";
+
+const isOnline = ref(navigator.onLine);
+const showOffline = ref(false);
+
+const { offlineReady, needRefresh, updateServiceWorker } = useRegisterSW()
+
+const updateOnlineStatus = () => {
+  isOnline.value = navigator.onLine;
+  if (!isOnline.value) {
+    showOffline.value = true;
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+
+  if (offlineReady.value) {
+    showOffline.value = true;
+  }
+});
+
+onUnmounted(() => {
+  window.removeEventListener('online', updateOnlineStatus);
+  window.removeEventListener('offline', updateOnlineStatus);
+});
 
 const authStore = useAuthStore()
 authStore.init();
@@ -16,11 +44,11 @@ const route = useRoute()
 
 
 const loggedUser = computed(() => authStore.user);
-// const authSessionHistory = sessionStorage.getItem('auth_session_history');
-// const authSession = JSON.parse(authSessionHistory);
+const authSessionHistory = sessionStorage.getItem('auth_session_history');
+const authSession = JSON.parse(authSessionHistory);
 
 provide('authStore', authStore);
-provide('authSession', authStore);
+provide('authSession', authSession);
 provide('loggedUser', loggedUser);
 
 const layoutComponents = {
@@ -47,7 +75,7 @@ const layoutMap = {
   '/search': 'dashboard',
   '/map': 'map',
   '/car/': 'dashboard',
-  '/notification': 'dashboard',
+  '/notifications': 'dashboard',
   
   // Rutas con layout de usuario (sin sidebar y usernav) 
   '/user': 'user',
@@ -75,7 +103,8 @@ watch(() => route.path, (path) => {
 
 <template>
   <component :is="currentLayout">
-    <router-view />
+    <router-view v-if="isOnline"/>
+    <Offline v-else />
   </component>
   <Alert />
 </template>
@@ -145,12 +174,20 @@ h4 {
 
 .box-white {
   scrollbar-color: #CAF3F5 #FFFFFF;
+
 }
 .box-deep {
   scrollbar-color: #143968 #010440;
 }
 .box-vibrant {
   scrollbar-color: #A7EBEF #dbfafc;
+}
+.box-thin {
+  scrollbar-width: thin;
+}
+.box-invisible {
+  scrollbar-color: #A7EBEF #dbfafc;
+  scrollbar-width: none;
 }
 select:focus {
   outline: none;
@@ -192,6 +229,15 @@ select option:first-of-type {
   font-weight: 600;
 }
 .pac-icon-marker {
+  display: none;
+}
+
+.gm-control-active, .gm-fullscreen-control {
+  display: hidden !important;
+  opacity: 0;
+  pointer-events: none;
+}
+.gm-style > div:last-child > div > *{
   display: none;
 }
 </style>

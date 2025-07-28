@@ -373,8 +373,8 @@ onMounted(async () => {
             v-if="!paymentStore.showNewPaymentForm"
             type="button"
             text="Agregar método de pago"
-            variant="secondary"
-            :outline="true"
+            variant="tertiary"
+            :outline="false"
             @click="paymentStore.toggleNewPaymentForm" 
             class="cursor-pointer w-full"
           />

@@ -1,6 +1,6 @@
 <script>
-import { useUserStore, useAuthStore, useCarStore  } from '@stores'
-import { onMounted, ref, computed, watch } from 'vue';
+import { useUserStore, useCarStore  } from '@stores'
+import { onMounted, ref, computed, watch, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { addAlert } from "@services/alerts.js";
 
@@ -12,6 +12,7 @@ import DeletePaymentModal from '@/components/user/DeletePaymentModal.vue';
 import History from '@/components/user/History.vue'
 import Loading from "@icons/Loading.vue";
 import Cross from "@icons/Cross.vue";
+import Send from "@icons/Send.vue";
 import Check from "@icons/Check.vue";
 import VerifyValidation from "@/components/user/VerifyValidation.vue";
 import NoCarsRegister from '../components/atoms/NoCarsRegister.vue';
@@ -19,7 +20,7 @@ import NoMessage from '../components/atoms/NoMessage.vue';
 
 export default {
   name: "UserProfile",
-  components: { Heading, CardCar, Loading, BackButton, Input, DeletePaymentModal, Cross, Check, History, VerifyValidation, NoCarsRegister, NoMessage },
+  components: { Heading, CardCar, Loading, BackButton, Input, DeletePaymentModal, Cross, Check, History, VerifyValidation, NoCarsRegister, NoMessage, Send },
   props: {
     id: {
       type: String,
@@ -35,8 +36,8 @@ export default {
     }
   },
   setup() {
+    const authStore = inject('authStore');
     const userStore = useUserStore();
-    const authStore = useAuthStore();
     const carStore = useCarStore();
 
     const route = useRoute();
@@ -63,10 +64,16 @@ export default {
     watch(userIdFromRoute, async (newUserId, oldUserId) => {
       if (newUserId !== oldUserId) {
         await userStore.loadUserProfile(newUserId);
+
+        // if(!userIdFromRoute !== newUserId) {
+        //   router.push('/not-found');
+        // }
+
         // También cargar los autos cuando cambie el usuario
         if (newUserId) {
           try {
             await carStore.loadUserCars(newUserId);
+            // console.log('nuevo id de usuario', newUserId);
           } catch (error) {
             console.error("Error cargando autos del usuario:", error);
           }
@@ -78,6 +85,11 @@ export default {
       try {
         // Cargar perfil del usuario
         await userStore.loadUserProfile(userIdFromRoute.value);
+        // console.log('Perfil del usuario cargado', showProfile.value.uid,);
+        // if (!showProfile.value.uid !== userIdFromRoute.value) {
+        //   router.push('/not-found');
+        //   return;
+        // }
 
         // Fetch a los autos del usuario
         await carStore.loadUserCars(userIdFromRoute.value);
@@ -207,55 +219,6 @@ export default {
               <!-- <button class="mt-4 bg-white text-emerald-700 font-semibold py-1 px-3 rounded-lg hover:bg-gray-100 transition">Ver Detalles</button> -->
             </div>
           </div>
-
-            
-            <!-- <div class="flex flex-col justify-evenly items-center md:items-baseline h-full md:gap-0 overflow-y-auto ">
-              <div class="flex justify-center md:justify-between items-center">
-                <Heading :type="2" class="medium text-primary-900 text-center md:text-start"
-                  v-if="showProfile && showProfile.personalInfo">
-                  {{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }}
-                </Heading>
-                <router-link
-                  v-if="!isOwnProfile && showProfile && showProfile.personalInfo && showProfile.personalInfo.id !== id"
-                  :to="`/user/${id}/chat`"
-                  class="cursor-pointer"
-                  >
-                <Input 
-                  type="button"
-                  text="Chat"
-                  variant="primary"
-                  :outline="false"
-                  class="cursor-pointer"
-                />
-                </router-link>
-              </div>
-              <p class="text-primary-900 text-sm md:text-md leading-relaxed">{{ showProfile?.email || 'Este usuario no ha proporcionado un mail.' }}</p>
-              
-              <li class="flex justify-between items-center">
-                <Heading :type="6" class="text-sm font-bold">Ganancias totales</Heading>
-                <p class="text-sm">{{ new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(showProfile?.personalInfo?.totalEarnings || 0) }}</p>
-              </li>
-              
-              <div v-if="isOwnProfile" class="w-full">
-                <VerifyValidation
-                v-if="!isUserVerified"
-                title="Perfil en proceso de validación"
-                message="Tu perfil está siendo revisado por nuestro equipo. El proceso puede demorar algunos días."
-                class="!text-black"
-                :show="!isUserVerified"
-                type="brightYellow"
-                />
-
-                <VerifyValidation
-                  v-else
-                  title="Perfil verificado"
-                  message="Tu perfil fue verificado con éxito. Ahoras podés disfrutar la aplicación al 100%."
-                  class="!text-black"
-                  :show="isUserVerified"
-                  type="green"
-                />
-              </div>
-            </div> -->
         </article>
       </div>
 
@@ -300,7 +263,7 @@ export default {
         :class="isOwnProfile ? 'div-my-user' : 'div-user'"
         class="bg-deep-blue-900 overflow-hidden rounded-[40px] py-7 px-5 flex flex-col gap-5"
         >
-        <Heading :type="2" class="medium text-white text-center sm:text-left">{{ isOwnProfile ? "Información personal" : "Información del usuario"  }}</Heading>
+        <Heading :type="2" class="medium text-white sm:text-left">{{ isOwnProfile ? "Información personal" : "Información del usuario"  }}</Heading>
         <article v-if="isOwnProfile" class="box-deep overflow-y-auto h-full flex flex-col gap-5 pr-2">
           <div class="flex flex-col gap-2">
             <Heading :type="3" class="regular text-white">Datos básicos</Heading>
@@ -344,7 +307,7 @@ export default {
             </ul>
           </div>
         </article>
-        <article v-else class="box-deep overflow-y-auto h-full flex flex-col gap-5 pr-4 py-4">
+        <article v-else class="box-deep overflow-y-auto h-full flex flex-col gap-5 pr-4">
           <div class="flex flex-col gap-2">
             <Heading :type="3" class="regular text-white">Verificación</Heading>
             <ul class="flex flex-col gap-2">

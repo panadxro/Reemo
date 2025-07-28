@@ -10,7 +10,7 @@ export default defineConfig({
     vue({
       template: {
         compilerOptions: {
-          isCustomElement: (tag) => tag === 'selectedcontent'
+          isCustomElement: (tag) => ['selectedcontent', 'button'].includes(tag),
         }
       }
     }),
@@ -27,7 +27,7 @@ export default defineConfig({
         display_override: ['window-controls-overlay'],
         lang: 'es-AR',
         icons: [
-                    {
+          {
             src: '/pwa-180x180.png',
             sizes: '180x180',
             type: 'image/png',
@@ -65,6 +65,94 @@ export default defineConfig({
           }
         ]
       },
+      workbox: {
+        cleanupOutdatedCaches: true,
+        runtimeCaching: [
+          // Cache de recursos estáticos locales
+          {
+            urlPattern: /\.(?:js|css|json|html|ico|png|jpg|jpeg|svg|gif|webp|woff2?)$/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'static-assets',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 días
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          
+          // Cache para API (ajusta el patrón a tu backend)
+          {
+            urlPattern: /^https:\/\/api\.tudominio\.com\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              networkTimeoutSeconds: 10, // Espera 10 segundos antes de fallar
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 5 // 5 minutos
+              },
+              cacheableResponse: {
+                statuses: [0, 200, 404]
+              }
+            }
+          },
+          
+          // Google Fonts (como en tu ejemplo original)
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            }
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'gstatic-fonts-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 365,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            }
+          },
+          
+          // Imágenes remotas (si tu app las usa)
+          {
+            urlPattern: /^https:\/\/images\.tudominio\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'remote-images',
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 días
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          }
+        ]
+      },
+      devOptions: {
+        enabled: process.env.NODE_ENV === 'development',
+        type: 'module' // Para soportar reload en desarrollo
+      },
+      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png', 'apple-touch-icon.png'],
     })
   ],
   optimizeDeps: {
