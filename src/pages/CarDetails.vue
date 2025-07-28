@@ -272,7 +272,7 @@ watch(car, (newCar) => {
 <template>
   <div class="w-full flex flex-col md:flex-row">
     <section v-if="car.id" class="w-full flex flex-col gap-4 overflow-hidden md:m-2.5">
-      <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-10 bg-white px-2.5 md:px-0 py-3 md:py-0">
+      <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-4 bg-white px-2.5 md:px-0 py-3 md:py-0">
         <BackButton />
         <Heading :type="1" class="medium">Detalles del vehículo</Heading>
       </div>

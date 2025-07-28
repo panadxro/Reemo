@@ -22,3 +22,39 @@ export function formatDate(date) {
     });
     return formatter.format(date);
   }
+
+export function formatDateTime(timestamp) {
+  // Obtener la fecha actual y la fecha del timestamp
+  const now = new Date();
+  let date;
+  
+  // Convertir el timestamp a fecha
+  if (timestamp && timestamp.seconds) {
+    date = new Date(timestamp.seconds * 1000);
+  } else if (typeof timestamp === 'string') {
+    date = new Date(timestamp);
+  } else {
+    return 'Fecha no disponible';
+  }
+
+  // Calcular la diferencia en milisegundos
+  const diffMs = now - date;
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  // Formatear según la diferencia de tiempo
+  if (diffHours < 24) {
+    return `${diffHours}hr`; // Menos de 24 horas: mostrar horas
+  } else if (diffDays < 7) {
+    return `${diffDays}d`; // Menos de 7 días: mostrar días
+  } else {
+    // Más de 7 días: mostrar día y mes abreviado
+    const months = [
+      'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+      'jul', 'ago', 'sep', 'oct', 'nov', 'dic'
+    ];
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = months[date.getMonth()];
+    return `${day} ${month}`;
+  }
+};

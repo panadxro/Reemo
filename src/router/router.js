@@ -200,9 +200,12 @@ router.beforeEach(async (to) => {
   
   try {
     const authSessionHistory = sessionStorage.getItem('auth_session_history');
-    authSession = authSessionHistory ? JSON.parse(authSessionHistory) : { isLoggedIn: false, user: { status: null, role: null } };
+    if (authSessionHistory && authSessionHistory.trim() !== '') {
+      authSession = JSON.parse(authSessionHistory);
+    }
   } catch (e) {
-    authSession = { isLoggedIn: false, user: { status: null, role: null } };
+    console.error("Error parsing auth session:", e);
+    sessionStorage.removeItem('auth_session_history');
   }
 
   // Rutas públicas que no requieren autenticación

@@ -81,13 +81,13 @@ export default {
     
     <div class="relative bg-white rounded-[40px] p-6 w-full max-w-md mx-4 z-10 max-h-auto ">
       <div class="flex flex-col">
-        <div class="flex justify-between items-start mb-4">
-          <Heading :type="5" class="text-primary-900 text-center">{{ title }}</Heading>
+        <div class="flex justify-center items-center mb-4">
+          <Heading :type="5" class="medium text-primary-900 flex-1 ">{{ title }}</Heading>
           <button 
             @click="onClose" 
             class="text-primary-900 hover:text-primary-700 transition-colors hover:cursor-pointer"
           >
-            <Cross />
+            <Cross size="24"/>
           </button>
         </div>
 
