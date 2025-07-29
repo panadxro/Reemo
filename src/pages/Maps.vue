@@ -42,48 +42,58 @@ const updateMapMarkersService = async () => {
 };
 
 const filterCars = async () => {
-  console.log('[Maps.vue filterCars] Iniciando. searchLocation:', JSON.parse(JSON.stringify(searchLocation.value)), 'cars.value.length:', cars.value.length);
+  console.log('[Maps.vue filterCars] Iniciando. searchLocation:', searchLocation.value, 'cars.value.length:', cars.value.length);
+
+  if (!cars.value || cars.value.length === 0) {
+    filteredCars.value = [];
+    await updateMapMarkersService();
+    return;
+  }
+
+  // Filtrar primero los autos con coordenadas válidas
+  const validCars = cars.value.filter(car => {
+    return car?.status?.currentLocation?.location &&
+           typeof car.status.currentLocation.location.lat === 'number' &&
+           typeof car.status.currentLocation.location.lng === 'number';
+  });
+
+  if (validCars.length !== cars.value.length) {
+    const invalidCount = cars.value.length - validCars.length;
+    console.warn(`[Maps.vue filterCars] ${invalidCount} autos omitidos por coordenadas inválidas`);
+  }
 
   if (map.value && searchLocation.value && typeof searchLocation.value.lat === 'number' && typeof searchLocation.value.lng === 'number') {
-    // Center map on search location
-    map.value.setCenter(searchLocation.value);
-    map.value.setZoom(14); // Adjust zoom as needed
-    // Filter cars based on the current searchLocation
-    console.log('[Maps.vue filterCars] Llamando a updateCars con searchLocation válida.');
-    filteredCars.value = updateCars(cars.value, searchLocation.value);
-    console.log('[Maps.vue filterCars] updateCars devolvió filteredCars.value.length:', filteredCars.value.length);
+    filteredCars.value = updateCars(validCars, searchLocation.value);
   } else {
-    // If no valid search location, show all cars (or handle as per requirements)
-    console.warn('[Maps.vue filterCars] searchLocation no es valido para filtrar o centrar el mapa.', searchLocation.value);
-    console.log('[Maps.vue filterCars] Mostrando todos los coches. cars.value.length:', cars.value.length);
-    filteredCars.value = [...cars.value]; // Display all fetched cars
+    filteredCars.value = [...validCars];
   }
-  await updateMapMarkersService(); // Update markers with the new filtered list
+
+  await updateMapMarkersService();
 };
 
 const fetchCars = async () => {
   loading.value = true;
   try {
-    // Fetch cars, potentially based on logged-in user
     cars.value = await getAvailableCars(loggedUser.value?.id);
-    console.log('[Maps.vue fetchCars] Coches recibidos de getAvailableCars:', JSON.parse(JSON.stringify(cars.value)));
-    // Verificar la estructura de los coches recibidos
-    const firstCar = cars.value.length > 0 ? cars.value[0] : null;
-    if (firstCar && (!firstCar.status || !firstCar.status.currentLocation || !firstCar.status.currentLocation.location)) {
-      console.error('[Maps.vue fetchCars] ERROR ESTRUCTURAL: El primer coche NO tiene la estructura esperada car.status.currentLocation.location.', JSON.parse(JSON.stringify(firstCar)));
-      addAlert("Error: Datos de vehículos con formato inesperado.", "error");
-      // Si hay un error estructural, es probable que el filtrado falle o no muestre nada.
-      // Podríamos forzar filteredCars a estar vacío para evitar más errores en updateCars/updateMapMarkers.
-      // filteredCars.value = [];
+    
+    // Verificar estructura pero sin mostrar alerta si hay problemas
+    const hasInvalidCars = cars.value.some(car => 
+      !car?.status?.currentLocation?.location ||
+      typeof car.status.currentLocation.location.lat !== 'number' ||
+      typeof car.status.currentLocation.location.lng !== 'number'
+    );
+    
+    if (hasInvalidCars) {
+      console.warn('[Maps.vue fetchCars] Algunos coches tienen estructura de ubicación inválida');
+      // No mostramos alerta al usuario
     }
-    // After fetching, apply current filters (which might be based on searchLocation)
+    
     await filterCars();
   } catch (error) {
     console.error("Error al buscar autos:", error);
     addAlert("Error al cargar los vehículos.", "error");
-    // cars.value = [];
     filteredCars.value = [];
-    await updateMapMarkersService(); // Clear markers on error
+    await updateMapMarkersService();
   } finally {
     loading.value = false;
   }

@@ -134,11 +134,16 @@ export const useNotificationStore = defineStore('notification', {
           ? `Tu solicitud de alquiler ha sido aceptada.`
           : `Tu solicitud de alquiler ha sido rechazada.`;
 
+        const title = newStatus === 'confirmed'
+          ? `Tu solicitud de alquiler ha sido aceptada.`
+          : `Tu solicitud de alquiler ha sido rechazada.`;
+
         await createNotificationService(
           rentId,
           vehicleOwnerId, // El dueño del vehículo es el sender de la respuesta
           senderId,       // El solicitante original es el receiver de la respuesta
           feedbackMessage,
+          title,
           "rent_response" // Tipo de notificación de respuesta
         );
       } catch (error) {
@@ -146,6 +151,15 @@ export const useNotificationStore = defineStore('notification', {
         throw error;
       }
     },
+
+    // getDefaultTitle(notification) {
+    //   if (notification.title === 'rent_request') return '📩 Nueva solicitud de alquiler';
+    //   if (notification.title === 'rent_response') return 'Respuesta a tu solicitud';
+    //   if (notification.title === 'car_validated') return 'Vehículo validado';
+    //   if (notification.title === 'car_invalidated') return 'Vehículo rechazado';
+    //   if (notification.title === 'car_updated_for_review') return 'Vehículo para revisión';
+    //   return 'Nueva notificación';
+    // }
 
   }
 })
