@@ -51,7 +51,7 @@ const availability = computed(() => carStore.availability);
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
 
-const currentStep = ref(4);
+const currentStep = ref(0);
 const autocompleteInitialized = ref(false);
 
 // Variables que agregue para la api de vehiculos

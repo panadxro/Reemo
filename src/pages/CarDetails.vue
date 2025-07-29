@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, nextTick } from 'vue';
 import { useAuthStore, useUserStore , useCarStore, useAdminStore } from '@stores'
 import { useRouter } from 'vue-router';
 import { Loader } from "@googlemaps/js-api-loader";
@@ -200,6 +200,44 @@ const goToEditCar = async (carId) => {
     router.push({ name: 'CarEdit', params: { id: carId } });
 };
 
+const initializeMapWhenReady = async () => {
+  return new Promise((resolve) => {
+    const checkElement = () => {
+      const mapElement = document.getElementById('map');
+      
+      if (mapElement && mapElement.offsetWidth > 0 && mapElement.offsetHeight > 0) {
+        initMap('map').then(mapInstance => {
+          if (mapInstance && car.value.status.currentLocation.location) {
+            mapInstance.setCenter({
+              lat: car.value.status.currentLocation.location.lat,
+              lng: car.value.status.currentLocation.location.lng
+            });
+            mapInstance.setZoom(14); 
+            
+            new google.maps.Circle({
+              strokeColor: "#5DADE2",
+              strokeOpacity: 0.8,
+              strokeWeight: 2,
+              fillColor: "#A9D6F5",
+              fillOpacity: 0.35,
+              map: mapInstance,
+              center: {
+                lat: car.value.status.currentLocation.location.lat,
+                lng: car.value.status.currentLocation.location.lng
+              },
+              radius: 1000,
+            });
+          }
+          resolve();
+        });
+      } else {
+        setTimeout(checkElement, 100);
+      }
+    };
+    
+    checkElement();
+  });
+};
 
 // Lifecycle hooks
 onMounted(async () => {
@@ -209,7 +247,7 @@ onMounted(async () => {
     // Primero cargamos los datos del auto
     await carStore.loadCarById(carId);
     
-    // despues los del dueño
+    // después los del dueño
     if (car.value?.ownerId) {
       const ownerDataResponse = await userStore.getUserById(car.value.ownerId);
       if (ownerDataResponse) {
@@ -224,35 +262,13 @@ onMounted(async () => {
     
     // Cargamos Google Maps si hay coordenadas
     if (car.value?.status?.currentLocation?.location) {
-      const coordenadas = car.value.status.currentLocation.location;
-      console.log("Coordenadas:", coordenadas)
-      await loadGoogleMaps(); // Usamos la función del servicio
+      await loadGoogleMaps(); // Cargamos la librería primero
       
-      // Inicializamos el mapa con las coordenadas del auto
-      const mapInstance = await initMap('map');
+      // Esperamos a que el DOM se actualice completamente
+      await nextTick();
       
-      if (mapInstance && car.value.status.currentLocation.location) {
-        // Centramos el mapa en la ubicación del auto
-        mapInstance.setCenter({
-          lat: car.value.status.currentLocation.location.lat,
-          lng: car.value.status.currentLocation.location.lng
-        });
-        
-        // Añadimos un círculo para resaltar la zona
-        new google.maps.Circle({
-          strokeColor: "#5DADE2",
-          strokeOpacity: 0.8,
-          strokeWeight: 2,
-          fillColor: "#A9D6F5",
-          fillOpacity: 0.35,
-          map: mapInstance,
-          center: {
-            lat: car.value.status.currentLocation.location.lat,
-            lng: car.value.status.currentLocation.location.lng
-          },
-          radius: 1000,
-        });
-      }
+      // Verificamos que el elemento existe y es visible antes de inicializar
+      await initializeMapWhenReady();
     }
   } catch (error) {
     errorMsg.value = "Hubo un error al obtener los detalles del auto";
@@ -404,15 +420,14 @@ watch(car, (newCar) => {
     <template v-if="car.id">
 
       <div class="md:m-2.5 p-2.5 md:p-0 w-full flex flex-col gap-3 overflow-hidden">
-        <div v-if="!car.value?.status?.currentLocation?.location" v-show="store.currentStep === 1" class="flex flex-col items-center justify-center min-h-50 md:h-[50%] gap-5 bg-background-700 rounded-[40px] p-8">
+        <div v-if="!car?.status?.currentLocation?.location && store.currentStep === 1" class="flex flex-col items-center justify-center min-h-50 md:h-[50%] gap-5 bg-background-700 rounded-[40px] p-8">
           <NoCarLocation class="max-w-[90px]"/>
           <p class="font-semibold text-center">Este vehículo no tiene ubicación registrada</p>
         </div>
         <div 
-          v-else 
+          v-if="car?.status?.currentLocation?.location && store.currentStep === 1"
           class="w-full min-h-50 md:h-[50%] rounded-[40px] relative" 
-          id="map" 
-          v-show="store.currentStep === 1">
+          id="map">
         </div>
       
         <div v-if="authStore.user?.id !== carStore.car.ownerId" class="bg-deep-blue-900 w-full rounded-[40px] p-8 max-h-full h-full overflow-hidden flex flex-col gap-5">

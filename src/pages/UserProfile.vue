@@ -392,7 +392,7 @@ export default {
           <p class="font-semibold opacity-50" v-if="showProfile && showProfile.personalInfo">Este usuario no tiene reseñas.</p>
           <Input
             type="button"
-            text="Proximamente"
+            text="Próximamente"
             variant="primary"
             :disabled="true"
             class="max-w-[200px]"
