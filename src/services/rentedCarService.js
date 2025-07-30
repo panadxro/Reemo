@@ -70,7 +70,7 @@ export async function submitRentalRequest(rentalRequest) {
  * @param {string} newStatus - Nuevo estado para la solicitud.
  */
 export async function updateRentalStatus(reqId, newStatus) {
-  const PLATFORM_COMMISSION_RATE = 0.20;
+  const PLATFORM_COMMISSION_RATE = 0.15;
   try {
     const requestRef = doc(db, 'rents', reqId);
     const requestSnap = await getDoc(requestRef);

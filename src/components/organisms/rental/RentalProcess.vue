@@ -494,7 +494,7 @@ onMounted(async () => {
                 <span>$ {{ formatPrice(store.basePrice) }}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-400">Impuestos (21%):</span>
+                <span class="text-gray-400">Comisión (15%):</span>
                 <span>$ {{ formatPrice(store.taxes) }}</span>
               </div>
               <div class="flex justify-between">

@@ -177,8 +177,8 @@ const confirmInvalidation = async (reason) => {
 
 const validateCar = async (car) => {
   try {
-    await adminStore.changeCarValidation(car.id, 'validated');
-    await createCarValidationNotification(car, 'validated');
+    await adminStore.changeCarValidation(car.id, 'available');
+    await createCarValidationNotification(car, 'available');
 
     await carStore.loadCarById(carId);
 
@@ -441,10 +441,42 @@ watch(car, (newCar) => {
           />  
     
           <div v-if="user?.role === 'admin'" class="box-deep flex flex-col gap-4 overflow-hidden w-full h-full">
-            <Heading type="3" class="regular text-white">Datos del seguro</Heading>
             <div class="flex flex-col gap-4 justify-between overflow-y-auto h-full pr-2">
+              
+              <div class="flex flex-col gap-6">
+              <div class="flex flex-col gap-2">
+                <Heading type="3" class="regular text-white">Datos adicionales</Heading>
+              <ul class="text-white flex flex-col gap-2 ">
+                <li class="flex items-center justify-between">
+                  <p>Patente:</p>
+                  <span>{{ car.basicInfo?.licensePlate }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <p>Depósito de seguridad:</p>
+                  <span>{{ car.pricing?.securityDeposit }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <p>Autonomía:</p>
+                  <span>{{ car.specifications?.autonomy }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <p>Puertas:</p>
+                  <span>{{ car.specifications?.doors }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <p>Tracción:</p>
+                  <span>{{ car.specifications?.drivetrain }}</span>
+                </li>
+                <li class="flex items-center justify-between">
+                  <p>Asientos:</p>
+                  <span>{{ car.specifications?.seats }}</span>
+                </li>
+              </ul>
+              </div>
 
-              <ul class="font-semibold text-white flex flex-col gap-2 ">
+              <div class="flex flex-col gap-2">
+                <Heading type="3" class="regular text-white">Datos del seguro</Heading>
+              <ul class="text-white flex flex-col gap-2 ">
                 <li class="flex items-center justify-between">
                   <p>Compañía:</p>
                   <span>{{ formatInsuranceName(car.insurance?.company) }}</span>
@@ -465,6 +497,8 @@ watch(car, (newCar) => {
                   <span>{{ car.insurance?.number }}</span>
                 </li>
               </ul>
+              </div>
+              </div>
 
               <Input
                 type="button"
