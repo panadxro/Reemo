@@ -295,7 +295,7 @@ onUnmounted(() => {
         <div
           v-if="ownerRentalDetail.status === 'pending' && currentUser?.id === ownerRentalDetail.owner_id"
           class="flex flex-col md:flex-row gap-2" >
-            <Input
+            <!-- <Input
               type="button"
               variant="primary"
               text="Aceptar"
@@ -305,15 +305,15 @@ onUnmounted(() => {
               variant="secondary"
               outline
               text="Cancelar"
-              @click="handleRentalAction(ownerRentalDetail.id, 'rejected', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"/>
+              @click="handleRentalAction(ownerRentalDetail.id, 'rejected', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"/> -->
+              <Input
+              type="button"
+              variant="primary"
+              text="Ver Detalles"
+              @click="navigateToRentalDetails(ownerRentalDetail.id)"
+              />
+              <!-- v-if="ownerRentalDetail.status === 'confirmed' || ownerRentalDetail.status === 'in_progress' || ownerRentalDetail.status === 'completed'" -->
         </div>
-        <Input
-          v-if="ownerRentalDetail.status === 'confirmed' || ownerRentalDetail.status === 'in_progress' || ownerRentalDetail.status === 'completed'"
-          type="button"
-          variant="primary"
-          text="Ver Detalles"
-          @click="navigateToRentalDetails(ownerRentalDetail.id)"
-          />
       </div>
     </div>
   </li>

@@ -38,6 +38,12 @@ const userCars = computed(() => carStore.userCars);
 const isAdmin = computed(() => authStore?.user?.role === 'admin');
 const currentUser = computed(() => authStore.user);
 
+const totalRents = computed(() => {
+  return adminStore.users.reduce((total, user) => {
+    return total + (user.rentHistory?.length || 0);
+  }, 0);
+});
+
 const lastRegisteredCars = computed(() => {
   const sortedCars = [...adminStore.cars].sort((a, b) => 
     new Date(b.createdAt) - new Date(a.createdAt)
@@ -76,13 +82,13 @@ const handleNotificationClick = async (notification) => {
   }
 };
 
-const getDefaultTitle = (notification) => {
-  if (notification.type === 'rent_request') return 'Nueva solicitud de alquiler';
-  if (notification.type === 'rent_response') return 'Respuesta a tu solicitud';
-  if (notification.type === 'car_validated') return 'Vehículo validado';
-  if (notification.type === 'car_invalidated') return 'Vehículo rechazado';
-  return 'Nueva notificación';
-};
+// const getDefaultTitle = (notification) => {
+//   if (notification.type === 'rent_request') return 'Nueva solicitud de alquiler';
+//   if (notification.type === 'rent_response') return 'Respuesta a tu solicitud';
+//   if (notification.type === 'car_validated') return 'Vehículo validado';
+//   if (notification.type === 'car_invalidated') return 'Vehículo rechazado';
+//   return 'Nueva notificación';
+// };
 
 onMounted(async () => {
   try {
@@ -186,7 +192,7 @@ watch(currentUser, (newUser) => {
             <li class="text-center bg-vibrant-light-600 rounded-2xl p-4 text-deep-blue-900 flex justify-between items-center w-full lg:h-full">
               <Cars class="size-10"/>
               <div class="text-end">
-                <Heading type="4" class="medium">{{ lastRegisteredCars.length }}</Heading>
+                <Heading type="4" class="medium">{{ adminStore.cars.length }}</Heading>
                 <Heading type="3" class="small">Autos totales</Heading>
               </div>
             </li>
@@ -202,7 +208,7 @@ watch(currentUser, (newUser) => {
             <li class="text-center bg-vibrant-light-600 rounded-2xl p-4 text-deep-blue-900 flex justify-between items-center w-full lg:h-full">
               <Rents class="size-10"/>
               <div class="text-end">
-                <Heading type="4" class="medium">{{ lastRegisteredUsers.length }}</Heading>
+                <Heading type="4" class="medium">{{ totalRents  }}</Heading>
                 <Heading type="3" class="small">Rentas totales</Heading>
               </div>
             </li>
@@ -289,7 +295,7 @@ watch(currentUser, (newUser) => {
           <div class="flex-1 min-w-0">
     <div class="flex justify-between items-start">
       <p class="font-medium text-sm text-deep-blue-900 line-clamp-1">
-        {{ noti.title || getDefaultTitle(noti) }}
+        {{ noti.title }}
       </p>
       <span class="text-xs text-secondary-500 whitespace-nowrap ml-2">
         {{ formatNotificationDate(noti.created_at) }} 
