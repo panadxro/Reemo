@@ -159,6 +159,7 @@ export const useRentStore = defineStore('rent', {
         selectedPaymentMethod: null
       };
       this.acceptTerms = false;
+      this.currentStep = 1;
       
       if (this.car && this.car.id) {
         localStorage.removeItem(this.storageKey);

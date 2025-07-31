@@ -16,6 +16,7 @@ import Loading from '@/icons/Loading.vue';
 import Input from '@/components/molecules/Input.vue';
 import RentalSuccess from '@/components/organisms/rental/RentalSuccess.vue';
 import Modal from '@/components/molecules/Modal.vue';
+import Checkbox from '@/components/atoms/Checkbox.vue';
 
 import PaymentMethod from '@/components/atoms/PaymentMethod.vue';
 
@@ -43,6 +44,7 @@ const router = useRouter();
 
 const submitting = ref(false);
 const showSuccess = ref(false);
+const showTermsModal = ref(false);
 
 const isVerified = computed(() => authStore.userStatus === 'verified');
 
@@ -60,6 +62,19 @@ const acceptTerms = computed({
   get: () => store.acceptTerms,
   set: (value) => store.acceptTerms = value
 });
+
+function openTermsModal() {
+  showTermsModal.value = true;
+}
+
+function handleAcceptTerms() {
+  if(store.acceptTerms === false){
+    showTermsModal.value = false;
+    store.acceptTerms = true;
+  } else if(store.acceptTerms === true) {
+    showTermsModal.value = false;
+  }
+}
 
 function formatPrice(price) {
   return store.formatPrice(price);
@@ -556,19 +571,75 @@ onMounted(async () => {
             </ul>
           </div>
           
-          <div class="mb-6">
-            <label class="flex items-start gap-2">
-              <input 
-                type="checkbox" 
-                v-model="acceptTerms"
-                class="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              >
-              <span class="text-sm text-white">
-                Acepto los <a href="#" class="text-secondary-300 hover:underline">Términos y Condiciones</a> 
-                y la <a href="#" class="text-secondary-300 hover:underline">Política de Privacidad</a>
-              </span>
-            </label>
+          <div class="flex items-start gap-2">
+            <Checkbox v-model="acceptTerms"/>
+            <span class="text-md text-white"> 
+              Acepto los <span @click="openTermsModal" class="text-secondary-300 hover:underline cursor-pointer">Términos y Condiciones</span> 
+            </span>
           </div>
+            <Modal
+              class="text-deep-blue-900"
+                :isOpen="showTermsModal"
+                title="Términos y Condiciones"
+                :message="`
+                  <div class='terms-container'>
+  <div class='term-section mb-4'>
+    <h5 class='font-semibold mb-2'>1. Aceptación de Términos</h5>
+    <p class='text-sm'>Al utilizar esta aplicación, usted acepta cumplir con estos Términos y Condiciones, así como con nuestra política de privacidad. Si no está de acuerdo, absténgase de usar el servicio.</p>
+  </div>
+
+  <div class='term-section mb-4'>
+    <h5 class='font-semibold mb-2'>2. Requisitos para Renta</h5>
+    <ul class='list-disc pl-5 space-y-1 text-sm'>
+      <li>Debe ser mayor de 21 años y contar con licencia de conducir vigente.</li>
+      <li>Se requiere tarjeta de crédito válida para garantizar el pago y posibles daños.</li>
+    </ul>
+  </div>
+
+  <div class='term-section mb-4'>
+    <h5 class='font-semibold mb-2'>3. Reservas y Pagos</h5>
+    <ul class='list-disc pl-5 space-y-1 text-sm'>
+      <li>Los precios incluyen impuestos aplicables, salvo indicación contraria.</li>
+      <li>El pago se realizará al confirmar la reserva. Cancelaciones con menos de 24 horas pueden incurrir en cargos.</li>
+    </ul>
+  </div>
+
+  <div class='term-section mb-4'>
+    <h5 class='font-semibold mb-2'>4. Uso del Vehículo</h5>
+    <ul class='list-disc pl-5 space-y-1 text-sm'>
+      <li>Prohibido uso ilegal, subarrendamiento o conducción bajo influencia de alcohol/drogas.</li>
+      <li>El usuario es responsable de multas, daños o pérdidas durante el periodo de renta.</li>
+    </ul>
+  </div>
+
+  <div class='term-section mb-4'>
+    <h5 class='font-semibold mb-2'>5. Seguro</h5>
+    <p class='text-sm'>Incluye cobertura básica según la ley local. Opciones adicionales pueden estar disponibles.</p>
+  </div>
+
+  <div class='term-section mb-4'>
+    <h5 class='font-semibold mb-2'>6. Devolución</h5>
+    <p class='text-sm'>El vehículo debe devolverse en la fecha/hora acordada. Retrasos generarán cargos adicionales.</p>
+  </div>
+
+  <div class='term-section mb-4'>
+    <h5 class='font-semibold mb-2'>7. Limitación de Responsabilidad</h5>
+    <p class='text-sm'>La aplicación no se hace responsable por daños indirectos, pérdidas o accidentes derivados del uso del vehículo.</p>
+  </div>
+
+  <div class='term-section'>
+    <h5 class='font-semibold mb-2'>8. Modificaciones</h5>
+    <p class='text-sm'>Nos reservamos el derecho de actualizar estos términos. Los cambios serán notificados dentro de la app.</p>
+  </div>
+
+  <p class='text-xs mt-6 text-gray-500'>Fecha de última actualización: 27/07/25</p>
+</div>
+                `"
+                confirmText="Aceptar"
+                cancelText="Cerrar"
+                @close="showTermsModal = false"
+                @confirm="handleAcceptTerms"
+              />
         </div>
       </div>
       
