@@ -21,6 +21,7 @@ const props = defineProps({
   text: String,
   options: { type: Array, default: () => [] },
   label: { type: Boolean, default: false },
+  labelClass: { type: String, default: '' },
   inputClass: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
   readonly: { type: Boolean, default: false },
@@ -94,6 +95,7 @@ defineExpose({ focus, blur,  });
       v-if="label && !['button', 'submit'].includes(type)" 
       :for="id" 
       class="font-semibold"
+      :class="labelClass"
       
     >
       {{ placeholder }}

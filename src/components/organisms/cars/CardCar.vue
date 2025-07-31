@@ -85,27 +85,34 @@ export default {
       setDefaultImage(event) {
         event.target.src = this.defaultCarImage;
       },
-      async updateAvailability(car) {
-        console.log(car)
-        try {
-          const newStatus = car.status.current === 'not-available' ? 'available' : 'not-available';
-          await this.carStore.changeCarAvailability(car.id, newStatus, car.ownerId);
+      // async updateAvailability(car) {
+      //   if (car.status.current === 'not-validated') {
+      //     return;
+      //   }
 
-          // Actualizar el estado local del auto en la lista
-          const updatedCar = { ...car };
-          updatedCar.status.current = newStatus;
+      //   try {
+      //     const newStatus = car.status.current === 'not-available' ? 'available' : 'not-available';
+          
+      //     await this.carStore.changeCarAvailability(car.id, newStatus, car.ownerId);
 
-          // Actualizar en el store
-          this.carStore.userCars = this.carStore.userCars.map(c => 
-            c.id === car.id ? updatedCar : c
-          );
+      //     const updatedCar = { 
+      //       ...car,
+      //       status: {
+      //         ...car.status,
+      //         current: newStatus
+      //       }
+      //     };
 
-          addAlert("Estado de disponibilidad actualizado con éxito", "success");
-        } catch (error) {
-            addAlert("Error al actualizar el estado de disponibilidad", "error");
-            console.log(error)
-        }
-      },
+      //     this.carStore.userCars = this.carStore.userCars.map(c => 
+      //       c.id === car.id ? updatedCar : c
+      //     );
+
+      //     addAlert("Estado de disponibilidad actualizado con éxito", "success");
+      //   } catch (error) {
+      //     addAlert("Error al actualizar el estado de disponibilidad", "error");
+      //     console.log(error);
+      //   }
+      // },
 
       goToEditCar(carId){
         this.$router.push({ name: 'CarEdit', params: { id: carId } });
@@ -175,13 +182,19 @@ export default {
         :items="[
           { label: 'Ver detalles', action: () => goToCarDetails(car.id) },
           { label: 'Editar', action: () => goToEditCar(car.id) },
-          { label: car.status.current == 'not-available' ? 'Habilitar' : 'Deshabilitar', action: () => updateAvailability(car), class: car.status.current !== 'not-available' ? 'text-red-500' : '' },
-        ]"
-        :isOpen="openPopoverId === index"
-        :popoverId="index"
-        @toggle-popover="handleTogglePopover"
-        @close-popover="handleClosePopover"
-      />
+          ]"
+          :isOpen="openPopoverId === index"
+          :popoverId="index"
+          @toggle-popover="handleTogglePopover"
+          @close-popover="handleClosePopover"
+          />
+          <!-- ...(car.status.current !== 'not-validated' ? [
+            { 
+              label: car.status.current == 'not-available' ? 'Habilitar' : 'Deshabilitar', 
+              action: () => updateAvailability(car), 
+              class: car.status.current !== 'not-available' ? 'text-red-500' : '' 
+            }
+          ] : []) -->
     </template>
     <template v-else>
       <router-link

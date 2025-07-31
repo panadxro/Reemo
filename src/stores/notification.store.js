@@ -118,33 +118,30 @@ export const useNotificationStore = defineStore('notification', {
     },
 
     async handleRentalAction(payload) {
-      const { rentId, newStatus, senderId, vehicleOwnerId } = payload;
+      const { rentId, newStatus, senderId, vehicleOwnerId, vehicleOwnerName, vehicleOwnerLastname, vehicleBrand, vehicleModel } = payload;
       try {
         await updateRentalStatusService(rentId, newStatus);
 
-        // Opcional: Actualización optimista del estado en la notificación local
         const notif = this.notifications.find(n => n.rent_id === rentId && n.type === 'rent_request');
         if (notif && notif.rentDetails) {
           notif.rentDetails.status = newStatus;
-          // Considera marcar esta notificación como leída/procesada si es una acción final
-          // await this.markNotificationAsRead(notif.id);
         }
 
         const feedbackMessage = newStatus === 'confirmed'
-          ? `Tu solicitud de alquiler ha sido aceptada.`
-          : `Tu solicitud de alquiler ha sido rechazada.`;
+          ? `El dueño ${vehicleOwnerName} ${vehicleOwnerLastname} aprobó tu alquiler del ${vehicleBrand} ${vehicleModel}.`
+          : `El dueño ${vehicleOwnerName} ${vehicleOwnerLastname} no aprobó tu alquiler del ${vehicleBrand} ${vehicleModel}.`;
 
         const title = newStatus === 'confirmed'
-          ? `Tu solicitud de alquiler ha sido aceptada.`
-          : `Tu solicitud de alquiler ha sido rechazada.`;
+          ? `✅ Tu solicitud fue aprobada`
+          : `❌ Tu solicitud fue rechazada`;
 
         await createNotificationService(
           rentId,
-          vehicleOwnerId, // El dueño del vehículo es el sender de la respuesta
-          senderId,       // El solicitante original es el receiver de la respuesta
+          vehicleOwnerId,
+          senderId,
           feedbackMessage,
           title,
-          "rent_response" // Tipo de notificación de respuesta
+          "rent_response",
         );
       } catch (error) {
         console.error('[NotificationStore] Error al manejar acción de alquiler:', error);
