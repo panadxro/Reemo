@@ -285,7 +285,7 @@ mounted() {
 
 
 <template>
-  <div class="flex flex-col md:flex-row gap-4">
+  <div class="flex flex-wrap flex-col md:flex-row gap-4">
     <!-- Retiro -->
     <div class="flex-1">
       <label class="block text-sm font-medium mb-1 text-white">Retiro</label>

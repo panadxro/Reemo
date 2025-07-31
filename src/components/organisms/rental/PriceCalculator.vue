@@ -17,7 +17,7 @@ export default {
     },
     taxRate: {
       type: Number,
-      default: 0.21
+      default: 0.15
     },
     insuranceFee: {
       type: Number,

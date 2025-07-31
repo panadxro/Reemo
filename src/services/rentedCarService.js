@@ -1,4 +1,4 @@
-import { collection,getDocs, query, where, doc, getDoc, addDoc, updateDoc, onSnapshot, orderBy, limit } from "firebase/firestore";
+import { collection,getDocs, query, where, doc, getDoc, addDoc, updateDoc, onSnapshot, orderBy, increment } from "firebase/firestore";
 import { db } from "../services/firebase.js";
 import { createRentalRequestNotification } from "../services/car/notifyRented.js";
 import {addAlert} from './alerts.js'
@@ -14,35 +14,59 @@ import {addAlert} from './alerts.js'
 */
 export async function submitRentalRequest(rentalRequest) {
     try {
-      const initialRentalData  = {
+      const initialRentalData = {
         ...rentalRequest,
         timestamp: new Date(),
       }
 
-      // se agrega la solicitud de alquiler
-      const rentalRequestRef = await addDoc(collection(db, 'rents'), initialRentalData );
-      console.log('Solicitud de alquiler enviada con ID:', rentalRequestRef.id)
+      const rentalRequestRef = await addDoc(collection(db, 'rents'), initialRentalData);
+      console.log('Solicitud de alquiler enviada con ID:', rentalRequestRef.id);
 
       await updateDoc(rentalRequestRef, { order_id: rentalRequestRef.id });
-      console.log('Documento actualizado con order_id:', rentalRequestRef.id);
 
+      // 2. Obtener datos en paralelo
+      const [vehicleDoc, driverDoc] = await Promise.all([
+        getDoc(doc(db, 'cars', rentalRequest.vehicle_id)),
+        getDoc(doc(db, 'users', rentalRequest.driver_id))
+      ]);
 
+      // 3. Validar documentos
+      if (!vehicleDoc?.exists() || !driverDoc?.exists()) {
+        const missing = !vehicleDoc?.exists() ? 'vehículo' : 'conductor';
+        throw new Error(`No se pudo encontrar la información del ${missing}.`);
+      }
+
+      const vehicleData = vehicleDoc.data();
+      const driverData = driverDoc.data();
+
+      // 4. Preparar mensaje
       const rentMessage = rentalRequest.status === 'pending' 
-      ? `Nueva solicitud de alquiler`
-      : 'Solicitud de alquiler rechazada';
+        ? `${driverData.personalInfo.firstName} quiere alquilar tu ${vehicleData.basicInfo.brand} ${vehicleData.basicInfo.model}. Revisá la solicitud y aprobala si estás de acuerdo.`
+        : `El dueño del ${vehicleData.basicInfo.brand} ${vehicleData.basicInfo.model} no aprobó tu solicitud. Probá con otro vehículo disponible en la zona.`;
 
+      const title = rentalRequest.status === 'pending' 
+        ? `📩 Nueva solicitud de alquiler`
+        : `❌ Tu solicitud fue rechazada`;
+
+      // 5. Crear notificación con fotos
       await createRentalRequestNotification(
         rentalRequestRef.id, 
         rentalRequest.driver_id,
         rentalRequest.owner_id,
         rentMessage,
-      )
+        title,
+        "rent_request",
+        vehicleData.photos[0],  
+        driverData.personalInfo.profilePhoto  
+      );
+
+      return rentalRequestRef.id;
 
     } catch (error) {
-        console.error('Error al enviar la solicitud de alquiler:', error);
-        throw error;
+      console.error('Error al enviar la solicitud de alquiler:', error);
+      throw error;
     }
-}
+  }
 
 /**
  * Actualiza el estado de una solicitud de alquiler y la disponibilidad del vehículo asociado.
@@ -50,6 +74,7 @@ export async function submitRentalRequest(rentalRequest) {
  * @param {string} newStatus - Nuevo estado para la solicitud.
  */
 export async function updateRentalStatus(reqId, newStatus) {
+  const PLATFORM_COMMISSION_RATE = 0.15;
   try {
     const requestRef = doc(db, 'rents', reqId);
     const requestSnap = await getDoc(requestRef);
@@ -66,16 +91,22 @@ export async function updateRentalStatus(reqId, newStatus) {
         const carRef = doc(db, 'cars', carId);
         if(newStatus === 'confirmed' || newStatus === 'in_progress' || newStatus === 'returned_by_driver'){
           await updateDoc(carRef, { "status.current" : "not-available" });
-        }else if (
-          newStatus === 'completed' ||
-          newStatus === 'rejected' ||
-          newStatus === 'cancelled_by_user' ||
-          newStatus === 'cancelled_by_owner' ||
-          newStatus === 'expired'
-        ){
-          await updateDoc(carRef, { "status.current" : "available" })
-        }
+        } else if (newStatus === 'completed') {
+          await updateDoc(carRef, { "status.current" : "available" });
 
+          if (rentalData.total_price && rentalData.owner_id){
+            const earnings = rentalData.total_price * (1 - PLATFORM_COMMISSION_RATE);
+            await updateDoc(requestRef, { earnings: earnings });
+
+            const ownerRef = doc(db, 'users', rentalData.owner_id);
+            await updateDoc(ownerRef, {
+              "personalInfo.totalEarnings": increment(earnings)
+            });
+          }
+        } else if (['rejected', 'cancelled_by_user', 'cancelled_by_owner', 'expired'].includes(newStatus)) {
+          await updateDoc(carRef, { "status.current": "available" });
+        }
+          
       }
 
       await updateDoc(requestRef, { status: newStatus });

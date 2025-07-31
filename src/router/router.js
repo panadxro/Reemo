@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useUserStore } from "@/stores";
+import { getCarById } from "@/services/car";
 
 import Home from "../pages/Home.vue";
 import Dashboard from "../pages/Dashboard.vue";
@@ -40,6 +41,31 @@ const routes = [
     props: true,
     component: () => import("../pages/CarRegister.vue"),
     meta: { needsAuth: true, requiresVerified: true },
+    async beforeEnter(to) {
+      try {
+        const authSessionHistory = sessionStorage.getItem('auth_session_history');
+        const authSession = JSON.parse(authSessionHistory);
+        const currentUserId = authSession.user?.id || authSession.userId;
+        
+        if (!currentUserId) {
+          return { name: 'NotFound' };
+        }
+        
+        const car = await getCarById(to.params.id);
+        
+        if (!car || car.ownerId !== currentUserId) {
+          return { name: 'NotFound' };
+        }
+        
+        return true;
+      } catch (error) {
+        console.error("Error al verificar el vehículo:", error);
+        if (error.message === "Vehículo no encontrado") {
+          return { name: 'NotFound' };
+        }
+        return { name: 'NotFound' };
+      }
+    },
   },
   {
     path: "/car/:id",

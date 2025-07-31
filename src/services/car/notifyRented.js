@@ -8,7 +8,7 @@ import { getAdminUser } from "../user/admin.js";
  * @param {string} receiverId - El ID del propietario del vehículo (quien recibe la notificación).
  */
 
-export async function createRentalRequestNotification(rentId, senderId, receiverId, customMessage = null, notificacionType = "rent_request"){
+export async function createRentalRequestNotification(rentId, senderId, receiverId, customMessage = null, title = null, notificacionType = "rent_request", vehiclePhoto = null, senderPhoto = null) {
   try {
     const notificationData = {
       type: notificacionType,
@@ -16,9 +16,13 @@ export async function createRentalRequestNotification(rentId, senderId, receiver
       rent_id: rentId,
       sender_id: senderId,
       receiver_id: receiverId,
+      title: title,
       message: customMessage,
       created_at: Timestamp.now(),
       read: false,
+      link: `/rent/${rentId}`,
+      vehiclePhoto: vehiclePhoto,
+      senderPhoto: senderPhoto 
     };
   
     const nofifyRef = collection(db, "notifications");
@@ -36,31 +40,33 @@ const carValidationStatusNotification = (car, newStatus, message = null) => {
   // Generar el contenido de la notificación, ahora pasando el motivo.
   // Asumimos que tienes un archivo de templates como en la sugerencia anterior.
   // Si no, puedes construir el mensaje aquí mismo.
-  const title = newStatus === 'validated' ? '✅ ¡Tu vehículo fue aprobado!' : '⚠️ Tu vehículo no fue aprobado';
+  const title = newStatus === 'available' ? '✅ ¡Tu vehículo fue aprobado!' : '⚠️ Tu vehículo no fue aprobado';
 
-  const link = newStatus == 'validated'
+  const link = newStatus == 'available'
     ? `/car/${car.id}`
     : `/car/edit/${car.id}`
 
-  const reason = newStatus === 'validated'
+  const reason = newStatus === 'available'
     ? `Tu ${car.basicInfo.brand} ${car.basicInfo.model} (${car.basicInfo.licensePlate}) ya está disponible para alquiler!
     Ahora otros usuarios podrán solicitarlo.`
     : `El ${car.basicInfo.brand} ${car.basicInfo.model} (${car.basicInfo.licensePlate}) no cumple con los requisitos.
     Revisa la documentación y volvé a enviarlo para revisión.`;
 
-  if (newStatus === 'validated') {
+  if (newStatus === 'available') {
     return {
       title: title,
       message: reason,
       type: 'car_validated',
-      link: link
+      link: link,
+      photo: car.photos?.[0] || null,
     };
   } else { // 'not-validated'
     return {
       title: title,
       message: reason,
       type: 'car_invalidated',
-      link: link 
+      link: link,
+      photo: car.photos?.[0] || null, 
     };
   }
 };
@@ -115,12 +121,14 @@ export const notifyAdminsOfVehicleUpdate = async (updatedCar, owner) => {
 
     const ownerName = `${owner.personalInfo?.firstName || ''} ${owner.personalInfo?.lastName || ''}`.trim() || 'un usuario';
     const notificationContent = {
-      title: 'Vehículo actualizado para revisión',
+      title: '🔁 Vehículo actualizado para revisión',
       message: `El vehículo ${updatedCar.basicInfo.brand} ${updatedCar.basicInfo.model} de ${ownerName} ha sido actualizado y requiere validación nuevamente.`,
       type: 'car_updated_for_review',
-      link: `/admin/cars`, // Enlace a la página de detalles del auto para que el admin lo revise
+      link: `/car/${updatedCar.id}`, // Enlace a la página de detalles del auto para que el admin lo revise
       read: false,
       created_at: Timestamp.now(),
+      photos: updatedCar.photos || [],
+      photoURL: owner.personalInfo.profilePhoto
     };
     // link: `/admin/${updatedCar.id}`, // Enlace a la página de detalles del auto para que el admin lo revise
 
@@ -129,6 +137,55 @@ export const notifyAdminsOfVehicleUpdate = async (updatedCar, owner) => {
   } catch (error) {
     console.error("Error al crear notificaciones de revisión para administradores:", error);
     // No relanzamos el error para no bloquear el flujo del usuario, pero lo registramos.
+  }
+}
+
+
+
+
+// Notidicar cuando se crea un auto
+export const notifyAdminsOfNewVehicle = async (newCar, owner) => {
+  if (!newCar || !owner) {
+    console.error("Datos insuficientes para crear la notificación de nuevo vehículo.");
+    return;
+  }
+
+  try {
+    const admins = await getAdminUser();
+    if (!admins || admins.length === 0) {
+      console.warn("No se encontraron administradores para notificar.");
+      return;
+    }
+
+    const ownerName = `${owner.personalInfo?.firstName || ''} ${owner.personalInfo?.lastName || ''}`.trim() || 'un usuario';
+    const carInfo = newCar.basicInfo;
+    
+    const notificationContent = {
+      title: '🚗 Nuevo vehículo pendiente de revisión',
+      message: `El usuario ${ownerName} registró un ${carInfo.brand} ${carInfo.model} (${carInfo.licensePlate}). Revisalo para aprobarlo.`,
+      type: 'new_car_for_review',
+      link: `/car/${newCar.id}`,
+      read: false,
+      created_at: Timestamp.now(),
+      photos: newCar.photos || [],
+      photoURL: owner.personalInfo?.profilePhoto
+    };
+
+    console.log("Notificación de nuevo vehículo creada:", notificationContent);
+
+    // Enviar notificación a todos los administradores
+    const promises = admins.map(admin => 
+      addDoc(collection(db, 'notifications'), {
+        ...notificationContent,
+        receiver_id: admin.id,
+        sender_id: owner.id,
+        car_id: newCar.id 
+      })
+    );
+    
+    await Promise.all(promises);
+  } catch (error) {
+    console.error("Error al crear notificaciones de nuevo vehículo para administradores:", error);
   }
 }
 
@@ -175,8 +232,6 @@ export async function readNotification(userId, callback){
     return () => {};
   }
 }
-
-
 
 export async function markNotificationAsRead(notificationId){
   try{
