@@ -2,7 +2,7 @@
 import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch, inject } from 'vue';
 import { useUserStore, useCarStore } from '@stores'
 import { loadGoogleMaps, initAutocomplete } from "../services/google-maps.js";
-import { notifyAdminsOfVehicleUpdate } from '../services/car/notifyRented.js';
+import { notifyAdminsOfVehicleUpdate, notifyAdminsOfNewVehicle } from '../services/car/notifyRented.js';
 import { vpicService } from '../services/car/vpicApi.js';
 import { useRouter } from "vue-router";
 import { addAlert } from "../services/alerts.js";
@@ -51,7 +51,7 @@ const availability = computed(() => carStore.availability);
 const authSessionHistory = sessionStorage.getItem('auth_session_history');
 const authSession = JSON.parse(authSessionHistory);
 
-const currentStep = ref(4);
+const currentStep = ref(0);
 const autocompleteInitialized = ref(false);
 
 // Variables que agregue para la api de vehiculos
@@ -398,6 +398,16 @@ const handleSubmit = async () => {
       router.push(`/car/${carId}`);
     } else {
       const savedCarId = await carStore.saveCar(carData);
+      
+      await notifyAdminsOfNewVehicle(
+        { ...carData, id: savedCarId },
+        {
+          ...authStore.user,
+          personalInfo: userStore.profileData.personalInfo || {},
+          photoURL: authStore.user.photoURL || userStore.profileData.personalInfo?.profilePhoto
+        }
+      );
+
       addAlert('¡Vehículo registrado con éxito!', 'success');
       router.push(`/car/${savedCarId}`);
     }

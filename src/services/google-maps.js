@@ -20,26 +20,35 @@ export async function loadGoogleMaps(){
 let map = null;
 export async function initMap(mapElementId) {
   try {
-    if(!mapElementId){
-      console.error('Se requiere el Id del elemento para iniciar el mapa')
+    if (!mapElementId) {
+      console.error('Se requiere el Id del elemento para iniciar el mapa');
       return;
     }
-  
+
+    // Verificar que el elemento existe antes de crear el mapa
+    const mapElement = document.getElementById(mapElementId);
+    if (!mapElement) {
+      console.error(`Elemento con ID '${mapElementId}' no encontrado en el DOM`);
+      return;
+    }
+
     const { Map } = await google.maps.importLibrary("maps");
-  
-    map = new Map(document.getElementById("map"), {
+
+    map = new Map(mapElement, {
       center: { lat: -34.603722, lng: -58.381592 },
       zoom: 10,
       mapId: "4808da25693c56c8",
       streetViewControl: false,
       mapTypeControl: false,
     });
+
     console.log('[google-maps.js initMap] Mapa inicializado correctamente.');
     return map;
   } catch (error) {
     console.error("[google-maps.js initMap] Error al inicializar el mapa de Google:", error);
-    addAlert("Error crítico al cargar el mapa. Verifique la configuración de la API de Google Maps.", "error");
-    throw error; // Re-lanzar para que onMounted pueda saberlo
+    // Asumiendo que addAlert está definido en otro lugar
+    // addAlert("Error crítico al cargar el mapa. Verifique la configuración de la API de Google Maps.", "error");
+    throw error;
   }
 }
 
@@ -221,27 +230,31 @@ function calculateDistance(coords1, coords2) {
 
 // Filtramos los autos por la Ubicacion
 export function updateCars(allCars, searchLocation) {
-  if (!searchLocation || typeof searchLocation.lat !== 'number') {
-      console.warn('[updateCars] searchLocation inválida, no se puede filtrar.');
-      return []; // Devuelve vacío si no hay dónde buscar
+  if (!searchLocation || typeof searchLocation.lat !== 'number' || typeof searchLocation.lng !== 'number') {
+    console.warn('[updateCars] searchLocation inválida, mostrando todos los autos con coordenadas válidas');
+    return allCars.filter(car => 
+      car?.status?.currentLocation?.location &&
+      typeof car.status.currentLocation.location.lat === 'number' &&
+      typeof car.status.currentLocation.location.lng === 'number'
+    );
   }
 
-  const nearbyCars = allCars.filter(car => { 
-    // ¡CRÍTICO! Acceder a la nueva estructura de ubicación de forma segura
-    const carLocation = car.status?.currentLocation?.location;
+  // Primero filtrar autos con coordenadas válidas
+  const validCars = allCars.filter(car => {
+    return car?.status?.currentLocation?.location &&
+           typeof car.status.currentLocation.location.lat === 'number' &&
+           typeof car.status.currentLocation.location.lng === 'number';
+  });
 
-    if (!carLocation || typeof carLocation.lat !== 'number' || typeof carLocation.lng !== 'number') {
-      console.warn(`Coche con ID ${car.id} omitido por datos de ubicación inválidos.`);
-      return false;
-    }
+  if (validCars.length !== allCars.length) {
+    console.warn(`[updateCars] ${allCars.length - validCars.length} autos omitidos por coordenadas inválidas`);
+  }
 
+  const nearbyCars = validCars.filter(car => {
+    const carLocation = car.status.currentLocation.location;
     const distance = calculateDistance(searchLocation, carLocation);
     return distance <= MAX_DISTANCE_KM;
   });
-
-  if (nearbyCars.length === 0) {
-    console.warn(`No hay autos cercanos en esta zona (radio: ${MAX_DISTANCE_KM}km).`);
-  }
 
   return nearbyCars;
 }
@@ -528,11 +541,9 @@ export function getCurrentLocation() {
  * @returns {Array<Object>} - Array de coches filtrados.
  */
 export async function updateMapMarkers(map, cars, existingMarkers, iconUrl, onMarkerClickCallback) {
-  // 1. Limpiar marcadores existentes del mapa y del array
+  // Limpiar marcadores existentes
   existingMarkers.forEach(marker => marker.setMap(null));
-  let newMarkers = [];
-  // existingMarkers.length = 0;
-
+  const newMarkers = [];
 
   if (!map) {
     console.error('[google-maps.js] updateMapMarkers: El mapa no está inicializado.');
@@ -540,62 +551,68 @@ export async function updateMapMarkers(map, cars, existingMarkers, iconUrl, onMa
   }
 
   if (!cars || cars.length === 0) {
-    console.warn("[google-maps.js] updateMapMarkers: No hay coches filtrados para mostrar en el mapa.");
-    return newMarkers; 
+    console.log("[google-maps.js] updateMapMarkers: No hay coches para mostrar.");
+    return newMarkers;
   }
-  
-  // console.log('[google-maps.js] updateMapMarkers: Creando marcadores para', cars.length, 'coches.');
-  const bounds = new google.maps.LatLngBounds();
 
-  // 2. Crear nuevos marcadores
+  const bounds = new google.maps.LatLngBounds();
+  let validMarkersCount = 0;
+
   cars.forEach(car => {
-  if (car && car.status && car.status.currentLocation && car.status.currentLocation.location &&
-        typeof car.status?.currentLocation.location.lat === 'number' &&
-        typeof car.status?.currentLocation.location.lng === 'number') {
+    try {
+      // Verificación más robusta de las coordenadas
+      if (!car?.status?.currentLocation?.location ||
+          typeof car.status.currentLocation.location.lat !== 'number' ||
+          typeof car.status.currentLocation.location.lng !== 'number' ||
+          isNaN(car.status.currentLocation.location.lat) ||
+          isNaN(car.status.currentLocation.location.lng)) {
+        console.warn(`[updateMapMarkers] Coche ${car.id} omitido - coordenadas inválidas`);
+        return;
+      }
 
       const position = {
-        lat: car.status?.currentLocation.location.lat,
-        lng: car.status?.currentLocation.location.lng
+        lat: car.status.currentLocation.location.lat,
+        lng: car.status.currentLocation.location.lng
       };
 
       const marker = new google.maps.Marker({
         position: position,
         map: map,
-        title: `${car.basicInfo?.marca || ''} ${car.basicInfo?.modelo || ''}`, // Asumiendo que marca/modelo están en basicInfo
-        icon: iconUrl ? { url: iconUrl, scaledSize: new google.maps.Size(40, 40) } : undefined,
+        title: `${car.basicInfo?.brand || ''} ${car.basicInfo?.model || ''}`,
+        icon: iconUrl ? { 
+          url: iconUrl, 
+          scaledSize: new google.maps.Size(40, 40) 
+        } : undefined,
       });
 
-      // Pasa una copia del objeto car completo al callback
-      const carDataForCallback = JSON.parse(JSON.stringify(car));
       marker.addListener('click', () => {
         if (typeof onMarkerClickCallback === 'function') {
-          onMarkerClickCallback(carDataForCallback);
+          onMarkerClickCallback({...car});
         }
       });
-      // ... añadir a newMarkers y bounds.extend ...
-    } else {
-      console.warn(`[google-maps.js updateMapMarkers] Coche con ID ${car.id || 'desconocido'} omitido por datos de ubicación inválidos o faltantes en la estructura status.currentLocation.location.`, car);
+
+      newMarkers.push(marker);
+      bounds.extend(position);
+      validMarkersCount++;
+    } catch (error) {
+      console.error(`[updateMapMarkers] Error al crear marcador para coche ${car.id}:`, error);
     }
   });
 
-  // return existingMarkers;
-
-  if (newMarkers.length > 0) {
-    // Usar un pequeño timeout puede ayudar si el mapa aún se está renderizando o ajustando
+  if (validMarkersCount > 0) {
     setTimeout(() => {
-      if (map && typeof map.fitBounds === 'function') { 
+      if (map && typeof map.fitBounds === 'function') {
         map.fitBounds(bounds);
-        // Si solo hay un marcador, fitBounds puede hacer un zoom excesivo.
-        if (newMarkers.length === 1 && map.getZoom() > 15) { // 15 es un ejemplo, ajústalo
+        if (validMarkersCount === 1 && map.getZoom() > 15) {
           map.setZoom(14);
         }
       }
     }, 100);
+  } else {
+    console.log("[updateMapMarkers] No se pudo crear ningún marcador válido");
   }
 
-  // console.log('[google-maps.js] updateMapMarkers: Retornando', newMarkers.length, 'marcadores nuevos.');
-  return newMarkers; 
-
+  return newMarkers;
 }
 
 

@@ -7,6 +7,7 @@ import { addAlert } from '@/services/alerts';
 import { updateRentalStatus, subscribeToRentalDetails, markRentalAsPickedUp } from '@/services/rentedCarService';
 import { createRentalRequestNotification } from '@/services/car/notifyRented.js';
 import { loadGoogleMaps, initMap } from '@/services/google-maps'; 
+import { useNotificationStore } from '@/stores/notification.store';
 
 import Heading from "@components/atoms/Heading.vue";
 import BackButton from "@components/atoms/BackButton.vue";
@@ -25,6 +26,7 @@ const map = ref(null);
 const mapInitialized = ref(false);
 const rentalId = ref(route.params.id);
 const authStore = useAuthStore();
+const notificationStore = useNotificationStore();
 const rentalDetails = ref(null);
 const actionInProgress = ref(false);
 const isLoading = ref(true);
@@ -58,6 +60,34 @@ function setupRentalSubscription() {
     console.error('No se puede cargar los detalles de alquiler', error);
     isLoading.value = false;
     throw error;
+  }
+}
+
+async function handleRentalAction(newStatus) {
+  if (!rentalDetails.value) return;
+  
+  actionInProgress.value = true;
+  try {
+    await updateRentalStatus(rentalId.value, newStatus);
+    await notificationStore.handleRentalAction({ 
+      rentId: rentalId.value, 
+      newStatus, 
+      senderId: rentalDetails.value.driver_id, 
+      vehicleOwnerId: rentalDetails.value.owner_id,
+      vehicleOwnerName: rentalDetails.value.ownerData?.name,
+      vehicleOwnerLastname: rentalDetails.value.ownerData?.lastname,
+      // vehicleDriverName: rentalDetails.value.driverData?.name,
+      // vehicleDriverLastname: rentalDetails.value.driverData?.lastname,
+      vehicleBrand: rentalDetails.value.vehicleData?.basicInfo.brand,
+      vehicleModel: rentalDetails.value.vehicleData?.basicInfo.model,
+    });
+
+    addAlert(`Solicitud ${newStatus === 'confirmed' ? 'aceptada' : 'rechazada'} correctamente.`, 'success');
+  } catch (error) {
+    console.error("Error al procesar la solicitud de alquiler:", error);
+    addAlert("Error al procesar la acción", "error");
+  } finally {
+    actionInProgress.value = false;
   }
 }
 
@@ -265,8 +295,8 @@ async function handleMarkAsReturned() {
         rentalId.value,
         rentalDetails.value.driver_id,
         rentalDetails.value.owner_id,
-        `El conductor ${rentalDetails.value.driverData?.name || 'el conductor'} ha marcado el vehículo ${rentalDetails.value.vehicleData?.marca || ''} ${rentalDetails.value.vehicleData?.modelo || ''} como devuelto. Por favor, confirma la devolución.`,
-        'rental_update' // Tipo de notificación para actualizaciones generales del alquiler
+        `El conductor ${rentalDetails.value.driverData?.name || 'el conductor'} ha marcado el vehículo ${rentalDetails.value.vehicleData?.brand || ''} ${rentalDetails.value.vehicleData?.model || ''} como devuelto. Por favor, confirma la devolución.`,
+        '🔁 Vehículo devuelto' // Tipo de notificación para actualizaciones generales del alquiler
       );
     }
     addAlert('Vehículo marcado como devuelto. El propietario debe confirmar.', 'success');
@@ -289,8 +319,8 @@ async function handleFinalizeRental() {
         rentalId.value,
         rentalDetails.value.owner_id,
         rentalDetails.value.driver_id,
-        `El propietario ${rentalDetails.value.ownerData?.name || 'el propietario'} ha confirmado la devolución del vehículo ${rentalDetails.value.vehicleData?.marca || ''} ${rentalDetails.value.vehicleData?.modelo || ''}. El alquiler ha finalizado.`,
-        'rental_completed'
+        `El propietario ${rentalDetails.value.ownerData?.name || 'el propietario'} ha confirmado la devolución del vehículo ${rentalDetails.value.vehicleData?.brand || ''} ${rentalDetails.value.vehicleData?.model || ''}. El alquiler ha finalizado.`,
+        '🎉 Alquiler finalizado'
       );
     }
     addAlert('Alquiler finalizado con éxito.', 'success');
@@ -301,22 +331,6 @@ async function handleFinalizeRental() {
     actionInProgress.value = false;
   }
 }
-
-// async function handleCancelRental() {
-//   if (!canCancelRental.value || !rentalDetails.value) return;
-//   actionInProgress.value = true;
-//   try {
-//     const newStatus = isOwner.value ? 'cancelled_by_owner' : 'cancelled_by_user';
-//     await updateRentalStatus(rentalId.value, newStatus); // Usamos el servicio existente
-//     addAlert('Alquiler cancelado con éxito.', 'success');
-//     // El `onSnapshot` listener actualizará `rentalDetails.value` automáticamente.
-//   } catch (err) {
-//     console.error("Error al cancelar el alquiler:", err);
-//     addAlert('Error al cancelar el alquiler.', 'error');
-//   } finally {
-//     actionInProgress.value = false;
-//   }
-// }
 
 function openCancelModal() {
   showCancelModal.value = true;
@@ -359,7 +373,7 @@ onMounted(() => {
     <Loading class="h-12 w-12 text-secondary-500" />
   </div>
 
-  <div v-else-if="rentalDetails" class="flex flex-col lg:flex-row md:m-2.5 py-4 lg:py-6 md:px-2 sm:px-4 gap-4 w-full md:bg-vibrant-light-600 rounded-xl lg:rounded-3xl min-h-screen lg:min-h-auto overflow-y-auto ">
+  <div v-else-if="rentalDetails" class="flex flex-col lg:flex-row md:m-2.5 py-4 lg:py-6 md:px-2 sm:px-4 gap-4 w-full md:bg-vibrant-light-600 rounded-xl lg:rounded-3xl min-h-screen lg:min-h-auto overflow-y-auto lg:overflow-hidden">
 
     <div class="box-vibrant w-full md:w-3/7 flex flex-col gap-4 overflow-visible lg:overflow-hidden lg:overflow-y-auto md:pr-2 order-1 lg:order-1">
       
@@ -475,7 +489,7 @@ onMounted(() => {
         class="flex items-center gap-2 sm:gap-3 bg-white rounded-xl justify-between p-3 sm:p-4 hover:shadow-md transition-shadow">
         <div class="flex gap-2 sm:gap-3 min-w-0 flex-1">
           <img :src="rentalDetails.vehicleData?.photos[0]" :alt="rentalDetails.vehicleData?.basicInfo.brand"
-            class="w-12 sm:w-16 h-12 sm:h-16 object-contain flex-shrink-0" />
+            class="w-12 sm:w-16 h-12 sm:h-16 object-contain flex-shrink-0 rounded-xl" />
           <div class="min-w-0 flex-1">
             <p class="text-xs sm:text-sm font-semibold text-background-600 truncate">
               {{ rentalDetails.vehicleData?.basicInfo.brand }}
@@ -537,8 +551,6 @@ onMounted(() => {
         />
       </div>
 
-      
-
       <div v-else class="pt-4 sm:pt-6 border-t border-gray-200 space-y-4 text-center">
         <p class="text-lg sm:text-xl font-semibold text-green-600">¡Alquiler completado!</p>
         <div class="my-4 p-3 bg-gray-100 rounded-lg">
@@ -555,44 +567,30 @@ onMounted(() => {
             :outline="false"
             @click="router.push(`/dashboard`)"
           />
+        </div>
+              <div v-if="rentalDetails.status === 'pending' && isOwner" class="flex flex-col md:flex-row gap-2">
+            <Input
+              type="button"
+              variant="primary"
+              text="Aceptar"
+              @click="handleRentalAction('confirmed')"
+              :disabled="actionInProgress"
+            />
+            <Input
+              type="button"
+              variant="secondary"
+              outline
+              text="Rechazar"
+              @click="handleRentalAction('rejected')"
+              :disabled="actionInProgress"
+            />
+          </div>
       </div>
-    </div>
 
     <div v-if="!showCompletedView" class="flex-1 flex flex-col gap-4 relative order-2 lg:order-2">
       
       <div class="flex-1 bg-gray-200 rounded-xl lg:rounded-3xl relative overflow-hidden">
         <div id="map" class="w-full min-h-100 md:h-[50%] rounded-[40px] relative"></div>
-
-        <div class="absolute left-2 sm:left-4 lg:left-1/2 lg:transform lg:-translate-x-1/2 top-4 sm:top-6 lg:top-8 bg-white rounded-xl lg:rounded-2xl p-3 sm:p-4 shadow-lg z-4 w-[calc(100%-1rem)] sm:w-[calc(100%-2rem)] lg:w-[90%] lg:max-w-4xl">
-          
-          <div class="flex md:grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
-            <div class="bg-vibrant-light-600 rounded-lg lg:rounded-2xl p-2 sm:p-3 lg:p-4 flex flex-col gap-1 sm:gap-2 lg:gap-3 shadow-md">
-              <div class="flex items-center gap-1 sm:gap-2">
-                <Ubication class="size-4 sm:size-5 lg:size-6 text-primary-900" />
-                <span class="text-xs sm:text-sm font-medium text-primary-900">Ubicación</span>
-              </div>
-              <span class="text-background-600 font-semibold text-xs sm:text-sm lg:text-base truncate">
-                {{ rentalDetails.vehicleData?.status.currentLocation.address }}
-              </span>
-            </div>
-            
-            <div class="bg-vibrant-light-600 rounded-lg lg:rounded-2xl p-2 sm:p-3 lg:p-4 flex flex-col gap-1 sm:gap-2 lg:gap-3 shadow-md">
-              <div class="flex items-center gap-1 sm:gap-2">
-                <Velocimetre class="size-4 sm:size-5 lg:size-6 text-primary-900" />
-                <span class="text-xs sm:text-sm font-medium text-primary-900">Velocidad</span>
-              </div>
-              <span class="text-background-600 font-semibold text-xs sm:text-sm lg:text-base">60 km/h</span>
-            </div>
-            
-            <div class="bg-vibrant-light-600 rounded-lg lg:rounded-2xl p-2 sm:p-3 lg:p-4 flex flex-col gap-1 sm:gap-2 lg:gap-3 shadow-md">
-              <div class="flex items-center gap-1 sm:gap-2">
-                <Distance class="size-4 sm:size-5 lg:size-6 text-primary-900" />
-                <span class="text-xs sm:text-sm font-medium text-primary-900">Distancia</span>
-              </div>
-              <span class="text-background-600 font-semibold text-xs sm:text-sm lg:text-base">0.542 km</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
 

@@ -141,17 +141,62 @@ onMounted(async () => {
         @click="handleNotificationClick(noti)">
         <div class="flex items-center gap-5">
           <figure class="h-12 md:h-18 aspect-square relative">
-            <img v-if="noti.vehicleDetails?.photos?.length > 0"
+            <template v-if="noti.type === 'car_invalidated' || noti.type === 'car_validated'">
+                <img :src="noti.photo || '../assets/Reemo1x1.png'" 
+                     :alt="noti.title || 'Reemo Bot'" 
+                     class="bg-white h-full rounded-full object-cover" />
+
+              <span class="absolute bg-vibrant-light-600 bottom-0 right-0 h-6 md:h-8 aspect-square rounded-full overflow-hidden">
+              <img src="../assets/Reemo1x1.png"
+              :alt="noti.vehicleDetails?.name || 'Reemo Bot' " 
+              class="bg-white h-full rounded-full object-cover">
+            </span>
+            </template>
+
+            <template v-if="noti.type === 'car_updated_for_review' || noti.type === 'new_car_for_review'">
+                <img :src="noti.photos[0] || '../assets/Reemo1x1.png'" 
+                     :alt="noti.title || 'Reemo Bot'" 
+                     class="bg-white h-full rounded-full object-cover" />
+
+              <span class="absolute bg-vibrant-light-600 bottom-0 right-0 h-6 md:h-8 aspect-square rounded-full overflow-hidden">
+              <img :src="noti.photoURL"
+              :alt="noti.vehicleDetails?.name || 'Reemo Bot' " 
+              class="bg-white h-full rounded-full object-cover">
+            </span>
+            </template>
+
+            <template v-if="noti.type === 'rent_request' || noti.type === 'rent_response'">
+                <img :src="noti.vehicleDetails?.photos[0] || '../assets/Reemo1x1.png'" 
+                     :alt="noti.vehicleDetails?.basicInfo?.brand || 'Reemo Bot'" 
+                     class="bg-white h-full rounded-full object-cover" />
+
+              <span class="absolute bg-vibrant-light-600 bottom-0 right-0 h-6 md:h-8 aspect-square rounded-full overflow-hidden">
+              <img :src="noti.senderDetails.photoURL"
+              :alt="noti.title || 'Reemo Bot' " 
+              class="bg-white h-full rounded-full object-cover">
+            </span>
+            </template>
+
+            <!-- <img v-if="noti.vehicleDetails?.photos?.length > 0"
               :src="noti.vehicleDetails?.photos[0]"
               :alt="noti.vehicleDetails?.name || 'Reemo Bot' " 
               class="bg-white h-full rounded-full object-cover" />
+
+              <img v-else-if="noti.photos"
+              :src="noti.photos[0]"
+              :alt="noti.vehicleDetails?.name || 'Reemo Bot' " 
+              class="bg-white h-full rounded-full object-cover" />
+
             <img v-else
               src="../assets/Reemo1x1.png"
               :alt="noti.vehicleDetails?.name || 'Reemo Bot' " 
               class="bg-white h-full rounded-full object-cover" />
-            <span class="absolute bg-vibrant-light-600 bottom-0 right-0 h-6 md:h-8 aspect-square rounded-full overflow-hidden">
-              <img :src="noti.senderDetails?.photoURL || noti.vehicleDetails?.photos[0]" :alt="noti.senderDetails?.name">
-            </span>
+           
+              <span class="absolute bg-vibrant-light-600 bottom-0 right-0 h-6 md:h-8 aspect-square rounded-full overflow-hidden">
+              <img v-if="noti.senderDetails?.photoURL" :src="noti.senderDetails?.photoURL || noti.vehicleDetails?.photos[0]" :alt="noti.senderDetails?.name">
+              <img v-else :src="noti.photoURL"
+                          :alt="noti.vehicleDetails?.name">
+            </span> -->
           </figure>
           <div class="flex flex-col gap-2.5">
             <Heading :type="2" class="text-base md:text-lg">{{ noti.title || 'Tienes una nueva notificación.' }}</Heading>

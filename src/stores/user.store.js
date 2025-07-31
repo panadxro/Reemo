@@ -54,7 +54,8 @@ export const useUserStore = defineStore('user', {
           lastName: null,
           email: null,
           profilePhoto: null,
-          username: null
+          username: null,
+          totalEarnings: 0
         },
         documents: null,
         address: null,
@@ -110,7 +111,8 @@ export const useUserStore = defineStore('user', {
           this.profileData = {
             ...userProfile,
            personalInfo: {
-             ...userProfile?.personalInfo
+             ...userProfile?.personalInfo,
+             totalEarnings: userProfile?.personalInfo?.totalEarnings || 0
            },
            role: userProfile?.role || 'user'
          };

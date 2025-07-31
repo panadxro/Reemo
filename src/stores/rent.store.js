@@ -94,7 +94,7 @@ export const useRentStore = defineStore('rent', {
       return this.basePrice + this.taxes + this.insurance;
     },
     
-    // Generar una clave única para este vehículo
+    // Genera una clave única para este vehículo
     storageKey() {
       if (!this.car || !this.car.id) return 'rentalData';
       return `rentalData_car_${this.car.id}`;
@@ -159,6 +159,7 @@ export const useRentStore = defineStore('rent', {
         selectedPaymentMethod: null
       };
       this.acceptTerms = false;
+      this.currentStep = 1;
       
       if (this.car && this.car.id) {
         localStorage.removeItem(this.storageKey);
