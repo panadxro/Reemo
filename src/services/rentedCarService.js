@@ -14,55 +14,59 @@ import {addAlert} from './alerts.js'
 */
 export async function submitRentalRequest(rentalRequest) {
     try {
-      const initialRentalData  = {
+      const initialRentalData = {
         ...rentalRequest,
         timestamp: new Date(),
       }
 
-      // se agrega la solicitud de alquiler
-      const rentalRequestRef = await addDoc(collection(db, 'rents'), initialRentalData );
-      console.log('Solicitud de alquiler enviada con ID:', rentalRequestRef.id)
+      const rentalRequestRef = await addDoc(collection(db, 'rents'), initialRentalData);
+      console.log('Solicitud de alquiler enviada con ID:', rentalRequestRef.id);
 
       await updateDoc(rentalRequestRef, { order_id: rentalRequestRef.id });
-      console.log('Documento actualizado con order_id:', rentalRequestRef.id);
 
-      // Usamos Promise.all para obtener los detalles en paralelo
+      // 2. Obtener datos en paralelo
       const [vehicleDoc, driverDoc] = await Promise.all([
-        rentalRequest.vehicle_id ? getDoc(doc(db, 'cars', rentalRequest.vehicle_id)) : Promise.resolve(null),
-        rentalRequest.driver_id ? getDoc(doc(db, 'users', rentalRequest.driver_id)) : Promise.resolve(null)
+        getDoc(doc(db, 'cars', rentalRequest.vehicle_id)),
+        getDoc(doc(db, 'users', rentalRequest.driver_id))
       ]);
 
-      // 2. Validar que ambos documentos existan antes de continuar.
+      // 3. Validar documentos
       if (!vehicleDoc?.exists() || !driverDoc?.exists()) {
         const missing = !vehicleDoc?.exists() ? 'vehículo' : 'conductor';
-        console.error(`Error: No se encontró el ${missing} con el ID proporcionado.`);
         throw new Error(`No se pudo encontrar la información del ${missing}.`);
       }
 
       const vehicleData = vehicleDoc.data();
       const driverData = driverDoc.data();
 
+      // 4. Preparar mensaje
       const rentMessage = rentalRequest.status === 'pending' 
-      ? `${driverData.personalInfo.firstName} quiere alquilar tu ${vehicleData.basicInfo.brand} ${vehicleData.basicInfo.model} del ${rentalRequest.start_time }. Revisá la solicitud y aprobala si estás de acuerdo.`
-      : `El dueño del ${vehicleData.basicInfo.brand} ${vehicleData.basicInfo.model} no aprobó tu solicitud del ${rentalRequest.start_time }. Probá con otro vehículo disponible en la zona.`;
+        ? `${driverData.personalInfo.firstName} quiere alquilar tu ${vehicleData.basicInfo.brand} ${vehicleData.basicInfo.model}. Revisá la solicitud y aprobala si estás de acuerdo.`
+        : `El dueño del ${vehicleData.basicInfo.brand} ${vehicleData.basicInfo.model} no aprobó tu solicitud. Probá con otro vehículo disponible en la zona.`;
 
       const title = rentalRequest.status === 'pending' 
-      ? `Nueva solicitud de alquiler`
-      : `Tu solicitud fue rechazada`
+        ? `📩 Nueva solicitud de alquiler`
+        : `❌ Tu solicitud fue rechazada`;
 
+      // 5. Crear notificación con fotos
       await createRentalRequestNotification(
         rentalRequestRef.id, 
         rentalRequest.driver_id,
         rentalRequest.owner_id,
         rentMessage,
         title,
-      )
+        "rent_request",
+        vehicleData.photos[0],  
+        driverData.personalInfo.profilePhoto  
+      );
+
+      return rentalRequestRef.id;
 
     } catch (error) {
-        console.error('Error al enviar la solicitud de alquiler:', error);
-        throw error;
+      console.error('Error al enviar la solicitud de alquiler:', error);
+      throw error;
     }
-}
+  }
 
 /**
  * Actualiza el estado de una solicitud de alquiler y la disponibilidad del vehículo asociado.

@@ -68,21 +68,24 @@ async function handleRentalAction(newStatus) {
   
   actionInProgress.value = true;
   try {
-    // 1. Actualizamos el estado directamente.
     await updateRentalStatus(rentalId.value, newStatus);
-    
-    // 2. Mantenemos la lógica de notificaciones.
     await notificationStore.handleRentalAction({ 
       rentId: rentalId.value, 
       newStatus, 
       senderId: rentalDetails.value.driver_id, 
-      vehicleOwnerId: rentalDetails.value.owner_id 
+      vehicleOwnerId: rentalDetails.value.owner_id,
+      vehicleOwnerName: rentalDetails.value.ownerData?.name,
+      vehicleOwnerLastname: rentalDetails.value.ownerData?.lastname,
+      // vehicleDriverName: rentalDetails.value.driverData?.name,
+      // vehicleDriverLastname: rentalDetails.value.driverData?.lastname,
+      vehicleBrand: rentalDetails.value.vehicleData?.basicInfo.brand,
+      vehicleModel: rentalDetails.value.vehicleData?.basicInfo.model,
     });
 
     addAlert(`Solicitud ${newStatus === 'confirmed' ? 'aceptada' : 'rechazada'} correctamente.`, 'success');
   } catch (error) {
     console.error("Error al procesar la solicitud de alquiler:", error);
-    addAlert("Error al procesar la accion", "error");
+    addAlert("Error al procesar la acción", "error");
   } finally {
     actionInProgress.value = false;
   }
@@ -292,8 +295,8 @@ async function handleMarkAsReturned() {
         rentalId.value,
         rentalDetails.value.driver_id,
         rentalDetails.value.owner_id,
-        `El conductor ${rentalDetails.value.driverData?.name || 'el conductor'} ha marcado el vehículo ${rentalDetails.value.vehicleData?.marca || ''} ${rentalDetails.value.vehicleData?.modelo || ''} como devuelto. Por favor, confirma la devolución.`,
-        'rental_update' // Tipo de notificación para actualizaciones generales del alquiler
+        `El conductor ${rentalDetails.value.driverData?.name || 'el conductor'} ha marcado el vehículo ${rentalDetails.value.vehicleData?.brand || ''} ${rentalDetails.value.vehicleData?.model || ''} como devuelto. Por favor, confirma la devolución.`,
+        '🔁 Vehículo devuelto' // Tipo de notificación para actualizaciones generales del alquiler
       );
     }
     addAlert('Vehículo marcado como devuelto. El propietario debe confirmar.', 'success');
@@ -316,8 +319,8 @@ async function handleFinalizeRental() {
         rentalId.value,
         rentalDetails.value.owner_id,
         rentalDetails.value.driver_id,
-        `El propietario ${rentalDetails.value.ownerData?.name || 'el propietario'} ha confirmado la devolución del vehículo ${rentalDetails.value.vehicleData?.marca || ''} ${rentalDetails.value.vehicleData?.modelo || ''}. El alquiler ha finalizado.`,
-        'rental_completed'
+        `El propietario ${rentalDetails.value.ownerData?.name || 'el propietario'} ha confirmado la devolución del vehículo ${rentalDetails.value.vehicleData?.brand || ''} ${rentalDetails.value.vehicleData?.model || ''}. El alquiler ha finalizado.`,
+        '🎉 Alquiler finalizado'
       );
     }
     addAlert('Alquiler finalizado con éxito.', 'success');

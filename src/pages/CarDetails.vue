@@ -554,7 +554,7 @@ watch(car, (newCar) => {
                 label="Desde"
                 :outline="true"
                 :options="timeOptions"
-                class="!w-fit"
+                label-class="!text-white"
               />
               <Input
                 name="end-time"
@@ -566,7 +566,7 @@ watch(car, (newCar) => {
                 label="Hasta"
                 :outline="true"
                 :options="timeOptions"
-                class="!w-fit"
+                label-class="!text-white"
               />
             </div>
   
