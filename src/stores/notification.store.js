@@ -1,10 +1,8 @@
 import { defineStore } from "pinia";
-import { fetchUserNotification } from '@/services/rentedCarService';
-import { markNotificationAsRead as markAsReadService, createRentalRequestNotification as createNotificationService } from '@/services/car/notifyRented';
-import { updateRentalStatus as updateRentalStatusService } from '@/services/rentedCarService';
-// Importa useAuthStore para reaccionar a cambios de autenticación directamente aca,
-// aunque es común que el componente App.vue o un watcher global maneje esto.
-import { requestForToken, onMessageListener } from "@/services/notification/notifications";
+import { markNotificationAsRead as markAsReadService, 
+  createRentalRequestNotification as createNotificationService } from '@/services/car/notifyRented';
+import { fetchUserNotification, updateRentalStatus as updateRentalStatusService } from '@/services/rentedCarService';
+import { requestForToken, onMessageListener, saveFCMToken  } from "@/services/notification/notifications";
 import { addAlert } from '@services/alerts';
 import router from '@router/router';
 
@@ -163,34 +161,54 @@ export const useNotificationStore = defineStore('notification', {
         throw error
       }
     },
+    async initFCM(userId) {
+      try {
+        // Solicitar permiso y obtener token
+        const token = await requestForToken();
+        if (token) {
+          this.token = token;
+          await saveFCMToken(userId, token);
+        }
+
+        // Configurar listener de mensajes
+        this.setupMessageListener();
+      } catch (error) {
+        console.error('Error al inicializar Firebase Cloud Messaging:', error);
+      }
+    },
     // setupMessageListener()
     setupMessageListener() {
       onMessageListener()
         .then((payload) => {
-          this.notification = payload
+          // Manejar diferentes tipos de mensajes
+          if (payload.data?.type === 'notification_read') {
+            // Marcar notificación como leída localmente
+            const notification = this.notification.find(
+              (n) => n.id === payload.data.notificationId
+            );
+            if (notification) notification.read = true;
+          } else {
+            // Mostrar notificatión push
+            this.showPushNotification(payload);
 
-          const notificationTitle = payload.notification?.title || 'Nueva notificación';
-          addAlert(`${notificationTitle}`, 'info');
+            if (payload.notification) {
+              addAlert(payload.notification.title, payload.data?.type === 'rent_request' ? 'info' : 'success');
+            }
 
-          this.showPushNotification(payload);
-
-          if (payload.data) {
-            this.notifications.unshift({
-              id: payload.data.id,
-              title: payload.data.title,
-              body: payload.data.body,
-              created_at: payload.data.created_at,
-              read: false,
-              type: payload.data.type,
-              ...payload.data
-            });
+            // Si es una nueva notificación, actualizar lista
+            if (payload.data?.notificationId) {
+              this.notifications.unshift({
+                id: payload.data.notificationId,
+                title: payload.notification.title,
+                message: payload.notification.body,
+                type: payload.data.type,
+                link: payload.data.link,
+                read: false,
+                created_at: new Date()
+              });
+            }
           }
-          // Muestra la notificacion en primer plano
-          console.log('Message received. ', payload)
-        })
-        .catch((err) => {
-          console.log('Error en el listener de mensajes: ', err)
-        })
+        });
     },
     showPushNotification(payload) {
       if (document.visibilityState === 'visible') {

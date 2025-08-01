@@ -12,8 +12,7 @@ dev-dist
 dist
 dist-ssr
 *.local
-functions
-
+  
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -29,12 +28,9 @@ functions
 .vite
 
 # Ignorar firebase
-src/services/firebase.js
 public/firebase-messaging-sw.js
 
 # Ignorar reglas 
 reglas-firestore.txt
 reglas-storage.txt
 datos.md
-.firebaserc
-firebase.json

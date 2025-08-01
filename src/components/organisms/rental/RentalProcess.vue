@@ -669,7 +669,7 @@ onMounted(async () => {
 
      <Modal
       :is-open="showSuccess"
-      title="¡Solicitud Enviada!"
+      title="¡Solicitud enviada!"
       message="Tu solicitud de alquiler ha sido enviada correctamente. El propietario será notificado y se pondrá en contacto contigo pronto."
       :image="carStore.car?.photos?.[0]"
       primary-button-text="Ver detalles"
