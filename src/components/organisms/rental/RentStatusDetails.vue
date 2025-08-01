@@ -251,7 +251,7 @@ onUnmounted(() => {
           Ver detalles
         </button> -->
         <Input
-            v-if="driverRentalDetail.status === 'confirmed' || driverRentalDetail.status === 'in_progress' || driverRentalDetail.status === 'completed'"
+            v-if="driverRentalDetail.status === 'confirmed' || driverRentalDetail.status === 'in_progress' || driverRentalDetail.status === 'completed' || driverRentalDetail.status === 'returned_by_driver'"
             type="button"
             variant="primary"
             text="Ver Detalles"
@@ -293,7 +293,7 @@ onUnmounted(() => {
       
       <div class="flex items-center justify-between">
         <div
-          v-if="ownerRentalDetail.status === 'pending' && currentUser?.id === ownerRentalDetail.owner_id"
+          v-if="currentUser?.id === ownerRentalDetail.owner_id"
           class="flex flex-col md:flex-row gap-2" >
             <!-- <Input
               type="button"

@@ -258,7 +258,7 @@ export async function fetchRentedCars(userId, callback) {
  const q = query(
     collection(db, 'rents'),
     where('driver_id', '==', userId),
-    where('status', 'in', ['pending', 'confirmed', 'in_progress']),
+    where('status', 'in', ['pending', 'confirmed', 'in_progress', "returned_by_driver"]),
     orderBy('start_time', 'desc'),
   );
 
@@ -295,7 +295,7 @@ export async function fetchLatestActiveOwnedRental(ownerId, callback){
     const q = query(
       rentsCollection,
       where("owner_id", "==", ownerId),
-      where("status", "in", ["pending", "confirmed", "in_progress"]),
+      where("status", "in", ["pending", "confirmed", "in_progress", "returned_by_driver"]),
       orderBy("timestamp", "desc"),
     );
 

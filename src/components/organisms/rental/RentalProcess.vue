@@ -134,11 +134,10 @@ async function handleSubmit() {
 
   submitting.value = true;
   try {
-    const success = await store.submitRental();
-    if (success) {
-      // router.push({ name: 'Rental-Success', params: { id: store.car.id } });
+    const rentalId = await store.submitRental();
+    if (rentalId) {
       showSuccess.value = true;
-      store.clearAllRentalData();
+      store.currentRentalId = rentalId;
     }
   } catch (error) {
     console.error('Error al procesar la reserva:', error);
@@ -155,7 +154,11 @@ function handleViewProfileOwner() {
 
 function handleViewAlert() {
   showSuccess.value = false;
-  router.push({ name: 'Dashboard', params: { id: authStore.user.id } }); 
+  if (store.currentRentalId) {
+    router.push(`/rent/${store.currentRentalId}`);
+  } else {
+    router.push({ name: 'Dashboard'});
+  }
 }
 
 function handleCarNotAvailable() {
@@ -669,7 +672,7 @@ onMounted(async () => {
       title="¡Solicitud Enviada!"
       message="Tu solicitud de alquiler ha sido enviada correctamente. El propietario será notificado y se pondrá en contacto contigo pronto."
       :image="carStore.car?.photos?.[0]"
-      primary-button-text="Ver mis alquileres"
+      primary-button-text="Ver detalles"
       secondary-button-text="Ver perfil del dueño"
       @primary-action="handleViewAlert"
       @secondary-action="handleViewProfileOwner"
