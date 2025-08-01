@@ -12,6 +12,7 @@ dev-dist
 dist
 dist-ssr
 *.local
+functions
 
 # Editor directories and files
 .vscode/*
@@ -19,7 +20,7 @@ dist-ssr
 .idea
 .DS_Store
 *.suo
-*.ntvs*
+.ntvs
 *.njsproj
 *.sln
 *.sw?
@@ -33,3 +34,5 @@ src/services/firebase.js
 reglas-firestore.txt
 reglas-storage.txt
 datos.md
+.firebaserc
+firebase.json
