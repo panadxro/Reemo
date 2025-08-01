@@ -25,6 +25,7 @@ dist-ssr
 *.sw?
 .idx
 .env
+.env.production
 .vite
 
 # Ignorar firebase
