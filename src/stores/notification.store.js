@@ -4,6 +4,9 @@ import { markNotificationAsRead as markAsReadService, createRentalRequestNotific
 import { updateRentalStatus as updateRentalStatusService } from '@/services/rentedCarService';
 // Importa useAuthStore para reaccionar a cambios de autenticación directamente aca,
 // aunque es común que el componente App.vue o un watcher global maneje esto.
+import { requestForToken, onMessageListener } from "@/services/notification/notifications";
+import { addAlert } from '@services/alerts';
+import router from '@router/router';
 
 export const useNotificationStore = defineStore('notification', {
   state: () => ({
@@ -13,6 +16,8 @@ export const useNotificationStore = defineStore('notification', {
     hasLoadedOnce: false,
     _unsubscribeListener: null,
     _currentUserId: null,
+    token: null,
+    notification: null,
   }),
 
   getters: {
@@ -148,15 +153,90 @@ export const useNotificationStore = defineStore('notification', {
         throw error;
       }
     },
+    async requestPermission() {
+      try {
+        this.token = await requestForToken();
+        // Envía este token a tu backend para guardarlo
+        return this.token
+      } catch (error) {
+        console.error('Error requesting notification permission:', error)
+        throw error
+      }
+    },
+    // setupMessageListener()
+    setupMessageListener() {
+      onMessageListener()
+        .then((payload) => {
+          this.notification = payload
 
-    // getDefaultTitle(notification) {
-    //   if (notification.title === 'rent_request') return '📩 Nueva solicitud de alquiler';
-    //   if (notification.title === 'rent_response') return 'Respuesta a tu solicitud';
-    //   if (notification.title === 'car_validated') return 'Vehículo validado';
-    //   if (notification.title === 'car_invalidated') return 'Vehículo rechazado';
-    //   if (notification.title === 'car_updated_for_review') return 'Vehículo para revisión';
-    //   return 'Nueva notificación';
-    // }
+          const notificationTitle = payload.notification?.title || 'Nueva notificación';
+          addAlert(`${notificationTitle}`, 'info');
 
+          this.showPushNotification(payload);
+
+          if (payload.data) {
+            this.notifications.unshift({
+              id: payload.data.id,
+              title: payload.data.title,
+              body: payload.data.body,
+              created_at: payload.data.created_at,
+              read: false,
+              type: payload.data.type,
+              ...payload.data
+            });
+          }
+          // Muestra la notificacion en primer plano
+          console.log('Message received. ', payload)
+        })
+        .catch((err) => {
+          console.log('Error en el listener de mensajes: ', err)
+        })
+    },
+    showPushNotification(payload) {
+      if (document.visibilityState === 'visible') {
+        return;
+      }
+
+      if (!("Notification" in window)) {
+        alert("Este navegador no soporta notificaciones.");
+        return;
+      }
+
+      // Verifica si ya tenemos permiso
+      if (Notification.permission === "granted") {
+        this.createNotification(payload);
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then((permission) => {
+          if (permission === "granted") {
+            this.createNotification(payload);
+          }
+        });
+      }
+    },
+    createNotification(payload) {
+      const title = payload.notification?.title || "Nueva notificación";
+      const options = {
+        body: payload.notification?.body || "",
+        icon: "/apple-icon-180.png",
+        data: payload.data || {}
+      };
+
+      const notification = new Notification(title, options);
+
+      notification.onclick = (event) => {
+        event.preventDefault();
+        window.focus();
+
+        if (payload.data?.route) {
+          router.push(payload.data.route);
+        }
+
+        if (payload.messageId) {
+          this.markNotificationAsRead(payload.messageId);
+        }
+
+        notification.close();
+      }
+    }
   }
 })

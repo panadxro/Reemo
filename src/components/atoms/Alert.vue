@@ -30,12 +30,13 @@ const alertList = computed(() => alerts);
         :key="alert.id" 
       >
         <div 
-          :class="`alert alert-${alert.severity}`" 
+          :class="`alert alert-${alert.severity} ${alert.notification ? 'notification-alert' : ''}`" 
           >
           <span class="icon" v-if="iconComponent">
             <component :is="iconComponent(alert.severity)" />
           </span>
           <span class="message">{{ alert.message }}</span>
+          <span v-if="alert.notification" class="notification-badge">Nuevo</span>
         </div>
       </div>
     </transition-group>
@@ -63,6 +64,14 @@ const alertList = computed(() => alerts);
   width: fit-content;
   padding-inline: 8px;
   margin: 0 auto;
+}
+.notification-badge {
+  margin-left: 0.5rem;
+  padding: 0.2rem 0.5rem;
+  background-color: #4a90e2;
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
 }
 
 .alert {
