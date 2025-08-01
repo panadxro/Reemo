@@ -10,14 +10,16 @@ firebase.initializeApp({
   appId: '__VITE_FIREBASE_APP_ID__'
 });
 
+// Initialize Firebase
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage(function(payload) {
-  console.log('[firebase-messaging-sw.js] Mensaje recibido:', payload);
-  const { title, body } = payload.notification;
-
-  self.registration.showNotification(title, {
-    body,
+messaging.onBackgroundMessage((payload) => {
+  console.log('Mensaje recibido en SW:', payload);
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
     icon: '/apple-icon-180.png'
-  });
+  }
+
+  return self.registration.showNotification(notificationTitle, notificationOptions);
 });

@@ -28,7 +28,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
       </div>
-      <h2 class="text-2xl sm:text-3xl font-bold mb-3">¡Solicitud Enviada!</h2>
+      <h2 class="text-2xl sm:text-3xl font-bold mb-3">¡Solicitud enviada!</h2>
       <p class="text-gray-300 mb-6 sm:mb-8">
         Tu solicitud de alquiler ha sido enviada correctamente. El propietario será notificado y se pondrá en contacto contigo pronto.
       </p>

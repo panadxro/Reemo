@@ -37,7 +37,7 @@ const notificationPermission = ref(false);
 
 const handleNotificationConsent = async () => {
   if (notificationPermission.value) {
-    await notificationStore.requestPermission()
+    await notificationStore.initFCM(authStore.user.id)
     notificationStore.setupMessageListener()
   }
 }

@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from "url";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from 'vite-plugin-pwa';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -106,7 +107,7 @@ export default defineConfig({
       },
       workbox: {
         cleanupOutdatedCaches: true,
-        globPatterns: ['/*.{js,css,html,ico,png,svg}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         maximumFileSizeToCacheInBytes: 5000000,
         runtimeCaching: [
           // Cache de recursos estáticos locales
@@ -134,8 +135,10 @@ export default defineConfig({
         type: 'module' // Para soportar reload en desarrollo
       },
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png', 'apple-touch-icon.png'],
-    })
+    }),
+    // visualizer({ open: true })
   ],
+  logLevel: 'error',
   optimizeDeps: {
     include: ['fast-deep-equal'],
   },
