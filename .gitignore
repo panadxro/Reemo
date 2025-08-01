@@ -30,6 +30,8 @@ functions
 
 # Ignorar firebase
 src/services/firebase.js
+public/firebase-messaging-sw.js
+
 # Ignorar reglas 
 reglas-firestore.txt
 reglas-storage.txt
