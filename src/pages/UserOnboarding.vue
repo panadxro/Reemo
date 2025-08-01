@@ -1,6 +1,6 @@
 <script setup>
 import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch, inject, onUnmounted } from 'vue';
-import { useUserStore, useGeoStore, usePaymentStore } from '@stores'
+import { useUserStore, useGeoStore, usePaymentStore, useNotificationStore } from '@stores'
 import { useRouter } from "vue-router";
 import { addAlert } from "../services/alerts.js";
 
@@ -31,6 +31,16 @@ const userStore = useUserStore();
 const geoStore = useGeoStore();
 const router = useRouter();
 const paymentStore = usePaymentStore();
+const notificationStore = useNotificationStore();
+
+const notificationPermission = ref(false);
+
+const handleNotificationConsent = async () => {
+  if (notificationPermission.value) {
+    await notificationStore.initFCM(authStore.user.id)
+    notificationStore.setupMessageListener()
+  }
+}
 
 function openTermsModal() {
   showTermsModal.value = true;
@@ -751,8 +761,8 @@ onBeforeUnmount(() => {
           </div>
           <!-- Notificaciones -->
           <div class="flex gap-2 items-center">
-            <Checkbox v-model="agreements.acceptedMarketing" />
-            <p class="text-sm font-medium">Acepto recibir notificaciones y promociones por correo electrónico.</p>
+            <Checkbox v-model="notificationPermission" @change="handleNotificationConsent" />
+            <p class="text-sm font-medium">Acepto recibir notificaciones push.</p>
           </div>
         </div>
       </router-view>

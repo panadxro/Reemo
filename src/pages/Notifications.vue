@@ -144,36 +144,36 @@ onMounted(async () => {
             <template v-if="noti.type === 'car_invalidated' || noti.type === 'car_validated'">
                 <img :src="noti.photo || '../assets/Reemo1x1.png'" 
                      :alt="noti.title || 'Reemo Bot'" 
-                     class="bg-white h-full rounded-full object-cover" />
+                     class="bg-white h-full rounded-full object-cover w-full" />
 
               <span class="absolute bg-vibrant-light-600 bottom-0 right-0 h-6 md:h-8 aspect-square rounded-full overflow-hidden">
               <img src="../assets/Reemo1x1.png"
               :alt="noti.vehicleDetails?.name || 'Reemo Bot' " 
-              class="bg-white h-full rounded-full object-cover">
+              class="bg-white h-full rounded-full object-cover w-full">
             </span>
             </template>
 
             <template v-if="noti.type === 'car_updated_for_review' || noti.type === 'new_car_for_review'">
                 <img :src="noti.photos[0] || '../assets/Reemo1x1.png'" 
                      :alt="noti.title || 'Reemo Bot'" 
-                     class="bg-white h-full rounded-full object-cover" />
+                     class="bg-white h-full rounded-full object-cover w-full" />
 
               <span class="absolute bg-vibrant-light-600 bottom-0 right-0 h-6 md:h-8 aspect-square rounded-full overflow-hidden">
               <img :src="noti.photoURL"
               :alt="noti.vehicleDetails?.name || 'Reemo Bot' " 
-              class="bg-white h-full rounded-full object-cover">
+              class="bg-white h-full rounded-full object-cover w-full">
             </span>
             </template>
 
             <template v-if="noti.type === 'rent_request' || noti.type === 'rent_response'">
                 <img :src="noti.vehicleDetails?.photos[0] || '../assets/Reemo1x1.png'" 
                      :alt="noti.vehicleDetails?.basicInfo?.brand || 'Reemo Bot'" 
-                     class="bg-white h-full rounded-full object-cover" />
+                     class="bg-white h-full rounded-full object-cover w-full" />
 
               <span class="absolute bg-vibrant-light-600 bottom-0 right-0 h-6 md:h-8 aspect-square rounded-full overflow-hidden">
               <img :src="noti.senderDetails.photoURL"
               :alt="noti.title || 'Reemo Bot' " 
-              class="bg-white h-full rounded-full object-cover">
+              class="bg-white h-full rounded-full object-cover w-full">
             </span>
             </template>
 

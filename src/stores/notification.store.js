@@ -1,9 +1,10 @@
 import { defineStore } from "pinia";
-import { fetchUserNotification } from '@/services/rentedCarService';
-import { markNotificationAsRead as markAsReadService, createRentalRequestNotification as createNotificationService } from '@/services/car/notifyRented';
-import { updateRentalStatus as updateRentalStatusService } from '@/services/rentedCarService';
-// Importa useAuthStore para reaccionar a cambios de autenticación directamente aca,
-// aunque es común que el componente App.vue o un watcher global maneje esto.
+import { markNotificationAsRead as markAsReadService, 
+  createRentalRequestNotification as createNotificationService } from '@/services/car/notifyRented';
+import { fetchUserNotification, updateRentalStatus as updateRentalStatusService } from '@/services/rentedCarService';
+import { requestForToken, onMessageListener, saveFCMToken  } from "@/services/notification/notifications";
+import { addAlert } from '@services/alerts';
+import router from '@router/router';
 
 export const useNotificationStore = defineStore('notification', {
   state: () => ({
@@ -13,6 +14,8 @@ export const useNotificationStore = defineStore('notification', {
     hasLoadedOnce: false,
     _unsubscribeListener: null,
     _currentUserId: null,
+    token: null,
+    notification: null,
   }),
 
   getters: {
@@ -148,15 +151,110 @@ export const useNotificationStore = defineStore('notification', {
         throw error;
       }
     },
+    async requestPermission() {
+      try {
+        this.token = await requestForToken();
+        // Envía este token a tu backend para guardarlo
+        return this.token
+      } catch (error) {
+        console.error('Error requesting notification permission:', error)
+        throw error
+      }
+    },
+    async initFCM(userId) {
+      try {
+        // Solicitar permiso y obtener token
+        const token = await requestForToken();
+        if (token) {
+          this.token = token;
+          await saveFCMToken(userId, token);
+        }
 
-    // getDefaultTitle(notification) {
-    //   if (notification.title === 'rent_request') return '📩 Nueva solicitud de alquiler';
-    //   if (notification.title === 'rent_response') return 'Respuesta a tu solicitud';
-    //   if (notification.title === 'car_validated') return 'Vehículo validado';
-    //   if (notification.title === 'car_invalidated') return 'Vehículo rechazado';
-    //   if (notification.title === 'car_updated_for_review') return 'Vehículo para revisión';
-    //   return 'Nueva notificación';
-    // }
+        // Configurar listener de mensajes
+        this.setupMessageListener();
+      } catch (error) {
+        console.error('Error al inicializar Firebase Cloud Messaging:', error);
+      }
+    },
+    // setupMessageListener()
+    setupMessageListener() {
+      onMessageListener()
+        .then((payload) => {
+          // Manejar diferentes tipos de mensajes
+          if (payload.data?.type === 'notification_read') {
+            // Marcar notificación como leída localmente
+            const notification = this.notification.find(
+              (n) => n.id === payload.data.notificationId
+            );
+            if (notification) notification.read = true;
+          } else {
+            // Mostrar notificatión push
+            this.showPushNotification(payload);
 
+            if (payload.notification) {
+              addAlert(payload.notification.title, payload.data?.type === 'rent_request' ? 'info' : 'success');
+            }
+
+            // Si es una nueva notificación, actualizar lista
+            if (payload.data?.notificationId) {
+              this.notifications.unshift({
+                id: payload.data.notificationId,
+                title: payload.notification.title,
+                message: payload.notification.body,
+                type: payload.data.type,
+                link: payload.data.link,
+                read: false,
+                created_at: new Date()
+              });
+            }
+          }
+        });
+    },
+    showPushNotification(payload) {
+      if (document.visibilityState === 'visible') {
+        return;
+      }
+
+      if (!("Notification" in window)) {
+        alert("Este navegador no soporta notificaciones.");
+        return;
+      }
+
+      // Verifica si ya tenemos permiso
+      if (Notification.permission === "granted") {
+        this.createNotification(payload);
+      } else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then((permission) => {
+          if (permission === "granted") {
+            this.createNotification(payload);
+          }
+        });
+      }
+    },
+    createNotification(payload) {
+      const title = payload.notification?.title || "Nueva notificación";
+      const options = {
+        body: payload.notification?.body || "",
+        icon: "/apple-icon-180.png",
+        data: payload.data || {}
+      };
+
+      const notification = new Notification(title, options);
+
+      notification.onclick = (event) => {
+        event.preventDefault();
+        window.focus();
+
+        if (payload.data?.route) {
+          router.push(payload.data.route);
+        }
+
+        if (payload.messageId) {
+          this.markNotificationAsRead(payload.messageId);
+        }
+
+        notification.close();
+      }
+    }
   }
 })

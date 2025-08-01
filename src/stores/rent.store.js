@@ -29,7 +29,8 @@ export const useRentStore = defineStore('rent', {
     acceptTerms: false,
     loading: false,
     errorMessage: "",
-    isStoreInitialized: false
+    isStoreInitialized: false,
+    currentRentalId: null,
   }),
   
   getters: {
@@ -424,12 +425,18 @@ export const useRentStore = defineStore('rent', {
           return false;
         }
         
-        await submitRentalRequest(this.prepareRentalData());
+        const rentalId = await submitRentalRequest(this.prepareRentalData());
         addAlert("¡Reserva completada con éxito!", "success");
         
         // Limpiar solo los datos de este vehículo específico
-        localStorage.removeItem(this.storageKey);
-        return true;
+        if(rentalId){
+          addAlert("¡Reserva completada con éxito!", "success");
+          localStorage.removeItem(this.storageKey);
+          return rentalId;
+        } else {
+          addAlert("Error al procesar la reserva", "error");
+          return false;
+        }
 
 
         // const newRentId = await submitRentalRequest(this.prepareRentalData());

@@ -3,6 +3,7 @@ import { useCarStore, useAuthStore } from '@stores'
 import { onMounted, computed, ref, inject } from 'vue';
 import { addAlert } from "@services/alerts.js";
 import { useRoute, useRouter } from 'vue-router';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 import CardCar from "@components/organisms/cars/CardCar.vue";
 import Heading from "@components/atoms/Heading.vue";
@@ -19,6 +20,21 @@ const authSession = inject('authStore');
 const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
+const functions = getFunctions();
+const sendTestNotification = httpsCallable(functions, 'sendTestNotification');
+
+const testNotification = async () => {
+  try {
+    const result = await sendTestNotification({
+      title: 'Prueba manual',
+      body: 'Esta es una notificación de prueba enviada manualmente',
+      token: token
+    });
+  } catch (error) {
+    console.error('Error al enviar la notificación:', error);
+    addAlert('Error al enviar la notificación', 'error');
+  }
+}
 
 const userIdFromRoute = computed(() => route.params.id);
 

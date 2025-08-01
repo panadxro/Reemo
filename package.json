@@ -5,16 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "generate-pwa-assets": "pwa-asset-generator public/Reemo.svg public --background \"#FFFFFF\" --theme-color \"#4FD8DF\" --opaque true --type png --quality 100 --padding \"15%\" --manifest public/site.webmanifest --index public/index.html --favicon --mstile --maskable --dark-mode --scrape true"
+    "build": "vite build && node src/utils/build-sw.js",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@fawmi/vue-google-maps": "^0.9.79",
+    "@firebase/messaging": "^0.12.23",
     "@googlemaps/js-api-loader": "^1.16.8",
     "@tailwindcss/vite": "^4.1.10",
     "core-js": "^3.42.0",
-    "firebase": "^11.8.1",
+    "dotenv": "^17.2.1",
+    "firebase": "^11.10.0",
+    "firebase-admin": "^13.4.0",
+    "firebase-functions": "^6.4.0",
     "pinia": "^3.0.2",
     "pinia-plugin-persistedstate": "^4.3.0",
     "vue": "^3.5.14",
@@ -24,6 +27,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.7",
     "@vitejs/plugin-vue": "^5.2.4",
+    "rollup-plugin-visualizer": "^6.0.3",
     "tailwindcss": "^4.1.10",
     "vite": "^6.3.5",
     "vite-plugin-pwa": "^1.0.0"

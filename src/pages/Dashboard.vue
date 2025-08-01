@@ -4,7 +4,6 @@ import { useUserStore, useCarStore, useAuthStore, useAdminStore } from '@/stores
 import { useNotificationStore } from '@/stores/notification.store';
 import { useRouter } from 'vue-router';
 
-
 import Heading from '@/components/atoms/Heading.vue';
 import Input from '@/components/molecules/Input.vue';
 import SearchIcon from '@/icons/Search.vue';

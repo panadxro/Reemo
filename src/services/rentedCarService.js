@@ -1,7 +1,7 @@
 import { collection,getDocs, query, where, doc, getDoc, addDoc, updateDoc, onSnapshot, orderBy, increment } from "firebase/firestore";
 import { db } from "../services/firebase.js";
 import { createRentalRequestNotification } from "../services/car/notifyRented.js";
-import {addAlert} from './alerts.js'
+import { addAlert } from './alerts.js'
 
 
 // =================================================================================================
@@ -60,10 +60,12 @@ export async function submitRentalRequest(rentalRequest) {
         driverData.personalInfo.profilePhoto  
       );
 
+      addAlert("Solicitud de alquiler enviada correctamente", "success");
       return rentalRequestRef.id;
 
     } catch (error) {
       console.error('Error al enviar la solicitud de alquiler:', error);
+      addAlert("Error al enviar la solicitud de alquiler", "error");
       throw error;
     }
   }
@@ -110,11 +112,24 @@ export async function updateRentalStatus(reqId, newStatus) {
       }
 
       await updateDoc(requestRef, { status: newStatus });
+
+      const statusMessages = {
+        'confirmed': 'Alquiler confirmado exitosamente',
+        'rejected': 'Alquiler rechazado',
+        'completed': 'Alquiler completado exitosamente',
+        'cancelled_by_user': 'Alquiler cancelado por el usuario',
+        'cancelled_by_owner': 'Alquiler cancelado por el propietario',
+      };
+
+      if (statusMessages[newStatus]) {
+        addAlert(statusMessages[newStatus], newStatus === 'rejected' ? 'warning' : 'info');
+      }
       console.log(`Se actualizó el estado de la solicitud ${newStatus}. Disponibilidad del auto ${carId} actualizada si corresponde.`);
       
 
   } catch (error) {
     console.error("Error al actualizar el estado de la solicitud", error);
+    addAlert("Error al actualizar el estado del alquiler", "error");
     throw error;
   }
 }
@@ -258,7 +273,7 @@ export async function fetchRentedCars(userId, callback) {
  const q = query(
     collection(db, 'rents'),
     where('driver_id', '==', userId),
-    where('status', 'in', ['pending', 'confirmed', 'in_progress']),
+    where('status', 'in', ['pending', 'confirmed', 'in_progress', "returned_by_driver"]),
     orderBy('start_time', 'desc'),
   );
 
@@ -295,7 +310,7 @@ export async function fetchLatestActiveOwnedRental(ownerId, callback){
     const q = query(
       rentsCollection,
       where("owner_id", "==", ownerId),
-      where("status", "in", ["pending", "confirmed", "in_progress"]),
+      where("status", "in", ["pending", "confirmed", "in_progress", "returned_by_driver"]),
       orderBy("timestamp", "desc"),
     );
 
@@ -622,6 +637,20 @@ export function fetchUserNotification(userId, callback){
     );
 
     const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+      const changes = querySnapshot.docChanges();
+
+      // Verificar si hay cambiois nuevos (notificaciones añadidas)
+      const newNotifications = changes
+        .filter(change => change.type === 'added')
+        .map(change => ({ id: change.doc.id, ...change.doc.data() }));
+
+      // Mostrar alerta para cada nueva notificación
+      newNotifications.forEach(notification => {
+        if (!notification.read) {
+          addAlert(notification.message || notification.title, "info")
+        }
+      });
+
       const rawNotifications = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
      
       if (rawNotifications.length === 0) {
@@ -709,6 +738,7 @@ export function fetchUserNotification(userId, callback){
 
   } catch (error) {
     console.error("Error al obtener las notificaciones: ", error);
+    addAlert("Error al cargar notificaciones", "error");
     return () => {};
   }
 
