@@ -42,7 +42,7 @@ export async function initMap(mapElementId) {
       mapTypeControl: false,
     });
 
-    console.log('[google-maps.js initMap] Mapa inicializado correctamente.');
+    // console.log('[google-maps.js initMap] Mapa inicializado correctamente.');
     return map;
   } catch (error) {
     console.error("[google-maps.js initMap] Error al inicializar el mapa de Google:", error);

@@ -67,7 +67,7 @@ onMounted(async () => {
     }
     // Cargar métodos de pago cuando se monta el componente
     await paymentStore.fetchPaymentMethods(authSession.user.id);
-    console.log(user.value)
+    // console.log(user.value)
   } catch (error) {
     console.error("Error cargando perfil del usuario:", error)
   }

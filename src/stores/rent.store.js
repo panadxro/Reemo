@@ -120,7 +120,6 @@ export const useRentStore = defineStore('rent', {
       this.car = car;
       this.loggedUser = loggedUser;
       this.rented = isCarRented;
-      console.log('[setInitialData] contenido de this.rented 😊😊😊', this.rented)
       
       // Solo reseteamos datos si cambiamos de auto
       if (isChangingCar) {
@@ -137,16 +136,16 @@ export const useRentStore = defineStore('rent', {
       this.calculatePrice();
       this.isStoreInitialized = true;
       
-      console.log("Store inicializado con datos:", {
-        carId: this.car?.id,
-        userId: this.loggedUser,
-        fechas: {
-          desde: this.rentalData.rentedFromDate,
-          hasta: this.rentalData.rentedUntilDate
-        },
-        precio: this.rentalData.currentTotalPrice,
-        paso: this.currentStep
-      });
+      // console.log("Store inicializado con datos:", {
+      //   carId: this.car?.id,
+      //   userId: this.loggedUser,
+      //   fechas: {
+      //     desde: this.rentalData.rentedFromDate,
+      //     hasta: this.rentalData.rentedUntilDate
+      //   },
+      //   precio: this.rentalData.currentTotalPrice,
+      //   paso: this.currentStep
+      // });
     },
       
     resetRentalData() {
@@ -216,8 +215,7 @@ export const useRentStore = defineStore('rent', {
           if (typeof parsedData.acceptTerms === 'boolean') {
             this.acceptTerms = parsedData.acceptTerms;
           }
-          
-          console.log("Datos cargados desde localStorage:", parsedData);
+          // console.log("Datos cargados desde localStorage:", parsedData);
           
           // Calculamos el precio después de cargar datos
           this.calculatePrice();

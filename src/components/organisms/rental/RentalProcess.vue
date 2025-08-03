@@ -169,7 +169,7 @@ watch(() => store.currentStep, async (newStep) => {
   if (newStep === 3) {
     console.log("Fetch a los métodos de pago..."); 
     await paymentStore.fetchPaymentMethods(authStore.user?.id);
-    console.log("Métodos de pago:", paymentStore.paymentMethods);
+    // console.log("Métodos de pago:", paymentStore.paymentMethods);
     
     if (store.rentalData.selectedPaymentMethod && 
         !paymentStore.paymentMethods.some(m => 
@@ -211,7 +211,7 @@ onMounted(async () => {
     return;
   }
   store.setInitialData(carStore.car, authStore.user.id, carStore.isCarRented);
-  console.log("authstore.user.id:", authStore.user.id);
+  // console.log("authstore.user.id:", authStore.user.id);
     
   if (store.currentStep === 3) {
     await paymentStore.fetchPaymentMethods(authStore.user?.id);

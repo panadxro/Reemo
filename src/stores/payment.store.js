@@ -93,7 +93,7 @@ export const usePaymentStore = defineStore('payment', {
       this.loading = true;
       try {
         const methods = await getPaymentMethods(userId);
-        console.log("Métodos de pago obtenidos:", methods);
+        // console.log("Métodos de pago obtenidos:", methods);
         this.paymentMethods = Array.isArray(methods) ? methods : [];
         return this.paymentMethods;
       } catch (error) {

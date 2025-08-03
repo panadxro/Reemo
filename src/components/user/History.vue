@@ -67,7 +67,7 @@ const loadHistoryData = async () => {
       rentedOut: rentedOutHistory || []
     };
 
-    console.log('Historial cargado:', historyData.value);
+    // console.log('Historial cargado:', historyData.value);
 
   } catch (error) {
     console.error('Error loading rental history:', error);
