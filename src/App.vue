@@ -63,10 +63,11 @@ const layoutMap = {
   '/map': 'map',
   '/car/': 'dashboard',
   '/notifications': 'dashboard',
+  '/rent/': 'dashboard',
   
   // Rutas con layout de usuario (sin sidebar y usernav) 
   '/user': 'user',
-  '/rent': 'user',
+  '/rents': 'user',
   '/cars': 'user',
   '/documents': 'user',
   

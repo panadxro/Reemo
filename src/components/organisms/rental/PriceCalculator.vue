@@ -151,7 +151,7 @@ export default {
     </li>
 
     <li class="flex justify-between">
-      <span>Impuestos</span>
+      <span>Comisión</span>
       <span v-if="startDate && endDate">${{ formatPrice(taxes) }}</span>
       <span v-else class="text-gray-400">$0</span>
     </li>

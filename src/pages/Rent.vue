@@ -68,7 +68,7 @@ onMounted(async () => {
       :class="userRents?.length > 0 ? 'md:bg-deep-blue-900 md:w-85' : 'bg-white items-center justify-center'">
       <ul 
         v-if="userRents?.length > 0"
-        class="box-deep min-h-full flex flex-col gap-4 overflow-y-auto !pr-1 w-full mb-15 md:mb-0"
+        class="box-deep min-h-full flex-1 md:min-h-auto flex flex-col gap-4 overflow-y-auto md:!pr-2 mb-15 md:mb-0"
       >
         <HistoryCar 
           v-for="(rent, index) in userRents" 

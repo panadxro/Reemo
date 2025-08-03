@@ -58,3 +58,41 @@ export function formatDateTime(timestamp) {
     return `${day} ${month}`;
   }
 };
+
+export function formatNotificationDate(timestamp){
+  if (!timestamp) return '';
+  
+  const now = new Date();
+  let notificationDate;
+  
+  if (timestamp.seconds) {
+    notificationDate = new Date(timestamp.seconds * 1000);
+  } else {
+    notificationDate = new Date(timestamp);
+  }
+  
+  const diffMs = now - notificationDate;
+  const diffSec = Math.round(diffMs / 1000);
+  const diffMin = Math.round(diffSec / 60);
+  const diffHours = Math.round(diffMin / 60);
+  const diffDays = Math.round(diffHours / 24);
+  
+  if (diffSec < 60) {
+    return 'Ahora';
+  } else if (diffMin < 60) {
+    return `Hace ${diffMin} min`;
+  } else if (diffHours < 24) {
+    return `Hace ${diffHours} h`;
+  } else if (diffDays === 1) {
+    return 'ayer';
+  } else if (diffDays < 7) {
+    return `Hace ${diffDays} días`;
+  }
+  
+  const options = { 
+    month: 'short', 
+    day: 'numeric',
+  };
+  
+  return notificationDate.toLocaleDateString('es-ES', options);
+};

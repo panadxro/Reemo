@@ -21,7 +21,7 @@ const router = useRouter()
       text="Volver al inicio"
       variant="secondary"
       class="!w-fit"
-      @click="router.push('/')"
+      @click="router.push('/dashboard')"
       />
   </div>
 </template>

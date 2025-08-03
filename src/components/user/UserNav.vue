@@ -37,11 +37,13 @@ const authSession = inject('authSession');
       text="Editar perfil"
       variant="primary"
       :outline="false"
-      icon-position="left"
+      icon-position="right"
       @click="$router.push('/onboarding')"
-      class="!w-fit text-sm !px-4 !py-2 hidden md:flex"
+      class="!w-fit text-xs !px-4 !py-2 hidden md:flex"
     >
-      <Edit />
+      <template #icon>
+        <Edit color="#FFFFFF" class="h-4 w-4"/>
+      </template>
     </Input>
 
     <ul class="user-nav flex md:flex-col gap-3 md:my-7 !w-full !pb-2.5 md:!pb-0">

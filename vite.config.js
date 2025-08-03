@@ -139,6 +139,9 @@ export default defineConfig({
     // visualizer({ open: true })
   ],
   logLevel: 'error',
+  server: {
+    open: true
+  },
   optimizeDeps: {
     include: ['fast-deep-equal'],
   },

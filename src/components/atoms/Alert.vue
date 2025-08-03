@@ -84,7 +84,7 @@ const alertList = computed(() => alerts);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   opacity: 0;
   transform: translateY(100%);
-  animation: slideIn 0.5s forwards, fadeOut 0.5s forwards 2.5s;
+  animation: slideIn 0.5s forwards, fadeOut 0.5s forwards 5s;
 }
 
 /* Estilos de severidad */

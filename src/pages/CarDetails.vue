@@ -143,10 +143,6 @@ const setDefaultImage = (event) => {
   event.target.src = defaultCarImage;
 };
 
-
-
-
-
 const openInvalidationModal = (car) => {
   selectedCarForInvalidation.value = car;
   isModalOpen.value = true;
@@ -441,11 +437,8 @@ watch(car, (newCar) => {
           />  
     
           <div v-if="user?.role === 'admin'" class="box-deep flex flex-col gap-4 overflow-hidden w-full h-full">
-            <div class="flex flex-col gap-4 justify-between overflow-y-auto h-full pr-2">
-              
-              <div class="flex flex-col gap-6">
-              <div class="flex flex-col gap-2">
-                <Heading type="3" class="regular text-white">Datos adicionales</Heading>
+            <Heading type="2" class="medium text-white">Detalles técnicos</Heading>
+            <article class="flex flex-col gap-4 h-auto overflow-y-auto pr-1">
               <ul class="text-white flex flex-col gap-2 ">
                 <li class="flex items-center justify-between">
                   <p>Patente:</p>
@@ -453,11 +446,11 @@ watch(car, (newCar) => {
                 </li>
                 <li class="flex items-center justify-between">
                   <p>Depósito de seguridad:</p>
-                  <span>{{ car.pricing?.securityDeposit }}</span>
+                  <span>$ {{ car.pricing?.securityDeposit }}</span>
                 </li>
                 <li class="flex items-center justify-between">
                   <p>Autonomía:</p>
-                  <span>{{ car.specifications?.autonomy }}</span>
+                  <span>{{ car.specifications?.autonomy }} km</span>
                 </li>
                 <li class="flex items-center justify-between">
                   <p>Puertas:</p>
@@ -472,14 +465,11 @@ watch(car, (newCar) => {
                   <span>{{ car.specifications?.seats }}</span>
                 </li>
               </ul>
-              </div>
 
-              <div class="flex flex-col gap-2">
-                <Heading type="3" class="regular text-white">Datos del seguro</Heading>
+              <Heading type="3" class="regular text-white">Datos del seguro</Heading>
               <ul class="text-white flex flex-col gap-2 ">
                 <li class="flex items-center justify-between">
-                  <p>Compañía:</p>
-                  <span>{{ formatInsuranceName(car.insurance?.company) }}</span>
+                  <p>Compañía:</p><span>{{ formatInsuranceName(car.insurance?.company) }}</span>
                 </li>
                 <li class="flex items-center justify-between">
                   <p>Tipo:</p>
@@ -493,27 +483,24 @@ watch(car, (newCar) => {
                                         ? 'Todo riesgo + granizo' : 'N/A' }}</span>
                 </li>
                 <li class="flex items-center justify-between">
-                  <p>Número:</p>
-                  <span>{{ car.insurance?.number }}</span>
+                  <p>Número:</p><span>{{ car.insurance?.number }}</span>
                 </li>
               </ul>
-              </div>
-              </div>
+            </article>
 
-              <Input
-                type="button"
-                variant="primary"
-                :outline="false"
-                :text="car.status?.current === 'not-validated' ? 'Validar' : 'Invalidar'"
-                class="!w-fit"
-                @click="car.status?.current === 'not-validated' ? validateCar(car) : openInvalidationModal(car)"
-              />
-            </div>
+            <Input
+              type="button"
+              variant="primary"
+              :outline="false"
+              :text="car.status?.current === 'not-validated' ? 'Validar' : 'Invalidar'"
+              class="!w-fit"
+              @click="car.status?.current === 'not-validated' ? validateCar(car) : openInvalidationModal(car)"
+            />
           </div>
         </div>
         
     
-        <template v-else-if="authStore.user?.id === car.ownerId">
+      <template v-else-if="authStore.user?.id === car.ownerId">
       <div class="w-full bg-deep-blue-900 rounded-[40px] h-full flex flex-col gap-4 p-8 relative overflow-hidden">
         <Heading type="3" class="medium mb-4 text-white">Días disponibles</Heading>
         <div class="box-deep flex flex-col gap-4 overflow-y-auto">

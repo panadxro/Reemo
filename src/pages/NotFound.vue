@@ -10,7 +10,7 @@ const router = useRouter()
 </script>
 
 <template>
-  <div class="w-full bg-white min-h-screen flex flex-col items-center justify-center gap-2 text-center">
+  <div class="w-full bg-white min-h-screen flex flex-col items-center justify-center gap-2 text-center text-deep-blue-900">
     <NoPageFound class="w-[200px] 2xl:w-[300px]"/>
     <Heading type="1" class="large 2xl:!text-6xl text-red-500">404</Heading>
     <p class="text-lg 2xl:text-2xl font-bold">Lo sentimos, la página que estás buscando no existe.</p>
