@@ -273,7 +273,7 @@ watch(() => filters.brand, async (newBrand, oldBrand) => {
         <div>
           <Heading :type="3" class="small">Rango de precio</Heading>
           <div class="mx-4 lg:mx-4">
-            <PriceRange :min="20000" :max="100000" v-model="filters" />
+            <PriceRange :min="20000" :max="100000" :modelValue="filters" @update:modelValue="Object.assign(filters, $event)"/>
           </div>
         </div>
   
