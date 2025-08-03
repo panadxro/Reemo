@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { login, logout, subscribeToAuthState, register, loginWithGoogle, loginWithFacebook } from '@services/auth';
+import { login, logout, subscribeToAuthState, register, loginWithGoogle, loginWithFacebook, registerWithFacebook, registerWithGoogle } from '@services/auth';
 import { createUserProfile } from '../services/user';
 import { readNotification } from '@/services/car/notifyRented'
 import { addAlert } from '@services/alerts';
@@ -15,7 +15,7 @@ export const useAuthStore = defineStore('auth', {
       firstName: null,
       lastName: null,
       name: null,
-      profilePhoto: null,
+      profilePhoto: null || '/src/assets/User.png',
       username: null,
       status: null,
       role: null
@@ -274,7 +274,7 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
 
       try {
-        const userCredential = await loginWithGoogle();
+        const userCredential = await registerWithGoogle();
         
         // Resetear el estado para nuevo registro
         this.user = {
@@ -346,8 +346,15 @@ export const useAuthStore = defineStore('auth', {
         return userCredential;
       } catch (error) {
         console.error("Error en login con Google:", error);
-        this.error = 'Error al iniciar sesión con Google';
-        addAlert(this.error, 'error');
+        
+        if (error.message === 'USER_NOT_REGISTERED') {
+          this.error = 'Esta cuenta de Google no está registrada. Por favor, registrate primero.';
+          addAlert(this.error, 'error');
+          router.push(`/register`);
+        } else {
+          this.error = 'Error al iniciar sesión con Google';
+          addAlert(this.error, 'error');
+        }
         throw error;
       } finally {
         this.loading = false;
@@ -369,7 +376,7 @@ export const useAuthStore = defineStore('auth', {
       this.error = null;
 
       try {
-        const userCredential = await loginWithFacebook();
+        const userCredential = await registerWithFacebook();
         
         // Resetear el estado para nuevo registro
         this.user = {
@@ -440,8 +447,14 @@ export const useAuthStore = defineStore('auth', {
         addAlert("¡Bienvenido de nuevo con Facebook!", "success");
         return userCredential;
       } catch (error) {
-        console.error("Error en login con Facebook:", error);
-        this.handleFacebookError(error);
+        if (error.message === 'USER_NOT_REGISTERED') {
+          this.error = 'Esta cuenta de Facebook no está registrada. Por favor, registrate primero.';
+          addAlert(this.error, 'error');
+          router.push(`/register`);
+        } else {
+          this.error = 'Error al iniciar sesión con Facebook';
+          addAlert(this.error, 'error');
+        }
         throw error;
       } finally {
         this.loading = false;
@@ -471,6 +484,6 @@ export const useAuthStore = defineStore('auth', {
           this.error = 'Error al autenticar con Facebook';
       }
       addAlert(this.error, 'error');
-    },
+    }
   }
 });

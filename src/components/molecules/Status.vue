@@ -92,9 +92,19 @@ export default {
 </script>
 
 <template>
-  <span 
-    :class="[statusClass, sizeClass]" 
-    class="font-semibold flex items-center">
-    {{ statusText }}
-  </span>
+  <details class="group inline relative">
+    <summary 
+      :class="[statusClass, sizeClass]" 
+      class="font-semibold flex items-center">
+      {{ statusText }}
+    </summary>
+    <div v-if="$slots.message"
+      class="absolute z-4 hidden group-hover:block min-w-[250px] md:min-w-[300px] mt-1 p-0"
+      :class="{
+        'left-0': true,
+        'right-0 ': false
+      }">
+        <slot name="message"></slot>
+    </div>
+  </details>
 </template>

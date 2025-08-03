@@ -30,7 +30,7 @@ function addAlert(message, severity, options = {}) {
     if (alertIndex !== -1) {
       alerts.splice(alertIndex, 1);
     }
-  }, 4000);
+  }, 5000);
 }
 
 function removeAlert(id) {

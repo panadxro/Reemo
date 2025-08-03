@@ -77,7 +77,9 @@ onMounted(async () => {
     >
     <div class="flex gap-2 justify-between items-center">
       <BackButton class="flex md:absolute top-10 left-10" color="#FFFFFF"/>
-      <Reemo color="#FFFFFF" />
+      <router-link to="/">
+        <Reemo color="#FFFFFF"/>
+      </router-link>
     </div>
     <div class="flex flex-col gap-5">
       <Heading :type="1" class="font-extrabold! text-background-900! large">Registrate</Heading>

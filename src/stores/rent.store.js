@@ -84,7 +84,7 @@ export const useRentStore = defineStore('rent', {
     },
     
     taxes() {
-      return this.basePrice * 0.21;
+      return this.basePrice * 0.15;
     },
     
     insurance() {
@@ -427,6 +427,7 @@ export const useRentStore = defineStore('rent', {
         
         const rentalId = await submitRentalRequest(this.prepareRentalData());
         addAlert("¡Reserva completada con éxito!", "success");
+        this.currentStep = 0;
         
         // Limpiar solo los datos de este vehículo específico
         if(rentalId){

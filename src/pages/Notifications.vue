@@ -4,16 +4,13 @@ import { useNotificationStore } from '@/stores/notification.store';
 import { addAlert } from '@/services/alerts';
 import { useRouter } from 'vue-router';
 import { computed, watch, onMounted } from 'vue';
-import { formatDateTime } from '@libraries/date.js';
+import { formatNotificationDate } from '@libraries/date.js';
 
 import Heading from '@/components/atoms/Heading.vue';
 import Loading from '@/icons/Loading.vue';
-import ReemoIcon from '@/icons/ReemoIcon.vue';
 import BackButton from '@/components/atoms/BackButton.vue';
 import NoNotification from '../components/atoms/NoNotification.vue';
 import Input from '@/components/molecules/Input.vue';
-
-
 
 const authStore = useAuthStore();
 const notificationStore = useNotificationStore(); 
@@ -71,7 +68,7 @@ const handleRentalAction = async (rentId, newStatus, senderId, vehicleOwnerId) =
 
 const formatDate = (timestamp) => {
   if (!timestamp) return "Fecha no disponible";
-  return formatDateTime(timestamp);
+  return formatNotificationDate(timestamp);
 };
 
 const handleNotificationClick = async (notification) => {
@@ -133,13 +130,13 @@ onMounted(async () => {
     <!-- Notifications -->
     <ul v-if="!isLoading && notifications.length > 0" class="box-vibrant overflow-y-auto h-full md:!pr-2 flex flex-col gap-2 md:gap-4">
       <li v-for="noti in notifications" :key="noti.id"
-        class="flex items-center justify-between p-4 rounded-3xl md:rounded-4xl md:gap-6 cursor-pointer hover:bg-vibrant-light-800 focus:bg-vibrant-light-800 active:bg-vibrant-light-900 transition-all duration-200 ease-in-out"
+        class="flex items-center justify-between p-4 rounded-3xl md:rounded-4xl gap-4 md:gap-6 cursor-pointer hover:bg-vibrant-light-800 focus:bg-vibrant-light-800 active:bg-vibrant-light-900 transition-all duration-200 ease-in-out"
         :class="[
           { 'bg-vibrant-light-700': noti.read},
           { 'bg-vibrant-light-900': !noti.read}
         ]"
         @click="handleNotificationClick(noti)">
-        <div class="flex items-center gap-5">
+        <div class="flex items-center gap-2 md:gap-5">
           <figure class="h-12 md:h-18 aspect-square relative">
             <template v-if="noti.type === 'car_invalidated' || noti.type === 'car_validated'">
                 <img :src="noti.photo || '../assets/Reemo1x1.png'" 
@@ -198,9 +195,9 @@ onMounted(async () => {
                           :alt="noti.vehicleDetails?.name">
             </span> -->
           </figure>
-          <div class="flex flex-col gap-2.5">
+          <div class="flex flex-col md:gap-2.5">
             <Heading :type="2" class="text-base md:text-lg">{{ noti.title || 'Tienes una nueva notificación.' }}</Heading>
-            <p class="hidden md:block">{{ noti.message || 'Tienes una nueva notificación.' }}</p>
+            <p class="text-xs md:text-sm">{{ noti.message || 'Tienes una nueva notificación.' }}</p>
           </div>
         </div>
         <span class="text-background-600 text-xs">{{ formatDate(noti.created_at) }}</span>

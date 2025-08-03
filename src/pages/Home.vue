@@ -94,9 +94,6 @@ async function installPWA() {
           <article class="flex flex-col gap-2 text-pretty">
             <Heading :type="3" class="text-2xl mb-2 sm:text-3xl">¿Cómo funciona <strong>Reemo</strong>?</Heading>
             <p class="text-lg font-regular leading-tight">Aquellos dueños dispuestos a prestar su auto a cambio de dinero, lo registran y las personas que necesitan uno temporalmente, lo alquilan.</p>
-            <a href="" class="flex items-center gap-4 py-2 px-4 rounded-xl bg-secondary-100 w-fit">
-              Más información
-            </a>
           </article>
           <figure class="rounded-2xl overflow-hidden">
             <img class="w-full" src="/src/assets/home/shake-hand.png" alt="">
@@ -107,9 +104,6 @@ async function installPWA() {
           <article class="flex flex-col gap-2">
             <Heading :type="3" class="text-2xl mb-2 sm:text-3xl">Proceso 100% digital</Heading>
             <p class="text-lg font-regular leading-tight">En <strong>Reemo</strong>, todo el proceso es completamente digital y sin complicaciones. Reservá, pagá y obtené tu auto de forma rápida y sencilla.</p>
-            <a href="" class="flex items-center gap-4 py-2 px-4 rounded-xl bg-secondary-100 w-fit">
-              Más información
-            </a>
           </article>
           <figure class="rounded-2xl overflow-hidden">
             <img class="w-full" src="/src/assets/home/women-phone.png" alt="">
@@ -120,9 +114,6 @@ async function installPWA() {
           <article class="flex flex-col gap-2">
             <Heading :type="3" class="text-2xl mb-2 sm:text-3xl">Impacto en Argentina</Heading>
             <p class="text-lg font-regular leading-tight">Al alquilar un auto en <strong>Reemo</strong>, aparte de cuidar tu economía, evitando el cargo de mantener uno propio, ayudas a los dueños que lo publican.</p>
-            <a href="" class="flex items-center gap-4 py-2 px-4 rounded-xl bg-secondary-100 w-fit">
-              Más información
-            </a>
           </article>
           <figure class="rounded-2xl overflow-hidden">
             <img class="w-full" src="/src/assets/home/women-car.png" alt="">
@@ -275,7 +266,7 @@ async function installPWA() {
 
   <section class="flex flex-col gap-5 items-center px-4 md:px-0 md:max-w-3/4">
     <Heading :type="2" class="text-4xl mb-3 sm:text-4xl text-center">Preguntas frecuentes</Heading>
-    <div class="flex flex-col gap-4 md:w-10/12 m-auto">
+    <div class="flex flex-col gap-4 md:w-10/12 m-auto h-auto">
       <Dropdown class="flex flex-col bg-secondary-100 px-8 py-5 rounded-3xl">
         <template #title>
           <Heading type="5">¿Qué necesito para abrir una cuenta en <strong>Reemo</strong>?</Heading>
@@ -305,27 +296,25 @@ async function installPWA() {
           <li>Una vez que esté aprobado, tu auto estará disponible para ser alquilado por otros usuarios.</li>
         </ul>
       </Dropdown>
-      <Dropdown class="flex flex-col bg-secondary-100 px-8 py-5 rounded-3xl">
+      <Dropdown class="flex flex-col bg-secondary-100 px-8 py-5 rounded-3xl h-auto">
         <template #title>
           <Heading type="5">¿Cómo funciona el seguro de los autos en <strong>Reemo</strong>?</Heading>
         </template>
         <p class="pt-4">Todos los vehículos registrados en nuestra plataforma están protegidos por un seguro contra todo riesgo con Zurich, lo que significa que tanto el propietario como el arrendatario están cubiertos en caso de accidentes, daños o robos durante el período de alquiler.</p>
       </Dropdown>
     </div>
-    <!-- <a href="" class="flex items-center gap-4 py-2 px-4 rounded-2xl bg-secondary-900 w-fit">
-      <span class="font-semibold text-white">Ir a todas las preguntas</span>
-      <LongArrow color="#FFFFFF" direction="right"/>
-    </a> -->
-    <Input type="button"
-          text="Ver todas las preguntas"
-          variant="secondary"
-          class="w-fit mx-auto"
-          icon-position="right"
-          >
-          <template #icon>
-            <LongArrow direction="right"/>
-          </template>
-        </Input>
+    <Input 
+      type="button"
+      text="Ver todas las preguntas"
+      variant="secondary"
+      :outline="false"
+      class="w-fit mx-auto"
+      icon-position="right"
+      >
+      <template #icon>
+        <LongArrow direction="right"/>
+      </template>
+    </Input>
   </section>
 
   <section class="flex flex-col gap-5 items-center px-4 md:px-0 md:max-w-3/4">

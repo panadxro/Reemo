@@ -384,8 +384,12 @@ onMounted(() => {
 
       <div class="bg-deep-blue-900 text-white rounded-xl lg:rounded-2xl p-3 sm:p-4 flex flex-col gap-2">
         <div class="flex flex-row justify-between items-center gap-2">
-          <span class="text-sm sm:text-base">Orden ID: <strong>#{{ rentalDetails.id.slice(0, 8) }}</strong></span>
+          <span class="text-sm sm:text-base">Número de orden: <strong>#{{ rentalDetails.id.slice(0, 8) }}</strong></span>
           <Status :status="rentalDetails.status"/>
+        </div>
+
+        <div v-if="rentalDetails.status !== 'pending'" class="flex flex-row justify-between items-center gap-2">
+          <span class="text-sm sm:text-base">Dirección: <strong>{{ rentalDetails.vehicleData?.status.currentLocation.address }}</strong></span>
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 text-white">
@@ -432,7 +436,7 @@ onMounted(() => {
           <Input
             v-if="rentalDetails.owner_id !== loggedUser?.id"
             type="button"
-            text="Chatear con el propietario"
+            text="Hablar con el propietario"
             variant="primary"
             :outline="false"
             @click="router.push(`/user/${rentalDetails.owner_id}/chat`)"
@@ -461,7 +465,7 @@ onMounted(() => {
           <Heading :type="2" class="medium text-primary-900 text-base sm:text-lg">Datos del conductor</Heading>
           <Input
             type="button"
-            text="Chatear con el conductor"
+            text="Hablar con el conductor"
             variant="primary"
             :outline="false"
             @click="router.push(`/user/${rentalDetails.driver_id}/chat`)"
@@ -572,7 +576,7 @@ onMounted(() => {
             <Input
               type="button"
               variant="primary"
-              text="Aceptar"
+              text="Aceptar solicitud"
               @click="handleRentalAction('confirmed')"
               :disabled="actionInProgress"
             />
@@ -580,7 +584,7 @@ onMounted(() => {
               type="button"
               variant="secondary"
               outline
-              text="Rechazar"
+              text="Rechazar solicitud"
               @click="handleRentalAction('rejected')"
               :disabled="actionInProgress"
             />
@@ -590,7 +594,7 @@ onMounted(() => {
     <div v-if="!showCompletedView" class="flex-1 flex flex-col gap-4 relative order-2 lg:order-2">
       
       <div class="flex-1 bg-gray-200 rounded-xl lg:rounded-3xl relative overflow-hidden">
-        <div id="map" class="w-full min-h-100 md:h-[50%] rounded-[40px] relative"></div>
+        <div id="map" class="w-full min-h-100 md:h-full rounded-[40px] relative"></div>
       </div>
     </div>
 

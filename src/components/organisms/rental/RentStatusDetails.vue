@@ -186,137 +186,147 @@ onUnmounted(() => {
   </div>
 
   <ul v-else class="flex flex-col gap-4 overflow-y-auto !pr-2">
-  <!-- Driver Rental Detail -->
-  <li v-if="driverRentalDetail" class="bg-white flex gap-2 min-h-25 rounded-2xl px-2.5 py-2">
-    <div class="relative flex items-center">
-      <Status class="absolute top-0 left-1" size="mini" :status="driverRentalDetail.status" />
-      <img 
-        v-if="driverRentalDetail.vehicleDetails?.photos && driverRentalDetail.vehicleDetails.photos.length > 0"
-        :src="driverRentalDetail.vehicleDetails.photos[0]"
-        :alt="`Imagen de ${driverRentalDetail.vehicleDetails?.basicInfo.brand} ${driverRentalDetail.vehicleDetails?.basicInfo.model}`"
-        class="object-cover rounded-lg w-25 h-15"
-      />
-      <div v-else class="w-25 h-15 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No img</div>
-      
-      <img 
-        :src="driverRentalDetail.ownerDetails?.photoURL" 
-        :alt="driverRentalDetail.ownerDetails?.name"
-        class="absolute bottom-0 right-1 w-8 h-8 object-cover rounded-full bg-white"
-      />
-    </div>
-
-    <div class="flex justify-between py-2 text-gray-500 font-medium text-xs flex-1">
-      <div>
-        <Heading :type="4" class="small">
-        {{ driverRentalDetail.vehicleDetails?.basicInfo.brand || 'Marca no disponible' }} 
-        {{ driverRentalDetail.vehicleDetails?.basicInfo.model || 'Modelo no disponible' }}
-      </Heading>
-      <p>{{ formatDate(driverRentalDetail.start_time) }}</p>
-      <p>${{ formatPrice(driverRentalDetail.total_price || 0) }}</p>
-      <p>Propietario: {{ driverRentalDetail.ownerDetails?.name || 'No disponible' }}</p>
-      </div>
-      
-      <div class="flex items-center justify-between mt-2">
-        <div class="flex gap-2">
-          <!-- <button v-if="driverRentalDetail.status === 'pending'"
-            @click="cancelDriverApplication(driverRentalDetail.id)"
-            class="bg-gray-200 text-gray-900 font-bold text-xs rounded-full py-1 px-3">
-            Cancelar
-          </button> -->
-          <Input
-            v-if="driverRentalDetail.status === 'pending'"
-            type="button"
-            variant="secondary"
-            outline
-            text="Cancelar solicitud"
-            @click.stop="cancelDriverApplication(driverRentalDetail.id)"
-          />
-          <Modal
-            :isOpen="showCancelModal"
-            title="Cancelar solicitud"
-            message="¿Estás seguro de que quieres cancelar esta solicitud?"
-            confirmText="Si, cancelar"
-            cancelText="No, mantener"
-            @close="showCancelModal = false"
-            @confirm="confirmCancelDriverApplication"
-          />
-          <!-- <p v-if="driverRentalDetail.status === 'confirmed'" class="text-xs text-green-600">¡Solicitud aceptada!</p> -->
-        </div>
-        
-        <!-- <button
-          v-if="driverRentalDetail.status === 'confirmed' || driverRentalDetail.status === 'in_progress' || driverRentalDetail.status === 'completed'"
-          @click="navigateToRentalDetails(driverRentalDetail.id)"
-          class="bg-[#0a0a3c] hover:bg-secondary-800 text-white font-bold py-1 px-3 rounded-lg transition duration-150 ease-in-out cursor-pointer text-xs"
+    <!-- Driver Rental Detail -->
+    <li v-if="driverRentalDetail">
+      <router-link 
+        :to="{ name: 'RentDetail', params: { id: driverRentalDetail.id } }"
+        class="bg-white flex gap-2 min-h-25 rounded-2xl px-2.5 py-2"
         >
-          Ver detalles
-        </button> -->
-        <Input
-            v-if="driverRentalDetail.status === 'confirmed' || driverRentalDetail.status === 'in_progress' || driverRentalDetail.status === 'completed' || driverRentalDetail.status === 'returned_by_driver'"
-            type="button"
-            variant="primary"
-            text="Ver Detalles"
-            @click="navigateToRentalDetails(driverRentalDetail.id)"
+
+        <figure class="relative flex items-center">
+          <Status class="!absolute top-0 left-1" size="mini" :status="driverRentalDetail.status" />
+          <img 
+            v-if="driverRentalDetail.vehicleDetails?.photos && driverRentalDetail.vehicleDetails.photos.length > 0"
+            :src="driverRentalDetail.vehicleDetails.photos[0]"
+            :alt="`Imagen de ${driverRentalDetail.vehicleDetails?.basicInfo.brand} ${driverRentalDetail.vehicleDetails?.basicInfo.model}`"
+            class="object-cover rounded-lg w-25 h-15"
           />
-      </div>
-    </div>
-  </li>
-
-  <!-- Owner Rental Detail -->
-  <li v-if="ownerRentalDetail" class="bg-white flex gap-2 min-h-25 rounded-2xl px-2.5 py-2 cursor-pointer" >
-    <div class="relative flex items-center" @click="navigateToRentalDetails(ownerRentalDetail.id)">
-      <Status class="absolute top-0 left-1" size="mini" :status="ownerRentalDetail.status" />
-      <img 
-        v-if="ownerRentalDetail.vehicleDetails?.photos && ownerRentalDetail.vehicleDetails.photos.length > 0"
-        :src="ownerRentalDetail.vehicleDetails.photos[0]"
-        :alt="`Imagen de ${ownerRentalDetail.vehicleDetails?.basicInfo.brand} ${ownerRentalDetail.vehicleDetails?.basicInfo.model}`"
-        class="object-cover rounded-lg w-25 h-15"
-      />
-      <div v-else class="w-25 h-15 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No img</div>
-      
-      <img 
-        :src="ownerRentalDetail.driverDetails?.photoURL || defaultUserImage" 
-        :alt="ownerRentalDetail.driverDetails?.name"
-        class="absolute bottom-0 right-1 w-8 h-8 object-cover rounded-full bg-white"
-      />
-    </div>
-
-    <div class="flex justify-between py-2 text-gray-500 font-medium text-xs flex-1">
-      <div class="flex flex-col justify-center">
-        <Heading :type="4" class="small">
-          {{ ownerRentalDetail.vehicleDetails?.basicInfo.brand || 'Marca no disponible' }} 
-          {{ ownerRentalDetail.vehicleDetails?.basicInfo.model || 'Modelo no disponible' }}
-        </Heading>
-        <p>{{ formatDate(ownerRentalDetail.start_time) }}</p>
-        <p class="md:block hidden">${{ formatPrice(ownerRentalDetail.total_price || 0) }}</p>
-        <p class="md:block hidden">Inquilino: {{ ownerRentalDetail.driverDetails?.name || 'No disponible' }}</p>
-      </div>
-      
-      <div class="flex items-center justify-between">
-        <div
-          v-if="currentUser?.id === ownerRentalDetail.owner_id"
-          class="flex flex-col md:flex-row gap-2" >
-            <!-- <Input
-              type="button"
-              variant="primary"
-              text="Aceptar"
-              @click="handleRentalAction(ownerRentalDetail.id, 'confirmed', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"/>
+          <div v-else class="w-25 h-15 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No img</div>
+          
+          <img 
+            :src="driverRentalDetail.ownerDetails?.photoURL" 
+            :alt="driverRentalDetail.ownerDetails?.name"
+            class="absolute bottom-0 right-1 w-8 h-8 object-cover rounded-full bg-white"
+          />
+        </figure>
+  
+        <div class="flex justify-between py-2 text-gray-500 font-medium text-xs flex-1">
+          <div>
+            <Heading :type="4" class="small">
+            {{ driverRentalDetail.vehicleDetails?.basicInfo.brand || 'Marca no disponible' }} 
+            {{ driverRentalDetail.vehicleDetails?.basicInfo.model || 'Modelo no disponible' }}
+          </Heading>
+          <p>{{ formatDate(driverRentalDetail.start_time) }}</p>
+          <p>${{ formatPrice(driverRentalDetail.total_price || 0) }}</p>
+          <p>Propietario: {{ driverRentalDetail.ownerDetails?.name || 'No disponible' }}</p>
+          </div>
+          
+          <div class="flex items-center justify-between mt-2">
+            <div class="flex gap-2">
+              <!-- <button v-if="driverRentalDetail.status === 'pending'"
+                @click="cancelDriverApplication(driverRentalDetail.id)"
+                class="bg-gray-200 text-gray-900 font-bold text-xs rounded-full py-1 px-3">
+                Cancelar
+              </button> -->
               <Input
-              type="button"
-              variant="secondary"
-              outline
-              text="Cancelar"
-              @click="handleRentalAction(ownerRentalDetail.id, 'rejected', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"/> -->
-              <Input
-              type="button"
-              variant="primary"
-              text="Ver Detalles"
-              @click="navigateToRentalDetails(ownerRentalDetail.id)"
+                v-if="driverRentalDetail.status === 'pending'"
+                type="button"
+                variant="secondary"
+                outline
+                text="Cancelar solicitud"
+                @click.stop="cancelDriverApplication(driverRentalDetail.id)"
               />
-              <!-- v-if="ownerRentalDetail.status === 'confirmed' || ownerRentalDetail.status === 'in_progress' || ownerRentalDetail.status === 'completed'" -->
+              <Modal
+                :isOpen="showCancelModal"
+                title="Cancelar solicitud"
+                message="¿Estás seguro de que quieres cancelar esta solicitud?"
+                confirmText="Si, cancelar"
+                cancelText="No, mantener"
+                @close="showCancelModal = false"
+                @confirm="confirmCancelDriverApplication"
+              />
+              <!-- <p v-if="driverRentalDetail.status === 'confirmed'" class="text-xs text-green-600">¡Solicitud aceptada!</p> -->
+            </div>
+            
+            <!-- <button
+              v-if="driverRentalDetail.status === 'confirmed' || driverRentalDetail.status === 'in_progress' || driverRentalDetail.status === 'completed'"
+              @click="navigateToRentalDetails(driverRentalDetail.id)"
+              class="bg-[#0a0a3c] hover:bg-secondary-800 text-white font-bold py-1 px-3 rounded-lg transition duration-150 ease-in-out cursor-pointer text-xs"
+            >
+              Ver detalles
+            </button> -->
+            <Input
+                v-if="driverRentalDetail.status === 'confirmed' || driverRentalDetail.status === 'in_progress' || driverRentalDetail.status === 'completed' || driverRentalDetail.status === 'returned_by_driver'"
+                type="button"
+                variant="primary"
+                text="Ver Detalles"
+                @click="navigateToRentalDetails(driverRentalDetail.id)"
+              />
+          </div>
         </div>
-      </div>
-    </div>
-  </li>
-</ul>
+      </router-link>
+    </li>
 
+    <!-- Owner Rental Detail -->
+    <li v-if="ownerRentalDetail" >
+      <router-link 
+        :to="{ name: 'RentDetail', params: { id: ownerRentalDetail.id } }"
+        class="bg-white flex gap-2 min-h-25 rounded-2xl px-2.5 py-2 cursor-pointer"
+      >
+        <figure class="relative flex items-center" @click="navigateToRentalDetails(ownerRentalDetail.id)">
+          <Status class="!absolute top-0 left-1" size="mini" :status="ownerRentalDetail.status" />
+          <img 
+            v-if="ownerRentalDetail.vehicleDetails?.photos && ownerRentalDetail.vehicleDetails.photos.length > 0"
+            :src="ownerRentalDetail.vehicleDetails.photos[0]"
+            :alt="`Imagen de ${ownerRentalDetail.vehicleDetails?.basicInfo.brand} ${ownerRentalDetail.vehicleDetails?.basicInfo.model}`"
+            class="object-cover rounded-lg w-25 h-15"
+          />
+          <div v-else class="w-25 h-15 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400 text-xs">No img</div>
+          
+          <img 
+            :src="ownerRentalDetail.driverDetails?.photoURL || defaultUserImage" 
+            :alt="ownerRentalDetail.driverDetails?.name"
+            class="absolute bottom-0 right-1 w-8 h-8 object-cover rounded-full bg-white"
+          />
+        </figure>
+  
+        <div class="flex justify-between py-2 text-gray-500 font-medium text-xs flex-1">
+          <div class="flex flex-col justify-center">
+            <Heading :type="4" class="small">
+              {{ ownerRentalDetail.vehicleDetails?.basicInfo.brand || 'Marca no disponible' }} 
+              {{ ownerRentalDetail.vehicleDetails?.basicInfo.model || 'Modelo no disponible' }}
+            </Heading>
+            <p>{{ formatDate(ownerRentalDetail.start_time) }}</p>
+            <p class="md:block hidden">${{ formatPrice(ownerRentalDetail.total_price || 0) }}</p>
+            <p class="md:block hidden">Solicitud de {{ ownerRentalDetail.driverDetails?.name || 'No disponible' }}</p>
+          </div>
+          
+          <div class="flex items-center justify-between">
+            <div
+              v-if="currentUser?.id === ownerRentalDetail.owner_id"
+              class="flex flex-col md:flex-row gap-2" >
+                <!-- <Input
+                  type="button"
+                  variant="primary"
+                  text="Aceptar"
+                  @click="handleRentalAction(ownerRentalDetail.id, 'confirmed', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"/>
+                  <Input
+                  type="button"
+                  variant="secondary"
+                  outline
+                  text="Cancelar"
+                  @click="handleRentalAction(ownerRentalDetail.id, 'rejected', ownerRentalDetail.driverDetails.id, ownerRentalDetail.owner_id)"/> -->
+                  <Input
+                  type="button"
+                  variant="primary"
+                  text="Ver Detalles"
+                  @click="navigateToRentalDetails(ownerRentalDetail.id)"
+                  />
+                  <!-- v-if="ownerRentalDetail.status === 'confirmed' || ownerRentalDetail.status === 'in_progress' || ownerRentalDetail.status === 'completed'" -->
+            </div>
+          </div>
+        </div>
+      </router-link>
+    </li>
+  </ul>
 </template>
