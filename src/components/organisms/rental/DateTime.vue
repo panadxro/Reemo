@@ -229,7 +229,7 @@ syncWithStoreData() {
 'car.id': {
   handler(newId, oldId) {
     if (newId !== oldId && newId !== undefined && newId !== null ) {
-      console.log(`Cambio de vehículo detectado: ${oldId} -> ${newId}`);
+      // console.log(`Cambio de vehículo detectado: ${oldId} -> ${newId}`);
       this.previousCarId = newId;
       
       this.resetDatetimeFields();

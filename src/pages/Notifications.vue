@@ -98,9 +98,10 @@ const handleNotificationClick = async (notification) => {
 
 }
 
-onMounted(async () => {
-  console.log(notifications.value)
-})
+// onMounted(async () => {
+//   console.log(notifications.value)
+// });
+
 </script> 
 
 
