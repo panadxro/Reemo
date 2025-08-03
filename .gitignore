@@ -30,6 +30,7 @@ dist-ssr
 
 # Ignorar firebase
 public/firebase-messaging-sw.js
+.firebase
 
 # Ignorar reglas 
 reglas-firestore.txt
