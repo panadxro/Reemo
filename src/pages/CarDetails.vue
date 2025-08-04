@@ -278,6 +278,16 @@ onMounted(async () => {
   }
 });
 
+watch(() => store.currentStep, async (newStep) => {
+  if (newStep === 1 && car.value?.status?.currentLocation?.location) {
+    // Esperamos a que el DOM se actualice para que el div#map exista
+    await nextTick();
+    // Re-inicializamos el mapa
+    await initializeMapWhenReady();
+  }
+});
+
+
 watch(car, (newCar) => {
   if (newCar?.status?.current) {
     isCarAvailable.value = newCar.status.current === 'available';
