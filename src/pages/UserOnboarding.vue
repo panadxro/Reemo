@@ -1,6 +1,6 @@
 <script setup>
 import { ref, markRaw, onMounted, onBeforeUnmount, computed, reactive, watch, inject, onUnmounted } from 'vue';
-import { useUserStore, useGeoStore, usePaymentStore } from '@stores'
+import { useUserStore, useGeoStore, usePaymentStore, useNotificationStore } from '@stores'
 import { useRouter } from "vue-router";
 import { addAlert } from "../services/alerts.js";
 
@@ -22,6 +22,7 @@ import Payment from '@icons/Payment.vue';
 import Clipboard from '@icons/Clipboard.vue';
 import PaymentMethod from '@/components/atoms/PaymentMethod.vue';
 import Modal from '@/components/molecules/Modal.vue';
+import BackButton from '@/components/atoms/BackButton.vue';
 
 const authStore = inject('authStore');
 
@@ -31,6 +32,16 @@ const userStore = useUserStore();
 const geoStore = useGeoStore();
 const router = useRouter();
 const paymentStore = usePaymentStore();
+const notificationStore = useNotificationStore();
+
+const notificationPermission = ref(false);
+
+const handleNotificationConsent = async () => {
+  if (notificationPermission.value) {
+    await notificationStore.initFCM(authStore.user.id)
+    notificationStore.setupMessageListener()
+  }
+}
 
 function openTermsModal() {
   showTermsModal.value = true;
@@ -164,7 +175,7 @@ const handleSubmit = async () => {
         agreements: userStore.agreements
       })
 
-      addAlert('!Usuario completado con éxito!', 'success');
+      addAlert('!Usuario completado con éxito! Tu perfil será validado pronto', 'success');
       router.push('/user/' + loggedUserId.value);
     } catch (error) {
       console.error('Error en onboarding:', error);
@@ -225,9 +236,12 @@ onBeforeUnmount(() => {
     <!-- Secciones al costado -->
     <aside class="flex flex-col gap-8 w-full md:max-w-[425px] md:overflow-hidden">
       <div class="flex flex-col gap-4 md:gap-2">
-        <div class="flex justify-between items-center">
-          <Heading type="1" class="large text-white font-extrabold!">Onboarding</Heading>
-          <Reemo class="cursor-pointer" color="#FFFFFF" @click="router.push('/dashboard')"/>
+        <div class="flex gap-2 justify-between items-center md:flex-row-reverse flex-wrap">
+          <BackButton class="flex md:absolute top-10 left-10" color="#FFFFFF"/>
+          <router-link to="/">
+            <Reemo color="#FFFFFF"/>
+          </router-link>
+          <Heading type="1" class="large text-white font-extrabold! flex-1">Onboarding</Heading>
         </div>
         <p class="text-sm max-w-[420px]">¡Bienvenido! Completa los siguientes datos para finalizar tu registro y acceder a todas las funcionalidades de la plataforma.</p>
       </div>
@@ -294,7 +308,7 @@ onBeforeUnmount(() => {
               type="select"
               name="gender"
               id="gender"
-              placeholder="Genero"
+              placeholder="Género"
               :options="[
                 { value: 'Masculino', label: 'Masculino' },
                 { value: 'Femenino', label: 'Femenino' },
@@ -751,8 +765,8 @@ onBeforeUnmount(() => {
           </div>
           <!-- Notificaciones -->
           <div class="flex gap-2 items-center">
-            <Checkbox v-model="agreements.acceptedMarketing" />
-            <p class="text-sm font-medium">Acepto recibir notificaciones y promociones por correo electrónico.</p>
+            <Checkbox v-model="notificationPermission" @change="handleNotificationConsent" />
+            <p class="text-sm font-medium">Acepto recibir notificaciones push.</p>
           </div>
         </div>
       </router-view>

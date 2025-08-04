@@ -8,6 +8,8 @@ import Credential from "../../icons/Credential.vue";
 import Car from "../../icons/Car.vue";
 import History from "../../icons/History.vue";
 import NavButton from "../molecules/NavButton.vue";
+import Input from "../molecules/Input.vue";
+import Edit from "../../icons/Edit.vue"
 
 const userStore = useUserStore();
 
@@ -30,6 +32,19 @@ const authSession = inject('authSession');
     <p class="hidden md:block text-sm text-gray-500">
       @{{ profileData.personalInfo.username }}
     </p>
+    <Input
+      type="button"
+      text="Editar perfil"
+      variant="primary"
+      :outline="false"
+      icon-position="right"
+      @click="$router.push('/onboarding')"
+      class="!w-fit text-xs !px-4 !py-2 hidden md:flex"
+    >
+      <template #icon>
+        <Edit color="#FFFFFF" class="h-4 w-4"/>
+      </template>
+    </Input>
 
     <ul class="user-nav flex md:flex-col gap-3 md:my-7 !w-full !pb-2.5 md:!pb-0">
       <li class="!min-w-fit">

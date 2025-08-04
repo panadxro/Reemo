@@ -36,7 +36,7 @@ export default {
       } catch (error) {
         console.error("Google login error:", error);
         errorMsg.value = error.message || "Error al iniciar sesión con Google";
-        addAlert(errorMsg.value, "error");
+        // addAlert(errorMsg.value, "error");
       } finally {
         loading.value = false;
       }
@@ -49,7 +49,7 @@ export default {
       } catch (error) {
         console.error("Facebook login error:", error);
         errorMsg.value = error.message || "Error al iniciar sesión con Facebook";
-        addAlert(errorMsg.value, "error");
+        // addAlert(errorMsg.value, "error");
       } finally {
         loading.value = false;
       }
@@ -84,7 +84,7 @@ export default {
         await this.authStore.loginUser(this.user)
       } catch (error) {
         this.errorMsg = error.message || "Error al iniciar sesión.";
-        addAlert("Error al iniciar sesión.", "error")
+        // addAlert("Error al iniciar sesión.", "error")
       } finally {
         this.loading = false;
       }
@@ -100,7 +100,9 @@ export default {
     >
     <div class="flex gap-2 justify-between items-center">
       <BackButton class="flex md:absolute top-10 left-10" color="#FFFFFF"/>
-      <Reemo color="#FFFFFF"/>
+      <router-link to="/">
+        <Reemo color="#FFFFFF"/>
+      </router-link>
     </div>
     <div class="flex flex-col gap-5">
       <Heading :type="1" class="font-extrabold! text-background-900! large">Inicia sesión</Heading>

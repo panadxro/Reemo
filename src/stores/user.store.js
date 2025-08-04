@@ -19,7 +19,7 @@ export const useUserStore = defineStore('user', {
         firstName: null,
         lastName: null,
         email: null,
-        profilePhoto: null,
+        profilePhoto: null || '/src/assets/User.png',
         userName: null
       },
       documents: null,
