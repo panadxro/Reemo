@@ -425,7 +425,7 @@ export const useRentStore = defineStore('rent', {
         
         const rentalId = await submitRentalRequest(this.prepareRentalData());
         addAlert("¡Reserva completada con éxito!", "success");
-        this.currentStep = 0;
+        this.currentStep = 1;
         
         // Limpiar solo los datos de este vehículo específico
         if(rentalId){
