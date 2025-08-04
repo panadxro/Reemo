@@ -95,7 +95,7 @@ export default {
 
         // Fetch a los autos del usuario
         await carStore.loadUserCars(userIdFromRoute.value);
-        console.log('Autos del usuario', carStore.userCars)
+        // console.log('Autos del usuario', carStore.userCars)
 
         // Si es el perfil propio, verificar si está completo y cargar métodos de pago
         if (loggedUserId.value && isOwnProfile.value) {

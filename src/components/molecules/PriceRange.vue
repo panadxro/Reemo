@@ -19,72 +19,47 @@ export default {
     return {
       // minValue: this.min,
       // maxValue: this.max,
+      internalMinValue: this.modelValue.minPrice,
+      internalMaxValue: this.modelValue.maxPrice,
     };
   },
   computed: {
     rangeStyle() {
-      const minPercent = ((this.minValue - this.min) / (this.max - this.min)) * 100;
-      const maxPercent = ((this.maxValue - this.min) / (this.max - this.min)) * 100;
+      const minPercent = ((this.internalMinValue - this.min) / (this.max - this.min)) * 100;
+      const maxPercent = ((this.internalMaxValue - this.min) / (this.max - this.min)) * 100;
       return {
         left: `${minPercent}%`,
         width: `${maxPercent - minPercent}%`,
       };
     },
-    minLabelStyle() {
-      const minPercent = ((this.minValue - this.min) / (this.max - this.min)) * 100;
-      return {
-        left: `${minPercent}%`,
-        transform: 'translateX(-50%)',
-      };
-    },
-    maxLabelStyle() {
-      const maxPercent = ((this.maxValue - this.min) / (this.max - this.min)) * 100;
-      return {
-        left: `${maxPercent}%`,
-        transform: 'translateX(-50%)',
-      };
-    },
-    minDotStyle() {
-      const minPercent = ((this.minValue - this.min) / (this.max - this.min)) * 100;
-      return {
-        left: `${minPercent}%`,
-        transform: 'translateX(-50%)',
-      };
-    },
-    maxDotStyle() {
-      const maxPercent = ((this.maxValue - this.min) / (this.max - this.min)) * 100;
-      return {
-        left: `${maxPercent}%`,
-        transform: 'translateX(-50%)',
-      };
-    },
-
-    minValue: {
-      get() {
-        return this.modelValue.minPrice;
-      },
-      set(val) {
-        this.$emit('update:modelValue', { ...this.modelValue, minPrice: val });
-      }
-    },
-    maxValue: {
-      get() {
-        return this.modelValue.maxPrice;
-      },
-      set(val) {
-        this.$emit('update:modelValue', { ...this.modelValue, maxPrice: val });
-      }
-    },
-
+    
   },
-  methods: {
-    updateMin(event) {
-      this.minValue = Math.min(Number(event.target.value), this.maxValue);
+
+  watch: {
+    // Sincronización Externa: Si el padre cambia los filtros (ej. al resetear), actualizamos nuestro estado interno.
+    modelValue: {
+      handler(newValue) {
+        this.internalMinValue = newValue.minPrice;
+        this.internalMaxValue = newValue.maxPrice;
+      },
+      deep: true
     },
-    updateMax(event) {
-      this.maxValue = Math.max(Number(event.target.value), this.minValue);
+    // Actualización en Tiempo Real: Cuando el usuario mueve el slider, validamos y emitimos el cambio.
+    internalMinValue(newVal) {
+      const value = Math.min(Number(newVal), this.internalMaxValue);
+      if (value !== this.internalMinValue) {
+        this.internalMinValue = value;
+      }
+      this.$emit('update:modelValue', { ...this.modelValue, minPrice: value });
     },
-  },
+    internalMaxValue(newVal) {
+      const value = Math.max(Number(newVal), this.internalMinValue);
+      if (value !== this.internalMaxValue) {
+        this.internalMaxValue = value;
+      }
+      this.$emit('update:modelValue', { ...this.modelValue, maxPrice: value });
+    }
+  }
 };
 </script>
 
@@ -100,30 +75,34 @@ export default {
       <!-- Inputs para los thumbs -->
       <input
         type="range"
-        v-model="minValue"
+        v-model="internalMinValue"
         step="5000"
         :min="min"
         :max="max"
-        @input="updateMin"
         class="slider-thumb min-thumb cursor-pointer"
       />
       <input
         type="range"
-        v-model="maxValue"
+        v-model="internalMaxValue"
         step="5000"
         :min="min"
         :max="max"
-        @input="updateMax"
         class="slider-thumb max-thumb"
       />
 
       <!-- Labels de precio -->
-      <span class="value-label min-value" :style="minLabelStyle">{{ minValue }}$</span>
-      <span class="value-label max-value" :style="maxLabelStyle">{{ maxValue }}$</span>
+      <!-- <span class="value-label min-value" :style="minLabelStyle">{{ minValue }}$</span> -->
+      <!-- <span class="value-label max-value" :style="maxLabelStyle">{{ maxValue }}$</span> -->
+
+      <span class="value-label min-value" :style="{ left: `${((internalMinValue - min) / (max - min)) * 100}%`, transform: 'translateX(-50%)' }">{{ internalMinValue }}$</span>
+      <span class="value-label max-value" :style="{ left: `${((internalMaxValue - min) / (max - min)) * 100}%`, transform: 'translateX(-50%)' }">{{ internalMaxValue }}$</span>
 
       <!-- Bolitas en los extremos -->
-      <div class="slider-end-dot min-dot" :style="minDotStyle"></div>
-      <div class="slider-end-dot max-dot" :style="maxDotStyle"></div>
+      <!-- <div class="slider-end-dot min-dot" :style="minDotStyle"></div> -->
+      <!-- <div class="slider-end-dot max-dot" :style="maxDotStyle"></div> -->
+
+      <div class="slider-end-dot min-dot" :style="{ left: `${((internalMinValue - min) / (max - min)) * 100}%`, transform: 'translateX(-50%)' }"></div>
+      <div class="slider-end-dot max-dot" :style="{ left: `${((internalMaxValue - min) / (max - min)) * 100}%`, transform: 'translateX(-50%)' }"></div>
     </div>
   </div>
 </template>

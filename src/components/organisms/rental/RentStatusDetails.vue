@@ -184,13 +184,12 @@ onUnmounted(() => {
       @click="router.push('/search')"
     />
   </div>
-
-  <ul v-else class="flex flex-col gap-4 overflow-y-auto !pr-2">
+  <ul v-else class="flex flex-col gap-4 overflow-y-auto !pr-2 ">
     <!-- Driver Rental Detail -->
-    <li v-if="driverRentalDetail">
+    <li v-if="driverRentalDetail" class="bg-white flex rounded-2xl items-center justify-between">
       <router-link 
         :to="{ name: 'RentDetail', params: { id: driverRentalDetail.id } }"
-        class="bg-white flex gap-2 min-h-25 rounded-2xl px-2.5 py-2"
+        class="flex gap-2 px-2.5 py-2 min-h-25 "
         >
 
         <figure class="relative flex items-center">
@@ -228,23 +227,7 @@ onUnmounted(() => {
                 class="bg-gray-200 text-gray-900 font-bold text-xs rounded-full py-1 px-3">
                 Cancelar
               </button> -->
-              <Input
-                v-if="driverRentalDetail.status === 'pending'"
-                type="button"
-                variant="secondary"
-                outline
-                text="Cancelar solicitud"
-                @click.stop="cancelDriverApplication(driverRentalDetail.id)"
-              />
-              <Modal
-                :isOpen="showCancelModal"
-                title="Cancelar solicitud"
-                message="¿Estás seguro de que quieres cancelar esta solicitud?"
-                confirmText="Si, cancelar"
-                cancelText="No, mantener"
-                @close="showCancelModal = false"
-                @confirm="confirmCancelDriverApplication"
-              />
+              
               <!-- <p v-if="driverRentalDetail.status === 'confirmed'" class="text-xs text-green-600">¡Solicitud aceptada!</p> -->
             </div>
             
@@ -265,6 +248,24 @@ onUnmounted(() => {
           </div>
         </div>
       </router-link>
+      <Input
+                v-if="driverRentalDetail.status === 'pending'"
+                type="button"
+                variant="secondary"
+                outline
+                text="Cancelar solicitud"
+                class="!w-fit !mx-2 !h-fit !text-xs"
+                @click.stop="cancelDriverApplication(driverRentalDetail.id)"
+              />
+              <Modal
+                :isOpen="showCancelModal"
+                title="Cancelar solicitud"
+                message="¿Estás seguro de que quieres cancelar esta solicitud?"
+                confirmText="Si, cancelar"
+                cancelText="No, mantener"
+                @close="showCancelModal = false"
+                @confirm="confirmCancelDriverApplication"
+              />
     </li>
 
     <!-- Owner Rental Detail -->

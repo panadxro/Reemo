@@ -42,8 +42,7 @@ const updateMapMarkersService = async () => {
 };
 
 const filterCars = async () => {
-  console.log('[Maps.vue filterCars] Iniciando. searchLocation:', searchLocation.value, 'cars.value.length:', cars.value.length);
-
+  // console.log('[Maps.vue filterCars] Iniciando. searchLocation:', searchLocation.value, 'cars.value.length:', cars.value.length);
   if (!cars.value || cars.value.length === 0) {
     filteredCars.value = [];
     await updateMapMarkersService();
@@ -165,8 +164,7 @@ onMounted(async () => {
   await loadGoogleMaps();
   map.value = await initMap('map');
   initAutocomplete('searchInput', handlePlaceSelected);
-  
-  console.log('[Maps.vue onMounted] Montado. La geolocalización se activará manualmente por el usuario.');
+  // console.log('[Maps.vue onMounted] Montado. La geolocalización se activará manualmente por el usuario.');
 });
 
 watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser, initialized]) => {
@@ -180,12 +178,12 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
   loggedUser.value = currentUser ? { id: currentUser.id, email: currentUser.email } : { id: null, email: null };
 
   if (loggedUser.value && loggedUser.value.id) {
-    console.log('[Maps.vue authStore.user watch] Usuario autenticado. Buscando coches.');
+    // console.log('[Maps.vue authStore.user watch] Usuario autenticado. Buscando coches.');
     await fetchCars();
     // En este punto, filterCars() dentro de fetchCars() usará el searchLocation.value actual.
     // Si getCurrentLocation() aún no ha terminado, searchLocation.value será null, y se mostrarán todos los coches.
   } else {
-    console.log('[Maps.vue authStore.user watch] Usuario no autenticado. Limpiando datos.');
+    // console.log('[Maps.vue authStore.user watch] Usuario no autenticado. Limpiando datos.');
     cars.value = [];
     filteredCars.value = [];
     selectedCar.value = null;

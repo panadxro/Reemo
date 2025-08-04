@@ -111,7 +111,7 @@ async function initializeMap(details) {
   // Cambiar las coordenadas por la nueva coleccion de "cars"
   if (details && details.vehicleData?.status.currentLocation.location && !mapInitialized.value){
     try {
-      console.log('[RentDetails] Intentando iniciar el mapa');
+      // console.log('[RentDetails] Intentando iniciar el mapa');
       await loadGoogleMaps();
       const mapInstance = await initMap('map');
       if (mapInstance) {
@@ -373,7 +373,7 @@ onMounted(() => {
     <Loading class="h-12 w-12 text-secondary-500" />
   </div>
 
-  <div v-else-if="rentalDetails" class="flex flex-col lg:flex-row md:m-2.5 py-4 lg:py-6 md:px-2 sm:px-4 gap-4 w-full md:bg-vibrant-light-600 rounded-xl lg:rounded-3xl min-h-screen lg:min-h-auto overflow-y-auto lg:overflow-hidden">
+  <div v-else-if="rentalDetails" class="flex flex-col lg:flex-row md:m-2.5 py-4 lg:py-6 md:px-2 sm:px-4 gap-4 w-full md:bg-vibrant-light-600 rounded-xl lg:rounded-3xl min-h-screen lg:min-h-auto overflow-y-auto lg:overflow-hidden px-2">
 
     <div class="box-vibrant w-full md:w-3/7 flex flex-col gap-4 overflow-visible lg:overflow-hidden lg:overflow-y-auto md:pr-2 order-1 lg:order-1">
       

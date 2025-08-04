@@ -120,7 +120,7 @@ export const useAuthStore = defineStore('auth', {
           status: profileData.status || 'not-verified',
           role: profileData.role || 'user'
         };
-        console.log("Perfil de usuario actualizado:", this.user);
+        // console.log("Perfil de usuario actualizado:", this.user);
       }
     },
 

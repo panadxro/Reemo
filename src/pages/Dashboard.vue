@@ -120,7 +120,7 @@ watch(currentUser, (newUser) => {
   if (newUser && newUser.id) {
     if (!notificationStore.hasLoadedOnce) {
       notificationStore.initListenerForUser(newUser.id);
-      console.log(latestNotifications.value, 'latestNotifications');
+      // console.log(latestNotifications.value, 'latestNotifications');
     }
   } else {
     notificationStore.clearListenerAndData();

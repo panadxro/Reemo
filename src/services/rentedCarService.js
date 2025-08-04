@@ -245,7 +245,7 @@ async function enrichRentalData(rentalData) {
   
   const ownerData = ownerDoc.data();
   const driverData = driverDoc.data();
-  console.log('Datos del conductor: ', ownerData?.personalInfo.profilePhoto)
+  // console.log('Datos del conductor: ', ownerData?.personalInfo.profilePhoto)
   
   return {
     ...rentalData,

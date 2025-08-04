@@ -12,14 +12,15 @@ dev-dist
 dist
 dist-ssr
 *.local
-  
+functions
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
 *.suo
-*.ntvs*
+.ntvs
 *.njsproj
 *.sln
 *.sw?
@@ -36,3 +37,5 @@ public/firebase-messaging-sw.js
 reglas-firestore.txt
 reglas-storage.txt
 datos.md
+.firebaserc
+firebase.json
