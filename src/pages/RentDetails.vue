@@ -111,7 +111,7 @@ async function initializeMap(details) {
   // Cambiar las coordenadas por la nueva coleccion de "cars"
   if (details && details.vehicleData?.status.currentLocation.location && !mapInitialized.value){
     try {
-      console.log('[RentDetails] Intentando iniciar el mapa');
+      // console.log('[RentDetails] Intentando iniciar el mapa');
       await loadGoogleMaps();
       const mapInstance = await initMap('map');
       if (mapInstance) {
