@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from "url";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from 'vite-plugin-pwa';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -106,6 +107,8 @@ export default defineConfig({
       },
       workbox: {
         cleanupOutdatedCaches: true,
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        maximumFileSizeToCacheInBytes: 5000000,
         runtimeCaching: [
           // Cache de recursos estáticos locales
           {
@@ -122,69 +125,9 @@ export default defineConfig({
               }
             }
           },
-          
-          // Cache para API (ajusta el patrón a tu backend)
-          {
-            urlPattern: /^https:\/\/api\.tudominio\.com\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              networkTimeoutSeconds: 10, // Espera 10 segundos antes de fallar
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 5 // 5 minutos
-              },
-              cacheableResponse: {
-                statuses: [0, 200, 404]
-              }
-            }
-          },
-          
-          // Google Fonts (como en tu ejemplo original)
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365,
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            }
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'gstatic-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365,
-              },
-              cacheableResponse: {
-                statuses: [0, 200],
-              },
-            }
-          },
-          
-          // Imágenes remotas (si tu app las usa)
-          {
-            urlPattern: /^https:\/\/images\.tudominio\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'remote-images',
-              expiration: {
-                maxEntries: 60,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 días
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          }
+        ],
+        additionalManifestEntries: [
+          { url: '/firebase-messaging-sw.js', revision: null,  }
         ]
       },
       devOptions: {
@@ -192,8 +135,13 @@ export default defineConfig({
         type: 'module' // Para soportar reload en desarrollo
       },
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png', 'apple-touch-icon.png'],
-    })
+    }),
+    // visualizer({ open: true })
   ],
+  logLevel: 'error',
+  server: {
+    open: true
+  },
   optimizeDeps: {
     include: ['fast-deep-equal'],
   },

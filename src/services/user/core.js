@@ -153,3 +153,14 @@ export async function checkUsernameAvailability(username) {
   const querySnapshot = await getDoc(q);
   return querySnapshot.empty;
 };
+
+export async function checkUserExists(userId) {
+  try {
+    const userDocRef = doc(db, 'users', userId); 
+    const userDoc = await getDoc(userDocRef);
+    return userDoc.exists();
+  } catch (error) {
+    console.error('Error verificando si el usuario existe:', error);
+    return false;
+  }
+}

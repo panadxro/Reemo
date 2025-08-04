@@ -184,7 +184,6 @@ onUnmounted(() => {
       @click="router.push('/search')"
     />
   </div>
-
   <ul v-else class="flex flex-col gap-4 overflow-y-auto !pr-2 ">
     <!-- Driver Rental Detail -->
     <li v-if="driverRentalDetail" class="bg-white flex rounded-2xl items-center justify-between">

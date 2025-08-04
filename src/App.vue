@@ -1,8 +1,9 @@
 <script setup>
 import { watch, markRaw, shallowRef, provide, computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useAuthStore } from '@/stores/auth.store'
+import { useAuthStore, useNotificationStore } from '@/stores'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
+import { addAlert } from './services/alerts'
 
 import DefaultLayout from '@layouts/DefaultLayout.vue'
 import SimpleLayout from "@layouts/SimpleLayout.vue"
@@ -24,27 +25,13 @@ const updateOnlineStatus = () => {
   }
 }
 
-onMounted(() => {
-  window.addEventListener('online', updateOnlineStatus);
-  window.addEventListener('offline', updateOnlineStatus);
-
-  if (offlineReady.value) {
-    showOffline.value = true;
-  }
-});
-
-onUnmounted(() => {
-  window.removeEventListener('online', updateOnlineStatus);
-  window.removeEventListener('offline', updateOnlineStatus);
-});
-
 const authStore = useAuthStore()
 authStore.init();
 const route = useRoute()
+const notificationStore = useNotificationStore()
 
 const authSession = computed(() => authStore.authSession);
 const loggedUser = computed(() => authStore.user);
-
 
 provide('authStore', authStore);
 provide('authSession', authSession);
@@ -76,10 +63,11 @@ const layoutMap = {
   '/map': 'map',
   '/car/': 'dashboard',
   '/notifications': 'dashboard',
+  '/rent/': 'dashboard',
   
   // Rutas con layout de usuario (sin sidebar y usernav) 
   '/user': 'user',
-  '/rent': 'user',
+  '/rents': 'user',
   '/cars': 'user',
   '/documents': 'user',
   
@@ -90,6 +78,26 @@ const layoutMap = {
 
 const currentLayout = shallowRef(layoutComponents.default)
 
+onMounted(() => {
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+
+  if (offlineReady.value) {
+    showOffline.value = true;
+  }
+});
+
+onUnmounted(() => {
+  window.removeEventListener('online', updateOnlineStatus);
+  window.removeEventListener('offline', updateOnlineStatus);
+  navigator.serviceWorker?.addEventListener('message', (event) => {
+    if (event.data.type === 'SHOW_NOTIFICATION_ALERT') {
+      notificationStore.handleIncomigNotification(event.data.notification);
+      addAlert(`$event.data.title`, 'info');
+    }
+  })
+});
+
 watch(() => route.path, (path) => {
   // Buscar el layout correspondiente
   const matchedLayoutKey = Object.keys(layoutMap).find(key => path.startsWith(key))
@@ -98,13 +106,6 @@ watch(() => route.path, (path) => {
   // Asignamos el componente directamente (ya está marcado como no reactivo)
   currentLayout.value = layoutComponents[layoutType]
 }, { immediate: true })
-
-/* onMounted(() => {
-  const authSessionHistory = sessionStorage.getItem('auth_session_history');
-  const authSession = JSON.parse(authSessionHistory);
-
-}) */
-
 </script>
 
 <template>

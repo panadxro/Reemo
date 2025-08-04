@@ -13,14 +13,16 @@ import History from '@/components/user/History.vue'
 import Loading from "@icons/Loading.vue";
 import Cross from "@icons/Cross.vue";
 import Send from "@icons/Send.vue";
+import Edit from "@icons/Edit.vue";
 import Check from "@icons/Check.vue";
 import VerifyValidation from "@/components/user/VerifyValidation.vue";
 import NoCarsRegister from '../components/atoms/NoCarsRegister.vue';
 import NoMessage from '../components/atoms/NoMessage.vue';
+import Status from '../components/molecules/Status.vue';
 
 export default {
   name: "UserProfile",
-  components: { Heading, CardCar, Loading, BackButton, Input, DeletePaymentModal, Cross, Check, History, VerifyValidation, NoCarsRegister, NoMessage, Send },
+  components: { Heading, CardCar, Loading, BackButton, Input, DeletePaymentModal, Cross, Check, History, VerifyValidation, NoCarsRegister, NoMessage, Send, Status, Edit },
   props: {
     id: {
       type: String,
@@ -47,7 +49,7 @@ export default {
     const loggedUserId = computed(() => authStore.user?.id);
     const userIdFromRoute = computed(() => route.params.id);
     const isOwnProfile = computed(() => loggedUserId.value === userIdFromRoute.value);
-    const isUserVerified = computed(() => authStore.userStatus === 'verified');
+    const isUserVerified = computed(() => authStore.userStatus);
 
     const showProfile = computed(() => {
       return isOwnProfile.value ? userStore.profileData : userStore.visitedProfileData
@@ -127,46 +129,32 @@ export default {
     <section class="parent md:m-2.5 w-full md:max-h-vh md:overflow-hidden">
 
       <!-- Perfil del usuario -->
-      <div class="flex profile flex-col gap-3 h-full overflow-hidden">
+      <div class="flex profile flex-col gap-3 h-full">
         <div class="flex items-center gap-5 fixed md:static top-0 left-0 right-0 z-4 bg-white px-2.5 md:px-0 py-3 md:py-0">
           <BackButton />
           <Heading v-if="showProfile && showProfile.personalInfo" :type="1" class="medium">{{ isOwnProfile ? "Mi perfil" : showProfile.personalInfo.username }}</Heading>
         </div>
-        <article class="bg-secondary-100 h-full md:flex-row rounded-[40px] items-center justify-center px-6 py-8 flex flex-col gap-5 overflow-hidden box-vibrant">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Perfil y verificación -->
-            <div class="flex flex-col items-center md:items-start text-center md:text-left">
-              <img 
-                v-if="showProfile && showProfile.personalInfo && showProfile.personalInfo.profilePhoto"
-                class="w-24 h-24 mb-4 xl:block h aspect-square rounded-full object-cover bg-vibrant-light-800"
-                :src="showProfile.personalInfo.profilePhoto"
-                :alt="`Perfil de ${showProfile?.personalInfo?.username || 'usuario'}`" 
-              />
-              <!-- <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 text-white flex items-center justify-center text-3xl font-bold mb-4">
-                YL
-              </div> -->
-              <Heading :type="2" class="text-2xl font-semibold text-gray-800 md:text-start"
-                v-if="showProfile && showProfile.personalInfo">
-                {{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }}
-              </Heading>
-              <!-- <h2 class="text-2xl font-semibold text-gray-800">Yoel Lazarte</h2> -->
-              <p class="text-gray-500 text-sm">{{ showProfile?.email || 'Este usuario no ha proporcionado un mail.' }}</p>
+        <article class="bg-secondary-100 h-full md:flex-row rounded-[40px] justify-around items-center px-12 py-8 flex flex-col gap-5 box-vibrant">
+          <!-- Perfil y verificación -->
+          <div class="flex flex-col items-center md:items-start text-center md:text-left gap-1 h-auto">
+            <img 
+              v-if="showProfile && showProfile.personalInfo && showProfile.personalInfo.profilePhoto"
+              class="w-24 h-24 xl:block h aspect-square rounded-full object-cover bg-vibrant-light-800"
+              :src="showProfile.personalInfo.profilePhoto"
+              :alt="`Perfil de ${showProfile?.personalInfo?.username || 'usuario'}`" 
+            />
 
-              <div v-if="isOwnProfile" class="">
-                <div v-if="isUserVerified" class="flex items-center bg-green-100 text-green-800  px-3 py-1 rounded-full mt-3 text-sm">
-                  <!-- <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="..." /></svg> -->
-                  Perfil verificado
-                </div>
-                <div v-if="!isUserVerified" class="flex items-center bg-red-100 text-red-800  px-3 py-1 rounded-full mt-3 text-sm">
-                  <!-- <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="..." /></svg> -->
-                  Perfil no verificado
-                </div>
-              </div>
-              <!-- <div v-if="isOwnProfile" class="w-full">
+            <Heading :type="2" class="text-2xl font-semibold text-gray-800 md:text-start"
+              v-if="showProfile && showProfile.personalInfo">
+              {{ showProfile.personalInfo.firstName }} {{ showProfile.personalInfo.lastName }}
+            </Heading>
+            <p class="text-gray-500 text-sm">{{ showProfile?.email || 'Este usuario no ha proporcionado un mail.' }}</p>
+            <Status class="w-fit cursor-pointer" :status="showProfile?.status">
+              <template v-if="isOwnProfile" #message>
                 <VerifyValidation
                 v-if="!isUserVerified"
                 title="Perfil en proceso de validación"
-                message="Tu perfil está siendo revisado por nuestro equipo. El proceso puede demorar algunos días."
+                message="Tu perfil está en proceso de verificación. Para poder utilizar todas las funcionalidades (buscar vehículos, realizar alquileres y registrar vehículos), necesitamos validar tu información."
                 class="!text-black"
                 :show="!isUserVerified"
                 type="brightYellow"
@@ -175,50 +163,54 @@ export default {
                 <VerifyValidation
                   v-else
                   title="Perfil verificado"
-                  message="Tu perfil fue verificado con éxito. Ahoras podés disfrutar la aplicación al 100%."
+                  message="Tu perfil está verificado. Ahora puedes disfrutar de todas las funcionalidades: buscar vehículos, realizar alquileres y registrar tus propios vehículos en la plataforma."
                   class="!text-black"
                   :show="isUserVerified"
                   type="green"
                 />
-              </div> -->
-            </div>
-            
-            <div class="flex flex-col justify-between"
-            v-if="!isOwnProfile && showProfile && showProfile.personalInfo && showProfile.personalInfo.id !== id">
-              <div class="flex items-center justify-between">
-                  <router-link
-                  :to="`/user/${id}/chat`"
-                  class="cursor-pointer"
-                  >
-                    <Input 
-                      type="button"
-                      text="Chat"
-                      variant="primary"
-                      :outline="false"
-                      class="cursor-pointer"
-                    />
-                  </router-link>
-              </div>
-            </div>
-          
-            <!-- Ganancias Totales -->
-            <div v-if="isOwnProfile" class="bg-gradient-to-tr bg-deep-blue-800 text-white p-5 rounded-2xl shadow-lg flex flex-col justify-between">
-              <div class="flex items-center justify-between pb-3">
-                <div>
-                  <p class="text-sm uppercase">Ganancias Totales</p>
-                  <h3 class="text-3xl font-bold mt-1">{{ new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(showProfile?.personalInfo?.totalEarnings || 0) }}</h3>
-                </div>
-                <svg class="w-10 h-10 opacity-80" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="..." /> <!-- ícono de dinero o gráfico -->
-                </svg>
-              </div>
-                <div>
-                  <p class="text-sm uppercase">Gastos Totales</p>
-                  <h3 class="text-3xl font-bold mt-1">$0,00</h3>
-                </div>
-              <!-- <button class="mt-4 bg-white text-emerald-700 font-semibold py-1 px-3 rounded-lg hover:bg-gray-100 transition">Ver Detalles</button> -->
-            </div>
+              </template>
+            </Status>
           </div>
+          
+          <div class="flex flex-col justify-between h-full"
+          v-if="!isOwnProfile && showProfile && showProfile.personalInfo && showProfile.personalInfo.id !== id">
+            <router-link
+            :to="`/user/${id}/chat`"
+            class="cursor-pointer"
+            >
+              <Input 
+                type="button"
+                text="Enviar mensaje"
+                variant="primary"
+                :outline="false"
+                icon-position="right"
+              >
+                <template #icon>
+                  <Send color="#FFFFFF"/>
+                </template>
+              </Input>
+            </router-link>
+          </div>
+
+          <router-link to="/onboarding" class="block md:hidden">
+            <Input
+              type="button"
+              text="Editar perfil"
+              variant="primary"
+              :outline="false"
+              icon-position="right"
+            >
+              <template #icon>
+                <Edit color="#FFFFFF"/>
+              </template>
+            </Input>
+          </router-link>
+        
+          <!-- Ganancias Totales -->
+          <ul v-if="isOwnProfile" class="bg-gradient-to-tr bg-deep-blue-800 text-white !px-6 !py-4 rounded-2xl shadow-lg flex flex-col justify-center text-center md:text-start gap-2 h-fit">
+              <p class="text-md font-bold">Ganancias totales</p>
+              <h3 class="text-3xl font-bold">{{ new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(showProfile?.personalInfo?.totalEarnings || 0) }}</h3>
+          </ul>
         </article>
       </div>
 
@@ -226,10 +218,10 @@ export default {
 
 
       <!-- Autos del usuario -->
-      <div class="overflow-hidden flex flex-col gap-5" :class="isOwnProfile ? 'cars' : 'user-cars'">
+      <div class="overflow-hidden flex flex-col gap-5 h-full" :class="isOwnProfile ? 'cars' : 'user-cars'">
         <div class="flex items-end justify-between">
           <Heading :type="2" class="medium text-primary-900 text-center sm:text-left">{{ isOwnProfile ? "Mis autos" : "Vehículos" }}</Heading>
-          <router-link :to="`/cars/${loggedUserId}`" class="text-deep-blue-900 font-medium">Ver más</router-link>
+          <router-link v-if="isOwnProfile" :to="`/cars/${loggedUserId}`" class="text-deep-blue-900 font-medium">Ver más</router-link>
         </div>
         <div v-if="carStore.loading" class="flex justify-center py-8">
           <Loading class="w-8 h-8 text-primary-800" />
@@ -261,10 +253,10 @@ export default {
       <div
         v-if="!$route.matched.some(route => route.name === 'Chat')"
         :class="isOwnProfile ? 'div-my-user' : 'div-user'"
-        class="bg-deep-blue-900 overflow-hidden rounded-[40px] py-7 px-5 flex flex-col gap-5"
+        class="bg-deep-blue-900 overflow-hidden rounded-[40px] py-7 px-5 flex flex-col gap-5 h-full"
         >
         <Heading :type="2" class="medium text-white sm:text-left">{{ isOwnProfile ? "Información personal" : "Información del usuario"  }}</Heading>
-        <article v-if="isOwnProfile" class="box-deep overflow-y-auto h-full flex flex-col gap-5 pr-2">
+        <article class="box-deep overflow-y-auto h-full flex flex-col gap-5 pr-2">
           <div class="flex flex-col gap-2">
             <Heading :type="3" class="regular text-white">Datos básicos</Heading>
             <ul class="flex flex-col gap-1">
@@ -278,90 +270,25 @@ export default {
               </li>
               <li class="flex justify-between items-center">
                 <Heading :type="6" class="text-sm font-bold text-white">Email</Heading>
-                <p class="text-sm text-white/50">{{ showProfile?.personalInfo?.email || 'No especificado' }}</p>
+                <p class="text-sm text-white/50">{{ showProfile?.email || 'No especificado' }}</p>
+              </li>
+              <li v-if="isOwnProfile == true || authStore?.user?.role === 'admin'" class="flex justify-between items-center">
+                <Heading :type="6" class="text-sm font-bold text-white">Teléfono</Heading>
+                <p class="text-sm text-white/50">{{ showProfile?.personalInfo?.phone || 'No especificado' }}</p>
               </li>
               <li class="flex justify-between items-center">
-                <Heading :type="6" class="text-sm font-bold text-white">Estado</Heading>
-                <p class="text-sm text-white/50">{{ userStore.status == 'verified' ? 'Verificado' : 'No verificado'}}</p>
-              </li>
-            </ul>
-          </div>
-          <div class="flex flex-col gap-2">
-            <Heading :type="3" class="regular text-white">Dirección</Heading>
-            <ul class="flex flex-col gap-1">
-              <li class="flex justify-between items-center">
-                <span class="text-sm font-bold text-white">Ciudad</span>
-                <p class="text-sm text-white/50">
-                  {{ showProfile?.address?.province || 'No especificado' }},
-                  {{ showProfile?.address?.country || 'No especificado' }}
-                </p>
+                <Heading :type="6" class="text-sm font-bold text-white">Género</Heading>
+                <p class="text-sm text-white/50">{{ showProfile?.personalInfo?.gender || 'No especificado' }}</p>
               </li>
               <li class="flex justify-between items-center">
-                <Heading :type="6" class="text-sm font-bold text-white">Calle</Heading>
-                <p class="text-sm text-white/50">{{ showProfile?.address?.street || 'No especificado' }}</p>
+                <Heading :type="6" class="text-sm font-bold text-white">Fecha de nacimiento</Heading>
+                <p class="text-sm text-white/50">{{ showProfile?.personalInfo?.birthDate || 'No especificado' }}</p>
               </li>
               <li class="flex justify-between items-center">
-                <Heading :type="6" class="text-sm font-bold text-white">Código postal</Heading>
-                <p class="text-sm text-white/50">{{ showProfile?.address?.postalCode || 'No especificado' }}</p>
+                <Heading :type="6" class="text-sm font-bold text-white">Estado de cuenta</Heading>
+                <p class="text-sm text-white/50">{{ showProfile?.status === 'verified' ? 'Verificado' : 'No verificado'}}</p>
               </li>
             </ul>
-          </div>
-        </article>
-        <article v-else class="box-deep overflow-y-auto h-full flex flex-col gap-5 pr-4">
-          <div class="flex flex-col gap-2">
-            <Heading :type="3" class="regular text-white">Verificación</Heading>
-            <ul class="flex flex-col gap-2">
-              <li class="flex items-center gap-2">
-                <Cross class="w-6 h-6 text-primary-900 bg-alert-warning-800 rounded-full"
-                  v-if="!showProfile?.profileCompleted" />
-                <Check class="w-6 h-6 bg-alert-success-900  rounded-full" v-else />
-                <span class="text-white text-sm">Identidad verificada</span>
-              </li>
-              <li class="flex items-center gap-2">
-                <Cross class="w-6 h-6 text-primary-900 bg-alert-warning-800 rounded-full"
-                  v-if="!showProfile?.profileCompleted" />
-                <Check class="w-6 h-6 bg-alert-success-900 rounded-full" v-else />
-                <span class="text-white text-sm">Licencia de conducir verificada</span>
-              </li>
-              <li class="flex items-center gap-2">
-                <Cross class="w-6 h-6 text-primary-900 bg-alert-warning-800 rounded-full"
-                  v-if="!showProfile?.profileCompleted" />
-                <Check class="w-6 h-6 bg-alert-success-900 rounded-full" v-else />
-                <span class="text-white text-sm">Usuario verificado</span>
-              </li>
-            </ul>
-          </div>
-      
-          <div class="flex flex-col gap-2">
-            <Heading :type="3" class="regular text-white">Estadísticas</Heading>
-            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <li class="text-center">
-                <div class="text-2xl font-bold text-white">{{ showProfile?.responseRate || '0' }}%</div>
-                <div class="text-white/80 text-sm">Tasa de respuesta</div>
-              </li>
-              <li class="text-center">
-                <div class="text-2xl font-bold text-white">{{ showProfile?.yearsOnPlatform || '0' }}</div>
-                <div class="text-white/80 text-sm">En la plataforma</div>
-              </li>
-              <li class="text-center">
-                <div class="text-2xl font-bold text-white">{{ showProfile?.rating?.toFixed(1) || '0.0' }}</div>
-                <div class="text-white/80 text-sm">Calificación promedio</div>
-              </li>
-              <li class="text-center">
-                <div class="text-2xl font-bold text-white">{{ showProfile?.completedRentals || '0' }}</div>
-                <div class="text-white/80 text-sm">Alquileres completados</div>
-              </li>
-            </ul>
-          </div>
-      
-          <div class="flex flex-col gap-2">
-            <Heading :type="3" class="regular text-white">Tiempo de respuesta</Heading>
-            <div class="bg-white/10 rounded-lg p-3">
-              <span class="text-white text-sm">
-                {{ showProfile?.averageResponseTime ? `Responde normalmente en menos de
-                ${showProfile.averageResponseTime} horas` : 'Tiempo de respuesta no disponible' }}
-              </span>
-            </div>
           </div>
         </article>
       </div>  
@@ -376,18 +303,17 @@ export default {
       </div>
       <div 
         v-else 
-        class="reviews bg-primary-900 flex flex-col rounded-[40px] px-5 py-7 gap-6"
+        class="reviews bg-primary-900 flex flex-col rounded-[40px] px-5 py-7 gap-6 h-full overflow-hidden"
         v-if="!$route.matched.some(route => route.name === 'Chat')">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center">
           <Heading :type="2" class="medium text-white">Reseñas</Heading>
-          <span class="text-white text-sm">{{ showProfile?.reviews?.length || '0' }} reseñas</span>
         </div>
 
         <div v-if="showProfile?.reviews && showProfile?.reviews?.length">
-          <!-- Contenido de reseñas -->
+          <!-- Contenido de reseñas proximamente-->
         </div>
 
-        <div v-else class="text-white flex flex-col items-center justify-center gap-5">
+        <div v-else class="box-deep text-white flex flex-col items-center justify-center gap-5 h-full overflow-y-auto">
           <NoMessage class="max-w-[150px]"/>
           <p class="font-semibold opacity-50" v-if="showProfile && showProfile.personalInfo">Este usuario no tiene reseñas.</p>
           <Input

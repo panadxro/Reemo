@@ -25,6 +25,7 @@ import Secure from "@icons/Secure.vue";
 import Search from "@icons/Search.vue";
 import Cross from "@icons/Cross.vue";
 import Pill from "@components/atoms/Pill.vue";
+import BackButton from "@components/atoms/BackButton.vue";
 
 const props = defineProps({
   id: {
@@ -394,7 +395,7 @@ const handleSubmit = async () => {
       }
       await notifyAdminsOfVehicleUpdate(carData, userStore.profileData);
       
-      addAlert('¡Vehículo actualizado con éxito!', 'success');
+      addAlert('¡Vehículo actualizado con éxito! Pronto será validado.', 'success');
       router.push(`/car/${carId}`);
     } else {
       const savedCarId = await carStore.saveCar(carData);
@@ -408,7 +409,7 @@ const handleSubmit = async () => {
         }
       );
 
-      addAlert('¡Vehículo registrado con éxito!', 'success');
+      addAlert('¡Vehículo registrado con éxito! Pronto será validado.', 'success');
       router.push(`/car/${savedCarId}`);
     }
     
@@ -528,9 +529,12 @@ onBeforeUnmount(() => {
     <!-- Secciones al costado -->
     <aside class="flex flex-col gap-8 w-full md:max-w-[425px] md:max-h-[525px] md:overflow-hidden">
       <div class="flex flex-col gap-4 md:gap-2">
-        <div class="flex flex-col gap-4">
-          <Reemo class="cursor-pointer" @click="router.push('/dashboard')"/>
-          <Heading type="1" class="large text-deep-blue-900 font-extrabold!">{{ isEditMode ? 'Editar vehiculo' : 'Registrar vehiculo' }}</Heading>
+        <div class="flex gap-2 justify-between items-center md:flex-row-reverse flex-wrap">
+          <BackButton class="flex md:absolute top-10 left-10"/>
+          <router-link to="/">
+            <Reemo/>
+          </router-link>
+          <Heading type="1" class="large text-deep-blue-900 font-extrabold! flex-1">{{ isEditMode ? 'Editar auto' : 'Registrar auto' }}</Heading>
         </div>
         <p class="text-sm max-w-[420px]">{{ isEditMode ? 'Gestioná y actualizá los datos de tu vehículo disponible para alquiler' : 'Subscribí tu vehículo a la plataforma y hace que trabaje por vos.'}}</p>
       </div>

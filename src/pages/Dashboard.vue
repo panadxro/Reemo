@@ -3,7 +3,7 @@ import { onMounted, ref, computed, watch } from 'vue';
 import { useUserStore, useCarStore, useAuthStore, useAdminStore } from '@/stores';
 import { useNotificationStore } from '@/stores/notification.store';
 import { useRouter } from 'vue-router';
-
+import { formatNotificationDate } from '@libraries/date.js';
 
 import Heading from '@/components/atoms/Heading.vue';
 import Input from '@/components/molecules/Input.vue';
@@ -65,12 +65,9 @@ const latestNotifications = computed(() => {
   return notificationStore.sortedNotifications.slice(0, 3);
 });
 
-const formatNotificationDate = (timestamp) => {
-  if (!timestamp) return '';
-  if (timestamp.seconds) {
-    return new Date(timestamp.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-  }
-  return new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+const formatDate = (timestamp) => {
+  if (!timestamp) return "Fecha no disponible";
+  return formatNotificationDate(timestamp);
 };
 
 const handleNotificationClick = async (notification) => {
@@ -224,8 +221,7 @@ watch(currentUser, (newUser) => {
         <Heading v-else type="2" class="medium">Autos más cercanos a tu zona</Heading>
         <router-link v-if="isAdmin" to="/admin/cars" class="text-deep-blue-900 font-semibold cursor-pointer">Ver más
         </router-link>
-        <router-link v-else to="/search" class="text-vibrant-light-900 font-semibold cursor-pointer">Ver más
-        </router-link>
+        <router-link v-else to="/search" class="font-semibold cursor-pointer">Ver más</router-link>
       </div>
       <div class="box-white flex flex-col gap-2 h-full overflow-y-auto pr-2">
         <CardCar 
@@ -247,10 +243,8 @@ watch(currentUser, (newUser) => {
         <Heading type="2" class="medium">Últimas notificaciones</Heading>
         <router-link 
           to="/notifications" 
-          class="text-deep-blue-900 font-semibold cursor-pointer text-sm"
-        >
-          Ver todas
-        </router-link>
+          class="text-deep-blue-900 font-semibold cursor-pointer"
+        >Ver más</router-link>
       </div>
 
       <div class="box-vibrant flex flex-col gap-3 overflow-y-auto h-full pr-2">
@@ -298,7 +292,7 @@ watch(currentUser, (newUser) => {
         {{ noti.title }}
       </p>
       <span class="text-xs text-secondary-500 whitespace-nowrap ml-2">
-        {{ formatNotificationDate(noti.created_at) }} 
+        {{ formatDate(noti.created_at) }} 
       </span>
     </div>
     <p class="text-xs text-secondary-500 line-clamp-2">

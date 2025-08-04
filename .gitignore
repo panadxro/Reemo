@@ -26,10 +26,13 @@ functions
 *.sw?
 .idx
 .env
+.env.production
 .vite
 
 # Ignorar firebase
-src/services/firebase.js
+public/firebase-messaging-sw.js
+.firebase
+
 # Ignorar reglas 
 reglas-firestore.txt
 reglas-storage.txt
