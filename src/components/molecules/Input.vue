@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, useAttrs, defineProps } from 'vue';
+import { computed, ref, useAttrs } from 'vue';
 
 const props = defineProps({
   modelValue: { type: [String, Number, Boolean, Array], default: '' },
