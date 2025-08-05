@@ -1,5 +1,5 @@
 <script setup>
-import { inject, ref, defineProps } from 'vue';
+import { inject, ref } from 'vue';
 
 import DotNotification from '../atoms/DotNotification.vue';
 import Modal from '@/components/molecules/Modal.vue';

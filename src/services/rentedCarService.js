@@ -81,6 +81,13 @@ export async function updateRentalStatus(reqId, newStatus) {
     const requestRef = doc(db, 'rents', reqId);
     const requestSnap = await getDoc(requestRef);
 
+    // ¡Esta es la corrección!
+    // Verificamos si el alquiler ya está completado para evitar ejecuciones duplicadas.
+    if (requestSnap.data().status === 'completed') {
+      console.log(`El alquiler ${reqId} ya está completado. No se realizarán más acciones.`);
+      return;
+    }
+
     const rentalData = requestSnap.data();
     const carId = rentalData.vehicle_id;
     if(!carId){
@@ -352,7 +359,7 @@ export async function fetchRentalRequests(userId, callback) {
     const q = query(
       rentsCollection,
       where("owner_id", "==", userId),
-      where("status", "in", ["pending", "confirmed"]) // Solo cargar solicitudes pendientes o aceptadas
+      where("status", "in", ["pending", "confirmed", "in_progress"]) // Solo cargar solicitudes pendientes o aceptadas
     );
     
     // Escuchar cambios en tiempo real
