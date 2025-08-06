@@ -306,9 +306,9 @@ export async function fetchRentedCars(userId, callback) {
 
 /**
  * Vista del Propietario:
- * Obtiene el ultimo alquiler activo o pendiente de un vehículo propiedad del usuario.
+ * Obtiene el último alquiler activo o pendiente de un vehículo propiedad del usuario.
  * @param {string} ownerId - ID del usuario (propietario).
- * @returns {Promise<object|null>} - El ultimo alquiler enriquecido, o null si no hay.
+ * @returns {Promise<object|null>} - El último alquiler enriquecido, o null si no hay.
  */
 
 export async function fetchLatestActiveOwnedRental(ownerId, callback){

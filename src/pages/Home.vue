@@ -235,26 +235,41 @@ async function installPWA() {
           <article class="bg-primary-900 px-9 py-11 flex flex-row justify-between items-center rounded-[40px] w-full">
             <div class="flex flex-col gap-16">
               <Heading :type="3" class="text-white text-2xl mb-2 sm:text-3xl">Viví momentos <br/>inolvidables</Heading>
-              <button class="bg-secondary-900 w-fit px-6 rounded-full">
-                <LongArrow color="#FFFFFF" direction="right"/>
-                <span class="sr-only">Ver más</span>
-              </button>
+              <router-link to="/maps">
+                <Input 
+                  type="button"
+                  variant="primary"
+                  class="w-fit rounded-full !py-1"
+                >
+                  <template #icon>
+                  <LongArrow color="#FFFFFF" direction="right"/>
+                  </template>
+                </Input>
+              </router-link>
             </div>
             <Replay/>
           </article>
           <article class="bg-primary-900 px-9 py-11 flex flex-row justify-between items-center rounded-[40px] w-full">
             <div class="flex flex-col gap-16">
               <Heading :type="3" class="text-white text-2xl mb-2 sm:text-3xl">Buscá y encontrá <br/>tu auto ideal</Heading>
-              <button class="bg-secondary-900 w-fit px-6 rounded-full">
-                <LongArrow color="#FFFFFF" direction="right"/>
-                <span class="sr-only">Ver más</span>
-              </button>
+              <router-link to="/search">
+
+                <Input 
+                type="button"
+                variant="primary"
+                class="w-fit rounded-full !py-1"
+                >
+                  <template #icon>
+                    <LongArrow color="#FFFFFF" direction="right"/>
+                  </template>
+                </Input>
+              </router-link>
             </div>
             <Clue/>
           </article>
         </div>
 
-        <article class="bg-secondary-100 pl-9 py-11 flex flex-col flex-1 rounded-[40px] w-full group relative overflow-hidden gap-10 md:gap-0">
+        <article class="bg-secondary-100 pl-9 py-11 flex flex-col flex-1 rounded-[40px] w-full h-full group relative overflow-hidden gap-10 md:gap-0">
           <Heading :type="3" class="text-2xl mb-2 sm:text-3xl">Todas las marcas <br/>y todos los modelos</Heading>
           <div class="flex flex-row-reverse">
             <Brands class="-m-20"/>

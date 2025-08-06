@@ -55,13 +55,13 @@ const authSession = JSON.parse(authSessionHistory);
 const currentStep = ref(0);
 const autocompleteInitialized = ref(false);
 
-// Variables que agregue para la api de vehiculos
+// Variables que agregue para la api de vehículos
 const vehicleMakes = ref([]);
 const vehicleModels = ref([]);
 const loadingMakes = ref(false);
 const loadingModels = ref(false);
 
-// Funciones que agregue para la api de vehiculos
+// Funciones que agregue para la api de vehículos
 const loadMakes = async () => {
   loadingMakes.value = true;
   try {
@@ -631,7 +631,7 @@ onBeforeUnmount(() => {
               id="type"
               placeholder="Chasis"
               :options="[
-                { value: 'Sedan', label: 'Sedán' },
+                { value: 'Sedán', label: 'Sedán' },
                 { value: 'Hatchback', label: 'Hatchback' },
                 { value: 'SUV', label: 'SUV' },
                 { value: 'Pickup', label: 'Pickup' },
@@ -1038,7 +1038,7 @@ onBeforeUnmount(() => {
         </div>
         <p class="text-sm font-medium">Describe las características principales de tu vehículo. Subí fotos que muestren tanto el exterior como el interior, destacando sus mejores atributos. Las publicaciones con buenas imágenes reciben un 40% más de reservas.</p>
         <div class="box-vibrant flex flex-col gap-5 min-w-full md:overflow-y-auto md:pr-2">
-          <!-- Textarea descripcion -->
+          <!-- Textarea descripción -->
           <div>
             <Input 
               type="textarea" 

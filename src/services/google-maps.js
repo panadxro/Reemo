@@ -75,7 +75,7 @@ export async function createOverlayView( map, car, marker, content, vueInstance)
       const panes = this.getPanes();
       panes.floatPane.appendChild(this.div);
 
-      // redirecciona a la descripcion de cada vehiculo
+      // redirecciona a la descripción de cada vehículo
       setTimeout(() => {
         const btn = document.getElementById(`btn-${car.id}`);
         if (btn) {
@@ -228,7 +228,7 @@ function calculateDistance(coords1, coords2) {
   return R * c;
 }
 
-// Filtramos los autos por la Ubicacion
+// Filtramos los autos por la Ubicación
 export function updateCars(allCars, searchLocation) {
   if (!searchLocation || typeof searchLocation.lat !== 'number' || typeof searchLocation.lng !== 'number') {
     console.warn('[updateCars] searchLocation inválida, mostrando todos los autos con coordenadas válidas');
@@ -292,7 +292,7 @@ export function updateCars(allCars, searchLocation) {
 //   });
 
 //   if (map) {
-//     // centramos el mapa en la busqueda
+//     // centramos el mapa en la búsqueda
 //     map.setCenter(searchLocation);
 //     map.setZoom(14);
 //   }
@@ -326,7 +326,7 @@ export function initAutocomplete(inputId, onPlaceSelected) {
     const place = autocomplete.getPlace();
 
     if (!place.geometry || !place.geometry.location) {
-      console.error("No se pudo obtener la direccion o coordenadas")
+      console.error("No se pudo obtener dirección o coordenadas")
       return;
     }
 
@@ -345,7 +345,7 @@ export function initAutocomplete(inputId, onPlaceSelected) {
 
 }
 
-// Funcion para obtener la ubicacion del usuario
+// Funcion para obtener la ubicación del usuario
 export function getCurrentLocation() {
   return new Promise(async (resolve, reject) => {
     if (!navigator.geolocation) {

@@ -153,7 +153,7 @@ const useMyLocation = async () => {
     // handlePlaceSelected will update searchLocation, searchQuery, map center, and filter cars
     await handlePlaceSelected(place);
   } catch (error) {
-    console.error("Error al usar mi ubicacion:", error);
+    console.error("Error al usar mi ubicación:", error);
     addAlert("No se pudo obtener tu ubicación actual.", "error");
   } finally {
     loading.value = false;

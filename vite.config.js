@@ -3,7 +3,6 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from "url";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from 'vite-plugin-pwa';
-import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -35,8 +34,8 @@ export default defineConfig({
             description: 'Ir a la página de inicio',
             url: '/',
             icons: [{
-              src: '/Home.png',
-              sizes: '24x24',
+              src: '/icons/Home.png',
+              sizes: '128x128',
               type: 'image/png',
               purpose: 'any'
             }]
@@ -47,8 +46,8 @@ export default defineConfig({
             description: 'Ir a la página de búsqueda de vehículos',
             url: '/search',
             icons: [{
-              src: '/Search.png',
-              sizes: '24x24',
+              src: '/icons/Search.png',
+              sizes: '128x128',
               type: 'image/png',
               purpose: 'any'
             }]
@@ -59,8 +58,8 @@ export default defineConfig({
             description: 'Ir a la página de mapa',
             url: '/maps',
             icons: [{
-              src: '/Maps.png',
-              sizes: '24x24',
+              src: '/icons/Maps.png',
+              sizes: '128x128',
               type: 'image/png',
               purpose: 'any'
             }]

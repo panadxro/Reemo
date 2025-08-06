@@ -183,7 +183,7 @@ watch(currentUser, (newUser) => {
         </Input>
       </router-link>
         <div class="bg-deep-blue-900 text-white p-6 w-full h-full rounded-[40px] py-10 px-6 flex flex-col  gap-4 overflow-hidden ">
-          <Heading type="2" class="medium text-white">¡Bienvenido a <strong>Reemo</strong>, {{ user.personalInfo.firstName }}👋!</Heading>
+          <Heading type="2" class="medium text-white">¡Bienvenido a <strong class="font-extrabold!">Reemo</strong>, {{ user.personalInfo.firstName }}👋!</Heading>
           <!-- <p v-if="isAdmin" class="text-white">Acá podés gestionar los usuarios y vehículos registrados.🚗✨</p> -->
           <ul v-if="isAdmin" class="flex flex-col md:flex-row gap-4 justify-center items-center h-full lg:my-[1/2]">
             <li class="text-center bg-vibrant-light-600 rounded-2xl p-4 text-deep-blue-900 flex justify-between items-center w-full lg:h-full">

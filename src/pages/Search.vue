@@ -41,10 +41,10 @@ const markers = ref([])
 const loading = ref(false)
 const showFilters = ref(false)
 
-const chassisTypes = ["Sedan", "Van", "SUV", "Pickup", "Minivan", "Coupe"]
+const chassisTypes = ["Sedán", "Van", "SUV", "Pickup", "Minivan", "Coupe"]
 const selectedChassis = ref([])
 const savedFilters = ref(null)
-const optionsTransmission = ["Ambos", "Manual", "Automatico"]
+const optionsTransmission = ["Ambos", "Manual", "Automático"]
 const selectedTransmission = ref([])
 
 // Variables para la API de vehículos

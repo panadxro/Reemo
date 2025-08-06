@@ -32,6 +32,8 @@ dist-ssr
 public/firebase-messaging-sw.js
 .firebase
 
+stats.html
+
 # Ignorar reglas 
 reglas-firestore.txt
 reglas-storage.txt
