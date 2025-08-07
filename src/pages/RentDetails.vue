@@ -19,6 +19,8 @@ import Ubication from '@icons/Ubication.vue';
 import Distance from '@icons/Distance.vue';
 import Input from '@components/molecules/Input.vue'
 import Send from '@icons/Send.vue';
+import CardCar from "@components/organisms/cars/CardCar.vue";
+import NoCarLocation from "@/components/atoms/NoCarLocation.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -373,7 +375,7 @@ onMounted(() => {
     <Loading class="h-12 w-12 text-secondary-500" />
   </div>
 
-  <div v-else-if="rentalDetails" class="flex flex-col lg:flex-row md:m-2.5 py-4 lg:py-6 md:px-2 sm:px-4 gap-4 w-full md:bg-vibrant-light-600 rounded-xl lg:rounded-3xl min-h-screen lg:min-h-auto overflow-y-auto lg:overflow-hidden px-2">
+  <div v-else-if="rentalDetails" class="flex flex-col lg:flex-row md:m-2.5 py-4 lg:py-6 md:px-4 sm:px-4 gap-4 w-full md:bg-vibrant-light-600 rounded-xl lg:rounded-3xl min-h-screen lg:min-h-auto overflow-y-auto lg:overflow-hidden px-2">
 
     <div class="box-vibrant w-full md:w-3/7 flex flex-col gap-4 overflow-visible lg:overflow-hidden lg:overflow-y-auto md:pr-2 order-1 lg:order-1">
       
@@ -447,7 +449,8 @@ onMounted(() => {
           </template>
           </Input>
         </div>
-        
+
+
         <router-link :to="`/user/${rentalDetails.owner_id}`" class="flex items-center gap-3 sm:gap-4 mt-2 sm:mt-4">
           <img :src="rentalDetails.ownerData?.photoURL" :alt="rentalDetails.ownerData?.name"
             class="w-12 h-12 sm:w-14 sm:h-14 rounded-full flex-shrink-0" />
@@ -489,24 +492,12 @@ onMounted(() => {
         </router-link>
       </div>
 
-      <router-link :to="`/car/${rentalDetails.vehicleData?.id}`" 
-        class="flex items-center gap-2 sm:gap-3 bg-white rounded-xl justify-between p-3 sm:p-4 hover:shadow-md transition-shadow">
-        <div class="flex gap-2 sm:gap-3 min-w-0 flex-1">
-          <img :src="rentalDetails.vehicleData?.photos[0]" :alt="rentalDetails.vehicleData?.basicInfo.brand"
-            class="w-12 sm:w-16 h-12 sm:h-16 object-contain flex-shrink-0 rounded-xl" />
-          <div class="min-w-0 flex-1">
-            <p class="text-xs sm:text-sm font-semibold text-background-600 truncate">
-              {{ rentalDetails.vehicleData?.basicInfo.brand }}
-            </p>
-            <p class="text-sm sm:text-lg font-bold text-primary-900 truncate">
-              {{ rentalDetails.vehicleData?.basicInfo.model }}
-            </p>
-          </div>
-        </div>
-        <div class="text-primary-900 font-semibold text-sm sm:text-base flex-shrink-0">
-          {{ rentalDetails.vehicleData?.basicInfo.licensePlate }}
-        </div>
-      </router-link>
+              
+      <CardCar 
+        :car="rentalDetails.vehicleData"
+        layout="rectangle"
+        @click="() => $router.push(`/car/${rentalDetails.vehicleData?.id}`)"
+      />
 
       <div v-if="showPickupMessage && loggedUser?.id === rentalDetails?.driver_id" 
         class="bg-green-600 border border-green-700 text-white p-3 sm:p-4 rounded-lg text-center">
@@ -572,7 +563,7 @@ onMounted(() => {
             @click="router.push(`/dashboard`)"
           />
         </div>
-              <div v-if="rentalDetails.status === 'pending' && isOwner" class="flex flex-col md:flex-row gap-2">
+          <div v-if="rentalDetails.status === 'pending' && isOwner" class="flex flex-col md:flex-row gap-2">
             <Input
               type="button"
               variant="primary"
@@ -593,8 +584,12 @@ onMounted(() => {
 
     <div v-if="!showCompletedView" class="flex-1 flex flex-col gap-4 relative order-2 lg:order-2">
       
-      <div class="flex-1 bg-gray-200 rounded-xl lg:rounded-3xl relative overflow-hidden">
-        <div id="map" class="w-full min-h-100 md:h-full rounded-[40px] relative"></div>
+      <div class="flex-1 bg-gray-200 rounded-[40px] relative overflow-hidden">
+        <div v-if="rentalDetails.vehicleData?.status.currentLocation.location" id="map" class="w-full min-h-100 md:h-full relative"></div>
+        <div v-else class="flex flex-col items-center justify-center gap-5 h-full bg-background-700 p-8">
+          <NoCarLocation class="max-w-[150px]"/>
+          <p class="font-semibold text-center">Este vehículo no tiene ubicación registrada</p>
+        </div>
       </div>
     </div>
 

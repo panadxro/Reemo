@@ -30,9 +30,9 @@ export default {
   computed: {
     alertClasses() {
       return {
-        normalYellow: 'from-amber-900/20 to-orange-900/20 border-amber-600/30 text-amber-300',
-        brightYellow: 'from-amber-900/80 to-orange-900/80 border border-amber-600/50 text-amber-200',
-        green: 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-400 text-green-600'
+        normalYellow: 'bg-orange-900/20 border-red-600/30 text-red-300',
+        brightYellow: 'bg-orange-900 border border-red-600/50 text-red-200',
+        green: 'bg-gradient-to-r bg-emerald-50 border-green-400 text-green-600'
       }[this.type]
     },
     textClasses() {

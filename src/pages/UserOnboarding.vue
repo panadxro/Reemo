@@ -288,7 +288,7 @@ onBeforeUnmount(() => {
             <div class="flex flex-col gap-4">
               <label for="profile-picture" class="text-start bg-background-900 w-fit text-deep-blue-900 px-4 py-2 rounded-2xl cursor-pointer border-2 border-vibrant-light-900 font-semibold">Cargar foto de perfil</label>
               <span class="text-xs text-start">Se recomienda un mínimo de 800x800 px.<br/>
-                Se permite JPG o PNG y GIF</span>
+                Se permite JPG o PNG</span>
             </div>
           </div>
           <input id="profile-picture" type="file" accept="image/*" 

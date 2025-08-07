@@ -34,7 +34,7 @@ export default {
         this.$router.push({ name: 'CarDetails', params: { id: id } });
       },
 
-    // Método que muestra la imagen por defecto si hay error (por si borramos imagenes desde storage)
+    // Método que muestra la imagen por defecto si hay error (por si borramos imágenes desde storage)
     setDefaultImage(event) {
       event.target.src = this.defaultCarImage;
     },

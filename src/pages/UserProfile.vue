@@ -49,7 +49,7 @@ export default {
     const loggedUserId = computed(() => authStore.user?.id);
     const userIdFromRoute = computed(() => route.params.id);
     const isOwnProfile = computed(() => loggedUserId.value === userIdFromRoute.value);
-    const isUserVerified = computed(() => authStore.userStatus);
+    const isUserVerified = computed(() => authStore.user.status === 'verified');
 
     const showProfile = computed(() => {
       return isOwnProfile.value ? userStore.profileData : userStore.visitedProfileData
@@ -92,6 +92,7 @@ export default {
         //   router.push('/not-found');
         //   return;
         // }
+        console.log(isUserVerified.value)
 
         // Fetch a los autos del usuario
         await carStore.loadUserCars(userIdFromRoute.value);
@@ -152,12 +153,12 @@ export default {
             <Status class="w-fit cursor-pointer" :status="showProfile?.status">
               <template v-if="isOwnProfile" #message>
                 <VerifyValidation
-                v-if="!isUserVerified"
-                title="Perfil en proceso de validación"
-                message="Tu perfil está en proceso de verificación. Para poder utilizar todas las funcionalidades (buscar vehículos, realizar alquileres y registrar vehículos), necesitamos validar tu información."
-                class="!text-black"
-                :show="!isUserVerified"
-                type="brightYellow"
+                  v-if="!isUserVerified"
+                  title="Perfil en proceso de validación"
+                  message="Tu perfil está en proceso de verificación. Para poder utilizar todas las funcionalidades (buscar vehículos, realizar alquileres y registrar vehículos), necesitamos validar tu información."
+                  class="!text-black"
+                  :show="!isUserVerified"
+                  type="brightYellow"
                 />
   
                 <VerifyValidation
@@ -192,7 +193,7 @@ export default {
             </router-link>
           </div>
 
-          <router-link to="/onboarding" class="block md:hidden">
+          <router-link v-else to="/onboarding" class="block md:hidden">
             <Input
               type="button"
               text="Editar perfil"
@@ -358,8 +359,8 @@ export default {
     .div-user { order: 3; }
     .div-my-user { order: 4; }
     .user-cars { order: 5; }
-    .cars { order: 6; }
-    .reviews { order: 7; }
+    .reviews { order: 6; }
+    .cars { order: 7; }
   }
 }
 </style>

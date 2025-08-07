@@ -230,12 +230,12 @@ watch([() => authStore.user, () => authStore.isInitialized], async ([currentUser
           </div>
   
           <!-- Galería -->
-          <div class="md:flex flex-1 justify-between gap-2 w-full h-24 hidden">
+<!--           <div class="md:flex flex-1 justify-between gap-2 w-full h-24 hidden">
             <img v-for="(image, index) in selectedCar.photos"
               :key="index"
               :src="image"
               class="aspect-square w-fit object-cover rounded-xl border border-gray-300 cursor-pointer transition duration-300 ease-in-out flex-1" />
-          </div>
+          </div> -->
   
           <!-- Datos adicionales -->
           <div class="flex flex-col gap-2">

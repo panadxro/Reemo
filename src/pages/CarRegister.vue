@@ -635,7 +635,8 @@ onBeforeUnmount(() => {
                 { value: 'Hatchback', label: 'Hatchback' },
                 { value: 'SUV', label: 'SUV' },
                 { value: 'Pickup', label: 'Pickup' },
-                { value: 'Van', label: 'Van' }
+                { value: 'Van', label: 'Van' },
+                { value: 'Coupe', label: 'Coupe' }
               ]"
               variant="secondary"
               :outline="true"

@@ -41,7 +41,7 @@ const markers = ref([])
 const loading = ref(false)
 const showFilters = ref(false)
 
-const chassisTypes = ["Sedán", "Van", "SUV", "Pickup", "Minivan", "Coupe"]
+const chassisTypes = ["Sedán", "Van", "SUV", "Pickup", "Minivan", "Coupe", "Hatchback"]
 const selectedChassis = ref([])
 const savedFilters = ref(null)
 const optionsTransmission = ["Ambos", "Manual", "Automático"]
@@ -340,7 +340,7 @@ watch(() => filters.brand, async (newBrand, oldBrand) => {
           <Input
             type="button"
             variant="primary"
-            text="Registrar vehículo"
+            text="Registrar auto"
             class="!w-fit"
             :outline="false"
           />    

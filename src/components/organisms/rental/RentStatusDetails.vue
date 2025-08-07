@@ -189,7 +189,7 @@ onUnmounted(() => {
     <li v-if="driverRentalDetail" class="bg-white flex rounded-2xl items-center justify-between">
       <router-link 
         :to="{ name: 'RentDetail', params: { id: driverRentalDetail.id } }"
-        class="flex gap-2 px-2.5 py-2 min-h-25 "
+        class="flex gap-2 px-2.5 py-2 min-h-25 w-full"
         >
 
         <figure class="relative flex items-center">
@@ -249,23 +249,23 @@ onUnmounted(() => {
         </div>
       </router-link>
       <Input
-                v-if="driverRentalDetail.status === 'pending'"
-                type="button"
-                variant="secondary"
-                outline
-                text="Cancelar solicitud"
-                class="!w-fit !mx-2 !h-fit !text-xs"
-                @click.stop="cancelDriverApplication(driverRentalDetail.id)"
-              />
-              <Modal
-                :isOpen="showCancelModal"
-                title="Cancelar solicitud"
-                message="¿Estás seguro de que quieres cancelar esta solicitud?"
-                confirmText="Si, cancelar"
-                cancelText="No, mantener"
-                @close="showCancelModal = false"
-                @confirm="confirmCancelDriverApplication"
-              />
+        v-if="driverRentalDetail.status === 'pending'"
+        type="button"
+        variant="secondary"
+        outline
+        text="Cancelar solicitud"
+        class="!w-fit !text-xs !py-1 !px-2"
+        @click.stop="cancelDriverApplication(driverRentalDetail.id)"
+      />
+      <Modal
+        :isOpen="showCancelModal"
+        title="Cancelar solicitud"
+        message="¿Estás seguro de que quieres cancelar esta solicitud?"
+        confirmText="Si, cancelar"
+        cancelText="No, mantener"
+        @close="showCancelModal = false"
+        @confirm="confirmCancelDriverApplication"
+      />
     </li>
 
     <!-- Owner Rental Detail -->

@@ -334,7 +334,7 @@ watch(currentUser, (newUser) => {
         </div>
       </div>
       
-      <RentStatusDetails v-else />
+      <RentStatusDetails v-else class="box-deep"/>
     </div>
   </div>
 </template>
@@ -363,8 +363,8 @@ watch(currentUser, (newUser) => {
 
     .dash { order: 1; }
     .my-profile { order: 2; }
-    .cars { order: 3; }
-    .tracking { order: 4; }
+    .tracking { order: 3; }
+    .cars { order: 4; }
   }
 }
 

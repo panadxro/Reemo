@@ -81,7 +81,7 @@ export default {
         this.$router.push({ name: 'CarDetails', params: { id: id } });
       },
 
-      // Método que muestra la imagen por defecto si hay error (por si borramos imagenes desde storage)
+      // Método que muestra la imagen por defecto si hay error (por si borramos imágenes desde storage)
       setDefaultImage(event) {
         event.target.src = this.defaultCarImage;
       },
@@ -211,7 +211,10 @@ export default {
           <Heading type="4" class="regular">{{ car.basicInfo?.model }}, {{ car.basicInfo?.year }}</Heading>
         </div>
       </router-link>
-      <div class="flex items-end flex-col justify-between">
+      <div v-if="$route.matched.some(route => route.name === 'RentDetail')">
+        <p class="text-deep-blue-900 text-lg font-bold">{{ car.basicInfo?.licensePlate }}</p>
+      </div>
+      <div v-else class="flex items-end flex-col justify-between">
         <Status :status="car.status.current" size="small"/>
         <p class="text-deep-blue-900 text-lg font-bold">${{ car.pricing?.rates?.daily }}/día</p>
       </div>

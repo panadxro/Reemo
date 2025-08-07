@@ -503,30 +503,7 @@ onMounted(async () => {
             </div>
           </div>
 
-          <div class="space-y-3 pb-6 mb-6">
-            <h3 class="font-semibold pb-2">Detalle de pago</h3>
-            
-            <div class="space-y-2">
-              <div class="flex justify-between">
-                <span class="text-gray-400">Subtotal:</span>
-                <span>$ {{ formatPrice(store.basePrice) }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Comisión (15%):</span>
-                <span>$ {{ formatPrice(store.taxes) }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Seguro:</span>
-                <span>$ {{ formatPrice(store.insurance) }}</span>
-              </div>
-              <div class="flex justify-between pt-2 border-t border-gray-200 text-secondary-300">
-                <span class="font-semibold">Total:</span>
-                <span class="font-bold">$ {{ formatPrice(store.totalPrice) }}</span>
-              </div>
-            </div>
-          </div>
-          
-          <div class="mb-6">
+                    <div class="mb-6">
             <h3 class="font-semibold pb-2">
               Método de pago
             </h3>
@@ -560,6 +537,29 @@ onMounted(async () => {
                 >
                   Seleccionar método de pago
                 </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-3 pb-6 mb-6">
+            <h3 class="font-semibold pb-2">Detalle de pago</h3>
+            
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Subtotal:</span>
+                <span>$ {{ formatPrice(store.basePrice) }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Comisión (15%):</span>
+                <span>$ {{ formatPrice(store.taxes) }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Seguro:</span>
+                <span>$ {{ formatPrice(store.insurance) }}</span>
+              </div>
+              <div class="flex justify-between pt-2 border-t border-gray-200 text-secondary-300">
+                <span class="font-semibold">Total:</span>
+                <span class="font-bold">$ {{ formatPrice(store.totalPrice) }}</span>
               </div>
             </div>
           </div>
