@@ -166,8 +166,8 @@ const routes = [
     props: (route) => ({
       id: route.params.id,
     }),
-    meta: { needsAuth: true, requiresVerified: true },
-    async beforeEnter(to) {
+    meta: { needsAuth: true },
+    /* async beforeEnter(to) {
       const userStore = useUserStore();
       
       try {
@@ -182,7 +182,7 @@ const routes = [
         console.error("Error al verificar el usuario:", error);
         return { name: 'NotFound' };
       }
-    },
+    }, */
   },
   {
     path: '/documents/:id',
