@@ -1,30 +1,73 @@
-# Reemo
+<div align="center">
+  <a name="readme-top"></a>
+  <img src="src/assets/logo.png" alt="Reemo Logo" width="200"/>
 
-**Reemo** es una plataforma innovadora de alquiler de vehículos entre particulares que permite a los propietarios generar ingresos alquilando sus vehículos a personas que los necesitan temporalmente.
+## Web oficial de Reemo
 
-## **Funcionalidades implementadas**
+**Reemo** es una plataforma innovadora de alquiler de vehículos entre particulares que conecta de forma simple, segura y confiable a propietarios y arrendatarios.  
+Permite a los dueños generar ingresos con sus autos y a los usuarios encontrar el vehículo ideal para sus necesidades de movilidad.
 
-- **Publicación de vehículos**: Registrar un auto con la información necesaria, incluyendo imágenes del vehículo.  
-- **Alquiler de vehículos**: Encontrar el auto según las necesidades del usuario y envío de solicitud de alquiler.  
-- **Notificaciones de alquiler**: Recibir solicitudes de alquiler con la opción de aceptarlas o rechazarlas.  
-- **Gestión de vehículos propios**: Habilitar, deshabilitar o eliminar vehículos propios de la plataforma.  
-- **Sistema de comentarios**: Dejar o recibir opiniones sobre las experiencias de alquiler.  
-- **Edición de perfil**: Actualizar datos de usuario incluyendo imágen de perfil.  
-- **Autenticación**: Registrar, iniciar sesión y cerrar de sesión del usuario.
+</div>
 
-## **Tecnologías usadas**
+## 📸 Capturas de pantalla
 
-Reemo se desarrolló utilizando:  
-- **Vue.js**: Construcción de la interfaz de usuario.  
-- **Firestore Database**: Gestión de datos en tiempo real.  
-- **Firebase Storage**: Almacenaje de imágenes de los vehículos y usuarios.  
-- **Firebase Authentication**: Gestión segura de usuarios.
+<p align="center">
+  <img src="src/assets/mockups/889shots_so.png" alt="Landing page"/>
+  <img src="src/assets/mockups/66shots_so.png" alt="Detalle de vehículo"/>
+  <img src="src/assets/mockups/420shots_so.png" alt="Pantallas de búsqueda de vehículo"/>
+  <img src="src/assets/mockups/464shots_so.png" alt="Pantalla de perfil"/>
+  <img src="src/assets/mockups/565shots_so.png" alt="Pantalla de onboarding"/>
+</p>
 
-## **Cómo ejecutar el proyecto**
+## ✨ Funcionalidades
 
-1. Instalar las dependencias necesarias:  
+- 🚙 **Publicación de vehículos**: Registrar un auto con toda su información e imágenes.  
+- 🔑 **Autenticación**: Registro, inicio y cierre de sesión de usuarios.  
+- 📩 **Notificaciones de alquiler**: Solicitudes en tiempo real con opción de aceptar o rechazar.  
+- 🛠 **Gestión de vehículos propios**: Habilitar, deshabilitar o eliminar autos de la plataforma.  
+- 👤 **Gestión de perfil**: Actualización de datos de usuario.  
+
+## 🛠 Tecnologías utilizadas
+
+![Vue.js Badge](https://img.shields.io/badge/Vue.js-4FC08D?logo=vuedotjs&logoColor=fff&style=for-the-badge) 
+Construcción de la interfaz de usuario.  
+![Firebase Badge](https://img.shields.io/badge/Firebase-DD2C00?logo=firebase&logoColor=fff&style=for-the-badge) 
+Autenticación, Firestore Database y almacenamiento en la nube.  
+![Tailwind CSS Badge](https://img.shields.io/badge/Tailwind%20CSS-06B6D4?logo=tailwindcss&logoColor=fff&style=for-the-badge)
+Estilos modernos y responsivos.  
+![Node.js Badge](https://img.shields.io/badge/Node.js-5FA04E?logo=nodedotjs&logoColor=fff&style=for-the-badge)
+Integraciones y servicios backend.  
+![Google Maps Badge](https://img.shields.io/badge/Google%20Maps-4285F4?logo=googlemaps&logoColor=fff&style=for-the-badge)
+Geolocalización y visualización de ubicaciones.  
+
+## 🚀 Cómo ejecutar el proyecto
+
+1. Clonar el repositorio:  
+   ```bash
+   git clone https://github.com/tu-usuario/reemo.git
+   cd reemo
+2. Instalar las dependencias necesarias:  
    ```bash
    npm i
-2. Iniciar el servidor de desarrollo: 
+3. Iniciar el servidor de desarrollo: 
    ```bash
    npm run dev
+4. Abrir en el navegador en: 
+   ```bash
+   http://localhost:5173/
+## 📌 Sobre el proyecto
+**Reemo** busca transformar la forma en que las personas acceden a un vehículo, ofreciendo una experiencia basada en confianza, accesibilidad y seguridad, y creando una comunidad innovadora en el sector de movilidad.
+
+## 🤝 Contribuciones
+¡Toda contribución es bienvenida!
+Si quieres colaborar, abre un issue o envía un pull request con tus mejoras.
+
+**¡Gracias a todos los colaboradores que han hecho posible este proyecto!**
+
+<a href="https://github.com/panadxro/Reemo/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=panadxro/Reemo" />
+</a>
+
+
+
+<p align="right">(<a href="#readme-top">volver al inicio</a>)</p>
